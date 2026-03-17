@@ -1,0 +1,1567 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>SUPPORT POOL · PREMIUM</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* ============ DESIGN SYSTEM (DARK – Standard) ============ */
+        :root {
+            --primary-1: #0A0C14;
+            --primary-2: #121520;
+            --primary-3: #1A1F2D;
+            --accent-gold: #FFD700;
+            --accent-gold-light: #FFE55C;
+            --accent-gold-dark: #B8860B;
+            --accent-silver: #C0C0C0;
+            --accent-bronze: #CD7F32;
+            --accent-emerald: #50C878;
+            --accent-ruby: #E0115F;
+            --accent-sapphire: #0F52BA;
+            --text-primary: #FFFFFF;
+            --text-secondary: #B0B8C5;
+            --text-tertiary: #6B7280;
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --input-bg: rgba(0, 0, 0, 0.35);
+            --card-inner-bg: rgba(0, 0, 0, 0.2);
+            --shadow-elegant: 0 20px 40px -15px rgba(0, 0, 0, 0.5);
+            --shadow-gold: 0 10px 30px -5px rgba(255, 215, 0, 0.3);
+            --gradient-gold: linear-gradient(135deg, #FFD700, #B8860B);
+            --gradient-silver: linear-gradient(135deg, #C0C0C0, #A9A9A9);
+            --gradient-bronze: linear-gradient(135deg, #CD7F32, #8B4513);
+            --gradient-emerald: linear-gradient(135deg, #50C878, #2E8B57);
+            --gradient-ruby: linear-gradient(135deg, #E0115F, #8B0000);
+            --gradient-sapphire: linear-gradient(135deg, #0F52BA, #000080);
+            --gradient-night: linear-gradient(145deg, #0A0C14, #1A1F2D);
+        }
+
+        /* ============ BLUE-WHITE THEME ============ */
+        body.theme-light {
+            --primary-1: #F0F8FF;
+            --primary-2: #E6F0FA;
+            --primary-3: #D1E0F0;
+            --accent-gold: #0F52BA;
+            --accent-gold-light: #1E6FD9;
+            --accent-gold-dark: #0A3A7A;
+            --text-primary: #0A1A2F;
+            --text-secondary: #2C3E5A;
+            --text-tertiary: #4A5B73;
+            --glass-bg: rgba(255, 255, 255, 0.7);
+            --glass-border: rgba(15, 82, 186, 0.2);
+            --input-bg: rgba(255, 255, 255, 0.9);
+            --card-inner-bg: rgba(255, 255, 255, 0.5);
+            --shadow-elegant: 0 20px 40px -15px rgba(15, 82, 186, 0.15);
+            --shadow-gold: 0 10px 30px -5px rgba(15, 82, 186, 0.3);
+            --gradient-gold: linear-gradient(135deg, #0F52BA, #1E6FD9);
+            --gradient-night: linear-gradient(145deg, #E6F0FA, #F0F8FF);
+        }
+
+        /* ============ GOLD THEME ============ */
+        body.theme-gold {
+            --primary-1: #1A1200;
+            --primary-2: #2A1E00;
+            --primary-3: #3D2C00;
+            --text-primary: #FFF8E1;
+            --text-secondary: #FFE082;
+            --text-tertiary: #FFC107;
+            --glass-bg: rgba(255, 215, 0, 0.07);
+            --glass-border: rgba(255, 215, 0, 0.22);
+            --input-bg: rgba(0, 0, 0, 0.4);
+            --card-inner-bg: rgba(255, 215, 0, 0.05);
+            --shadow-elegant: 0 20px 40px -15px rgba(0, 0, 0, 0.6);
+            --shadow-gold: 0 10px 30px -5px rgba(255, 215, 0, 0.5);
+            --accent-gold-dark: #FFA000;
+            --gradient-night: linear-gradient(145deg, #1A1200, #3D2C00);
+        }
+
+        body {
+            background: var(--gradient-night);
+            color: var(--text-primary);
+            padding: 15px;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+            transition: background 0.4s ease, color 0.4s ease;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            background: radial-gradient(circle at 30% 50%, rgba(255,215,0,0.03) 0%, transparent 50%);
+            animation: rotateBg 60s linear infinite;
+            z-index: -1;
+        }
+        body::after {
+            content: '';
+            position: fixed;
+            bottom: -50%; right: -50%;
+            width: 200%; height: 200%;
+            background: radial-gradient(circle at 70% 50%, rgba(255,255,255,0.02) 0%, transparent 50%);
+            animation: rotateBg 40s linear infinite reverse;
+            z-index: -1;
+        }
+        @keyframes rotateBg {
+            from { transform: rotate(0deg); }
+            to   { transform: rotate(360deg); }
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* ============ HEADER ============ */
+        .premium-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding: 15px 20px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 50px;
+            box-shadow: var(--shadow-elegant);
+            position: relative;
+            overflow: hidden;
+        }
+        .premium-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,215,0,0.08), transparent);
+            animation: shimmer 3s infinite;
+        }
+        @keyframes shimmer { 100% { left: 200%; } }
+
+        .logo-area { display: flex; align-items: center; gap: 10px; }
+        .logo-icon {
+            font-size: 1.8rem;
+            filter: drop-shadow(0 0 15px var(--accent-gold));
+            animation: floatAnim 3s ease-in-out infinite;
+        }
+        @keyframes floatAnim {
+            0%, 100% { transform: translateY(0); }
+            50%       { transform: translateY(-5px); }
+        }
+        .logo-text h1 {
+            font-size: 1.3rem; font-weight: 700;
+            background: var(--gradient-gold);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 1px;
+        }
+        .logo-text p {
+            font-size: 0.65rem;
+            color: var(--text-secondary);
+            letter-spacing: 1px;
+        }
+
+        .user-welcome { display: flex; align-items: center; gap: 10px; }
+        .welcome-badge {
+            background: var(--gradient-gold);
+            padding: 8px 15px; border-radius: 30px;
+            color: var(--primary-1); font-weight: 600; font-size: 0.8rem;
+            display: flex; align-items: center; gap: 8px;
+            box-shadow: var(--shadow-gold);
+        }
+        .welcome-badge span {
+            background: rgba(0,0,0,0.2);
+            padding: 2px 6px; border-radius: 20px; font-size: 0.7rem;
+        }
+        .copy-btn {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            color: var(--text-secondary);
+            width: 35px; height: 35px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: all 0.3s ease;
+        }
+        .copy-btn:hover {
+            border-color: var(--accent-gold); color: var(--accent-gold);
+            transform: scale(1.1); box-shadow: var(--shadow-gold);
+        }
+
+        /* ============ THEME SWITCHER - NUR 2 BUTTONS ============ */
+        .theme-elegance {
+            position: absolute; top: 10px; right: 10px;
+            display: flex; gap: 8px; z-index: 1000;
+        }
+        .theme-btn {
+            width: 40px; height: 40px; border-radius: 50%;
+            border: 2px solid transparent;
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            color: var(--text-secondary);
+            cursor: pointer; transition: all 0.3s ease;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.2rem;
+        }
+        .theme-btn:hover {
+            border-color: var(--accent-gold); color: var(--accent-gold);
+            transform: scale(1.1); box-shadow: var(--shadow-gold);
+        }
+        .theme-btn.active {
+            border-color: var(--accent-gold);
+            background: var(--gradient-gold);
+            color: var(--primary-1);
+            box-shadow: var(--shadow-gold);
+        }
+
+        /* ============ LOGIN CARD ============ */
+        .login-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 40px;
+            padding: 30px; margin-bottom: 20px;
+            box-shadow: var(--shadow-elegant);
+            position: relative; overflow: hidden;
+        }
+        .login-card::after {
+            content: '';
+            position: absolute; top: 0; right: 0;
+            width: 150px; height: 150px;
+            background: radial-gradient(circle, var(--accent-gold) 0%, transparent 70%);
+            opacity: 0.08; border-radius: 50%;
+            transform: translate(50%, -50%);
+        }
+
+        .stats-preview {
+            display: grid; grid-template-columns: repeat(3, 1fr);
+            gap: 15px; margin-bottom: 25px;
+        }
+        .stat-preview-item {
+            text-align: center; padding: 15px;
+            background: var(--card-inner-bg);
+            border-radius: 30px;
+            border: 1px solid var(--glass-border);
+            transition: all 0.3s ease;
+        }
+        .stat-preview-item:hover {
+            border-color: var(--accent-gold);
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-gold);
+        }
+        .stat-preview-value {
+            font-size: 1.8rem; font-weight: 800;
+            background: var(--gradient-gold);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            line-height: 1.2;
+        }
+        .stat-preview-label {
+            font-size: 0.7rem; color: var(--text-secondary);
+            text-transform: uppercase; letter-spacing: 1px;
+        }
+        .stat-preview-icon { font-size: 0.9rem; margin-top: 5px; color: var(--accent-gold); }
+
+        .login-title {
+            font-size: 1.5rem; font-weight: 700;
+            text-align: center; margin-bottom: 20px;
+            background: var(--gradient-gold);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .login-input {
+            width: 100%;
+            padding: 18px 25px;
+            background: var(--input-bg);
+            border: 2px solid var(--glass-border);
+            border-radius: 50px;
+            color: var(--text-primary);
+            font-size: 1rem; text-align: center;
+            margin-bottom: 15px; outline: none;
+            transition: all 0.3s ease;
+        }
+        .login-input::placeholder { color: var(--text-tertiary); }
+        .login-input:focus {
+            border-color: var(--accent-gold);
+            box-shadow: var(--shadow-gold);
+        }
+
+        .login-btn {
+            width: 100%; padding: 18px;
+            background: var(--gradient-gold);
+            border: none; border-radius: 50px;
+            color: var(--primary-1);
+            font-size: 1.1rem; font-weight: 700;
+            cursor: pointer; transition: all 0.3s ease;
+            position: relative; overflow: hidden;
+        }
+        .login-btn::before {
+            content: '';
+            position: absolute; top: 0; left: -100%;
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+        .login-btn:hover { transform: translateY(-2px); box-shadow: var(--shadow-gold); }
+
+        .login-hint {
+            margin-top: 15px; padding: 15px;
+            background: var(--card-inner-bg);
+            border-radius: 30px;
+            border: 1px solid var(--glass-border);
+            font-size: 0.8rem; color: var(--text-secondary);
+            text-align: center; line-height: 1.6;
+        }
+        .hint-gold { color: var(--accent-gold); font-weight: 600; }
+
+        /* ============ BALANCE CARD ============ */
+        .balance-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 40px; padding: 25px;
+            margin-bottom: 20px; text-align: center;
+            position: relative; overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        .balance-card::before {
+            content: '';
+            position: absolute; top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            background: conic-gradient(from 0deg, transparent, var(--accent-gold), transparent, var(--accent-emerald), transparent);
+            animation: rotateBg 4s linear infinite;
+            opacity: 0.08;
+        }
+        .balance-card.positive { border-color: var(--accent-emerald); box-shadow: 0 0 40px rgba(80,200,120,0.2); }
+        .balance-card.zero     { border-color: var(--accent-silver);  box-shadow: 0 0 40px rgba(192,192,192,0.2); }
+        .balance-card.negative { border-color: var(--accent-ruby);    box-shadow: 0 0 40px rgba(224,17,95,0.2); }
+
+        .balance-icon { font-size: 2rem; margin-bottom: 10px; }
+        .balance-value {
+            font-size: 4rem; font-weight: 800; line-height: 1;
+            margin-bottom: 5px; color: var(--text-primary);
+        }
+        .balance-label {
+            font-size: 0.9rem; color: var(--text-secondary);
+            letter-spacing: 2px; text-transform: uppercase;
+        }
+        .balance-message {
+            margin-top: 15px; padding: 12px;
+            background: var(--card-inner-bg);
+            border-radius: 50px; font-size: 0.9rem;
+            font-weight: 500; color: var(--text-primary);
+        }
+
+        /* ============ STATS GRID ============ */
+        .stats-grid {
+            display: grid; grid-template-columns: repeat(4, 1fr);
+            gap: 10px; margin-bottom: 20px;
+        }
+        .stat-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            border-radius: 30px; padding: 15px 10px;
+            text-align: center; transition: all 0.3s ease; cursor: pointer;
+        }
+        .stat-card:hover {
+            border-color: var(--accent-gold);
+            transform: translateY(-5px); box-shadow: var(--shadow-gold);
+        }
+        .stat-icon { font-size: 1.2rem; margin-bottom: 5px; color: var(--accent-gold); }
+        .stat-value {
+            font-size: 1.4rem; font-weight: 700;
+            background: var(--gradient-gold);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .stat-label {
+            font-size: 0.6rem; color: var(--text-secondary);
+            text-transform: uppercase; letter-spacing: 0.5px;
+        }
+
+        /* ============ ACTION CARD ============ */
+        .action-card {
+            background: var(--gradient-gold);
+            border-radius: 40px; padding: 2px;
+            margin-bottom: 20px; box-shadow: var(--shadow-gold);
+        }
+        .action-content {
+            background: var(--primary-2);
+            border-radius: 39px; padding: 20px; text-align: center;
+        }
+        .action-title { font-size: 1.2rem; font-weight: 600; margin-bottom: 5px; color: var(--accent-gold); }
+        .action-subtitle { font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 15px; }
+        .action-btn {
+            background: var(--gradient-gold);
+            border: none; padding: 15px 30px; border-radius: 50px;
+            color: var(--primary-1); font-weight: 700; font-size: 1rem;
+            cursor: pointer; transition: all 0.3s ease;
+            width: 100%; position: relative; overflow: hidden;
+        }
+        .action-btn:hover { transform: translateY(-2px); box-shadow: var(--shadow-gold); }
+        .action-hint { margin-top: 10px; font-size: 0.75rem; color: var(--text-tertiary); }
+
+        /* ============ SECTIONS ============ */
+        .section {
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            border-radius: 30px; padding: 20px;
+            margin-bottom: 20px; transition: all 0.3s ease;
+        }
+        .section:hover { border-color: var(--accent-gold); box-shadow: var(--shadow-gold); }
+        .section-header {
+            display: flex; align-items: center; gap: 10px;
+            margin-bottom: 15px; padding-bottom: 10px;
+            border-bottom: 1px solid var(--glass-border);
+        }
+        .section-icon { font-size: 1.3rem; }
+        .section-title { flex: 1; font-size: 1rem; font-weight: 600; color: var(--text-secondary); }
+        .section-badge {
+            background: var(--gradient-gold);
+            padding: 4px 10px; border-radius: 30px;
+            color: var(--primary-1); font-size: 0.7rem; font-weight: 600;
+        }
+
+        .video-item {
+            background: var(--card-inner-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px; padding: 15px;
+            margin-bottom: 10px; transition: all 0.3s ease;
+            position: relative; overflow: hidden;
+        }
+        .video-item::before {
+            content: '';
+            position: absolute; top: 0; left: 0;
+            width: 4px; height: 100%;
+            background: var(--gradient-gold);
+            opacity: 0; transition: opacity 0.3s ease;
+        }
+        .video-item:hover { transform: translateX(5px); border-color: var(--accent-gold); }
+        .video-item:hover::before { opacity: 1; }
+        .video-item.completed { border-color: var(--accent-emerald); }
+        .video-item.completed::before { background: var(--gradient-emerald); opacity: 1; }
+        .video-item.waiting { border-color: var(--accent-silver); }
+        .video-item.expiring { border-color: var(--accent-ruby); animation: gentlePulse 2s infinite; }
+        @keyframes gentlePulse {
+            0%, 100% { border-color: var(--accent-ruby); }
+            50%       { border-color: var(--accent-gold); }
+        }
+
+        .video-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .video-owner { font-weight: 600; color: var(--accent-gold); }
+        .video-status {
+            font-size: 0.7rem; padding: 3px 10px; border-radius: 30px;
+            background: rgba(255,215,0,0.1); color: var(--accent-gold);
+        }
+
+        .video-progress { display: flex; align-items: center; gap: 10px; margin: 10px 0; }
+        .progress-bar {
+            flex: 1; height: 8px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px; overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%; background: var(--gradient-gold);
+            transition: width 0.5s ease;
+            position: relative; overflow: hidden;
+        }
+        .progress-fill::after {
+            content: '';
+            position: absolute; top: 0; left: -100%;
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+        .progress-text { font-size: 0.8rem; color: var(--text-secondary); min-width: 45px; }
+
+        .video-timer { font-size: 0.7rem; color: var(--text-secondary); margin-top: 5px; display: flex; align-items: center; gap: 5px; }
+        .video-timer.warning { color: var(--accent-ruby); }
+
+        .support-btn {
+            background: var(--gradient-emerald);
+            border: none; padding: 12px; border-radius: 50px;
+            color: white; font-weight: 600; font-size: 0.9rem;
+            cursor: pointer; transition: all 0.3s ease;
+            width: 100%; margin-top: 10px;
+        }
+        .support-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 10px 30px -5px var(--accent-emerald); }
+        .support-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+        /* ============ ADMIN PANEL ============ */
+        .admin-panel {
+            background: linear-gradient(145deg, rgba(15,82,186,0.12), rgba(15,82,186,0.05));
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--accent-sapphire);
+            border-radius: 30px; padding: 20px; margin-bottom: 20px;
+        }
+        .admin-title { color: var(--accent-sapphire); font-weight: 700; font-size: 1rem; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
+        .admin-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 15px; }
+        .admin-stat { background: var(--card-inner-bg); border-radius: 20px; padding: 15px; text-align: center; border: 1px solid var(--accent-sapphire); }
+        .admin-stat-value { font-size: 1.5rem; font-weight: 700; color: var(--accent-sapphire); }
+        .admin-stat-label { font-size: 0.65rem; color: var(--text-secondary); }
+
+        .group-card { background: var(--card-inner-bg); border-radius: 20px; padding: 15px; margin-bottom: 10px; border: 1px solid var(--accent-sapphire); }
+        .group-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .group-name { color: var(--accent-sapphire); font-weight: 600; }
+        .group-count { background: var(--card-inner-bg); padding: 3px 8px; border-radius: 20px; font-size: 0.7rem; color: var(--text-primary); }
+
+        .member-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--glass-border); }
+        .member-row:last-child { border-bottom: none; }
+        .member-info { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .member-name { color: var(--text-primary); font-weight: 500; }
+        .member-badge { background: var(--accent-emerald); padding: 2px 6px; border-radius: 30px; font-size: 0.6rem; color: var(--primary-1); }
+
+        .delete-btn { background: var(--accent-ruby); border: none; color: white; width: 28px; height: 28px; border-radius: 50%; cursor: pointer; font-size: 0.8rem; transition: all 0.3s ease; }
+        .delete-btn:hover { transform: scale(1.1); box-shadow: 0 0 20px var(--accent-ruby); }
+
+        /* ============ COMMENT EDITOR ============ */
+        .comment-editor { background: var(--card-inner-bg); border-radius: 20px; padding: 15px; margin-bottom: 15px; }
+        .comment-input {
+            width: 100%; padding: 15px;
+            background: var(--input-bg);
+            border: 1px solid var(--accent-sapphire);
+            border-radius: 20px; color: var(--text-primary);
+            font-size: 0.9rem; margin-bottom: 10px;
+            resize: vertical; min-height: 80px;
+        }
+        .placeholder-buttons { display: flex; gap: 8px; margin: 10px 0; flex-wrap: wrap; }
+        .placeholder-btn {
+            padding: 8px 15px; background: var(--card-inner-bg);
+            border: 1px solid var(--accent-sapphire);
+            border-radius: 30px; color: var(--text-secondary);
+            font-size: 0.75rem; cursor: pointer; transition: all 0.2s ease;
+        }
+        .placeholder-btn:hover { background: var(--accent-sapphire); color: white; }
+        .comment-preview {
+            background: var(--card-inner-bg); border-radius: 20px; padding: 15px;
+            font-size: 0.8rem; color: var(--text-secondary);
+            border: 1px dashed var(--accent-sapphire); white-space: pre-wrap;
+        }
+
+        /* ============ INFO MODAL ============ */
+        .info-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(20px);
+            z-index: 10000;
+            padding: 20px;
+            align-items: center;
+            justify-content: center;
+        }
+        .info-content {
+            background: var(--primary-2);
+            border: 2px solid var(--accent-gold);
+            border-radius: 40px;
+            padding: 30px;
+            max-width: 400px;
+            width: 100%;
+            box-shadow: var(--shadow-gold);
+            animation: modalAppear 0.3s ease;
+        }
+        .info-title {
+            font-size: 1.3rem; font-weight: 700;
+            text-align: center; margin-bottom: 20px;
+            background: var(--gradient-gold);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .info-text {
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 20px;
+            white-space: pre-wrap;
+        }
+        .info-close {
+            width: 100%; padding: 15px;
+            background: var(--gradient-gold);
+            border: none; border-radius: 50px;
+            color: var(--primary-1);
+            font-weight: 600; font-size: 1rem;
+            cursor: pointer; transition: all 0.3s ease;
+        }
+        .info-close:hover { transform: translateY(-2px); box-shadow: var(--shadow-gold); }
+
+        /* ============ MODALS ============ */
+        .modal {
+            display: none; position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(20px);
+            z-index: 10000; padding: 20px;
+            align-items: center; justify-content: center;
+        }
+        .modal-content {
+            background: var(--primary-2);
+            border: 2px solid var(--accent-gold);
+            border-radius: 40px; padding: 30px;
+            max-width: 400px; width: 100%;
+            max-height: 80vh; overflow-y: auto;
+            position: relative; box-shadow: var(--shadow-gold);
+            animation: modalAppear 0.3s ease;
+        }
+        @keyframes modalAppear {
+            from { opacity: 0; transform: scale(0.9); }
+            to   { opacity: 1; transform: scale(1); }
+        }
+        .modal-title {
+            font-size: 1.3rem; font-weight: 700;
+            text-align: center; margin-bottom: 20px;
+            background: var(--gradient-gold);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .modal-buttons { display: flex; gap: 10px; margin-top: 20px; }
+        .modal-btn { flex: 1; padding: 15px; border-radius: 50px; font-weight: 600; border: none; cursor: pointer; transition: all 0.3s ease; }
+        .modal-btn.primary { background: var(--gradient-gold); color: var(--primary-1); }
+        .modal-btn.primary:hover { transform: translateY(-2px); box-shadow: var(--shadow-gold); }
+        .modal-btn.danger  { background: var(--gradient-ruby); color: white; }
+        .modal-btn.danger:hover  { transform: translateY(-2px); box-shadow: 0 10px 30px -5px var(--accent-ruby); }
+        .modal-btn.outline { background: transparent; border: 1px solid var(--glass-border); color: var(--text-secondary); }
+        .modal-btn.outline:hover { border-color: var(--accent-gold); color: var(--accent-gold); }
+
+        .import-textarea {
+            width: 100%; height: 150px;
+            background: var(--input-bg);
+            border: 1px solid var(--accent-emerald);
+            border-radius: 20px; color: var(--text-primary);
+            padding: 15px; font-size: 0.8rem;
+            margin-bottom: 15px; resize: vertical; font-family: monospace;
+        }
+
+        /* ============ TOAST ============ */
+        #toast {
+            position: fixed; top: 20px; left: 50%;
+            transform: translateX(-50%);
+            background: var(--gradient-gold);
+            color: var(--primary-1);
+            padding: 12px 24px; border-radius: 50px;
+            display: none; z-index: 99999;
+            font-weight: 600; box-shadow: var(--shadow-gold);
+            animation: slideDown 0.3s ease;
+            white-space: nowrap;
+        }
+        @keyframes slideDown {
+            from { opacity: 0; transform: translate(-50%, -20px); }
+            to   { opacity: 1; transform: translate(-50%, 0); }
+        }
+
+        /* ============ BACKUP BAR ============ */
+        .backup-bar {
+            display: grid; grid-template-columns: repeat(3, 1fr);
+            gap: 8px; margin: 20px 0 10px;
+        }
+        .backup-btn {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 30px; padding: 10px;
+            color: var(--text-secondary); font-size: 0.75rem;
+            cursor: pointer; transition: all 0.3s ease;
+            display: flex; align-items: center; justify-content: center; gap: 5px;
+        }
+        .backup-btn:hover {
+            border-color: var(--accent-gold); color: var(--accent-gold);
+            transform: translateY(-2px); box-shadow: var(--shadow-gold);
+        }
+
+        /* ============ RESPONSIVE ============ */
+        @media (max-width: 480px) {
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .stat-preview-item { padding: 10px; }
+            .stat-preview-value { font-size: 1.4rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="toast"></div>
+
+<!-- Theme Switcher - NUR 2 BUTTONS -->
+<div class="theme-elegance">
+    <button class="theme-btn active" id="themeBtnDark" onclick="setTheme('dark')">✨</button>
+    <button class="theme-btn" id="themeBtnLight" onclick="setTheme('light')">💎</button>
+</div>
+
+<!-- Info Modal -->
+<div id="infoModal" class="info-modal">
+    <div class="info-content">
+        <div class="info-title" id="infoTitle"></div>
+        <div class="info-text" id="infoText"></div>
+        <button class="info-close" onclick="closeInfoModal()">Verstanden</button>
+    </div>
+</div>
+
+<!-- Post Video Modal -->
+<div id="postVideoModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-title">📹 Neues Video posten</div>
+        <input type="url" id="modalVideoUrl" class="login-input" placeholder="TikTok Video URL">
+        <div style="color: var(--text-secondary); font-size: 0.8rem; text-align: center; margin-top: 10px;">
+            ⏰ Maximal 1 Video pro 24 Stunden
+        </div>
+        <div class="modal-buttons">
+            <button class="modal-btn primary" onclick="postVideo()">Posten</button>
+            <button class="modal-btn outline" onclick="closePostModal()">Abbrechen</button>
+        </div>
+    </div>
+</div>
+
+<!-- Comment Editor Modal -->
+<div id="commentEditorModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-title">✏️ Premium Kommentar</div>
+        <div class="comment-editor">
+            <textarea id="commentTemplate" class="comment-input" placeholder="Dein Kommentar-Template..." rows="4" oninput="updateCommentPreview()"></textarea>
+            <div class="placeholder-buttons">
+                <button class="placeholder-btn" onclick="insertPlaceholder('{gruppe}')">{gruppe}</button>
+                <button class="placeholder-btn" onclick="insertPlaceholder('{name}')">{name}</button>
+                <button class="placeholder-btn" onclick="insertPlaceholder('{member}')">{member}</button>
+                <button class="placeholder-btn" onclick="insertPlaceholder('{date}')">{date}</button>
+                <button class="placeholder-btn" onclick="insertPlaceholder('{time}')">{time}</button>
+                <button class="placeholder-btn" onclick="insertPlaceholder('\\n')">↵ Zeilenumbruch</button>
+            </div>
+            <div class="comment-preview" id="commentPreview"></div>
+            <div style="font-size: 0.7rem; color: var(--text-tertiary); margin-top: 8px; text-align: center;">
+                💡 Platzhalter werden automatisch ersetzt
+            </div>
+        </div>
+        <div class="modal-buttons">
+            <button class="modal-btn primary" onclick="saveCommentTemplate()">Speichern</button>
+            <button class="modal-btn outline" onclick="closeCommentEditor()">Abbrechen</button>
+        </div>
+    </div>
+</div>
+
+<!-- Import Modal -->
+<div id="importModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-title">📥 Premium Import</div>
+        <textarea id="importData" class="import-textarea" placeholder="JSON Daten hier einfügen..."></textarea>
+        <div class="modal-buttons">
+            <button class="modal-btn primary" onclick="processImport()">Importieren</button>
+            <button class="modal-btn outline" onclick="closeImportModal()">Abbrechen</button>
+        </div>
+    </div>
+</div>
+
+<!-- Confirm Modal -->
+<div id="confirmModal" class="modal">
+    <div class="modal-content" style="border-color: var(--accent-ruby);">
+        <div class="modal-title" style="background: var(--gradient-ruby); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">⚠️ Bestätigung</div>
+        <div id="confirmText" style="color: var(--text-secondary); text-align: center; margin-bottom: 10px;"></div>
+        <div class="modal-buttons">
+            <button class="modal-btn danger" id="confirmYesBtn">Ja, entfernen</button>
+            <button class="modal-btn outline" id="confirmNoBtn">Abbrechen</button>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Header -->
+    <div class="premium-header">
+        <div class="logo-area">
+            <span class="logo-icon">✨</span>
+            <div class="logo-text">
+                <h1>SUPPORT POOL</h1>
+                <p>PREMIUM • AUTOMATIC</p>
+            </div>
+        </div>
+        <div id="userWelcome" class="user-welcome" style="display: none;">
+            <div class="welcome-badge">
+                <span id="currentUserNameDisplay"></span>
+                <span id="userRoleBadge">Member</span>
+            </div>
+            <div class="copy-btn" onclick="copyLoginName()" title="Namen kopieren">📋</div>
+        </div>
+    </div>
+
+    <!-- Login Section -->
+    <div id="loginSection">
+        <div class="login-card">
+            <div class="stats-preview">
+                <div class="stat-preview-item" onclick="showInfo('groups')">
+                    <div class="stat-preview-value" id="previewGroups">0</div>
+                    <div class="stat-preview-label">Gruppen</div>
+                    <div class="stat-preview-icon">👥</div>
+                </div>
+                <div class="stat-preview-item" onclick="showInfo('members')">
+                    <div class="stat-preview-value" id="previewMembers">0</div>
+                    <div class="stat-preview-label">Mitglieder</div>
+                    <div class="stat-preview-icon">🤝</div>
+                </div>
+                <div class="stat-preview-item" onclick="showInfo('supports')">
+                    <div class="stat-preview-value" id="previewLikes">0</div>
+                    <div class="stat-preview-label">Supports</div>
+                    <div class="stat-preview-icon">❤️</div>
+                </div>
+            </div>
+
+            <div class="login-title">Willkommen zurück</div>
+            <input type="text" id="loginInput" class="login-input"
+                   placeholder="Dein TikTok Profil Name"
+                   onkeydown="if(event.key==='Enter') handleLogin()">
+            <button class="login-btn" onclick="handleLogin()">✨ Einloggen</button>
+            <div class="login-hint">
+                <span class="hint-gold">✨ PREMIUM FEATURE</span><br>
+                • Bestehende Mitglieder werden direkt eingeloggt<br>
+                • Neue Mitglieder werden automatisch der optimalen Gruppe zugewiesen<br>
+                • Dein persönliches Support-Konto wartet auf dich
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Panel -->
+    <div id="mainPanel" style="display: none;">
+
+        <div id="balanceCard" class="balance-card positive">
+            <div class="balance-icon">💰</div>
+            <div class="balance-value" id="balanceValue">0</div>
+            <div class="balance-label">PREMIUM GUTHABEN</div>
+            <div class="balance-message" id="balanceMessage"></div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card" onclick="showInfo('members')">
+                <div class="stat-icon">👥</div>
+                <div class="stat-value" id="totalMembers">0</div>
+                <div class="stat-label">Mitglieder</div>
+            </div>
+            <div class="stat-card" onclick="showInfo('groups')">
+                <div class="stat-icon">📊</div>
+                <div class="stat-value" id="totalGroups">0</div>
+                <div class="stat-label">Gruppen</div>
+            </div>
+            <div class="stat-card" onclick="showInfo('given')">
+                <div class="stat-icon">⬆️</div>
+                <div class="stat-value" id="statGiven">0</div>
+                <div class="stat-label">Gegeben</div>
+            </div>
+            <div class="stat-card" onclick="showInfo('received')">
+                <div class="stat-icon">⬇️</div>
+                <div class="stat-value" id="statReceived">0</div>
+                <div class="stat-label">Erhalten</div>
+            </div>
+        </div>
+
+        <div class="action-card">
+            <div class="action-content">
+                <div class="action-title">📹 Neues Video posten</div>
+                <div class="action-subtitle">Teile deine Inhalte mit der Community</div>
+                <button class="action-btn" id="postVideoBtn" onclick="showPostModal()">
+                    🚀 Jetzt posten
+                </button>
+                <div class="action-hint" id="postHint"></div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-header">
+                <span class="section-icon">🔄</span>
+                <span class="section-title">Offene Videos zum Supporten</span>
+                <span class="section-badge" id="openVideosCount">0</span>
+            </div>
+            <div id="openVideosList"></div>
+        </div>
+
+        <div class="section">
+            <div class="section-header">
+                <span class="section-icon">📋</span>
+                <span class="section-title">Meine letzten Videos</span>
+                <span class="section-badge" id="myVideosCount">0</span>
+            </div>
+            <div id="myVideosList"></div>
+        </div>
+
+        <div id="adminPanel" class="admin-panel" style="display: none;">
+            <div class="admin-title">👑 ADMIN DASHBOARD</div>
+            <div class="admin-stats">
+                <div class="admin-stat">
+                    <div class="admin-stat-value" id="adminTotalGroups">0</div>
+                    <div class="admin-stat-label">Gruppen</div>
+                </div>
+                <div class="admin-stat">
+                    <div class="admin-stat-value" id="adminTotalMembers">0</div>
+                    <div class="admin-stat-label">Mitglieder</div>
+                </div>
+            </div>
+            <button class="action-btn" onclick="showCommentEditor()" style="margin-bottom: 10px; background: var(--gradient-sapphire);">
+                ✏️ Kommentar-Template bearbeiten
+            </button>
+            <button class="action-btn" onclick="cleanupInactiveMembers()" style="margin-bottom: 10px; background: var(--gradient-bronze);">
+                🧹 Inaktive Mitglieder bereinigen
+            </button>
+            <div id="adminGroupsList"></div>
+        </div>
+
+        <div class="backup-bar">
+            <button class="backup-btn" onclick="exportData()">📤 Export</button>
+            <button class="backup-btn" onclick="showImportModal()">📥 Import</button>
+            <button class="backup-btn" onclick="logout()">🚪 Logout</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// =====================================================
+// HILFSFUNKTIONEN
+// =====================================================
+const uniqueChars = ['\u200B','\u200C','\u200D','\uFEFF','\u2060','\u2061','\u2062','\u2063'];
+function makeUnique(text) {
+    let u = text;
+    for (let i = 0; i < 3; i++) u += uniqueChars[Math.floor(Math.random() * uniqueChars.length)];
+    return u;
+}
+
+// =====================================================
+// THEME SYSTEM - NUR 2 THEMES
+// =====================================================
+function setTheme(theme) {
+    document.body.classList.remove('theme-light', 'theme-gold');
+    if (theme === 'light') document.body.classList.add('theme-light');
+    if (theme === 'gold') document.body.classList.add('theme-gold');
+
+    document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
+    const btnId = 'themeBtn' + theme.charAt(0).toUpperCase() + theme.slice(1);
+    const btn = document.getElementById(btnId);
+    if (btn) btn.classList.add('active');
+
+    try { localStorage.setItem('premium_theme', theme); } catch(e) {}
+}
+
+// =====================================================
+// DATENSTRUKTUR
+// =====================================================
+let appData = {
+    groups: {},
+    members: {},
+    videos: {},
+    settings: {
+        commentTemplate: '✨ support by SUPPORT POOL {gruppe} ✨\n{name}\n{date} {time}',
+        nextGroupId: 1,
+        inactiveDays: 7
+    },
+    currentUser: null,
+    version: 'premium_v1'
+};
+let pendingDelete = null;
+
+// =====================================================
+// INITIALISIERUNG & DATENVERWALTUNG
+// =====================================================
+function initDemoData() {
+    appData.groups = {
+        'gruppe1': {
+            id: 'gruppe1',
+            name: 'SUPPORT POOL 1',
+            number: 1,
+            members: ['admin'],
+            created: Date.now()
+        }
+    };
+    
+    appData.settings = {
+        commentTemplate: '✨ support by SUPPORT POOL {gruppe} ✨\n{name}\n{date} {time}',
+        nextGroupId: 2,
+        inactiveDays: 7
+    };
+    
+    appData.members['admin'] = {
+        name: 'admin',
+        role: 'admin',
+        group: 'gruppe1',
+        status: 'active',
+        stats: {
+            given: 0,
+            received: 0,
+            balance: 0,
+            joined: Date.now()
+        },
+        myVideos: [],
+        lastPostDate: null,
+        newbiePostsLeft: 3,
+        rewards: ['founder']
+    };
+    
+    appData.videos = {};
+    appData.currentUser = null;
+    saveData();
+}
+
+function loadData() {
+    try {
+        const saved = localStorage.getItem('support_pool_premium');
+        if (saved) {
+            const parsed = JSON.parse(saved);
+            if (parsed && parsed.groups && parsed.members && parsed.videos && parsed.settings) {
+                appData = parsed;
+            } else {
+                initDemoData();
+            }
+        } else {
+            initDemoData();
+        }
+    } catch(e) {
+        console.warn('loadData Fehler:', e);
+        initDemoData();
+    }
+    updatePreviewStats();
+}
+
+function saveData() {
+    try {
+        localStorage.setItem('support_pool_premium', JSON.stringify(appData));
+    } catch(e) { console.warn('saveData Fehler:', e); }
+    updatePreviewStats();
+}
+
+function updatePreviewStats() {
+    try {
+        const groups = Object.keys(appData.groups || {}).length;
+        const members = Object.values(appData.members || {}).filter(m => m.status === 'active' && m.role !== 'admin').length;
+        const totalLikes = Object.values(appData.videos || {}).reduce((s, v) => s + (v.currentSupports || 0), 0);
+        document.getElementById('previewGroups').textContent = groups;
+        document.getElementById('previewMembers').textContent = members;
+        document.getElementById('previewLikes').textContent = totalLikes;
+    } catch(e) {}
+}
+
+// =====================================================
+// LOGIN
+// =====================================================
+function handleLogin() {
+    const input = document.getElementById('loginInput');
+    const username = input.value.trim().toLowerCase();
+
+    if (!username) { showToast('❌ Bitte Namen eingeben!'); return; }
+    input.value = '';
+
+    if (!appData.members) appData.members = {};
+    if (!appData.groups) appData.groups = {};
+    if (!appData.videos) appData.videos = {};
+
+    if (appData.members[username]) {
+        const member = appData.members[username];
+        if (member.status === 'inactive') {
+            const tg = findGroupForExistingMember();
+            if (tg) {
+                member.status = 'active';
+                member.group = tg.id;
+                tg.members.push(username);
+                showToast('✨ Willkommen zurück! Du wurdest reaktiviert.');
+            } else {
+                showToast('❌ Keine Gruppe verfügbar!');
+                return;
+            }
+        }
+        appData.currentUser = username;
+        showToast('🌟 Willkommen zurück, ' + username + '!');
+    } else {
+        const tg = findGroupForNewMember();
+        if (!tg) { showToast('❌ Keine Gruppe verfügbar!'); return; }
+
+        appData.members[username] = {
+            name: username,
+            role: 'member',
+            group: tg.id,
+            status: 'active',
+            stats: {
+                given: 0,
+                received: 0,
+                balance: 0,
+                joined: Date.now()
+            },
+            myVideos: [],
+            lastPostDate: null,
+            newbiePostsLeft: 3,
+            rewards: ['newbie']
+        };
+        tg.members.push(username);
+        appData.currentUser = username;
+        showToast('🎉 Herzlich willkommen in ' + tg.name + '!');
+    }
+
+    document.getElementById('loginSection').style.display = 'none';
+    document.getElementById('mainPanel').style.display = 'block';
+    document.getElementById('userWelcome').style.display = 'flex';
+    document.getElementById('currentUserNameDisplay').textContent = appData.currentUser;
+
+    const user = appData.members[appData.currentUser];
+    document.getElementById('userRoleBadge').textContent = user.role === 'admin' ? 'Admin' : 'Member';
+
+    if (user.role === 'admin') {
+        document.getElementById('adminPanel').style.display = 'block';
+        renderAdminGroups();
+    }
+
+    renderDashboard();
+    checkExpiredVideos();
+    saveData();
+}
+
+function findGroupForNewMember() {
+    const sorted = Object.values(appData.groups).sort((a,b) => a.number - b.number);
+    for (let g of sorted) { if (g.members.length < 10) return g; }
+
+    const num = appData.settings.nextGroupId;
+    const id = 'gruppe' + num;
+    appData.groups[id] = {
+        id: id,
+        name: 'SUPPORT POOL ' + num,
+        number: num,
+        members: [],
+        created: Date.now()
+    };
+    appData.settings.nextGroupId = num + 1;
+    return appData.groups[id];
+}
+
+function findGroupForExistingMember() {
+    const sorted = Object.values(appData.groups).sort((a,b) => a.number - b.number);
+    for (let g of sorted) { if (g.members.length < 10) return g; }
+    return null;
+}
+
+function logout() {
+    appData.currentUser = null;
+    document.getElementById('loginSection').style.display = 'block';
+    document.getElementById('mainPanel').style.display = 'none';
+    document.getElementById('userWelcome').style.display = 'none';
+    document.getElementById('adminPanel').style.display = 'none';
+    updatePreviewStats();
+}
+
+function copyLoginName() {
+    if (appData.currentUser) {
+        navigator.clipboard.writeText(appData.currentUser).catch(()=>{});
+        showToast('📋 Name kopiert');
+    }
+}
+
+// =====================================================
+// VIDEO POSTEN
+// =====================================================
+function showPostModal() {
+    const user = appData.members[appData.currentUser];
+    const cp = checkCanPost(user);
+    if (!cp.allowed) { showToast(cp.message); return; }
+    document.getElementById('modalVideoUrl').value = '';
+    document.getElementById('postVideoModal').style.display = 'flex';
+    setTimeout(() => document.getElementById('modalVideoUrl').focus(), 100);
+}
+
+function checkCanPost(user) {
+    if (user.newbiePostsLeft > 0)
+        return { allowed: true, message: `🎁 Willkommensgeschenk: Noch ${user.newbiePostsLeft} Freiposts` };
+    if (user.stats.balance <= 0)
+        return { allowed: false, message: '💫 Erst supporten, dann posten! Aktuell: ' + user.stats.balance };
+    if (user.lastPostDate && (Date.now() - user.lastPostDate) < 86400000) {
+        const h = Math.ceil((86400000 - (Date.now() - user.lastPostDate)) / 3600000);
+        return { allowed: false, message: `⏳ Bitte warte noch ${h}h` };
+    }
+    return { allowed: true, message: '✅ Du kannst ein Video posten' };
+}
+
+function closePostModal() { document.getElementById('postVideoModal').style.display = 'none'; }
+
+function postVideo() {
+    const url = document.getElementById('modalVideoUrl').value.trim();
+    if (!url) { showToast('❌ Bitte URL eingeben!'); return; }
+
+    const user = appData.members[appData.currentUser];
+    const videoId = 'video_' + Date.now() + '_' + Math.floor(Math.random()*10000);
+    const group = appData.groups[user.group];
+    const groupNumber = group ? group.number : 1;
+    const now = new Date();
+
+    let comment = appData.settings.commentTemplate
+        .replace(/{gruppe}/g, groupNumber)
+        .replace(/{name}/g, user.name)
+        .replace(/{member}/g, appData.currentUser)
+        .replace(/{date}/g, now.toLocaleDateString('de-DE'))
+        .replace(/{time}/g, now.toLocaleTimeString('de-DE', { hour:'2-digit', minute:'2-digit' }))
+        .replace(/\\n/g, '\n');
+
+    appData.videos[videoId] = {
+        id: videoId,
+        owner: user.name,
+        group: user.group,
+        groupNumber: groupNumber,
+        url: url,
+        postedAt: Date.now(),
+        requiredSupports: 10,
+        currentSupports: 0,
+        supporters: [],
+        comment: comment,
+        status: 'waiting',
+        expiresAt: Date.now() + 86400000
+    };
+    user.myVideos.push(videoId);
+    user.lastPostDate = Date.now();
+    if (user.newbiePostsLeft > 0) user.newbiePostsLeft--;
+
+    closePostModal();
+    renderDashboard();
+    showToast('✅ Video erfolgreich gepostet!');
+    saveData();
+}
+
+// =====================================================
+// SUPPORT
+// =====================================================
+function openVideoAndSupport(videoId, videoUrl) {
+    if (giveSupport(videoId)) window.location.href = videoUrl;
+}
+
+function giveSupport(videoId) {
+    const user = appData.members[appData.currentUser];
+    const video = appData.videos[videoId];
+    const videoOwner = appData.members[video.owner];
+
+    if (user.stats.balance < 0 && user.newbiePostsLeft === 0) { showToast('❌ Kein Guthaben!'); return false; }
+    if (video.supporters.includes(user.name)) { showToast('❌ Bereits supportet!'); return false; }
+    if (video.status !== 'waiting') { showToast('❌ Nicht mehr verfügbar!'); return false; }
+
+    user.stats.given++;
+    user.stats.balance = user.stats.given - user.stats.received;
+    if (videoOwner) {
+        videoOwner.stats.received++;
+        videoOwner.stats.balance = videoOwner.stats.given - videoOwner.stats.received;
+    }
+    video.currentSupports++;
+    video.supporters.push(user.name);
+
+    navigator.clipboard.writeText(makeUnique(video.comment)).catch(()=>{});
+    showToast('💫 Premium Kommentar kopiert!');
+    if (video.currentSupports >= video.requiredSupports) {
+        video.status = 'completed';
+        showToast('✨ Video von @' + video.owner + ' ist komplett!');
+    }
+    renderDashboard();
+    saveData();
+    return true;
+}
+
+// =====================================================
+// ADMIN
+// =====================================================
+function renderAdminGroups() {
+    const container = document.getElementById('adminGroupsList');
+    document.getElementById('adminTotalGroups').textContent = Object.keys(appData.groups).length;
+    document.getElementById('adminTotalMembers').textContent = Object.values(appData.members).filter(m => m.status === 'active' && m.role !== 'admin').length;
+
+    const sorted = Object.values(appData.groups).sort((a,b) => a.number - b.number);
+    container.innerHTML = sorted.map(group => `
+        <div class="group-card">
+            <div class="group-header">
+                <span class="group-name">${group.name}</span>
+                <span class="group-count">${group.members.length}/10</span>
+            </div>
+            ${group.members.map(mn => {
+                const m = appData.members[mn];
+                if (!m) return '';
+                const lastActive = m.lastPostDate ? Math.floor((Date.now()-m.lastPostDate)/86400000)+'d' : 'neu';
+                const bal = m.stats.balance;
+                const bc = bal > 0 ? 'var(--accent-emerald)' : bal < 0 ? 'var(--accent-ruby)' : 'var(--accent-silver)';
+                return `
+                <div class="member-row">
+                    <div class="member-info">
+                        <span class="member-name">${mn}</span>
+                        ${m.newbiePostsLeft > 0 ? `<span class="member-badge">🎁 ${m.newbiePostsLeft}</span>` : ''}
+                        <span style="font-size:0.65rem;color:var(--text-tertiary);">${lastActive}</span>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <span style="color:${bc};font-weight:600;">${bal}</span>
+                        <button class="delete-btn" onclick="showDeleteConfirm('${group.id}','${mn}')">✕</button>
+                    </div>
+                </div>`;
+            }).join('')}
+        </div>`).join('');
+}
+
+document.getElementById('confirmYesBtn').addEventListener('click', function() {
+    if (pendingDelete) {
+        removeMember(pendingDelete.groupId, pendingDelete.memberName);
+        pendingDelete = null;
+    }
+    document.getElementById('confirmModal').style.display = 'none';
+});
+
+document.getElementById('confirmNoBtn').addEventListener('click', function() {
+    pendingDelete = null;
+    document.getElementById('confirmModal').style.display = 'none';
+});
+
+function showDeleteConfirm(groupId, memberName) {
+    pendingDelete = { groupId, memberName };
+    document.getElementById('confirmText').textContent = `Möchtest du "${memberName}" wirklich aus der Gruppe entfernen?`;
+    document.getElementById('confirmModal').style.display = 'flex';
+}
+
+function removeMember(groupId, memberName) {
+    const group = appData.groups[groupId];
+    if (!group) return;
+    group.members = group.members.filter(m => m !== memberName);
+    if (appData.members[memberName]) {
+        appData.members[memberName].status = 'inactive';
+        appData.members[memberName].group = null;
+    }
+    showToast('✅ ' + memberName + ' wurde entfernt');
+    renderAdminGroups();
+    saveData();
+}
+
+function showCommentEditor() {
+    document.getElementById('commentTemplate').value = appData.settings.commentTemplate;
+    updateCommentPreview();
+    document.getElementById('commentEditorModal').style.display = 'flex';
+}
+
+function insertPlaceholder(ph) {
+    const el = document.getElementById('commentTemplate');
+    const s = el.selectionStart, e = el.selectionEnd;
+    el.value = el.value.substring(0,s) + ph + el.value.substring(e);
+    el.focus(); el.setSelectionRange(s+ph.length, s+ph.length);
+    updateCommentPreview();
+}
+
+function updateCommentPreview() {
+    const t = document.getElementById('commentTemplate').value;
+    document.getElementById('commentPreview').textContent = t
+        .replace(/{gruppe}/g,'1').replace(/{name}/g,'username')
+        .replace(/{member}/g,'member').replace(/{date}/g,'24.12.2024')
+        .replace(/{time}/g,'15:30').replace(/\\n/g,' ↵ ');
+}
+
+function saveCommentTemplate() {
+    const t = document.getElementById('commentTemplate').value.trim();
+    if (t) {
+        appData.settings.commentTemplate = t;
+        showToast('✅ Template gespeichert');
+        closeCommentEditor();
+        saveData();
+    }
+}
+
+function closeCommentEditor() { document.getElementById('commentEditorModal').style.display = 'none'; }
+
+function cleanupInactiveMembers() {
+    const now = Date.now();
+    const thr = appData.settings.inactiveDays * 86400000;
+    let removed = 0;
+    Object.values(appData.groups).forEach(group => {
+        const active = [];
+        group.members.forEach(mn => {
+            const m = appData.members[mn];
+            if (!m) return;
+            const last = m.lastPostDate || 0;
+            if (last > 0 && (now - last) > thr && m.role !== 'admin') {
+                m.status = 'inactive';
+                removed++;
+            } else {
+                active.push(mn);
+            }
+        });
+        group.members = active;
+    });
+    showToast(removed > 0 ? `✨ ${removed} inaktive Mitglieder bereinigt` : '✅ Keine inaktiven Mitglieder');
+    if (removed > 0) { renderAdminGroups(); saveData(); }
+}
+
+// =====================================================
+// RENDER
+// =====================================================
+function renderDashboard() {
+    const user = appData.members[appData.currentUser];
+    if (!user) return;
+
+    const bal = user.stats.balance;
+    document.getElementById('balanceValue').textContent = bal;
+    const bc = document.getElementById('balanceCard');
+    bc.className = 'balance-card ' + (bal > 0 ? 'positive' : bal < 0 ? 'negative' : 'zero');
+    document.getElementById('balanceMessage').textContent =
+        bal > 0 ? '💰 Du hast Guthaben! Unterstütze andere und erhalte Unterstützung.' :
+        bal < 0 ? '💫 Unterstütze jetzt andere Mitglieder, um dein Guthaben auszugleichen.' :
+                  '⚖️ Im Gleichgewicht – Unterstütze andere, um Guthaben aufzubauen.';
+
+    document.getElementById('totalMembers').textContent = Object.values(appData.members).filter(m => m.status === 'active' && m.role !== 'admin').length;
+    document.getElementById('totalGroups').textContent = Object.keys(appData.groups).length;
+    document.getElementById('statGiven').textContent = user.stats.given;
+    document.getElementById('statReceived').textContent = user.stats.received;
+    document.getElementById('postHint').textContent = checkCanPost(user).message || '';
+
+    renderOpenVideos(user);
+    renderMyVideos(user);
+}
+
+function renderOpenVideos(user) {
+    const container = document.getElementById('openVideosList');
+    const open = Object.values(appData.videos).filter(v =>
+        v.status === 'waiting' && v.owner !== user.name && !v.supporters.includes(user.name)
+    );
+    document.getElementById('openVideosCount').textContent = open.length;
+
+    if (!open.length) {
+        container.innerHTML = '<div style="color:var(--text-tertiary);text-align:center;padding:30px;">✨ Aktuell keine offenen Videos</div>';
+        return;
+    }
+    open.sort((a,b) => (a.requiredSupports-a.currentSupports)-(b.requiredSupports-b.currentSupports));
+    container.innerHTML = open.map(v => {
+        const left = v.expiresAt - Date.now();
+        const h = Math.max(0, Math.floor(left/3600000));
+        const m = Math.max(0, Math.floor((left%3600000)/60000));
+        const urgent = left < 7200000;
+        const dis = user.stats.balance <= 0 && user.newbiePostsLeft === 0;
+        return `
+        <div class="video-item waiting ${urgent ? 'expiring' : ''}">
+            <div class="video-header">
+                <span class="video-owner">@${v.owner}</span>
+                <span class="video-status">${v.requiredSupports-v.currentSupports} nötig</span>
+            </div>
+            <div class="video-progress">
+                <div class="progress-bar"><div class="progress-fill" style="width:${(v.currentSupports/v.requiredSupports)*100}%"></div></div>
+                <span class="progress-text">${v.currentSupports}/${v.requiredSupports}</span>
+            </div>
+            <div class="video-timer ${urgent?'warning':''}">⏰ Noch ${h}h ${m}m</div>
+            <button class="support-btn" onclick="openVideoAndSupport('${v.id}','${v.url}')" ${dis?'disabled':''}>
+                ✨ Jetzt supporten & öffnen
+            </button>
+        </div>`;
+    }).join('');
+}
+
+function renderMyVideos(user) {
+    const container = document.getElementById('myVideosList');
+    document.getElementById('myVideosCount').textContent = user.myVideos.length;
+    if (!user.myVideos.length) {
+        container.innerHTML = '<div style="color:var(--text-tertiary);text-align:center;padding:30px;">📭 Noch keine Videos gepostet</div>';
+        return;
+    }
+    const last = [...user.myVideos].map(id => appData.videos[id]).filter(v=>v)
+        .sort((a,b) => b.postedAt-a.postedAt).slice(0,3);
+    container.innerHTML = last.map(v => {
+        const icon = v.status==='completed'?'✅':v.status==='expired'?'⏰':'⏳';
+        return `<div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--glass-border);">
+            <span style="color:var(--text-primary);">${icon} ${v.currentSupports}/${v.requiredSupports}</span>
+            <span style="color:var(--text-tertiary);">${new Date(v.postedAt).toLocaleDateString('de-DE')}</span>
+        </div>`;
+    }).join('');
+}
+
+function checkExpiredVideos() {
+    let changed = false;
+    Object.values(appData.videos || {}).forEach(v => {
+        if (v.status === 'waiting' && v.expiresAt < Date.now()) { v.status = 'expired'; changed = true; }
+    });
+    if (changed && appData.currentUser) { renderDashboard(); saveData(); }
+}
+
+// =====================================================
+// BACKUP / EXPORT / IMPORT
+// =====================================================
+function exportData() {
+    const exp = {
+        groups: appData.groups,
+        members: appData.members,
+        videos: appData.videos,
+        settings: appData.settings,
+        version: 'premium_v1'
+    };
+    navigator.clipboard.writeText(JSON.stringify(exp, null, 2)).catch(()=>{});
+    showToast('📋 Daten exportiert & in Zwischenablage kopiert!');
+}
+
+function showImportModal() {
+    document.getElementById('importData').value = '';
+    document.getElementById('importModal').style.display = 'flex';
+}
+function closeImportModal() { document.getElementById('importModal').style.display = 'none'; }
+
+function processImport() {
+    const raw = document.getElementById('importData').value.trim();
+    if (!raw) { showToast('❌ Bitte Daten einfügen!'); return; }
+    try {
+        const imp = JSON.parse(raw);
+        if (!imp.groups || !imp.members || !imp.videos) {
+            showToast('❌ Ungültiges Format! groups / members / videos fehlen.'); return;
+        }
+        const preservedUser = appData.currentUser;
+        appData.groups = imp.groups;
+        appData.members = imp.members;
+        appData.videos = imp.videos;
+        appData.settings = imp.settings || appData.settings;
+        appData.currentUser = preservedUser;
+        appData.version = 'premium_v1';
+
+        saveData();
+        closeImportModal();
+        showToast('✅ Daten erfolgreich importiert!');
+
+        if (appData.currentUser && appData.members[appData.currentUser]) {
+            renderDashboard();
+            if (appData.members[appData.currentUser].role === 'admin') renderAdminGroups();
+        } else {
+            logout();
+        }
+    } catch(e) {
+        showToast('❌ JSON-Fehler: ' + e.message);
+    }
+}
+
+// =====================================================
+// INFO MODAL
+// =====================================================
+function showInfo(section) {
+    const texts = {
+        groups: '👥 **Gruppen**\n\n• Jede Gruppe kann maximal 10 Mitglieder haben\n• Neue Gruppen werden automatisch erstellt\n• Lücken werden zuerst gefüllt',
+        members: '🤝 **Mitglieder**\n\n• Aktive Mitglieder im gesamten System\n• Jedes Mitglied hat ein Support-Guthaben\n• Inaktive werden nach 7 Tagen entfernt',
+        supports: '❤️ **Supports**\n\n• Gesamtanzahl aller gegebenen Supports\n• Jeder Support zählt für das System\n• Zeigt die Aktivität der Community',
+        given: '⬆️ **Gegeben**\n\n• Anzahl der Supports, die du gegeben hast\n• Erhöht dein Guthaben\n• Je mehr du gibst, desto mehr bekommst du',
+        received: '⬇️ **Erhalten**\n\n• Anzahl der Supports, die du erhalten hast\n• Verringert dein Guthaben\n• Du musst geben, bevor du nehmen kannst'
+    };
+    
+    document.getElementById('infoTitle').textContent = 'Premium Info';
+    document.getElementById('infoText').textContent = texts[section] || 'Information';
+    document.getElementById('infoModal').style.display = 'flex';
+}
+
+function closeInfoModal() { document.getElementById('infoModal').style.display = 'none'; }
+
+// =====================================================
+// TOAST
+// =====================================================
+function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.style.display = 'block';
+    clearTimeout(t._timer);
+    t._timer = setTimeout(() => { t.style.display = 'none'; }, 2500);
+}
+
+// =====================================================
+// START
+// =====================================================
+document.addEventListener('DOMContentLoaded', function() {
+    let savedTheme = 'dark';
+    try { savedTheme = localStorage.getItem('premium_theme') || 'dark'; } catch(e) {}
+    setTheme(savedTheme);
+    
+    loadData();
+    setInterval(checkExpiredVideos, 60000);
+});
+</script>
+
+</body>
+</html>
