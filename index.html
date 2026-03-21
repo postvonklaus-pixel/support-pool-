@@ -1,0 +1,2881 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>SUPPORT POOL · PREMIUM</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0; padding: 0;
+        }
+
+        :root {
+            --primary-1: #0A0C14;
+            --primary-2: #121520;
+            --accent-gold: #FFD700;
+            --accent-gold-dark: #B8860B;
+            --accent-sapphire: #0F52BA;
+            --accent-emerald: #10b981;
+            --accent-ruby: #ef4444;
+            --accent-silver: #C0C0C0;
+            --text-primary: #FFFFFF;
+            --text-secondary: #B0B8C5;
+            --text-tertiary: #6B7280;
+            --glass-bg: rgba(255,255,255,0.03);
+            --glass-border: rgba(255,255,255,0.08);
+            --input-bg: rgba(0,0,0,0.35);
+            --card-inner-bg: rgba(0,0,0,0.2);
+            --shadow-gold: 0 10px 30px -5px rgba(255,215,0,0.3);
+            --gradient-gold: linear-gradient(135deg,#FFD700,#B8860B);
+            --gradient-sapphire: linear-gradient(135deg,#0F52BA,#000080);
+            --gradient-night: linear-gradient(145deg,#0A0C14,#1A1F2D);
+        }
+
+        body.theme-light {
+            --primary-1: #F0F8FF;
+            --primary-2: #E6F0FA;
+            --text-primary: #0A1A2F;
+            --text-secondary: #2C3E5A;
+            --text-tertiary: #4A5B73;
+            --glass-bg: rgba(255,255,255,0.7);
+            --glass-border: rgba(15,82,186,0.2);
+            --input-bg: rgba(255,255,255,0.9);
+            --card-inner-bg: rgba(255,255,255,0.5);
+            --shadow-gold: 0 10px 30px -5px rgba(15,82,186,0.3);
+            --gradient-gold: linear-gradient(135deg,#0F52BA,#1E6FD9);
+            --gradient-night: linear-gradient(145deg,#E6F0FA,#F0F8FF);
+        }
+
+        body.theme-gold {
+            --primary-1: #1A1200;
+            --primary-2: #2A1E00;
+            --text-primary: #FFF8E1;
+            --text-secondary: #FFE082;
+            --text-tertiary: #FFC107;
+            --glass-bg: rgba(255,215,0,0.12);
+            --glass-border: rgba(255,215,0,0.3);
+            --input-bg: #2A1E00;
+            --card-inner-bg: rgba(255,215,0,0.1);
+            --gradient-gold: linear-gradient(135deg,#FFD700,#FFA000);
+            --gradient-night: linear-gradient(145deg,#1A1200,#3D2C00);
+        }
+
+        body {
+            background: var(--gradient-night);
+            color: var(--text-primary);
+            padding: 15px;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+            transition: all 0.4s ease;
+        }
+
+        .container { width: 100%; max-width: 500px; margin: 0 auto; }
+
+        /* ============ NEUE ANIMATIONEN ============ */
+        @keyframes langFlash {
+            0% { transform: scale(1); box-shadow: 0 0 0px var(--accent-gold); border-color: transparent; }
+            50% { transform: scale(1.05); box-shadow: 0 0 20px var(--accent-gold); border-color: var(--accent-gold); }
+            100% { transform: scale(1); box-shadow: 0 0 0px var(--accent-gold); border-color: transparent; }
+        }
+        .lang-flash {
+            animation: langFlash 0.15s ease-out;
+        }
+
+        @keyframes loginPulse {
+            0% { box-shadow: 0 0 0 0 rgba(255,215,0,0.4); }
+            70% { box-shadow: 0 0 0 15px rgba(255,215,0,0); }
+            100% { box-shadow: 0 0 0 0 rgba(255,215,0,0); }
+        }
+        .login-btn {
+            animation: loginPulse 2s infinite;
+        }
+        .login-btn:hover {
+            animation: none;
+            transform: translateY(-2px);
+            box-shadow: 0 0 30px var(--accent-gold);
+        }
+
+        @keyframes countUp {
+            0% { opacity: 0.5; transform: scale(0.95); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+        .count-up {
+            animation: countUp 0.1s ease-out;
+        }
+
+        @keyframes checkPop {
+            0% { transform: scale(0); opacity: 0; }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .video-check {
+            animation: checkPop 0.3s ease-out;
+            display: inline-block;
+        }
+
+        @keyframes hourglassSpin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .hourglass-spin {
+            display: inline-block;
+            animation: hourglassSpin 2s linear infinite;
+        }
+
+        .premium-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 12px 15px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 50px;
+        }
+        .logo-text h1 {
+            font-size: 1.2rem;
+            background: var(--gradient-gold);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .free-badge {
+            background: var(--gradient-gold);
+            color: var(--primary-1);
+            padding: 4px 10px;
+            border-radius: 30px;
+            font-size: 0.65rem;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        .user-badge {
+            background: var(--gradient-gold);
+            padding: 8px 15px;
+            border-radius: 30px;
+            color: var(--primary-1);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+            font-size: 0.8rem;
+        }
+
+        .info-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 20px; height: 20px;
+            border-radius: 50%;
+            background: var(--glass-bg);
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 0.75rem;
+            font-weight: bold;
+            border: 1px solid var(--glass-border);
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+        .info-icon:hover {
+            background: var(--accent-gold);
+            color: var(--primary-1);
+            transform: scale(1.1);
+        }
+
+        .login-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 30px;
+            padding: 20px;
+        }
+        .login-theme {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--glass-border);
+        }
+        .login-theme-btn {
+            width: 44px; height: 44px;
+            border-radius: 50%;
+            border: 2px solid transparent;
+            background: var(--glass-bg);
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .login-theme-btn:hover { border-color: var(--accent-gold); transform: scale(1.1); }
+        .login-theme-btn.active {
+            border-color: var(--accent-gold);
+            background: var(--gradient-gold);
+            color: var(--primary-1);
+        }
+        .login-container { display: flex; flex-direction: column; gap: 15px; }
+        .login-language {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            justify-content: center;
+            padding: 8px;
+            background: var(--card-inner-bg);
+            border-radius: 30px;
+        }
+        .lang-btn {
+            padding: 5px 8px;
+            border-radius: 30px;
+            border: 1px solid var(--glass-border);
+            background: var(--glass-bg);
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 0.65rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+        .lang-btn:hover { border-color: var(--accent-gold); color: var(--accent-gold); }
+        .lang-btn.active { background: var(--gradient-gold); color: var(--primary-1); border-color: var(--accent-gold); }
+
+        .stats-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; }
+        .stat-box {
+            text-align: center;
+            padding: 10px;
+            background: var(--card-inner-bg);
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .stat-box:hover { transform: translateY(-2px); box-shadow: var(--shadow-gold); }
+        .stat-box .stat-value { font-size: 1.3rem; font-weight: 700; color: var(--accent-gold); }
+        .stat-box .stat-label { font-size: 0.65rem; color: var(--text-secondary); }
+
+        .login-title { text-align: center; margin-bottom: 12px; font-size: 1.1rem; color: var(--text-primary); }
+        .login-input {
+            width: 100%;
+            padding: 12px;
+            background: var(--input-bg);
+            border: 2px solid var(--glass-border);
+            border-radius: 40px;
+            color: var(--text-primary);
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            outline: none;
+        }
+        .login-input::placeholder { color: var(--text-tertiary); }
+        .login-input:focus { border-color: var(--accent-gold); }
+        .login-btn {
+            width: 100%;
+            padding: 12px;
+            background: var(--gradient-gold);
+            border: none;
+            border-radius: 40px;
+            color: var(--primary-1);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+            animation: loginPulse 2s infinite;
+        }
+        .login-btn:hover { transform: translateY(-2px); box-shadow: 0 0 30px var(--accent-gold); animation: none; }
+        .free-hint {
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            padding: 8px;
+            background: var(--card-inner-bg);
+            border-radius: 30px;
+        }
+
+        .balance-card {
+            background: var(--glass-bg);
+            border: 2px solid;
+            border-radius: 30px;
+            padding: 15px;
+            text-align: center;
+            margin-bottom: 15px;
+            position: relative;
+        }
+        .balance-card.positive { border-color: #10b981; }
+        .balance-card.zero { border-color: var(--accent-gold); }
+        .balance-card.negative { border-color: #ef4444; }
+        .balance-value { font-size: 2.5rem; font-weight: 700; color: var(--text-primary); }
+        .balance-label { font-size: 0.8rem; color: var(--text-secondary); }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4,1fr);
+            gap: 6px;
+            margin-bottom: 15px;
+        }
+        .stat-card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 8px 5px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        .stat-card:hover { border-color: var(--accent-gold); transform: translateY(-2px); box-shadow: var(--shadow-gold); }
+        .stat-card .info-icon { position: absolute; top: 3px; right: 3px; width: 16px; height: 16px; font-size: 0.65rem; }
+        .stat-card .stat-value { font-size: 1.1rem; font-weight: 700; color: var(--accent-gold); }
+        .stat-card .stat-label { font-size: 0.55rem; color: var(--text-secondary); }
+
+        .action-card { background: var(--gradient-gold); border-radius: 30px; padding: 2px; margin-bottom: 15px; }
+        .action-content { background: var(--primary-2); border-radius: 28px; padding: 15px; text-align: center; }
+
+        .post-timer { font-size: 0.75rem; margin-top: 5px; padding: 5px; border-radius: 20px; text-align: center; }
+        .timer-green { background: rgba(16,185,129,0.2); color: #10b981; }
+        .timer-yellow { background: rgba(251,191,36,0.2); color: #fbbf24; }
+        .timer-red { background: rgba(239,68,68,0.2); color: #ef4444; }
+
+        .section {
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            border-radius: 25px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        .section-header { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+        .section-title { flex: 1; font-size: 0.9rem; font-weight: 600; color: var(--text-primary); }
+        .section-badge {
+            background: var(--gradient-gold);
+            padding: 3px 8px;
+            border-radius: 30px;
+            color: var(--primary-1);
+            font-size: 0.65rem;
+            white-space: nowrap;
+        }
+
+        .video-item {
+            background: var(--card-inner-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 18px;
+            padding: 12px;
+            margin-bottom: 8px;
+        }
+        .progress-bar { margin: 6px 0; height: 5px; background: var(--glass-border); border-radius: 3px; overflow: hidden; }
+        .progress-fill { height: 100%; background: var(--gradient-gold); transition: width 0.3s ease; }
+        .support-btn {
+            background: var(--gradient-sapphire);
+            border: none;
+            padding: 8px;
+            border-radius: 30px;
+            color: white;
+            width: 100%;
+            cursor: pointer;
+            margin-top: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+        .support-btn:hover:not(:disabled) { transform: translateY(-1px); opacity: 0.9; }
+        .support-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        .message-section {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 25px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        .message-header { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+        .message-input {
+            width: 100%;
+            padding: 10px;
+            background: var(--input-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 30px;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+            font-size: 0.8rem;
+            outline: none;
+            resize: vertical;
+        }
+        .message-btn {
+            background: var(--gradient-gold);
+            border: none;
+            padding: 10px;
+            border-radius: 30px;
+            color: var(--primary-1);
+            width: 100%;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+        .message-btn:hover { transform: translateY(-1px); opacity: 0.9; }
+        .admin-message-item {
+            background: var(--card-inner-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 10px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .admin-message-item:hover { border-color: var(--accent-gold); transform: translateX(5px); }
+        .message-unread { border-left: 4px solid var(--accent-gold); }
+        .message-time { font-size: 0.6rem; color: var(--text-tertiary); }
+
+        .reply-modal {
+            position: fixed;
+            top: 50%; left: 50%;
+            transform: translate(-50%,-50%);
+            background: var(--primary-2);
+            border: 2px solid var(--accent-gold);
+            border-radius: 30px;
+            padding: 20px;
+            width: 90%; max-width: 320px;
+            z-index: 10001;
+            display: none;
+        }
+        .reply-input {
+            width: 100%;
+            padding: 10px;
+            background: var(--input-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            color: var(--text-primary);
+            margin: 10px 0;
+            min-height: 70px;
+            font-size: 0.8rem;
+            outline: none;
+            resize: vertical;
+        }
+
+        .admin-panel {
+            background: linear-gradient(145deg,rgba(15,82,186,0.12),rgba(15,82,186,0.05));
+            border: 1px solid var(--accent-sapphire);
+            border-radius: 25px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        .admin-title { color: var(--accent-sapphire); font-weight: 700; font-size: 0.9rem; margin-bottom: 12px; }
+        .admin-stats { display: grid; grid-template-columns: repeat(2,1fr); gap: 8px; margin-bottom: 12px; }
+        .admin-stat {
+            background: var(--card-inner-bg);
+            border-radius: 16px;
+            padding: 12px;
+            text-align: center;
+            border: 1px solid var(--accent-sapphire);
+        }
+        .admin-stat-value { font-size: 1.3rem; font-weight: 700; color: var(--accent-sapphire); }
+        .admin-stat-label { font-size: 0.6rem; color: var(--text-secondary); }
+
+        .group-card {
+            background: var(--card-inner-bg);
+            border-radius: 16px;
+            padding: 12px;
+            margin-bottom: 8px;
+            border: 1px solid var(--accent-sapphire);
+        }
+        .group-header { display: flex; justify-content: space-between; margin-bottom: 8px; }
+        .group-name { color: var(--accent-sapphire); font-weight: 600; }
+        .group-count { background: var(--card-inner-bg); padding: 2px 6px; border-radius: 20px; font-size: 0.7rem; color: var(--text-primary); }
+        .member-row { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; border-bottom: 1px solid var(--glass-border); }
+        .member-row:last-child { border-bottom: none; }
+        .member-info { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+        .member-name { color: var(--text-primary); font-weight: 500; font-size: 0.85rem; }
+        .member-badge { background: #10b981; padding: 2px 6px; border-radius: 20px; font-size: 0.6rem; color: white; }
+        .delete-btn {
+            background: #ef4444;
+            border: none;
+            color: white;
+            width: 24px; height: 24px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 0.7rem;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+        .delete-btn:hover { transform: scale(1.1); }
+
+        .comment-input {
+            width: 100%;
+            padding: 12px;
+            background: var(--input-bg);
+            border: 1px solid var(--accent-sapphire);
+            border-radius: 20px;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+            resize: vertical;
+            min-height: 80px;
+            outline: none;
+            font-family: inherit;
+        }
+        .placeholder-buttons { display: flex; gap: 5px; flex-wrap: wrap; margin: 10px 0; }
+        .comment-preview {
+            background: var(--card-inner-bg);
+            border-radius: 16px;
+            padding: 12px;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            border: 1px dashed var(--accent-sapphire);
+            white-space: pre-wrap;
+            word-break: break-word;
+            min-height: 40px;
+            margin-top: 8px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.9);
+            backdrop-filter: blur(10px);
+            z-index: 10000;
+            padding: 20px;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-content {
+            background: var(--primary-2);
+            border: 2px solid var(--accent-gold);
+            border-radius: 30px;
+            padding: 20px;
+            max-width: 340px;
+            width: 95%;
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+        .modal-title { font-size: 1.1rem; font-weight: 600; text-align: center; margin-bottom: 12px; color: var(--accent-gold); }
+        .modal-text { color: var(--text-secondary); line-height: 1.6; margin-bottom: 15px; white-space: pre-wrap; font-size: 0.85rem; }
+        .modal-close {
+            width: 100%;
+            padding: 10px;
+            background: var(--gradient-gold);
+            border: none;
+            border-radius: 30px;
+            color: var(--primary-1);
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+        .modal-buttons { display: flex; gap: 8px; margin-top: 10px; }
+
+        #toast {
+            position: fixed;
+            top: 20px; left: 50%;
+            transform: translateX(-50%);
+            background: var(--gradient-gold);
+            color: var(--primary-1);
+            padding: 8px 16px;
+            border-radius: 40px;
+            display: none;
+            z-index: 99999;
+            font-weight: 600;
+            box-shadow: var(--shadow-gold);
+            white-space: nowrap;
+            font-size: 0.8rem;
+        }
+
+        .clip-helper {
+            position: fixed;
+            left: -9999px;
+            top: -9999px;
+            opacity: 0;
+        }
+
+        .pin-modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.92);
+            backdrop-filter: blur(16px);
+            z-index: 20000;
+            align-items: center;
+            justify-content: center;
+        }
+        .pin-modal-box {
+            background: var(--primary-2);
+            border: 2px solid var(--accent-sapphire);
+            border-radius: 30px;
+            padding: 28px 24px;
+            max-width: 300px;
+            width: 92%;
+            text-align: center;
+            box-shadow: 0 0 40px rgba(15,82,186,0.4);
+        }
+        .pin-modal-icon { font-size: 2.2rem; margin-bottom: 8px; }
+        .pin-modal-title { font-size: 1.1rem; font-weight: 700; color: var(--accent-sapphire); margin-bottom: 6px; }
+        .pin-modal-sub { font-size: 0.75rem; color: var(--text-tertiary); margin-bottom: 18px; line-height: 1.4; }
+        .pin-dots { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; }
+        .pin-dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--accent-sapphire); background: transparent; transition: background 0.15s ease; }
+        .pin-dot.filled { background: var(--accent-sapphire); }
+        .pin-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
+        .pin-key { padding: 14px 0; border: 1px solid var(--glass-border); border-radius: 16px; background: var(--glass-bg); color: var(--text-primary); font-size: 1.2rem; font-weight: 600; cursor: pointer; transition: all 0.15s ease; user-select: none; }
+        .pin-key:hover { background: var(--accent-sapphire); color: white; border-color: var(--accent-sapphire); }
+        .pin-key:active { transform: scale(0.94); }
+        .pin-key.del { color: var(--accent-ruby); border-color: var(--accent-ruby); }
+        .pin-key.del:hover { background: var(--accent-ruby); color: white; }
+        .pin-error { font-size: 0.78rem; color: var(--accent-ruby); min-height: 20px; margin-bottom: 8px; font-weight: 600; }
+        .pin-cancel { background: transparent; border: none; color: var(--text-tertiary); font-size: 0.75rem; cursor: pointer; padding: 6px; text-decoration: underline; }
+        .pin-cancel:hover { color: var(--text-secondary); }
+
+        @media (max-width: 480px) {
+            .container { max-width: 100%; }
+            .stats-grid { grid-template-columns: repeat(2,1fr); }
+            .premium-header { flex-wrap: wrap; gap: 8px; justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="toast"></div>
+<textarea id="clipHelper" class="clip-helper" aria-hidden="true"></textarea>
+
+<!-- Info Modal -->
+<div id="infoModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-title" id="infoTitle"></div>
+        <div class="modal-text" id="infoText"></div>
+        <button class="modal-close" onclick="closeInfoModal()">OK</button>
+    </div>
+</div>
+
+<!-- Reply Modal -->
+<div id="replyModal" class="reply-modal">
+    <div class="modal-title" id="replyTitle">Antwort an</div>
+    <textarea id="replyInput" class="reply-input" placeholder="Deine Antwort..."></textarea>
+    <div style="display:flex;gap:8px;">
+        <button class="message-btn" onclick="sendReply()" style="flex:2;">Senden</button>
+        <button class="message-btn" onclick="closeReplyModal()" style="flex:1;background:var(--glass-bg);color:var(--text-secondary);">✕</button>
+    </div>
+</div>
+
+<!-- Post Video Modal -->
+<div id="postVideoModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-title">📹 Video posten</div>
+        <input type="url" id="modalVideoUrl" class="login-input" placeholder="TikTok URL">
+        <div class="modal-buttons">
+            <button class="message-btn" onclick="postVideo()">Posten</button>
+            <button class="message-btn" onclick="closePostModal()" style="background:var(--glass-bg);color:var(--text-secondary);">Abbrechen</button>
+        </div>
+    </div>
+</div>
+
+<!-- Comment Editor Modal -->
+<div id="commentEditorModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-title">✏️ Kommentar-Template bearbeiten</div>
+        <textarea id="commentTemplate" class="comment-input" placeholder="Dein Kommentar-Template..." rows="4" oninput="updateCommentPreview()"></textarea>
+        <div class="placeholder-buttons">
+            <button class="lang-btn" onclick="insertPlaceholder('{gruppe}')">{gruppe}</button>
+            <button class="lang-btn" onclick="insertPlaceholder('{name}')">{name}</button>
+            <button class="lang-btn" onclick="insertPlaceholder('{member}')">{member}</button>
+            <button class="lang-btn" onclick="insertPlaceholder('{date}')">{date}</button>
+            <button class="lang-btn" onclick="insertPlaceholder('{time}')">{time}</button>
+            <button class="lang-btn" onclick="insertPlaceholder('\n')">↵ Zeile</button>
+        </div>
+        <div style="font-size:0.7rem;color:var(--text-tertiary);margin:4px 0;">Vorschau:</div>
+        <div class="comment-preview" id="commentPreview"></div>
+        <div class="modal-buttons" style="margin-top:12px;">
+            <button class="message-btn" onclick="saveCommentTemplate()">✅ Speichern</button>
+            <button class="message-btn" onclick="closeCommentEditor()" style="background:var(--glass-bg);color:var(--text-secondary);">Abbrechen</button>
+        </div>
+    </div>
+</div>
+
+<!-- Import Modal -->
+<div id="importModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-title">📥 Daten importieren</div>
+        <textarea id="importData" class="message-input" rows="6" placeholder="JSON Daten hier einfügen..." style="min-height:120px;border-radius:16px;"></textarea>
+        <div class="modal-buttons">
+            <button class="message-btn" onclick="processImport()">Importieren</button>
+            <button class="message-btn" onclick="closeImportModal()" style="background:var(--glass-bg);color:var(--text-secondary);">Abbrechen</button>
+        </div>
+    </div>
+</div>
+
+<!-- Confirm Modal -->
+<div id="confirmModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-title">⚠️ Bestätigen</div>
+        <div class="modal-text" id="confirmText"></div>
+        <div class="modal-buttons">
+            <button class="message-btn" id="confirmYesBtn">Ja</button>
+            <button class="message-btn" id="confirmNoBtn" style="background:var(--glass-bg);color:var(--text-secondary);">Nein</button>
+        </div>
+    </div>
+</div>
+
+<!-- PIN Change Modal -->
+<div id="pinChangeModal" class="pin-modal-overlay">
+    <div class="pin-modal-box">
+        <div class="pin-modal-icon">🔑</div>
+        <div class="pin-modal-title" id="pinChangeTitle">Neuen PIN festlegen</div>
+        <div class="pin-modal-sub" id="pinChangeSub">Gib deinen neuen 4-stelligen PIN ein</div>
+        <div class="pin-dots">
+            <div class="pin-dot" id="pcd0"></div>
+            <div class="pin-dot" id="pcd1"></div>
+            <div class="pin-dot" id="pcd2"></div>
+            <div class="pin-dot" id="pcd3"></div>
+        </div>
+        <div class="pin-error" id="pinChangeError"></div>
+        <div class="pin-grid">
+            <button class="pin-key" onclick="pinChangeKey('1')">1</button>
+            <button class="pin-key" onclick="pinChangeKey('2')">2</button>
+            <button class="pin-key" onclick="pinChangeKey('3')">3</button>
+            <button class="pin-key" onclick="pinChangeKey('4')">4</button>
+            <button class="pin-key" onclick="pinChangeKey('5')">5</button>
+            <button class="pin-key" onclick="pinChangeKey('6')">6</button>
+            <button class="pin-key" onclick="pinChangeKey('7')">7</button>
+            <button class="pin-key" onclick="pinChangeKey('8')">8</button>
+            <button class="pin-key" onclick="pinChangeKey('9')">9</button>
+            <button class="pin-key del" onclick="pinChangeDelete()">⌫</button>
+            <button class="pin-key" onclick="pinChangeKey('0')">0</button>
+            <button class="pin-key" onclick="pinChangeConfirm()">✓</button>
+        </div>
+        <button class="pin-cancel" onclick="closePinChangeModal()">Abbrechen</button>
+    </div>
+</div>
+
+<div class="container">
+    <div class="premium-header">
+        <div class="logo-text"><h1>SUPPORT POOL</h1></div>
+        <div class="free-badge" id="freeBadge">🎁 100% KOSTENLOS</div>
+        <div id="userBadge" style="display:none;">
+            <div class="user-badge">
+                <span id="userName"></span>
+                <span class="info-icon" onclick="showInfo('user')">?</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Login -->
+    <div id="loginSection">
+        <div class="login-card">
+            <div class="login-theme">
+                <button class="login-theme-btn" id="loginThemeGold" onclick="setTheme('gold')" title="Gold Theme">✨</button>
+                <button class="login-theme-btn" id="loginThemeLight" onclick="setTheme('light')" title="Blau-Weiß Theme">💎</button>
+            </div>
+            <div class="login-container">
+                <div class="login-language" id="loginLanguageSwitcher"></div>
+                <div class="stats-row">
+                    <div class="stat-box" onclick="showInfo('groups')">
+                        <div class="stat-value" id="previewGroups">0</div>
+                        <div class="stat-label" id="groupsLabel">Gruppen</div>
+                        <span class="info-icon" style="margin-top:3px;">?</span>
+                    </div>
+                    <div class="stat-box" onclick="showInfo('members')">
+                        <div class="stat-value" id="previewMembers">0</div>
+                        <div class="stat-label" id="membersLabel">Mitglieder</div>
+                        <span class="info-icon" style="margin-top:3px;">?</span>
+                    </div>
+                    <div class="stat-box" onclick="showInfo('supports')">
+                        <div class="stat-value" id="previewLikes">0</div>
+                        <div class="stat-label" id="supportsLabel">Supports</div>
+                        <span class="info-icon" style="margin-top:3px;">?</span>
+                    </div>
+                </div>
+                <div>
+                    <div class="login-title" id="welcomeTitle">Willkommen zurück</div>
+                    <input type="text" id="loginInput" class="login-input"
+                           placeholder="Dein TikTok Name" id="loginPlaceholder"
+                           onfocus="startCountUpAnimation()"
+                           onkeydown="if(event.key==='Enter') handleLogin()">
+                    <button class="login-btn" onclick="handleLogin()" id="loginBtn">✨ Einloggen</button>
+                </div>
+                <div class="free-hint" id="freeHint">✨ PREMIUM FEATURE – KOSTENLOS FÜR ALLE – EXKLUSIV, WERTVOLL, EINZIGARTIG ✨</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Panel -->
+    <div id="mainPanel" style="display:none;">
+
+        <div id="balanceCard" class="balance-card zero">
+            <div class="balance-value" id="balanceValue">0</div>
+            <div class="balance-label" id="balanceLabel">Support-Guthaben</div>
+            <span class="info-icon" style="position:absolute;top:8px;right:8px;" onclick="showInfo('balance')">?</span>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card" onclick="showInfo('members')">
+                <div class="stat-value" id="totalMembers">0</div>
+                <div class="stat-label" id="membersStatLabel">Mitgl.</div>
+                <span class="info-icon">?</span>
+            </div>
+            <div class="stat-card" onclick="showInfo('groups')">
+                <div class="stat-value" id="totalGroups">0</div>
+                <div class="stat-label" id="groupsStatLabel">Gruppen</div>
+                <span class="info-icon">?</span>
+            </div>
+            <div class="stat-card" onclick="showInfo('given')">
+                <div class="stat-value" id="statGiven">0</div>
+                <div class="stat-label" id="givenLabel">Gegeben</div>
+                <span class="info-icon">?</span>
+            </div>
+            <div class="stat-card" onclick="showInfo('received')">
+                <div class="stat-value" id="statReceived">0</div>
+                <div class="stat-label" id="receivedLabel">Erhalten</div>
+                <span class="info-icon">?</span>
+            </div>
+        </div>
+
+        <div class="action-card">
+            <div class="action-content">
+                <button class="login-btn" onclick="showPostModal()" id="postBtnText">📹 Video posten</button>
+                <div id="postTimer" class="post-timer timer-green">✅ Du kannst posten</div>
+                <span class="info-icon" style="margin-top:3px;" onclick="showInfo('post')">?</span>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-header">
+                <span class="section-title" id="openVideosTitle">🔄 Offene Videos</span>
+                <span class="section-badge" id="openVideosCount">0</span>
+                <span class="info-icon" onclick="showInfo('open')">?</span>
+            </div>
+            <div id="openVideosList"></div>
+        </div>
+
+        <div class="section">
+            <div class="section-header">
+                <span class="section-title" id="myVideosTitle">📋 Meine Videos</span>
+                <span class="section-badge" id="myVideosCount">0</span>
+                <span class="info-icon" onclick="showInfo('myvideos')">?</span>
+            </div>
+            <div id="myVideosList"></div>
+        </div>
+
+        <div class="message-section">
+            <div class="message-header">
+                <span class="section-title" id="messageTitle">💬 Frage an Admin</span>
+                <span class="info-icon" onclick="showInfo('message')">?</span>
+            </div>
+            <textarea id="userMessage" class="message-input" placeholder="Deine Nachricht..." rows="2" id="messagePlaceholder"></textarea>
+            <button class="message-btn" onclick="sendMessageToAdmin()" id="sendMessageBtn">📨 Senden</button>
+        </div>
+
+        <div id="userRepliesSection" class="message-section" style="display:none;">
+            <div class="message-header">
+                <span class="section-title" id="repliesTitle">📬 Antworten von Admin</span>
+                <button class="lang-btn" onclick="clearAllReplies()" style="margin-left:auto;" id="clearRepliesBtn">🗑️ Löschen</button>
+            </div>
+            <div id="userRepliesList"></div>
+        </div>
+
+        <div id="adminPanel" class="admin-panel" style="display:none;">
+            <div class="admin-title" id="adminTitle">👑 ADMIN DASHBOARD</div>
+            <div class="admin-stats">
+                <div class="admin-stat">
+                    <div class="admin-stat-value" id="adminTotalGroups">0</div>
+                    <div class="admin-stat-label" id="adminGroupsLabel">Gruppen</div>
+                </div>
+                <div class="admin-stat">
+                    <div class="admin-stat-value" id="adminTotalMembers">0</div>
+                    <div class="admin-stat-label" id="adminMembersLabel">Mitglieder</div>
+                </div>
+            </div>
+            <div class="message-section">
+                <div class="message-header">
+                    <span class="section-title" id="requestsTitle">📬 Anfragen</span>
+                    <span class="section-badge" id="unreadCount">0</span>
+                    <button class="lang-btn" onclick="clearAllMessages()" style="margin-left:auto;" id="clearMessagesBtn">🗑️ Alle</button>
+                </div>
+                <div id="adminMessagesList"></div>
+            </div>
+            <button class="message-btn" onclick="showCommentEditor()" style="margin-bottom:8px;" id="editCommentBtn">✏️ Kommentar-Template bearbeiten</button>
+            <button class="message-btn" onclick="showChangePinModal()" style="margin-bottom:8px;background:linear-gradient(135deg,#0F52BA,#000080);" id="changePinBtn">🔐 Admin-PIN ändern</button>
+            <button class="message-btn" onclick="cleanupInactiveMembers()" style="margin-bottom:8px;" id="cleanupBtn">🧹 Inaktive entfernen</button>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;">
+                <button class="message-btn" onclick="exportData()" id="exportBtn">📤 Export</button>
+                <button class="message-btn" onclick="showImportModal()" id="importBtn2">📥 Import</button>
+            </div>
+            <div id="adminGroupsList" style="margin-top:15px;"></div>
+        </div>
+
+        <button class="message-btn" onclick="logout()" id="logoutBtn"
+                style="margin-top:10px;background:var(--glass-bg);color:var(--text-secondary);">
+            🚪 Logout
+        </button>
+    </div>
+</div>
+
+<!-- PIN Modal -->
+<div id="pinModal" class="pin-modal-overlay">
+    <div class="pin-modal-box">
+        <div class="pin-modal-icon">🔐</div>
+        <div class="pin-modal-title" id="pinTitle">Admin-Zugang</div>
+        <div class="pin-modal-sub" id="pinSub">Bitte gib den 4-stelligen Admin-PIN ein</div>
+        <div class="pin-dots">
+            <div class="pin-dot" id="pd0"></div>
+            <div class="pin-dot" id="pd1"></div>
+            <div class="pin-dot" id="pd2"></div>
+            <div class="pin-dot" id="pd3"></div>
+        </div>
+        <div class="pin-error" id="pinError"></div>
+        <div class="pin-grid">
+            <button class="pin-key" onclick="pinKey('1')">1</button>
+            <button class="pin-key" onclick="pinKey('2')">2</button>
+            <button class="pin-key" onclick="pinKey('3')">3</button>
+            <button class="pin-key" onclick="pinKey('4')">4</button>
+            <button class="pin-key" onclick="pinKey('5')">5</button>
+            <button class="pin-key" onclick="pinKey('6')">6</button>
+            <button class="pin-key" onclick="pinKey('7')">7</button>
+            <button class="pin-key" onclick="pinKey('8')">8</button>
+            <button class="pin-key" onclick="pinKey('9')">9</button>
+            <button class="pin-key del" onclick="pinDelete()">⌫</button>
+            <button class="pin-key" onclick="pinKey('0')">0</button>
+            <button class="pin-key" onclick="pinConfirm()">✓</button>
+        </div>
+        <button class="pin-cancel" onclick="pinCancel()">Abbrechen</button>
+    </div>
+</div>
+
+<script>
+// ============================================================
+// MULTILINGUAL SYSTEM - 10 SPRACHEN (inkl. Polnisch)
+// ============================================================
+const translations = {
+    de: {
+        welcomeTitle: 'Willkommen zurück',
+        loginBtn: '✨ Einloggen',
+        loginPlaceholder: 'Dein TikTok Name',
+        freeHint: '✨ PREMIUM FEATURE – KOSTENLOS FÜR ALLE – EXKLUSIV, WERTVOLL, EINZIGARTIG ✨',
+        freeBadge: '🎁 100% KOSTENLOS',
+        groupsLabel: 'Gruppen',
+        membersLabel: 'Mitglieder',
+        supportsLabel: 'Supports',
+        balanceLabel: 'Support-Guthaben',
+        membersStatLabel: 'Mitgl.',
+        groupsStatLabel: 'Gruppen',
+        givenLabel: 'Gegeben',
+        receivedLabel: 'Erhalten',
+        postBtnText: '📹 Video posten',
+        sendMessageBtn: '📨 Senden',
+        logoutBtn: '🚪 Logout',
+        openVideosTitle: '🔄 Offene Videos',
+        myVideosTitle: '📋 Meine Videos',
+        messageTitle: '💬 Frage an Admin',
+        repliesTitle: '📬 Antworten von Admin',
+        adminTitle: '👑 ADMIN DASHBOARD',
+        requestsTitle: '📬 Anfragen',
+        adminGroupsLabel: 'Gruppen',
+        adminMembersLabel: 'Mitglieder',
+        editCommentBtn: '✏️ Kommentar-Template bearbeiten',
+        changePinBtn: '🔐 Admin-PIN ändern',
+        cleanupBtn: '🧹 Inaktive entfernen',
+        exportBtn: '📤 Export',
+        importBtn: '📥 Import',
+        clearRepliesBtn: '🗑️ Löschen',
+        clearMessagesBtn: '🗑️ Alle',
+        postTitle: '📹 Video posten',
+        postPlaceholder: 'TikTok URL',
+        postBtn: 'Posten',
+        postCancelBtn: 'Abbrechen',
+        commentTitle: '✏️ Kommentar-Template bearbeiten',
+        newlineBtn: '↵ Zeile',
+        previewLabel: 'Vorschau:',
+        saveCommentBtn: '✅ Speichern',
+        cancelCommentBtn: 'Abbrechen',
+        importTitle: '📥 Daten importieren',
+        importBtn2: 'Importieren',
+        importCancelBtn: 'Abbrechen',
+        confirmTitle: '⚠️ Bestätigen',
+        infoCloseBtn: 'OK',
+        replyTitle: 'Antwort an',
+        replySendBtn: 'Senden',
+        replyCancelBtn: '✕',
+        replyPlaceholder: 'Deine Antwort...',
+        messagePlaceholder: 'Deine Nachricht...',
+        clipboardHint: '💬 Kommentar in Zwischenablage!',
+        timerNewbie: '🎁 Neuling: Noch {count} Freiposts',
+        timerNegative: '❌ Erst supporten, dann posten!',
+        timerReady: '✅ Du kannst posten',
+        timerWaiting: '⏳ Noch {hours}h {minutes}m',
+        pinTitle: 'Admin-Zugang',
+        pinSub: 'Bitte gib den 4-stelligen Admin-PIN ein',
+        pinChangeTitle: 'Neuen PIN festlegen',
+        pinChangeSub: 'Gib deinen neuen 4-stelligen PIN ein',
+        pinConfirm: 'Bestätigen',
+        pinCancel: 'Abbrechen',
+        pinError: 'Falscher PIN',
+        pinSuccess: 'PIN erfolgreich geändert',
+        infoGroups: '👥 **Gruppen**\n\n• Jede Gruppe kann maximal 10 Mitglieder haben\n• Neue Gruppen werden automatisch erstellt\n• Lücken werden zuerst gefüllt',
+        infoMembers: '🤝 **Mitglieder**\n\n• Aktive Mitglieder im gesamten System\n• Jedes Mitglied hat ein Support-Guthaben\n• Inaktive werden nach 7 Tagen entfernt',
+        infoSupports: '❤️ **Supports**\n\n• Gesamtanzahl aller gegebenen Supports\n• Jeder Support zählt für das System\n• Zeigt die Aktivität der Community',
+        infoBalance: '💰 **Guthaben**\n\n• Positiv = Du kannst posten\n• Null = Im Gleichgewicht\n• Negativ = Erst supporten\n\nFormel: Gegeben − Erhalten',
+        infoGiven: '⬆️ **Gegeben**\n\n• Supports die du gegeben hast\n• Erhöht dein Guthaben',
+        infoReceived: '⬇️ **Erhalten**\n\n• Supports die du erhalten hast\n• Verringert dein Guthaben',
+        infoPost: '📹 **Video posten**\n\n• Maximal 1 Video pro 24h\n• 3 Freiposts für Neulinge\n• Timer zeigt, wann du wieder posten kannst',
+        infoOpen: '🔄 **Support geben**\n\n• Klick auf "Supporten & öffnen"\n• Kommentar wird kopiert\n• Video öffnet sich automatisch',
+        infoMyvideos: '📋 **Meine Videos**\n\n• Status deiner letzten Videos\n• ✅ = Fertig\n• ⏳ = Wartet\n• ⏰ = Abgelaufen',
+        infoMessage: '💬 **Frage an Admin**\n\n• Hier kannst du dem Admin schreiben\n• Bei dringenden Fragen\n• Admin antwortet direkt',
+        infoUser: '👤 **Dein Profil**\n\n• Hier siehst du deinen Namen\n• Klick zum Kopieren'
+    },
+    en: {
+        welcomeTitle: 'Welcome back',
+        loginBtn: '✨ Login',
+        loginPlaceholder: 'Your TikTok Name',
+        freeHint: '✨ PREMIUM FEATURE – FREE FOR ALL – EXCLUSIVE, VALUABLE, UNIQUE ✨',
+        freeBadge: '🎁 100% FREE',
+        groupsLabel: 'Groups',
+        membersLabel: 'Members',
+        supportsLabel: 'Supports',
+        balanceLabel: 'Support Balance',
+        membersStatLabel: 'Members',
+        groupsStatLabel: 'Groups',
+        givenLabel: 'Given',
+        receivedLabel: 'Received',
+        postBtnText: '📹 Post video',
+        sendMessageBtn: '📨 Send',
+        logoutBtn: '🚪 Logout',
+        openVideosTitle: '🔄 Open Videos',
+        myVideosTitle: '📋 My Videos',
+        messageTitle: '💬 Question for Admin',
+        repliesTitle: '📬 Admin Replies',
+        adminTitle: '👑 ADMIN DASHBOARD',
+        requestsTitle: '📬 Requests',
+        adminGroupsLabel: 'Groups',
+        adminMembersLabel: 'Members',
+        editCommentBtn: '✏️ Edit comment template',
+        changePinBtn: '🔐 Change Admin PIN',
+        cleanupBtn: '🧹 Remove inactive',
+        exportBtn: '📤 Export',
+        importBtn: '📥 Import',
+        clearRepliesBtn: '🗑️ Clear',
+        clearMessagesBtn: '🗑️ All',
+        postTitle: '📹 Post video',
+        postPlaceholder: 'TikTok URL',
+        postBtn: 'Post',
+        postCancelBtn: 'Cancel',
+        commentTitle: '✏️ Edit comment template',
+        newlineBtn: '↵ Line',
+        previewLabel: 'Preview:',
+        saveCommentBtn: '✅ Save',
+        cancelCommentBtn: 'Cancel',
+        importTitle: '📥 Import data',
+        importBtn2: 'Import',
+        importCancelBtn: 'Cancel',
+        confirmTitle: '⚠️ Confirm',
+        infoCloseBtn: 'OK',
+        replyTitle: 'Reply to',
+        replySendBtn: 'Send',
+        replyCancelBtn: '✕',
+        replyPlaceholder: 'Your answer...',
+        messagePlaceholder: 'Your message...',
+        clipboardHint: '💬 Comment copied!',
+        timerNewbie: '🎁 Newcomer: {count} free posts left',
+        timerNegative: '❌ Give support first!',
+        timerReady: '✅ You can post',
+        timerWaiting: '⏳ {hours}h {minutes}m left',
+        pinTitle: 'Admin Access',
+        pinSub: 'Please enter the 4-digit Admin PIN',
+        pinChangeTitle: 'Set new PIN',
+        pinChangeSub: 'Enter your new 4-digit PIN',
+        pinConfirm: 'Confirm',
+        pinCancel: 'Cancel',
+        pinError: 'Invalid PIN',
+        pinSuccess: 'PIN changed successfully',
+        infoGroups: '👥 **Groups**\n\n• Max 10 members per group\n• New groups created automatically\n• Gaps filled first',
+        infoMembers: '🤝 **Members**\n\n• Active members in system\n• Each has support balance\n• Inactive removed after 7 days',
+        infoSupports: '❤️ **Supports**\n\n• Total supports given\n• Shows community activity',
+        infoBalance: '💰 **Balance**\n\n• Positive = Can post\n• Zero = Balanced\n• Negative = Support first\n\nFormula: Given − Received',
+        infoGiven: '⬆️ **Given**\n\n• Supports you gave\n• Increases your balance',
+        infoReceived: '⬇️ **Received**\n\n• Supports you got\n• Decreases your balance',
+        infoPost: '📹 **Post video**\n\n• Max 1 video per 24h\n• 3 free posts for newcomers\n• Timer shows when you can post',
+        infoOpen: '🔄 **Give support**\n\n• Click "Support & open"\n• Comment copied\n• Video opens automatically',
+        infoMyvideos: '📋 **My videos**\n\n• Status of your last videos\n• ✅ = Done\n• ⏳ = Waiting\n• ⏰ = Expired',
+        infoMessage: '💬 **Ask admin**\n\n• Send questions to admin\n• For urgent issues\n• Admin replies directly',
+        infoUser: '👤 **Your profile**\n\n• Your username\n• Click to copy'
+    },
+    id: {
+        welcomeTitle: 'Selamat datang',
+        loginBtn: '✨ Masuk',
+        loginPlaceholder: 'Nama TikTok Anda',
+        freeHint: '✨ FITUR PREMIUM – GRATIS UNTUK SEMUA – EKSKLUSIF, BERHARGA, UNIK ✨',
+        freeBadge: '🎁 100% GRATIS',
+        groupsLabel: 'Grup',
+        membersLabel: 'Anggota',
+        supportsLabel: 'Dukungan',
+        balanceLabel: 'Saldo Dukungan',
+        membersStatLabel: 'Anggota',
+        groupsStatLabel: 'Grup',
+        givenLabel: 'Diberi',
+        receivedLabel: 'Diterima',
+        postBtnText: '📹 Posting video',
+        sendMessageBtn: '📨 Kirim',
+        logoutBtn: '🚪 Keluar',
+        openVideosTitle: '🔄 Video Terbuka',
+        myVideosTitle: '📋 Video Saya',
+        messageTitle: '💬 Pertanyaan untuk Admin',
+        repliesTitle: '📬 Jawaban Admin',
+        adminTitle: '👑 DASHBOARD ADMIN',
+        requestsTitle: '📬 Permintaan',
+        adminGroupsLabel: 'Grup',
+        adminMembersLabel: 'Anggota',
+        editCommentBtn: '✏️ Edit template komentar',
+        changePinBtn: '🔐 Ubah PIN Admin',
+        cleanupBtn: '🧹 Hapus tidak aktif',
+        exportBtn: '📤 Ekspor',
+        importBtn: '📥 Impor',
+        clearRepliesBtn: '🗑️ Hapus',
+        clearMessagesBtn: '🗑️ Semua',
+        postTitle: '📹 Posting video',
+        postPlaceholder: 'URL TikTok',
+        postBtn: 'Posting',
+        postCancelBtn: 'Batal',
+        commentTitle: '✏️ Edit template komentar',
+        newlineBtn: '↵ Baris',
+        previewLabel: 'Pratinjau:',
+        saveCommentBtn: '✅ Simpan',
+        cancelCommentBtn: 'Batal',
+        importTitle: '📥 Impor data',
+        importBtn2: 'Impor',
+        importCancelBtn: 'Batal',
+        confirmTitle: '⚠️ Konfirmasi',
+        infoCloseBtn: 'OK',
+        replyTitle: 'Balas ke',
+        replySendBtn: 'Kirim',
+        replyCancelBtn: '✕',
+        replyPlaceholder: 'Jawaban Anda...',
+        messagePlaceholder: 'Pesan Anda...',
+        clipboardHint: '💬 Komentar disalin!',
+        timerNewbie: '🎁 Pemula: {count} posting gratis',
+        timerNegative: '❌ Beri dukungan dulu!',
+        timerReady: '✅ Anda bisa posting',
+        timerWaiting: '⏳ {hours}j {minutes}m lagi',
+        pinTitle: 'Akses Admin',
+        pinSub: 'Masukkan 4-digit PIN Admin',
+        pinChangeTitle: 'Atur PIN baru',
+        pinChangeSub: 'Masukkan 4-digit PIN baru',
+        pinConfirm: 'Konfirmasi',
+        pinCancel: 'Batal',
+        pinError: 'PIN salah',
+        pinSuccess: 'PIN berhasil diubah',
+        infoGroups: '👥 **Grup**\n\n• Maks 10 anggota per grup\n• Grup baru dibuat otomatis\n• Kekosongan diisi dulu',
+        infoMembers: '🤝 **Anggota**\n\n• Anggota aktif di sistem\n• Setiap memiliki saldo dukungan\n• Tidak aktif dihapus 7 hari',
+        infoSupports: '❤️ **Dukungan**\n\n• Total dukungan diberikan\n• Menunjukkan aktivitas komunitas',
+        infoBalance: '💰 **Saldo**\n\n• Positif = Bisa posting\n• Nol = Seimbang\n• Negatif = Dukung dulu\n\nRumus: Diberi − Diterima',
+        infoGiven: '⬆️ **Diberi**\n\n• Dukungan yang Anda beri\n• Meningkatkan saldo',
+        infoReceived: '⬇️ **Diterima**\n\n• Dukungan yang Anda terima\n• Mengurangi saldo',
+        infoPost: '📹 **Posting video**\n\n• Maks 1 video per 24 jam\n• 3 posting gratis untuk pemula\n• Timer menunjukkan kapan bisa posting',
+        infoOpen: '🔄 **Beri dukungan**\n\n• Klik "Dukung & buka"\n• Komentar disalin\n• Video terbuka otomatis',
+        infoMyvideos: '📋 **Video saya**\n\n• Status video terakhir\n• ✅ = Selesai\n• ⏳ = Menunggu\n• ⏰ = Kadaluarsa',
+        infoMessage: '💬 **Tanya admin**\n\n• Kirim pertanyaan ke admin\n• Untuk masalah mendesak\n• Admin menjawab langsung',
+        infoUser: '👤 **Profil Anda**\n\n• Nama pengguna Anda\n• Klik untuk menyalin'
+    },
+    it: {
+        welcomeTitle: 'Bentornato',
+        loginBtn: '✨ Accedi',
+        loginPlaceholder: 'Il tuo nome TikTok',
+        freeHint: '✨ FUNZIONE PREMIUM – GRATIS PER TUTTI – ESCLUSIVO, PREZIOSO, UNICO ✨',
+        freeBadge: '🎁 100% GRATIS',
+        groupsLabel: 'Gruppi',
+        membersLabel: 'Membri',
+        supportsLabel: 'Supporti',
+        balanceLabel: 'Saldo Supporto',
+        membersStatLabel: 'Membri',
+        groupsStatLabel: 'Gruppi',
+        givenLabel: 'Dato',
+        receivedLabel: 'Ricevuto',
+        postBtnText: '📹 Pubblica video',
+        sendMessageBtn: '📨 Invia',
+        logoutBtn: '🚪 Esci',
+        openVideosTitle: '🔄 Video Aperti',
+        myVideosTitle: '📋 Miei Video',
+        messageTitle: '💬 Domanda per Admin',
+        repliesTitle: '📬 Risposte Admin',
+        adminTitle: '👑 DASHBOARD ADMIN',
+        requestsTitle: '📬 Richieste',
+        adminGroupsLabel: 'Gruppi',
+        adminMembersLabel: 'Membri',
+        editCommentBtn: '✏️ Modifica template commento',
+        changePinBtn: '🔐 Cambia PIN Admin',
+        cleanupBtn: '🧹 Rimuovi inattivi',
+        exportBtn: '📤 Esporta',
+        importBtn: '📥 Importa',
+        clearRepliesBtn: '🗑️ Cancella',
+        clearMessagesBtn: '🗑️ Tutti',
+        postTitle: '📹 Pubblica video',
+        postPlaceholder: 'URL TikTok',
+        postBtn: 'Pubblica',
+        postCancelBtn: 'Annulla',
+        commentTitle: '✏️ Modifica template commento',
+        newlineBtn: '↵ Riga',
+        previewLabel: 'Anteprima:',
+        saveCommentBtn: '✅ Salva',
+        cancelCommentBtn: 'Annulla',
+        importTitle: '📥 Importa dati',
+        importBtn2: 'Importa',
+        importCancelBtn: 'Annulla',
+        confirmTitle: '⚠️ Conferma',
+        infoCloseBtn: 'OK',
+        replyTitle: 'Rispondi a',
+        replySendBtn: 'Invia',
+        replyCancelBtn: '✕',
+        replyPlaceholder: 'La tua risposta...',
+        messagePlaceholder: 'Il tuo messaggio...',
+        clipboardHint: '💬 Commento copiato!',
+        timerNewbie: '🎁 Nuovo arrivato: {count} post gratuiti',
+        timerNegative: '❌ Prima supporta!',
+        timerReady: '✅ Puoi pubblicare',
+        timerWaiting: '⏳ {hours}h {minutes}m rimasti',
+        pinTitle: 'Accesso Admin',
+        pinSub: 'Inserisci il PIN Admin a 4 cifre',
+        pinChangeTitle: 'Imposta nuovo PIN',
+        pinChangeSub: 'Inserisci il nuovo PIN a 4 cifre',
+        pinConfirm: 'Conferma',
+        pinCancel: 'Annulla',
+        pinError: 'PIN errato',
+        pinSuccess: 'PIN modificato con successo',
+        infoGroups: '👥 **Gruppi**\n\n• Max 10 membri per gruppo\n• Nuovi gruppi creati automaticamente\n• Lacune riempite prima',
+        infoMembers: '🤝 **Membri**\n\n• Membri attivi nel sistema\n• Ogni ha un saldo supporto\n• Inattivi rimossi dopo 7 giorni',
+        infoSupports: '❤️ **Supporti**\n\n• Totale supporti dati\n• Mostra attività della comunità',
+        infoBalance: '💰 **Saldo**\n\n• Positivo = Puoi pubblicare\n• Zero = In equilibrio\n• Negativo = Supporta prima\n\nFormula: Dato − Ricevuto',
+        infoGiven: '⬆️ **Dato**\n\n• Supporti che hai dato\n• Aumenta il tuo saldo',
+        infoReceived: '⬇️ **Ricevuto**\n\n• Supporti che hai ricevuto\n• Diminuisce il tuo saldo',
+        infoPost: '📹 **Pubblica video**\n\n• Max 1 video ogni 24h\n• 3 post gratuiti per nuovi arrivati\n• Timer mostra quando puoi pubblicare',
+        infoOpen: '🔄 **Dai supporto**\n\n• Clicca "Supporta & apri"\n• Commento copiato\n• Video si apre automaticamente',
+        infoMyvideos: '📋 **Miei video**\n\n• Stato dei tuoi ultimi video\n• ✅ = Completato\n• ⏳ = In attesa\n• ⏰ = Scaduto',
+        infoMessage: '💬 **Chiedi all\'admin**\n\n• Invia domande all\'admin\n• Per problemi urgenti\n• Admin risponde direttamente',
+        infoUser: '👤 **Il tuo profilo**\n\n• Il tuo nome utente\n• Clicca per copiare'
+    },
+    es: {
+        welcomeTitle: 'Bienvenido',
+        loginBtn: '✨ Entrar',
+        loginPlaceholder: 'Tu nombre TikTok',
+        freeHint: '✨ FUNCIÓN PREMIUM – GRATIS PARA TODOS – EXCLUSIVO, VALIOSO, ÚNICO ✨',
+        freeBadge: '🎁 100% GRATIS',
+        groupsLabel: 'Grupos',
+        membersLabel: 'Miembros',
+        supportsLabel: 'Apoyos',
+        balanceLabel: 'Saldo de Apoyo',
+        membersStatLabel: 'Miembros',
+        groupsStatLabel: 'Grupos',
+        givenLabel: 'Dado',
+        receivedLabel: 'Recibido',
+        postBtnText: '📹 Publicar video',
+        sendMessageBtn: '📨 Enviar',
+        logoutBtn: '🚪 Salir',
+        openVideosTitle: '🔄 Videos Abiertos',
+        myVideosTitle: '📋 Mis Videos',
+        messageTitle: '💬 Pregunta para Admin',
+        repliesTitle: '📬 Respuestas Admin',
+        adminTitle: '👑 PANEL DE ADMIN',
+        requestsTitle: '📬 Solicitudes',
+        adminGroupsLabel: 'Grupos',
+        adminMembersLabel: 'Miembros',
+        editCommentBtn: '✏️ Editar plantilla comentario',
+        changePinBtn: '🔐 Cambiar PIN Admin',
+        cleanupBtn: '🧹 Eliminar inactivos',
+        exportBtn: '📤 Exportar',
+        importBtn: '📥 Importar',
+        clearRepliesBtn: '🗑️ Borrar',
+        clearMessagesBtn: '🗑️ Todos',
+        postTitle: '📹 Publicar video',
+        postPlaceholder: 'URL TikTok',
+        postBtn: 'Publicar',
+        postCancelBtn: 'Cancelar',
+        commentTitle: '✏️ Editar plantilla comentario',
+        newlineBtn: '↵ Línea',
+        previewLabel: 'Vista previa:',
+        saveCommentBtn: '✅ Guardar',
+        cancelCommentBtn: 'Cancelar',
+        importTitle: '📥 Importar datos',
+        importBtn2: 'Importar',
+        importCancelBtn: 'Cancelar',
+        confirmTitle: '⚠️ Confirmar',
+        infoCloseBtn: 'OK',
+        replyTitle: 'Responder a',
+        replySendBtn: 'Enviar',
+        replyCancelBtn: '✕',
+        replyPlaceholder: 'Tu respuesta...',
+        messagePlaceholder: 'Tu mensaje...',
+        clipboardHint: '💬 ¡Comentario copiado!',
+        timerNewbie: '🎁 Novato: {count} publicaciones gratis',
+        timerNegative: '❌ ¡Apoya primero!',
+        timerReady: '✅ Puedes publicar',
+        timerWaiting: '⏳ {hours}h {minutes}m restantes',
+        pinTitle: 'Acceso Admin',
+        pinSub: 'Por favor ingresa el PIN de 4 dígitos',
+        pinChangeTitle: 'Establecer nuevo PIN',
+        pinChangeSub: 'Ingresa tu nuevo PIN de 4 dígitos',
+        pinConfirm: 'Confirmar',
+        pinCancel: 'Cancelar',
+        pinError: 'PIN incorrecto',
+        pinSuccess: 'PIN cambiado exitosamente',
+        infoGroups: '👥 **Grupos**\n\n• Máx 10 miembros por grupo\n• Nuevos grupos creados automáticamente\n• Vacíos se llenan primero',
+        infoMembers: '🤝 **Miembros**\n\n• Miembros activos en el sistema\n• Cada uno tiene saldo de apoyo\n• Inactivos eliminados tras 7 días',
+        infoSupports: '❤️ **Apoyos**\n\n• Total de apoyos dados\n• Muestra actividad comunitaria',
+        infoBalance: '💰 **Saldo**\n\n• Positivo = Puedes publicar\n• Cero = Equilibrado\n• Negativo = Apoya primero\n\nFórmula: Dado − Recibido',
+        infoGiven: '⬆️ **Dado**\n\n• Apoyos que has dado\n• Aumenta tu saldo',
+        infoReceived: '⬇️ **Recibido**\n\n• Apoyos que has recibido\n• Disminuye tu saldo',
+        infoPost: '📹 **Publicar video**\n\n• Máx 1 video cada 24h\n• 3 publicaciones gratis para novatos\n• Temporizador muestra cuándo puedes publicar',
+        infoOpen: '🔄 **Dar apoyo**\n\n• Haz clic en "Apoyar & abrir"\n• Comentario copiado\n• Video se abre automáticamente',
+        infoMyvideos: '📋 **Mis videos**\n\n• Estado de tus últimos videos\n• ✅ = Completado\n• ⏳ = Esperando\n• ⏰ = Expirado',
+        infoMessage: '💬 **Preguntar al admin**\n\n• Envía preguntas al admin\n• Para problemas urgentes\n• Admin responde directamente',
+        infoUser: '👤 **Tu perfil**\n\n• Tu nombre de usuario\n• Haz clic para copiar'
+    },
+    tr: {
+        welcomeTitle: 'Hoş geldin',
+        loginBtn: '✨ Giriş',
+        loginPlaceholder: 'TikTok adın',
+        freeHint: '✨ PREMIUM ÖZELLİK – HERKESE ÜCRETSİZ – ÖZEL, DEĞERLİ, EŞSİZ ✨',
+        freeBadge: '🎁 %100 ÜCRETSİZ',
+        groupsLabel: 'Gruplar',
+        membersLabel: 'Üyeler',
+        supportsLabel: 'Destekler',
+        balanceLabel: 'Destek Bakiyesi',
+        membersStatLabel: 'Üyeler',
+        groupsStatLabel: 'Gruplar',
+        givenLabel: 'Verdiğin',
+        receivedLabel: 'Aldığın',
+        postBtnText: '📹 Video yayınla',
+        sendMessageBtn: '📨 Gönder',
+        logoutBtn: '🚪 Çıkış',
+        openVideosTitle: '🔄 Açık Videolar',
+        myVideosTitle: '📋 Videolarım',
+        messageTitle: '💬 Admin\'e Soru',
+        repliesTitle: '📬 Admin Cevapları',
+        adminTitle: '👑 ADMIN PANELİ',
+        requestsTitle: '📬 Talepler',
+        adminGroupsLabel: 'Gruplar',
+        adminMembersLabel: 'Üyeler',
+        editCommentBtn: '✏️ Yorum şablonunu düzenle',
+        changePinBtn: '🔐 Admin PIN değiştir',
+        cleanupBtn: '🧹 Pasifleri temizle',
+        exportBtn: '📤 Dışa aktar',
+        importBtn: '📥 İçe aktar',
+        clearRepliesBtn: '🗑️ Sil',
+        clearMessagesBtn: '🗑️ Tümü',
+        postTitle: '📹 Video yayınla',
+        postPlaceholder: 'TikTok URL',
+        postBtn: 'Yayınla',
+        postCancelBtn: 'İptal',
+        commentTitle: '✏️ Yorum şablonunu düzenle',
+        newlineBtn: '↵ Satır',
+        previewLabel: 'Önizleme:',
+        saveCommentBtn: '✅ Kaydet',
+        cancelCommentBtn: 'İptal',
+        importTitle: '📥 Veri içe aktar',
+        importBtn2: 'İçe aktar',
+        importCancelBtn: 'İptal',
+        confirmTitle: '⚠️ Onayla',
+        infoCloseBtn: 'TAMAM',
+        replyTitle: 'Cevapla',
+        replySendBtn: 'Gönder',
+        replyCancelBtn: '✕',
+        replyPlaceholder: 'Cevabın...',
+        messagePlaceholder: 'Mesajın...',
+        clipboardHint: '💬 Yorum kopyalandı!',
+        timerNewbie: '🎁 Yeni üye: {count} ücretsiz yayın',
+        timerNegative: '❌ Önce destek ver!',
+        timerReady: '✅ Yayın yapabilirsin',
+        timerWaiting: '⏳ {hours}s {minutes}d kaldı',
+        pinTitle: 'Admin Girişi',
+        pinSub: 'Lütfen 4 haneli Admin PIN\'ini gir',
+        pinChangeTitle: 'Yeni PIN belirle',
+        pinChangeSub: 'Yeni 4 haneli PIN\'ini gir',
+        pinConfirm: 'Onayla',
+        pinCancel: 'İptal',
+        pinError: 'Geçersiz PIN',
+        pinSuccess: 'PIN başarıyla değiştirildi',
+        infoGroups: '👥 **Gruplar**\n\n• Her grupta maks 10 üye\n• Yeni gruplar otomatik oluşturulur\n• Boşluklar önce doldurulur',
+        infoMembers: '🤝 **Üyeler**\n\n• Sistemdeki aktif üyeler\n• Her birinin destek bakiyesi var\n• Pasifler 7 gün sonra silinir',
+        infoSupports: '❤️ **Destekler**\n\n• Verilen toplam destek\n• Topluluk aktivitesini gösterir',
+        infoBalance: '💰 **Bakiye**\n\n• Pozitif = Yayın yapabilirsin\n• Sıfır = Dengede\n• Negatif = Önce destek ver\n\nFormül: Verdiğin − Aldığın',
+        infoGiven: '⬆️ **Verdiğin**\n\n• Verdiğin destekler\n• Bakiyeni artırır',
+        infoReceived: '⬇️ **Aldığın**\n\n• Aldığın destekler\n• Bakiyeni azaltır',
+        infoPost: '📹 **Video yayınla**\n\n• 24 saatte maks 1 video\n• Yeni üyeler için 3 ücretsiz yayın\n• Zamanlayıcı ne zaman yayın yapabileceğini gösterir',
+        infoOpen: '🔄 **Destek ver**\n\n• "Destek ver & aç"a tıkla\n• Yorum kopyalanır\n• Video otomatik açılır',
+        infoMyvideos: '📋 **Videolarım**\n\n• Son videolarının durumu\n• ✅ = Tamamlandı\n• ⏳ = Bekliyor\n• ⏰ = Süresi doldu',
+        infoMessage: '💬 **Admin\'e sor**\n\n• Admin\'e soru gönder\n• Acil sorunlar için\n• Admin doğrudan cevaplar',
+        infoUser: '👤 **Profilin**\n\n• Kullanıcı adın\n• Kopyalamak için tıkla'
+    },
+    pl: {
+        welcomeTitle: 'Witaj ponownie',
+        loginBtn: '✨ Zaloguj się',
+        loginPlaceholder: 'Twoja nazwa TikTok',
+        freeHint: '✨ FUNKCJA PREMIUM – DARMOWA DLA WSZYSTKICH – EKSKLUZYWNA, CENNA, WYJĄTKOWA ✨',
+        freeBadge: '🎁 100% DARMOWE',
+        groupsLabel: 'Grupy',
+        membersLabel: 'Członkowie',
+        supportsLabel: 'Wsparcia',
+        balanceLabel: 'Saldo Wsparcia',
+        membersStatLabel: 'Członkowie',
+        groupsStatLabel: 'Grupy',
+        givenLabel: 'Dane',
+        receivedLabel: 'Otrzymane',
+        postBtnText: '📹 Opublikuj wideo',
+        sendMessageBtn: '📨 Wyślij',
+        logoutBtn: '🚪 Wyloguj',
+        openVideosTitle: '🔄 Otwarte Wideo',
+        myVideosTitle: '📋 Moje Wideo',
+        messageTitle: '💬 Pytanie do Admina',
+        repliesTitle: '📬 Odpowiedzi Admina',
+        adminTitle: '👑 PANEL ADMINA',
+        requestsTitle: '📬 Zapytania',
+        adminGroupsLabel: 'Grupy',
+        adminMembersLabel: 'Członkowie',
+        editCommentBtn: '✏️ Edytuj szablon komentarza',
+        changePinBtn: '🔐 Zmień PIN Admina',
+        cleanupBtn: '🧹 Usuń nieaktywnych',
+        exportBtn: '📤 Eksport',
+        importBtn: '📥 Import',
+        clearRepliesBtn: '🗑️ Usuń',
+        clearMessagesBtn: '🗑️ Wszystkie',
+        postTitle: '📹 Opublikuj wideo',
+        postPlaceholder: 'URL TikTok',
+        postBtn: 'Opublikuj',
+        postCancelBtn: 'Anuluj',
+        commentTitle: '✏️ Edytuj szablon komentarza',
+        newlineBtn: '↵ Nowa linia',
+        previewLabel: 'Podgląd:',
+        saveCommentBtn: '✅ Zapisz',
+        cancelCommentBtn: 'Anuluj',
+        importTitle: '📥 Importuj dane',
+        importBtn2: 'Importuj',
+        importCancelBtn: 'Anuluj',
+        confirmTitle: '⚠️ Potwierdź',
+        infoCloseBtn: 'OK',
+        replyTitle: 'Odpowiedz do',
+        replySendBtn: 'Wyślij',
+        replyCancelBtn: '✕',
+        replyPlaceholder: 'Twoja odpowiedź...',
+        messagePlaceholder: 'Twoja wiadomość...',
+        clipboardHint: '💬 Skopiowano komentarz!',
+        timerNewbie: '🎁 Nowy użytkownik: {count} darmowych postów',
+        timerNegative: '❌ Najpierw wspieraj!',
+        timerReady: '✅ Możesz opublikować',
+        timerWaiting: '⏳ Pozostało {hours}h {minutes}m',
+        pinTitle: 'Dostęp Admina',
+        pinSub: 'Wprowadź 4-cyfrowy PIN Admina',
+        pinChangeTitle: 'Ustaw nowy PIN',
+        pinChangeSub: 'Wprowadź nowy 4-cyfrowy PIN',
+        pinConfirm: 'Potwierdź',
+        pinCancel: 'Anuluj',
+        pinError: 'Nieprawidłowy PIN',
+        pinSuccess: 'PIN został zmieniony',
+        infoGroups: '👥 **Grupy**\n\n• Maksymalnie 10 członków na grupę\n• Nowe grupy są tworzone automatycznie\n• Luki są wypełniane jako pierwsze',
+        infoMembers: '🤝 **Członkowie**\n\n• Aktywni członkowie w systemie\n• Każdy ma saldo wsparcia\n• Nieaktywni usuwani po 7 dniach',
+        infoSupports: '❤️ **Wsparcia**\n\n• Łączna liczba udzielonych wsparć\n• Pokazuje aktywność społeczności',
+        infoBalance: '💰 **Saldo**\n\n• Dodatni = Możesz publikować\n• Zero = Zrównoważony\n• Ujemny = Najpierw wspieraj\n\nWzór: Dane − Otrzymane',
+        infoGiven: '⬆️ **Dane**\n\n• Wsparcia które udzieliłeś\n• Zwiększa twoje saldo',
+        infoReceived: '⬇️ **Otrzymane**\n\n• Wsparcia które otrzymałeś\n• Zmniejsza twoje saldo',
+        infoPost: '📹 **Opublikuj wideo**\n\n• Maksymalnie 1 wideo na 24h\n• 3 darmowe posty dla nowych użytkowników\n• Timer pokazuje kiedy możesz publikować',
+        infoOpen: '🔄 **Udziel wsparcia**\n\n• Kliknij "Wspieraj & otwórz"\n• Komentarz zostanie skopiowany\n• Wideo otwiera się automatycznie',
+        infoMyvideos: '📋 **Moje wideo**\n\n• Status twoich ostatnich filmów\n• ✅ = Gotowe\n• ⏳ = Oczekuje\n• ⏰ = Wygasło',
+        infoMessage: '💬 **Zapytaj admina**\n\n• Tutaj możesz napisać do admina\n• W pilnych sprawach\n• Admin odpowiada bezpośrednio',
+        infoUser: '👤 **Twój profil**\n\n• Twoja nazwa użytkownika\n• Kliknij aby skopiować'
+    },
+    ar: {
+        welcomeTitle: 'مرحباً بعودتك',
+        loginBtn: '✨ دخول',
+        loginPlaceholder: 'اسم TikTok الخاص بك',
+        freeHint: '✨ ميزة بريميوم – مجانية للجميع – حصرية، قيمة، فريدة ✨',
+        freeBadge: '🎁 100% مجاني',
+        groupsLabel: 'المجموعات',
+        membersLabel: 'الأعضاء',
+        supportsLabel: 'الدعم',
+        balanceLabel: 'رصيد الدعم',
+        membersStatLabel: 'الأعضاء',
+        groupsStatLabel: 'المجموعات',
+        givenLabel: 'أعطيت',
+        receivedLabel: 'استلمت',
+        postBtnText: '📹 نشر فيديو',
+        sendMessageBtn: '📨 إرسال',
+        logoutBtn: '🚪 خروج',
+        openVideosTitle: '🔄 فيديوهات مفتوحة',
+        myVideosTitle: '📋 فيديوهاتي',
+        messageTitle: '💬 سؤال للإدارة',
+        repliesTitle: '📬 ردود الإدارة',
+        adminTitle: '👑 لوحة الإدارة',
+        requestsTitle: '📬 الطلبات',
+        adminGroupsLabel: 'المجموعات',
+        adminMembersLabel: 'الأعضاء',
+        editCommentBtn: '✏️ تعديل قالب التعليق',
+        changePinBtn: '🔐 تغيير PIN الإدارة',
+        cleanupBtn: '🧹 إزالة غير النشطين',
+        exportBtn: '📤 تصدير',
+        importBtn: '📥 استيراد',
+        clearRepliesBtn: '🗑️ حذف',
+        clearMessagesBtn: '🗑️ الكل',
+        postTitle: '📹 نشر فيديو',
+        postPlaceholder: 'رابط TikTok',
+        postBtn: 'نشر',
+        postCancelBtn: 'إلغاء',
+        commentTitle: '✏️ تعديل قالب التعليق',
+        newlineBtn: '↵ سطر',
+        previewLabel: 'معاينة:',
+        saveCommentBtn: '✅ حفظ',
+        cancelCommentBtn: 'إلغاء',
+        importTitle: '📥 استيراد بيانات',
+        importBtn2: 'استيراد',
+        importCancelBtn: 'إلغاء',
+        confirmTitle: '⚠️ تأكيد',
+        infoCloseBtn: 'موافق',
+        replyTitle: 'رد على',
+        replySendBtn: 'إرسال',
+        replyCancelBtn: '✕',
+        replyPlaceholder: 'إجابتك...',
+        messagePlaceholder: 'رسالتك...',
+        clipboardHint: '💬 تم نسخ التعليق!',
+        timerNewbie: '🎁 عضو جديد: {count} نشرات مجانية',
+        timerNegative: '❌ قدم دعماً أولاً!',
+        timerReady: '✅ يمكنك النشر',
+        timerWaiting: '⏳ {hours}س {minutes}د متبقي',
+        pinTitle: 'دخول الإدارة',
+        pinSub: 'الرجاء إدخال PIN الإدارة المكون من 4 أرقام',
+        pinChangeTitle: 'تعيين PIN جديد',
+        pinChangeSub: 'أدخل PIN الجديد المكون من 4 أرقام',
+        pinConfirm: 'تأكيد',
+        pinCancel: 'إلغاء',
+        pinError: 'PIN غير صحيح',
+        pinSuccess: 'تم تغيير PIN بنجاح',
+        infoGroups: '👥 **المجموعات**\n\n• 10 أعضاء كحد أقصى لكل مجموعة\n• يتم إنشاء مجموعات جديدة تلقائياً\n• يتم ملء الفراغات أولاً',
+        infoMembers: '🤝 **الأعضاء**\n\n• الأعضاء النشطون في النظام\n• كل عضو لديه رصيد دعم\n• غير النشطين يتم إزالتهم بعد 7 أيام',
+        infoSupports: '❤️ **الدعم**\n\n• إجمالي الدعم المقدم\n• يظهر نشاط المجتمع',
+        infoBalance: '💰 **الرصيد**\n\n• إيجابي = يمكنك النشر\n• صفر = متوازن\n• سلبي = قدم دعماً أولاً\n\nالصيغة: أعطيت − استلمت',
+        infoGiven: '⬆️ **أعطيت**\n\n• الدعم الذي قدمته\n• يزيد رصيدك',
+        infoReceived: '⬇️ **استلمت**\n\n• الدعم الذي تلقيته\n• يقلل رصيدك',
+        infoPost: '📹 **نشر فيديو**\n\n• فيديو واحد كحد أقصى كل 24 ساعة\n• 3 نشرات مجانية للأعضاء الجدد\n• المؤقت يظهر متى يمكنك النشر',
+        infoOpen: '🔄 **تقديم الدعم**\n\n• انقر "دعم وفتح"\n• يتم نسخ التعليق\n• يفتح الفيديو تلقائياً',
+        infoMyvideos: '📋 **فيديوهاتي**\n\n• حالة آخر فيديوهاتك\n• ✅ = مكتمل\n• ⏳ = ينتظر\n• ⏰ = منتهي الصلاحية',
+        infoMessage: '💬 **اسأل الإدارة**\n\n• أرسل أسئلة للإدارة\n• للمشاكل العاجلة\n• الإدارة ترد مباشرة',
+        infoUser: '👤 **ملفك الشخصي**\n\n• اسم المستخدم الخاص بك\n• انقر للنسخ'
+    },
+    zh: {
+        welcomeTitle: '欢迎回来',
+        loginBtn: '✨ 登录',
+        loginPlaceholder: '你的TikTok用户名',
+        freeHint: '✨ 高级功能 – 人人免费 – 独家，珍贵，独特 ✨',
+        freeBadge: '🎁 100% 免费',
+        groupsLabel: '群组',
+        membersLabel: '成员',
+        supportsLabel: '支持',
+        balanceLabel: '支持余额',
+        membersStatLabel: '成员',
+        groupsStatLabel: '群组',
+        givenLabel: '已给',
+        receivedLabel: '已收',
+        postBtnText: '📹 发布视频',
+        sendMessageBtn: '📨 发送',
+        logoutBtn: '🚪 退出',
+        openVideosTitle: '🔄 开放视频',
+        myVideosTitle: '📋 我的视频',
+        messageTitle: '💬 向管理员提问',
+        repliesTitle: '📬 管理员回复',
+        adminTitle: '👑 管理员面板',
+        requestsTitle: '📬 请求',
+        adminGroupsLabel: '群组',
+        adminMembersLabel: '成员',
+        editCommentBtn: '✏️ 编辑评论模板',
+        changePinBtn: '🔐 修改管理员PIN',
+        cleanupBtn: '🧹 移除不活跃成员',
+        exportBtn: '📤 导出',
+        importBtn: '📥 导入',
+        clearRepliesBtn: '🗑️ 删除',
+        clearMessagesBtn: '🗑️ 全部',
+        postTitle: '📹 发布视频',
+        postPlaceholder: 'TikTok网址',
+        postBtn: '发布',
+        postCancelBtn: '取消',
+        commentTitle: '✏️ 编辑评论模板',
+        newlineBtn: '↵ 换行',
+        previewLabel: '预览:',
+        saveCommentBtn: '✅ 保存',
+        cancelCommentBtn: '取消',
+        importTitle: '📥 导入数据',
+        importBtn2: '导入',
+        importCancelBtn: '取消',
+        confirmTitle: '⚠️ 确认',
+        infoCloseBtn: '确定',
+        replyTitle: '回复',
+        replySendBtn: '发送',
+        replyCancelBtn: '✕',
+        replyPlaceholder: '你的回答...',
+        messagePlaceholder: '你的消息...',
+        clipboardHint: '💬 评论已复制！',
+        timerNewbie: '🎁 新手: 还剩 {count} 次免费发布',
+        timerNegative: '❌ 请先给予支持！',
+        timerReady: '✅ 你可以发布',
+        timerWaiting: '⏳ 还剩 {hours}小时 {minutes}分钟',
+        pinTitle: '管理员访问',
+        pinSub: '请输入4位管理员PIN码',
+        pinChangeTitle: '设置新PIN码',
+        pinChangeSub: '输入新的4位PIN码',
+        pinConfirm: '确认',
+        pinCancel: '取消',
+        pinError: 'PIN码错误',
+        pinSuccess: 'PIN码修改成功',
+        infoGroups: '👥 **群组**\n\n• 每组最多10名成员\n• 自动创建新群组\n• 空缺优先填补',
+        infoMembers: '🤝 **成员**\n\n• 系统中的活跃成员\n• 每人都有支持余额\n• 不活跃成员7天后移除',
+        infoSupports: '❤️ **支持**\n\n• 总共给予的支持\n• 显示社区活跃度',
+        infoBalance: '💰 **余额**\n\n• 正数 = 可以发布\n• 零 = 平衡\n• 负数 = 请先支持\n\n公式: 已给 − 已收',
+        infoGiven: '⬆️ **已给**\n\n• 你给予的支持\n• 增加你的余额',
+        infoReceived: '⬇️ **已收**\n\n• 你收到的支持\n• 减少你的余额',
+        infoPost: '📹 **发布视频**\n\n• 每24小时最多1个视频\n• 新手有3次免费发布\n• 计时器显示何时可以发布',
+        infoOpen: '🔄 **给予支持**\n\n• 点击"支持并打开"\n• 评论已复制\n• 视频自动打开',
+        infoMyvideos: '📋 **我的视频**\n\n• 最近视频的状态\n• ✅ = 已完成\n• ⏳ = 等待中\n• ⏰ = 已过期',
+        infoMessage: '💬 **询问管理员**\n\n• 向管理员发送问题\n• 紧急问题\n• 管理员直接回复',
+        infoUser: '👤 **你的资料**\n\n• 你的用户名\n• 点击复制'
+    },
+    ja: {
+        welcomeTitle: 'おかえりなさい',
+        loginBtn: '✨ ログイン',
+        loginPlaceholder: 'あなたのTikTok名',
+        freeHint: '✨ プレミアム機能 – 全員無料 – 独占的、貴重、ユニーク ✨',
+        freeBadge: '🎁 100% 無料',
+        groupsLabel: 'グループ',
+        membersLabel: 'メンバー',
+        supportsLabel: 'サポート',
+        balanceLabel: 'サポート残高',
+        membersStatLabel: 'メンバー',
+        groupsStatLabel: 'グループ',
+        givenLabel: '与えた',
+        receivedLabel: '受け取った',
+        postBtnText: '📹 動画を投稿',
+        sendMessageBtn: '📨 送信',
+        logoutBtn: '🚪 ログアウト',
+        openVideosTitle: '🔄 公開動画',
+        myVideosTitle: '📋 マイ動画',
+        messageTitle: '💬 管理者への質問',
+        repliesTitle: '📬 管理者からの返信',
+        adminTitle: '👑 管理者ダッシュボード',
+        requestsTitle: '📬 リクエスト',
+        adminGroupsLabel: 'グループ',
+        adminMembersLabel: 'メンバー',
+        editCommentBtn: '✏️ コメントテンプレート編集',
+        changePinBtn: '🔐 Admin PIN変更',
+        cleanupBtn: '🧹 非アクティブを削除',
+        exportBtn: '📤 エクスポート',
+        importBtn: '📥 インポート',
+        clearRepliesBtn: '🗑️ 削除',
+        clearMessagesBtn: '🗑️ すべて',
+        postTitle: '📹 動画投稿',
+        postPlaceholder: 'TikTok URL',
+        postBtn: '投稿',
+        postCancelBtn: 'キャンセル',
+        commentTitle: '✏️ コメントテンプレート編集',
+        newlineBtn: '↵ 改行',
+        previewLabel: 'プレビュー:',
+        saveCommentBtn: '✅ 保存',
+        cancelCommentBtn: 'キャンセル',
+        importTitle: '📥 データインポート',
+        importBtn2: 'インポート',
+        importCancelBtn: 'キャンセル',
+        confirmTitle: '⚠️ 確認',
+        infoCloseBtn: 'OK',
+        replyTitle: '返信',
+        replySendBtn: '送信',
+        replyCancelBtn: '✕',
+        replyPlaceholder: 'あなたの回答...',
+        messagePlaceholder: 'あなたのメッセージ...',
+        clipboardHint: '💬 コメントをコピーしました！',
+        timerNewbie: '🎁 新規: 残り {count} 回無料投稿',
+        timerNegative: '❌ 先にサポートしよう！',
+        timerReady: '✅ 投稿できます',
+        timerWaiting: '⏳ あと {hours}時間 {minutes}分',
+        pinTitle: '管理者アクセス',
+        pinSub: '4桁の管理者PINを入力してください',
+        pinChangeTitle: '新しいPINを設定',
+        pinChangeSub: '新しい4桁のPINを入力',
+        pinConfirm: '確認',
+        pinCancel: 'キャンセル',
+        pinError: 'PINが間違っています',
+        pinSuccess: 'PINが正常に変更されました',
+        infoGroups: '👥 **グループ**\n\n• 各グループ最大10名\n• 新しいグループは自動作成\n• 空きは優先的に埋まる',
+        infoMembers: '🤝 **メンバー**\n\n• システム内のアクティブメンバー\n• 各自サポート残高あり\n• 非アクティブは7日後に削除',
+        infoSupports: '❤️ **サポート**\n\n• 与えられたサポート総数\n• コミュニティ活動を示す',
+        infoBalance: '💰 **残高**\n\n• プラス = 投稿可能\n• ゼロ = バランス\n• マイナス = 先にサポート\n\n計算式: 与えた − 受け取った',
+        infoGiven: '⬆️ **与えた**\n\n• あなたが与えたサポート\n• 残高が増える',
+        infoReceived: '⬇️ **受け取った**\n\n• あなたが受け取ったサポート\n• 残高が減る',
+        infoPost: '📹 **動画投稿**\n\n• 24時間に1回まで\n• 新規は3回無料投稿\n• タイマーで次回投稿可能時間がわかる',
+        infoOpen: '🔄 **サポートする**\n\n• 「サポートして開く」をクリック\n• コメントがコピーされる\n• 動画が自動で開く',
+        infoMyvideos: '📋 **マイ動画**\n\n• 最新動画の状態\n• ✅ = 完了\n• ⏳ = 待機中\n• ⏰ = 期限切れ',
+        infoMessage: '💬 **管理者に質問**\n\n• 管理者に質問を送信\n• 緊急の問題用\n• 管理者が直接回答',
+        infoUser: '👤 **あなたのプロフィール**\n\n• あなたのユーザー名\n• クリックでコピー'
+    }
+};
+
+let currentLang = 'de';
+let countUpAnimationDone = false;
+let targetGroups = 0, targetMembers = 0, targetSupports = 0;
+
+function setLanguage(lang) {
+    currentLang = lang;
+    document.querySelectorAll('#loginLanguageSwitcher .lang-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.textContent.includes(lang.toUpperCase())) {
+            btn.classList.add('active');
+        }
+    });
+    updateUILanguage();
+}
+
+function t(key, params = {}) {
+    let text = translations[currentLang]?.[key] || translations.de[key] || key;
+    if (params.count !== undefined) text = text.replace('{count}', params.count);
+    if (params.hours !== undefined) text = text.replace('{hours}', params.hours);
+    if (params.minutes !== undefined) text = text.replace('{minutes}', params.minutes);
+    return text;
+}
+
+function updateUILanguage() {
+    document.getElementById('welcomeTitle').textContent = t('welcomeTitle');
+    document.getElementById('loginBtn').textContent = t('loginBtn');
+    document.getElementById('loginInput').placeholder = t('loginPlaceholder');
+    document.getElementById('freeHint').textContent = t('freeHint');
+    document.getElementById('freeBadge').textContent = t('freeBadge');
+    document.getElementById('groupsLabel').textContent = t('groupsLabel');
+    document.getElementById('membersLabel').textContent = t('membersLabel');
+    document.getElementById('supportsLabel').textContent = t('supportsLabel');
+    document.getElementById('balanceLabel').textContent = t('balanceLabel');
+    document.getElementById('membersStatLabel').textContent = t('membersStatLabel');
+    document.getElementById('groupsStatLabel').textContent = t('groupsStatLabel');
+    document.getElementById('givenLabel').textContent = t('givenLabel');
+    document.getElementById('receivedLabel').textContent = t('receivedLabel');
+    document.getElementById('postBtnText').textContent = t('postBtnText');
+    document.getElementById('sendMessageBtn').textContent = t('sendMessageBtn');
+    document.getElementById('logoutBtn').textContent = t('logoutBtn');
+    document.getElementById('openVideosTitle').textContent = t('openVideosTitle');
+    document.getElementById('myVideosTitle').textContent = t('myVideosTitle');
+    document.getElementById('messageTitle').textContent = t('messageTitle');
+    document.getElementById('repliesTitle').textContent = t('repliesTitle');
+    document.getElementById('clearRepliesBtn').textContent = t('clearRepliesBtn');
+    document.getElementById('clearMessagesBtn').textContent = t('clearMessagesBtn');
+    document.getElementById('adminTitle').textContent = t('adminTitle');
+    document.getElementById('requestsTitle').textContent = t('requestsTitle');
+    document.getElementById('adminGroupsLabel').textContent = t('adminGroupsLabel');
+    document.getElementById('adminMembersLabel').textContent = t('adminMembersLabel');
+    document.getElementById('editCommentBtn').textContent = t('editCommentBtn');
+    document.getElementById('changePinBtn').textContent = t('changePinBtn');
+    document.getElementById('cleanupBtn').textContent = t('cleanupBtn');
+    document.getElementById('exportBtn').textContent = t('exportBtn');
+    document.getElementById('importBtn2').textContent = t('importBtn');
+    document.getElementById('postTitle').textContent = t('postTitle');
+    document.getElementById('modalVideoUrl').placeholder = t('postPlaceholder');
+    document.getElementById('postBtn').textContent = t('postBtn');
+    document.getElementById('postCancelBtn').textContent = t('postCancelBtn');
+    document.getElementById('commentTitle').textContent = t('commentTitle');
+    document.getElementById('newlineBtn').textContent = t('newlineBtn');
+    document.getElementById('previewLabel').textContent = t('previewLabel');
+    document.getElementById('saveCommentBtn').textContent = t('saveCommentBtn');
+    document.getElementById('cancelCommentBtn').textContent = t('cancelCommentBtn');
+    document.getElementById('importTitle').textContent = t('importTitle');
+    document.getElementById('importBtn').textContent = t('importBtn');
+    document.getElementById('importCancelBtn').textContent = t('importCancelBtn');
+    document.getElementById('confirmTitle').textContent = t('confirmTitle');
+    document.getElementById('infoCloseBtn').textContent = t('infoCloseBtn');
+    document.getElementById('replySendBtn').textContent = t('replySendBtn');
+    document.getElementById('replyCancelBtn').textContent = t('replyCancelBtn');
+    document.getElementById('replyInput').placeholder = t('replyPlaceholder');
+    document.getElementById('userMessage').placeholder = t('messagePlaceholder');
+    document.getElementById('pinTitle').textContent = t('pinTitle');
+    document.getElementById('pinSub').textContent = t('pinSub');
+    document.getElementById('pinChangeTitle').textContent = t('pinChangeTitle');
+    document.getElementById('pinChangeSub').textContent = t('pinChangeSub');
+    updatePostTimer();
+}
+
+// ============================================================
+// SPRACH-BLINKEN BEIM START
+// ============================================================
+function flashLanguageButtons() {
+    const buttons = document.querySelectorAll('#loginLanguageSwitcher .lang-btn');
+    if (!buttons.length) return;
+    
+    const shuffled = Array.from(buttons);
+    for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    
+    shuffled.forEach((btn, idx) => {
+        setTimeout(() => {
+            btn.classList.add('lang-flash');
+            setTimeout(() => btn.classList.remove('lang-flash'), 150);
+        }, idx * 50);
+    });
+}
+
+// ============================================================
+// ZÄHLER HOCHZÄHLEN BEIM EINGABEFELD-FOCUS
+// ============================================================
+function startCountUpAnimation() {
+    if (countUpAnimationDone) return;
+    countUpAnimationDone = true;
+    
+    targetGroups = parseInt(document.getElementById('previewGroups').textContent) || 0;
+    targetMembers = parseInt(document.getElementById('previewMembers').textContent) || 0;
+    targetSupports = parseInt(document.getElementById('previewLikes').textContent) || 0;
+    
+    let currentGroups = Math.max(0, targetGroups - 5);
+    let currentMembers = Math.max(0, targetMembers - 5);
+    let currentSupports = Math.max(0, targetSupports - 5);
+    
+    const groupsEl = document.getElementById('previewGroups');
+    const membersEl = document.getElementById('previewMembers');
+    const supportsEl = document.getElementById('previewLikes');
+    
+    groupsEl.textContent = currentGroups;
+    membersEl.textContent = currentMembers;
+    supportsEl.textContent = currentSupports;
+    
+    const steps = 5;
+    const stepDelay = 150;
+    let step = 0;
+    
+    const interval = setInterval(() => {
+        step++;
+        if (step <= steps) {
+            currentGroups = Math.min(targetGroups, currentGroups + 1);
+            currentMembers = Math.min(targetMembers, currentMembers + 1);
+            currentSupports = Math.min(targetSupports, currentSupports + 1);
+            
+            groupsEl.textContent = currentGroups;
+            membersEl.textContent = currentMembers;
+            supportsEl.textContent = currentSupports;
+            
+            groupsEl.classList.add('count-up');
+            membersEl.classList.add('count-up');
+            supportsEl.classList.add('count-up');
+            setTimeout(() => {
+                groupsEl.classList.remove('count-up');
+                membersEl.classList.remove('count-up');
+                supportsEl.classList.remove('count-up');
+            }, 100);
+        } else {
+            clearInterval(interval);
+        }
+    }, stepDelay);
+}
+
+// ============================================================
+// VIDEO POSTEN MIT ANIMATION (Grüner Haken + Sanduhr)
+// ============================================================
+function addVideoWithAnimation(videoId, videoData) {
+    const container = document.getElementById('myVideosList');
+    const videoElement = document.createElement('div');
+    videoElement.className = 'video-item';
+    videoElement.id = 'video_' + videoId;
+    
+    const now = new Date();
+    const dateStr = now.toLocaleDateString();
+    
+    videoElement.innerHTML = `
+        <div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid var(--glass-border); font-size:0.8rem;">
+            <span id="video-status-${videoId}">
+                <span class="video-check" style="display:inline-block; margin-right:5px;">✅</span>
+                ${videoData.currentSupports}/${videoData.requiredSupports}
+            </span>
+            <span style="color:var(--text-tertiary);">${dateStr}</span>
+        </div>
+    `;
+    
+    container.prepend(videoElement);
+    
+    setTimeout(() => {
+        const statusSpan = document.getElementById(`video-status-${videoId}`);
+        if (statusSpan) {
+            statusSpan.innerHTML = `
+                <span class="hourglass-spin" style="display:inline-block; margin-right:5px;">⏳</span>
+                ${videoData.currentSupports}/${videoData.requiredSupports}
+            `;
+        }
+    }, 1500);
+}
+
+// ============================================================
+// KONSTANTEN
+// ============================================================
+const DEFAULT_ADMINS = ['admin', 'support', 'master'];
+const DEFAULT_SETTINGS = {
+    admins: DEFAULT_ADMINS,
+    commentTemplate: '✨ support by {member} aus Gruppe {gruppe} fuer @{name} ✨',
+    nextGroupId: 1,
+    inactiveDays: 7,
+    maxMessagesPerUser: 50
+};
+
+const UNIQUE_CHARS = ['\u200B','\u200C','\u200D','\uFEFF','\u2060','\u2061','\u2062','\u2063'];
+
+// ============================================================
+// HILFSFUNKTIONEN
+// ============================================================
+function makeUnique(text) {
+    let u = text;
+    for (let i = 0; i < 3; i++) u += UNIQUE_CHARS[Math.floor(Math.random() * UNIQUE_CHARS.length)];
+    return u;
+}
+
+function copyToClipboard(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+        return navigator.clipboard.writeText(text).then(() => true).catch(() => fallbackCopy(text));
+    } else {
+        return Promise.resolve(fallbackCopy(text));
+    }
+}
+
+function fallbackCopy(text) {
+    try {
+        const el = document.getElementById('clipHelper');
+        el.value = text;
+        el.removeAttribute('disabled');
+        el.focus();
+        el.select();
+        const ok = document.execCommand('copy');
+        el.setAttribute('disabled', '');
+        return ok;
+    } catch(e) {
+        return false;
+    }
+}
+
+function showToast(msg, duration) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.style.display = 'block';
+    clearTimeout(t._timer);
+    t._timer = setTimeout(() => { t.style.display = 'none'; }, duration || 2500);
+}
+
+// ============================================================
+// DATENSTRUKTUR
+// ============================================================
+let appData = {
+    groups: {},
+    members: {},
+    videos: {},
+    messages: {},
+    settings: Object.assign({}, DEFAULT_SETTINGS),
+    currentUser: null,
+    version: 'premium_v5'
+};
+let pendingDelete = null;
+let currentReplyTo = null;
+
+// ============================================================
+// SPEICHERN / LADEN
+// ============================================================
+function silentSave() {
+    try {
+        localStorage.setItem('support_pool_v5', JSON.stringify({
+            groups: appData.groups,
+            members: appData.members,
+            videos: appData.videos,
+            messages: appData.messages,
+            settings: appData.settings,
+            version: 'premium_v5'
+        }));
+        return true;
+    } catch(e) {
+        console.warn('silentSave:', e.message);
+        return false;
+    }
+}
+
+function saveData(showErrorToast) {
+    try {
+        localStorage.setItem('support_pool_v5', JSON.stringify({
+            groups: appData.groups,
+            members: appData.members,
+            videos: appData.videos,
+            messages: appData.messages,
+            settings: appData.settings,
+            version: 'premium_v5'
+        }));
+        updateAllStats();
+        return true;
+    } catch(e) {
+        console.warn('saveData:', e.message);
+        if (showErrorToast) showToast('⚠️ Daten konnten nicht gespeichert werden');
+        return false;
+    }
+}
+
+function loadData() {
+    try {
+        const raw = localStorage.getItem('support_pool_v5');
+        if (raw) {
+            const parsed = JSON.parse(raw);
+            if (parsed && parsed.groups && parsed.members) {
+                appData = parsed;
+                if (!appData.videos) appData.videos = {};
+                if (!appData.messages) appData.messages = {};
+                if (!appData.settings) appData.settings = Object.assign({}, DEFAULT_SETTINGS);
+                Object.keys(DEFAULT_SETTINGS).forEach(k => {
+                    if (appData.settings[k] == null) appData.settings[k] = DEFAULT_SETTINGS[k];
+                });
+                if (!Array.isArray(appData.settings.admins)) appData.settings.admins = DEFAULT_ADMINS;
+                appData.currentUser = null;
+            } else initDemoData();
+        } else initDemoData();
+    } catch(e) {
+        console.warn('loadData:', e.message);
+        initDemoData();
+    }
+    updateAllStats();
+}
+
+function initDemoData() {
+    appData = {
+        groups: { gruppe1: { id: 'gruppe1', name: 'SUPPORT POOL 1', number: 1, members: ['admin'], created: Date.now() } },
+        members: { admin: {
+            name: 'admin', role: 'admin', group: 'gruppe1', status: 'active',
+            stats: { given: 0, received: 0, balance: 0, joined: Date.now() },
+            myVideos: [], lastPostDate: null, newbiePostsLeft: 3, rewards: ['founder']
+        } },
+        videos: {}, messages: {},
+        settings: Object.assign({}, DEFAULT_SETTINGS, { nextGroupId: 2 }),
+        currentUser: null,
+        version: 'premium_v5'
+    };
+    silentSave();
+}
+
+// ============================================================
+// THEME
+// ============================================================
+function setTheme(theme) {
+    document.body.classList.remove('theme-light', 'theme-gold');
+    if (theme === 'light') document.body.classList.add('theme-light');
+    if (theme === 'gold') document.body.classList.add('theme-gold');
+    document.querySelectorAll('.login-theme-btn').forEach(b => b.classList.remove('active'));
+    const id = theme === 'gold' ? 'loginThemeGold' : 'loginThemeLight';
+    const btn = document.getElementById(id);
+    if (btn) btn.classList.add('active');
+    try { localStorage.setItem('premium_theme', theme); } catch(e) {}
+}
+
+// ============================================================
+// STATISTIKEN
+// ============================================================
+function updateAllStats() {
+    try {
+        const groups = Object.keys(appData.groups || {}).length;
+        const members = Object.values(appData.members || {}).filter(m => m.status === 'active' && m.role !== 'admin').length;
+        const likes = Object.values(appData.videos || {}).reduce((s, v) => s + (v.currentSupports || 0), 0);
+
+        document.getElementById('previewGroups').textContent = groups;
+        document.getElementById('previewMembers').textContent = members;
+        document.getElementById('previewLikes').textContent = likes;
+
+        if (!appData.currentUser) return;
+
+        const user = appData.members[appData.currentUser];
+        if (!user) return;
+
+        document.getElementById('totalMembers').textContent = members;
+        document.getElementById('totalGroups').textContent = groups;
+        document.getElementById('statGiven').textContent = user.stats.given;
+        document.getElementById('statReceived').textContent = user.stats.received;
+        document.getElementById('balanceValue').textContent = user.stats.balance;
+
+        const bc = document.getElementById('balanceCard');
+        bc.className = 'balance-card ' + (user.stats.balance > 0 ? 'positive' : user.stats.balance < 0 ? 'negative' : 'zero');
+
+        const openCount = Object.values(appData.videos).filter(v =>
+            v.status === 'waiting' && v.owner !== user.name && !v.supporters.includes(user.name)
+        ).length;
+        document.getElementById('openVideosCount').textContent = openCount;
+        document.getElementById('myVideosCount').textContent = user.myVideos.length;
+
+        if (user.role === 'admin') {
+            document.getElementById('adminTotalGroups').textContent = groups;
+            document.getElementById('adminTotalMembers').textContent = members;
+        }
+    } catch(e) {}
+}
+
+// ============================================================
+// POST-TIMER
+// ============================================================
+function updatePostTimer() {
+    const user = appData.members?.[appData.currentUser];
+    if (!user) return;
+    const el = document.getElementById('postTimer');
+    if (!el) return;
+    if (user.newbiePostsLeft > 0) {
+        el.className = 'post-timer timer-green';
+        el.textContent = t('timerNewbie', { count: user.newbiePostsLeft });
+        return;
+    }
+    if (user.stats.balance <= 0) {
+        el.className = 'post-timer timer-red';
+        el.textContent = t('timerNegative');
+        return;
+    }
+    if (!user.lastPostDate || (Date.now() - user.lastPostDate) >= 86400000) {
+        el.className = 'post-timer timer-green';
+        el.textContent = t('timerReady');
+        return;
+    }
+    const rem = 86400000 - (Date.now() - user.lastPostDate);
+    const h = Math.floor(rem / 3600000);
+    const m = Math.floor((rem % 3600000) / 60000);
+    el.className = 'post-timer timer-yellow';
+    el.textContent = t('timerWaiting', { hours: h, minutes: m });
+}
+
+// ============================================================
+// LOGIN
+// ============================================================
+function handleLogin() {
+    const input = document.getElementById('loginInput');
+    const username = (input.value || '').trim().toLowerCase();
+    if (!username) { showToast('❌ ' + t('loginPlaceholder')); return; }
+
+    if (!appData.members) appData.members = {};
+    if (!appData.groups) appData.groups = {};
+    if (!appData.videos) appData.videos = {};
+    if (!appData.messages) appData.messages = {};
+
+    const admins = Array.isArray(appData.settings?.admins) ? appData.settings.admins : DEFAULT_ADMINS;
+    const isAdmin = admins.includes(username) || (appData.members[username] && appData.members[username].role === 'admin');
+
+    if (isAdmin) {
+        input.value = '';
+        showPinModal(username);
+        return;
+    }
+
+    input.value = '';
+    completeLogin(username);
+}
+
+function completeLogin(username) {
+    const admins = Array.isArray(appData.settings?.admins) ? appData.settings.admins : DEFAULT_ADMINS;
+    const isAdmin = admins.includes(username) || (appData.members[username] && appData.members[username].role === 'admin');
+
+    if (appData.members[username]) {
+        const member = appData.members[username];
+        if (member.status === 'inactive') {
+            const tg = findGroupForExistingMember();
+            if (tg) {
+                member.status = 'active';
+                member.group = tg.id;
+                if (!tg.members.includes(username)) tg.members.push(username);
+                showToast('✨ ' + t('welcomeTitle'));
+            } else { showToast('❌ ' + t('groupsLabel')); return; }
+        }
+        appData.currentUser = username;
+        showToast('🌟 ' + t('welcomeTitle') + ', ' + username + '!');
+    } else {
+        const tg = findGroupForNewMember();
+        if (!tg) { showToast('❌ ' + t('groupsLabel')); return; }
+        appData.members[username] = {
+            name: username, role: isAdmin ? 'admin' : 'member',
+            group: tg.id, status: 'active',
+            stats: { given: 0, received: 0, balance: 0, joined: Date.now() },
+            myVideos: [], lastPostDate: null, newbiePostsLeft: 3, rewards: ['newbie']
+        };
+        tg.members.push(username);
+        appData.currentUser = username;
+        showToast('🎉 ' + t('welcomeTitle') + ' in ' + tg.name + '!');
+    }
+
+    document.getElementById('loginSection').style.display = 'none';
+    document.getElementById('mainPanel').style.display = 'block';
+    document.getElementById('userBadge').style.display = 'block';
+    document.getElementById('userName').textContent = appData.currentUser;
+
+    const user = appData.members[appData.currentUser];
+    if (user.role === 'admin') {
+        document.getElementById('adminPanel').style.display = 'block';
+        renderAdminGroups();
+        renderAdminMessages();
+    }
+
+    renderDashboard();
+    renderUserReplies();
+    checkExpiredVideos();
+    silentSave();
+    updateAllStats();
+}
+
+function findGroupForNewMember() {
+    const sorted = Object.values(appData.groups).sort((a, b) => a.number - b.number);
+    for (let g of sorted) { if (g.members.length < 10) return g; }
+    const num = appData.settings?.nextGroupId || 2;
+    const id = 'gruppe' + num;
+    appData.groups[id] = { id, name: 'SUPPORT POOL ' + num, number: num, members: [], created: Date.now() };
+    if (appData.settings) appData.settings.nextGroupId = num + 1;
+    return appData.groups[id];
+}
+
+function findGroupForExistingMember() {
+    const sorted = Object.values(appData.groups).sort((a, b) => a.number - b.number);
+    for (let g of sorted) { if (g.members.length < 10) return g; }
+    return null;
+}
+
+function logout() {
+    appData.currentUser = null;
+    document.getElementById('loginSection').style.display = 'block';
+    document.getElementById('mainPanel').style.display = 'none';
+    document.getElementById('userBadge').style.display = 'none';
+    document.getElementById('adminPanel').style.display = 'none';
+    document.getElementById('userRepliesSection').style.display = 'none';
+    updateAllStats();
+}
+
+// ============================================================
+// RENDER
+// ============================================================
+function renderDashboard() {
+    updateAllStats();
+    const user = appData.members[appData.currentUser];
+    if (!user) return;
+    renderOpenVideos(user);
+    renderMyVideos(user);
+    updatePostTimer();
+}
+
+function renderOpenVideos(user) {
+    const container = document.getElementById('openVideosList');
+    const open = Object.values(appData.videos).filter(v =>
+        v.status === 'waiting' && v.owner !== user.name && !v.supporters.includes(user.name)
+    ).sort((a, b) => a.expiresAt - b.expiresAt).slice(0, 20);
+
+    if (!open.length) {
+        container.innerHTML = '<div style="color:var(--text-tertiary);padding:15px;text-align:center;">✨ ' + t('openVideosTitle') + '</div>';
+        return;
+    }
+    container.innerHTML = open.map(v => {
+        const left = Math.max(0, v.expiresAt - Date.now());
+        const h = Math.floor(left / 3600000);
+        const m = Math.floor((left % 3600000) / 60000);
+        const urgent = left < 7200000;
+        const disabled = user.stats.balance <= 0 && user.newbiePostsLeft === 0;
+        const pct = Math.min(100, (v.currentSupports / v.requiredSupports) * 100);
+        return '<div class="video-item">'
+            + '<div style="display:flex;justify-content:space-between;font-size:0.8rem;color:var(--text-primary);margin-bottom:4px;">'
+            + '<span style="font-weight:600;">@' + v.owner + '</span>'
+            + '<span>' + (v.requiredSupports - v.currentSupports) + ' ' + t('supportsLabel') + '</span>'
+            + '</div>'
+            + '<div class="progress-bar"><div class="progress-fill" style="width:' + pct + '%"></div></div>'
+            + '<div style="font-size:0.65rem;color:' + (urgent ? '#ef4444' : 'var(--text-secondary)') + ';margin-bottom:4px;">'
+            + '⏰ ' + h + 'h ' + m + 'm'
+            + '</div>'
+            + '<button class="support-btn" onclick="openVideoAndSupport(\'' + v.id + '\',\'' + v.url + '\')"'
+            + (disabled ? ' disabled' : '') + '>'
+            + '✨ ' + t('openVideosTitle')
+            + '</button>'
+            + '</div>';
+    }).join('');
+}
+
+function renderMyVideos(user) {
+    const container = document.getElementById('myVideosList');
+    if (!user.myVideos.length) {
+        container.innerHTML = '<div style="color:var(--text-tertiary);padding:15px;text-align:center;">📭 ' + t('myVideosTitle') + '</div>';
+        return;
+    }
+    const last = [...user.myVideos].map(id => appData.videos[id]).filter(v => v)
+        .sort((a, b) => b.postedAt - a.postedAt).slice(0, 3);
+    container.innerHTML = last.map(v => {
+        const icon = v.status === 'completed' ? '✅' : v.status === 'expired' ? '⏰' : '⏳';
+        return '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--glass-border);font-size:0.8rem;color:var(--text-primary);">'
+            + '<span>' + icon + ' ' + v.currentSupports + '/' + v.requiredSupports + '</span>'
+            + '<span style="color:var(--text-tertiary);">' + new Date(v.postedAt).toLocaleDateString() + '</span>'
+            + '</div>';
+    }).join('');
+}
+
+// ============================================================
+// ADMIN
+// ============================================================
+function renderAdminGroups() {
+    const container = document.getElementById('adminGroupsList');
+    if (!container) return;
+    updateAllStats();
+    const sorted = Object.values(appData.groups).sort((a, b) => a.number - b.number);
+    if (!sorted.length) { container.innerHTML = '<div style="color:var(--text-tertiary);text-align:center;padding:20px;">' + t('groupsLabel') + '</div>'; return; }
+    container.innerHTML = sorted.map(group => {
+        const active = group.members.filter(m => appData.members[m]?.status === 'active');
+        return '<div class="group-card">'
+            + '<div class="group-header"><span class="group-name">' + group.name + '</span>'
+            + '<span class="group-count">' + active.length + '/' + group.members.length + '</span></div>'
+            + active.map(mn => {
+                const m = appData.members[mn];
+                if (!m) return '';
+                const la = m.lastPostDate ? Math.floor((Date.now() - m.lastPostDate) / 86400000) + 'd' : 'neu';
+                const bal = m.stats.balance;
+                const bc = bal > 0 ? '#10b981' : bal < 0 ? '#ef4444' : 'var(--accent-silver)';
+                const isA = m.role === 'admin';
+                return '<div class="member-row">'
+                    + '<div class="member-info">'
+                    + '<span class="member-name">' + mn + (isA ? ' 👑' : '') + '</span>'
+                    + (m.newbiePostsLeft > 0 ? '<span class="member-badge">🎁 ' + m.newbiePostsLeft + '</span>' : '')
+                    + '<span style="font-size:0.65rem;color:var(--text-tertiary);">' + la + '</span>'
+                    + '</div>'
+                    + '<div style="display:flex;align-items:center;gap:8px;">'
+                    + '<span style="color:' + bc + ';font-weight:600;">' + bal + '</span>'
+                    + (!isA ? '<button class="delete-btn" onclick="showDeleteConfirm(\'' + group.id + '\',\'' + mn + '\')">✕</button>' : '')
+                    + '</div></div>';
+            }).join('')
+            + '</div>';
+    }).join('');
+}
+
+document.getElementById('confirmYesBtn').addEventListener('click', function() {
+    if (pendingDelete) {
+        const group = appData.groups[pendingDelete.groupId];
+        if (group) {
+            group.members = group.members.filter(m => m !== pendingDelete.memberName);
+            if (appData.members[pendingDelete.memberName]) {
+                appData.members[pendingDelete.memberName].status = 'inactive';
+                appData.members[pendingDelete.memberName].group = null;
+            }
+            showToast('✅ ' + pendingDelete.memberName + ' ' + t('cleanupBtn'));
+            renderAdminGroups();
+            silentSave();
+        }
+        pendingDelete = null;
+    }
+    document.getElementById('confirmModal').style.display = 'none';
+});
+document.getElementById('confirmNoBtn').addEventListener('click', function() {
+    pendingDelete = null;
+    document.getElementById('confirmModal').style.display = 'none';
+});
+
+function showDeleteConfirm(groupId, memberName) {
+    pendingDelete = { groupId, memberName };
+    document.getElementById('confirmText').textContent = t('confirmTitle') + ' "' + memberName + '"?';
+    document.getElementById('confirmModal').style.display = 'flex';
+}
+
+function cleanupInactiveMembers() {
+    const now = Date.now();
+    const thr = (appData.settings?.inactiveDays || 7) * 86400000;
+    let removed = 0;
+    Object.values(appData.groups).forEach(group => {
+        group.members = group.members.filter(mn => {
+            const m = appData.members[mn];
+            if (!m) return false;
+            if (m.lastPostDate && (now - m.lastPostDate) > thr && m.role !== 'admin') {
+                m.status = 'inactive';
+                removed++;
+                return false;
+            }
+            return true;
+        });
+    });
+    showToast(removed > 0 ? '✨ ' + removed + ' ' + t('cleanupBtn') : '✅ ' + t('cleanupBtn'));
+    if (removed > 0) { renderAdminGroups(); silentSave(); }
+}
+
+// ============================================================
+// VIDEOS
+// ============================================================
+function showPostModal() { document.getElementById('postVideoModal').style.display = 'flex'; }
+function closePostModal() {
+    document.getElementById('postVideoModal').style.display = 'none';
+    document.getElementById('modalVideoUrl').value = '';
+}
+
+function postVideo() {
+    const url = document.getElementById('modalVideoUrl').value.trim();
+    if (!url) { showToast('❌ ' + t('postPlaceholder')); return; }
+    const user = appData.members[appData.currentUser];
+    if (user.newbiePostsLeft === 0 && user.stats.balance <= 0) {
+        showToast('❌ ' + t('timerNegative')); closePostModal(); return;
+    }
+    if (user.lastPostDate && (Date.now() - user.lastPostDate) < 86400000) {
+        const h = Math.floor((86400000 - (Date.now() - user.lastPostDate)) / 3600000);
+        showToast('⏳ ' + t('timerWaiting', { hours: h, minutes: 0 })); closePostModal(); return;
+    }
+    const videoId = 'video_' + Date.now();
+    const group = appData.groups[user.group];
+    const now = new Date();
+    const tpl = appData.settings?.commentTemplate || DEFAULT_SETTINGS.commentTemplate;
+    const comment = tpl
+        .replace(/{gruppe}/g, group ? group.number : 1)
+        .replace(/{name}/g, user.name)
+        .replace(/{member}/g, appData.currentUser)
+        .replace(/{date}/g, now.toLocaleDateString())
+        .replace(/{time}/g, now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+
+    const videoData = {
+        id: videoId, owner: user.name, group: user.group,
+        url, postedAt: Date.now(), requiredSupports: 10,
+        currentSupports: 0, supporters: [],
+        comment,
+        status: 'waiting', expiresAt: Date.now() + 86400000
+    };
+    appData.videos[videoId] = videoData;
+    user.myVideos.push(videoId);
+    user.lastPostDate = Date.now();
+    if (user.newbiePostsLeft > 0) user.newbiePostsLeft--;
+    closePostModal();
+    renderDashboard();
+    addVideoWithAnimation(videoId, videoData);
+    showToast('✅ ' + t('postBtn'));
+    silentSave();
+}
+
+function openVideoAndSupport(videoId, videoUrl) {
+    const text = buildSupportComment(videoId);
+    if (text === null) return;
+
+    updateSupportStats(videoId);
+
+    let copied = fallbackCopy(text);
+    if (!copied && navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text).then(() => {
+            showToast('💬 ' + t('clipboardHint'), 1000);
+            setTimeout(() => { window.location.href = videoUrl; }, 500);
+        }).catch(() => {
+            window.location.href = videoUrl;
+        });
+        return;
+    }
+
+    showToast('💬 ' + t('clipboardHint'), 800);
+    setTimeout(() => { window.location.href = videoUrl; }, 300);
+}
+
+function buildSupportComment(videoId) {
+    const user = appData.members[appData.currentUser];
+    const video = appData.videos[videoId];
+    if (!video) { showToast('❌ ' + t('openVideosTitle')); return null; }
+    if (user.stats.balance < 0 && user.newbiePostsLeft === 0) { showToast('❌ ' + t('timerNegative')); return null; }
+    if (video.supporters.includes(user.name)) { showToast('❌ ' + t('clipboardHint')); return null; }
+    if (video.status !== 'waiting') { showToast('❌ ' + t('openVideosTitle')); return null; }
+
+    const tpl = appData.settings?.commentTemplate || DEFAULT_SETTINGS.commentTemplate;
+    const group = appData.groups[video.group];
+    const now = new Date();
+    const fresh = tpl
+        .replace(/{gruppe}/g, group ? group.number : (video.groupNumber || 1))
+        .replace(/{name}/g, video.owner)
+        .replace(/{member}/g, appData.currentUser)
+        .replace(/{date}/g, now.toLocaleDateString())
+        .replace(/{time}/g, now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+    return makeUnique(fresh);
+}
+
+function updateSupportStats(videoId) {
+    const user = appData.members[appData.currentUser];
+    const video = appData.videos[videoId];
+    const videoOwner = appData.members[video.owner];
+    user.stats.given++;
+    user.stats.balance = user.stats.given - user.stats.received;
+    if (videoOwner) {
+        videoOwner.stats.received++;
+        videoOwner.stats.balance = videoOwner.stats.given - videoOwner.stats.received;
+    }
+    video.currentSupports++;
+    video.supporters.push(user.name);
+    if (video.currentSupports >= video.requiredSupports) video.status = 'completed';
+    renderDashboard();
+    silentSave();
+}
+
+// ============================================================
+// KOMMENTAR-EDITOR
+// ============================================================
+function showCommentEditor() {
+    const tpl = appData.settings?.commentTemplate || DEFAULT_SETTINGS.commentTemplate;
+    document.getElementById('commentTemplate').value = tpl;
+    updateCommentPreview();
+    document.getElementById('commentEditorModal').style.display = 'flex';
+}
+
+function insertPlaceholder(ph) {
+    const el = document.getElementById('commentTemplate');
+    const s = el.selectionStart;
+    const e = el.selectionEnd;
+    el.value = el.value.substring(0, s) + ph + el.value.substring(e);
+    el.focus();
+    el.setSelectionRange(s + ph.length, s + ph.length);
+    updateCommentPreview();
+}
+
+function updateCommentPreview() {
+    const raw = document.getElementById('commentTemplate').value;
+    const preview = raw
+        .replace(/{gruppe}/g, '1')
+        .replace(/{name}/g, 'user')
+        .replace(/{member}/g, 'supporter')
+        .replace(/{date}/g, '24.12.2024')
+        .replace(/{time}/g, '15:30');
+    document.getElementById('commentPreview').textContent = preview;
+}
+
+function saveCommentTemplate() {
+    const raw = document.getElementById('commentTemplate').value;
+    if (!raw) { showToast('❌ ' + t('saveCommentBtn')); return; }
+    appData.settings.commentTemplate = raw;
+    closeCommentEditor();
+    silentSave();
+    showToast('✅ ' + t('saveCommentBtn'));
+}
+
+function closeCommentEditor() { document.getElementById('commentEditorModal').style.display = 'none'; }
+
+// ============================================================
+// NACHRICHTEN
+// ============================================================
+function sendMessageToAdmin() {
+    if (!appData.currentUser) return;
+    const msg = document.getElementById('userMessage').value.trim();
+    if (!msg) { showToast('❌ ' + t('messagePlaceholder')); return; }
+    document.getElementById('userMessage').value = '';
+    const id = 'msg_' + Date.now() + '_' + Math.floor(Math.random() * 9999);
+    appData.messages[id] = { from: appData.currentUser, to: 'admin', message: msg, timestamp: Date.now(), read: false, reply: null };
+    showToast('✅ ' + t('sendMessageBtn'));
+    silentSave();
+}
+
+function renderUserReplies() {
+    const user = appData.currentUser;
+    if (!user || appData.members[user]?.role === 'admin') return;
+    const replies = Object.entries(appData.messages || {})
+        .filter(([_, m]) => m.to === user && m.reply)
+        .sort((a, b) => b[1].timestamp - a[1].timestamp).slice(0, 20);
+    const section = document.getElementById('userRepliesSection');
+    const container = document.getElementById('userRepliesList');
+    if (!replies.length) { section.style.display = 'none'; return; }
+    section.style.display = 'block';
+    container.innerHTML = replies.map(([_, m]) =>
+        '<div class="admin-message-item">'
+        + '<div style="display:flex;justify-content:space-between;">'
+        + '<strong style="color:var(--accent-gold);">📨 ' + t('repliesTitle') + '</strong>'
+        + '<span class="message-time">' + new Date(m.timestamp).toLocaleString() + '</span>'
+        + '</div>'
+        + '<div style="margin:5px 0;color:var(--text-secondary);">' + m.message + '</div>'
+        + '<div style="border-top:1px solid var(--glass-border);margin-top:5px;padding-top:5px;color:var(--text-primary);">'
+        + '<span style="color:var(--accent-gold);">✏️ ' + t('repliesTitle') + ':</span> ' + m.reply
+        + '</div></div>'
+    ).join('');
+}
+
+function renderAdminMessages() {
+    const container = document.getElementById('adminMessagesList');
+    if (!container) return;
+    const msgs = Object.entries(appData.messages || {})
+        .filter(([_, m]) => m.to === 'admin')
+        .sort((a, b) => b[1].timestamp - a[1].timestamp).slice(0, 50);
+    document.getElementById('unreadCount').textContent = msgs.filter(([_, m]) => !m.read).length;
+    if (!msgs.length) {
+        container.innerHTML = '<div style="color:var(--text-tertiary);padding:15px;text-align:center;">📭 ' + t('requestsTitle') + '</div>';
+        return;
+    }
+    container.innerHTML = msgs.map(([id, m]) =>
+        '<div class="admin-message-item ' + (!m.read ? 'message-unread' : '') + '" onclick="showReplyModal(\'' + id + '\',\'' + m.from + '\')">'
+        + '<div style="display:flex;justify-content:space-between;">'
+        + '<strong style="color:var(--text-primary);">@' + m.from + '</strong>'
+        + '<span class="message-time">' + new Date(m.timestamp).toLocaleString() + '</span>'
+        + '</div>'
+        + '<div style="margin:5px 0;color:var(--text-secondary);">' + m.message + '</div>'
+        + (m.reply ? '<div style="border-top:1px solid var(--glass-border);margin-top:5px;padding-top:5px;">'
+            + '<span style="color:var(--accent-gold);">📨 ' + t('repliesTitle') + ':</span> ' + m.reply + '</div>' : '')
+        + '</div>'
+    ).join('');
+}
+
+function clearAllReplies() {
+    const user = appData.currentUser;
+    if (!user) return;
+    Object.keys(appData.messages || {}).forEach(k => { if (appData.messages[k].to === user) delete appData.messages[k]; });
+    renderUserReplies(); silentSave(); showToast('✅ ' + t('clearRepliesBtn'));
+}
+
+function clearAllMessages() {
+    Object.keys(appData.messages || {}).forEach(k => { if (appData.messages[k].to === 'admin') delete appData.messages[k]; });
+    renderAdminMessages(); silentSave(); showToast('✅ ' + t('clearMessagesBtn'));
+}
+
+function showReplyModal(msgId, fromUser) {
+    currentReplyTo = { id: msgId, user: fromUser };
+    document.getElementById('replyTitle').textContent = t('replyTitle') + ' @' + fromUser;
+    document.getElementById('replyInput').value = '';
+    document.getElementById('replyModal').style.display = 'block';
+}
+
+function closeReplyModal() { document.getElementById('replyModal').style.display = 'none'; currentReplyTo = null; }
+
+function sendReply() {
+    if (!currentReplyTo) return;
+    const reply = document.getElementById('replyInput').value.trim();
+    if (!reply) { showToast('❌ ' + t('replyPlaceholder')); return; }
+    const orig = appData.messages[currentReplyTo.id];
+    if (orig) {
+        orig.reply = reply;
+        orig.read = true;
+        appData.messages['reply_' + Date.now()] = {
+            from: 'admin', to: currentReplyTo.user,
+            message: orig.message, timestamp: Date.now(), read: true, reply
+        };
+    }
+    closeReplyModal(); renderAdminMessages(); silentSave(); showToast('✅ ' + t('replySendBtn'));
+}
+
+// ============================================================
+// BACKUP
+// ============================================================
+function exportData() {
+    const str = JSON.stringify({ groups: appData.groups, members: appData.members, videos: appData.videos, messages: appData.messages, settings: appData.settings, version: 'premium_v5' }, null, 2);
+    copyToClipboard(str).then(ok => { showToast(ok ? '📋 ' + t('exportBtn') + '!' : '❌ ' + t('exportBtn')); });
+}
+
+function showImportModal() { document.getElementById('importData').value = ''; document.getElementById('importModal').style.display = 'flex'; }
+function closeImportModal() { document.getElementById('importModal').style.display = 'none'; }
+
+function processImport() {
+    const raw = document.getElementById('importData').value.trim();
+    if (!raw) { showToast('❌ ' + t('importPlaceholder')); return; }
+    try {
+        const imp = JSON.parse(raw);
+        if (!imp.groups || !imp.members) { showToast('❌ ' + t('importBtn')); return; }
+        const savedUser = appData.currentUser;
+        appData = imp;
+        appData.currentUser = savedUser;
+        appData.version = 'premium_v5';
+        if (!appData.settings) appData.settings = Object.assign({}, DEFAULT_SETTINGS);
+        Object.keys(DEFAULT_SETTINGS).forEach(k => { if (appData.settings[k] == null) appData.settings[k] = DEFAULT_SETTINGS[k]; });
+        if (!Array.isArray(appData.settings.admins)) appData.settings.admins = DEFAULT_ADMINS;
+        if (!appData.messages) appData.messages = {};
+        if (!appData.videos) appData.videos = {};
+        saveData(true); closeImportModal(); showToast('✅ ' + t('importBtn') + '!');
+        if (appData.currentUser && appData.members[appData.currentUser]) {
+            renderDashboard();
+            if (appData.members[appData.currentUser].role === 'admin') { renderAdminMessages(); renderAdminGroups(); }
+            renderUserReplies();
+        } else { logout(); }
+    } catch(e) { showToast('❌ ' + t('importBtn') + ': ' + e.message); }
+}
+
+// ============================================================
+// INFO MODAL
+// ============================================================
+function showInfo(section) {
+    const infoText = t('info' + section.charAt(0).toUpperCase() + section.slice(1)) || t('info' + section) || 'Information';
+    document.getElementById('infoTitle').textContent = 'ℹ️ ' + t('infoCloseBtn');
+    document.getElementById('infoText').textContent = infoText;
+    document.getElementById('infoModal').style.display = 'flex';
+}
+
+function closeInfoModal() { document.getElementById('infoModal').style.display = 'none'; }
+
+// ============================================================
+// PIN SYSTEM
+// ============================================================
+const ADMIN_PIN_KEY = 'sp_admin_pin';
+const DEFAULT_PIN_HASH = hashPin('1234');
+
+function hashPin(pin) {
+    let h = 5381;
+    for (let i = 0; i < pin.length; i++) {
+        h = ((h << 5) + h) ^ pin.charCodeAt(i);
+        h = h >>> 0;
+    }
+    return h.toString(16);
+}
+
+function getStoredPinHash() {
+    try { return localStorage.getItem(ADMIN_PIN_KEY) || DEFAULT_PIN_HASH; } catch(e) { return DEFAULT_PIN_HASH; }
+}
+
+function setPinHash(hash) {
+    try { localStorage.setItem(ADMIN_PIN_KEY, hash); } catch(e) {}
+}
+
+let _pinBuffer = '';
+let _pinUsername = '';
+let _pinAttempts = 0;
+const MAX_PIN_ATTEMPTS = 5;
+
+function showPinModal(username) {
+    _pinBuffer = '';
+    _pinUsername = username;
+    _pinAttempts = 0;
+    document.getElementById('pinError').textContent = '';
+    updatePinDots();
+    document.getElementById('pinModal').style.display = 'flex';
+}
+
+function hidePinModal() {
+    document.getElementById('pinModal').style.display = 'none';
+    _pinBuffer = '';
+    _pinUsername = '';
+}
+
+function updatePinDots() {
+    for (let i = 0; i < 4; i++) {
+        const dot = document.getElementById('pd' + i);
+        if (dot) dot.classList.toggle('filled', i < _pinBuffer.length);
+    }
+}
+
+function pinKey(digit) {
+    if (_pinBuffer.length >= 4) return;
+    _pinBuffer += digit;
+    updatePinDots();
+    document.getElementById('pinError').textContent = '';
+    if (_pinBuffer.length === 4) setTimeout(pinConfirm, 120);
+}
+
+function pinDelete() {
+    _pinBuffer = _pinBuffer.slice(0, -1);
+    updatePinDots();
+    document.getElementById('pinError').textContent = '';
+}
+
+function pinConfirm() {
+    if (_pinBuffer.length < 4) {
+        document.getElementById('pinError').textContent = '❌ ' + t('pinError');
+        return;
+    }
+    const entered = hashPin(_pinBuffer);
+    const stored = getStoredPinHash();
+    _pinBuffer = '';
+    updatePinDots();
+
+    if (entered === stored) {
+        const usernameToLogin = _pinUsername;
+        hidePinModal();
+        _pinAttempts = 0;
+        completeLogin(usernameToLogin);
+    } else {
+        _pinAttempts++;
+        if (_pinAttempts >= MAX_PIN_ATTEMPTS) {
+            hidePinModal();
+            document.getElementById('loginInput').value = '';
+            showToast('❌ ' + t('pinError') + ' – gesperrt');
+            const btn = document.getElementById('loginBtn');
+            if (btn) {
+                btn.disabled = true;
+                setTimeout(() => { btn.disabled = false; }, 30000);
+            }
+            return;
+        }
+        document.getElementById('pinError').textContent = '❌ ' + t('pinError') + ' (' + _pinAttempts + '/' + MAX_PIN_ATTEMPTS + ')';
+    }
+}
+
+function pinCancel() {
+    hidePinModal();
+    showToast('🔒 ' + t('pinCancel'));
+}
+
+// ============================================================
+// PIN ÄNDERN
+// ============================================================
+let _pinChangeBuffer = '';
+let _pinChangeStep = 'new';
+let _pinChangeFirst = '';
+
+function showChangePinModal() {
+    _pinChangeBuffer = '';
+    _pinChangeStep = 'new';
+    _pinChangeFirst = '';
+    document.getElementById('pinChangeTitle').textContent = t('pinChangeTitle');
+    document.getElementById('pinChangeSub').textContent = t('pinChangeSub');
+    document.getElementById('pinChangeError').textContent = '';
+    updatePinChangeDots();
+    document.getElementById('pinChangeModal').style.display = 'flex';
+}
+
+function closePinChangeModal() {
+    document.getElementById('pinChangeModal').style.display = 'none';
+    _pinChangeBuffer = '';
+}
+
+function updatePinChangeDots() {
+    for (let i = 0; i < 4; i++) {
+        const d = document.getElementById('pcd' + i);
+        if (d) d.classList.toggle('filled', i < _pinChangeBuffer.length);
+    }
+}
+
+function pinChangeKey(digit) {
+    if (_pinChangeBuffer.length >= 4) return;
+    _pinChangeBuffer += digit;
+    updatePinChangeDots();
+    document.getElementById('pinChangeError').textContent = '';
+    if (_pinChangeBuffer.length === 4) setTimeout(pinChangeConfirm, 120);
+}
+
+function pinChangeDelete() {
+    _pinChangeBuffer = _pinChangeBuffer.slice(0, -1);
+    updatePinChangeDots();
+}
+
+function pinChangeConfirm() {
+    if (_pinChangeBuffer.length < 4) {
+        document.getElementById('pinChangeError').textContent = '❌ ' + t('pinError');
+        return;
+    }
+    if (_pinChangeStep === 'new') {
+        _pinChangeFirst = _pinChangeBuffer;
+        _pinChangeBuffer = '';
+        _pinChangeStep = 'confirm';
+        updatePinChangeDots();
+        document.getElementById('pinChangeTitle').textContent = t('pinChangeTitle');
+        document.getElementById('pinChangeSub').textContent = t('pinConfirm');
+        document.getElementById('pinChangeError').textContent = '';
+    } else {
+        if (_pinChangeBuffer === _pinChangeFirst) {
+            setPinHash(hashPin(_pinChangeBuffer));
+            closePinChangeModal();
+            showToast('✅ ' + t('pinSuccess'));
+        } else {
+            _pinChangeBuffer = '';
+            _pinChangeFirst = '';
+            _pinChangeStep = 'new';
+            updatePinChangeDots();
+            document.getElementById('pinChangeTitle').textContent = t('pinChangeTitle');
+            document.getElementById('pinChangeSub').textContent = t('pinChangeSub');
+            document.getElementById('pinChangeError').textContent = '❌ ' + t('pinError');
+        }
+    }
+}
+
+// ============================================================
+// ABGELAUFENE VIDEOS
+// ============================================================
+function checkExpiredVideos() {
+    let changed = false;
+    Object.values(appData.videos || {}).forEach(v => {
+        if (v.status === 'waiting' && v.expiresAt < Date.now()) { v.status = 'expired'; changed = true; }
+    });
+    if (changed && appData.currentUser) { renderDashboard(); silentSave(); }
+}
+
+// ============================================================
+// START
+// ============================================================
+document.addEventListener('DOMContentLoaded', function() {
+    let theme = 'gold';
+    try { theme = localStorage.getItem('premium_theme') || 'gold'; } catch(e) {}
+    setTheme(theme);
+
+    const langs = ['🇩🇪 DE', '🇬🇧 EN', '🇮🇩 ID', '🇮🇹 IT', '🇪🇸 ES', '🇹🇷 TR', '🇵🇱 PL', '🇸🇦 AR', '🇨🇳 ZH', '🇯🇵 JA'];
+    const lc = document.getElementById('loginLanguageSwitcher');
+    if (lc) {
+        lc.innerHTML = langs.map((l, i) =>
+            '<button class="lang-btn' + (i === 0 ? ' active' : '') + '" '
+            + 'onclick="setLanguage(\'' + l.split(' ')[1].toLowerCase() + '\')">'
+            + l + '</button>'
+        ).join('');
+    }
+
+    loadData();
+    setTimeout(() => flashLanguageButtons(), 100);
+    setInterval(checkExpiredVideos, 60000);
+    setInterval(updatePostTimer, 60000);
+});
+</script>
+
+</body>
+</html>
