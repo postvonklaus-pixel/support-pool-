@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>SUPPORT POOL · PREMIUM</title>
+
+    <!-- ✅ FIX 1: Firebase-SDKs OHNE Inline-Code laden -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+    <style>
+        /* ... dein CSS unverändert ... */
+    </style>
+</head>
+<body>
+
+<!-- ... dein HTML unverändert ... -->
+
+<script>
+// ============================================================
+// ✅ FIX 1: Firebase-Config jetzt in eigenem <script>-Block
+// ============================================================
+const FIREBASE_CONFIG = {
+    apiKey:            "AIzaSyAwtRKoqHRpdwjXbtTUmUAuadgJIgkyleQ",
+    authDomain:        "support-pool.firebaseapp.com",
+    databaseURL:       "https://support-pool-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId:         "support-pool",
+    storageBucket:     "support-pool.firebasestorage.app",
+    messagingSenderId: "620989491854",
+    appId:             "1:620989491854:web:ab99c2cb7864e63a98f7df"
+};
+
+// ============================================================
+// FIREBASE SYNC ENGINE
+// ============================================================
+let _firebaseApp = null;
+let _db          = null;
+let _dbRef       = null;
+let _listener    = null;
+let _firebaseOk  = false;
+let _syncPending = false;
+let _lastOwnPush = 0; // ✅ FIX 2: Eigene Pushes exakt tracken
+
+function setSyncDot(state) {
+    const dot = document.getElementById('syncDot');
+    if (!dot) return;
+    dot.className = 'sync-dot' + (state !== 'off' ? ' ' + state : '');
+    dot.title = state === 'online'  ? '✅ Daten synchronisiert'
+              : state === 'offline' ? '❌ Offline – Daten nur lokal'
+              : state === 'syncing' ? '🔄 Synchronisiere…'
+              : '⚪ Kein Sync';
+}
+
+function initFirebase() {
+    if (!FIREBASE_CONFIG.apiKey || FIREBASE_CONFIG.apiKey === 'DEIN_API_KEY') {
+        console.log('ℹ️ Firebase nicht konfiguriert – lokaler Modus');
+        setSyncDot('off');
+        return;
+    }
+    try {
+        if (!firebase.apps.length) {
+            _firebaseApp = firebase.initializeApp(FIREBASE_CONFIG);
+        } else {
+            _firebaseApp = firebase.app();
+        }
+        _db    = firebase.database();
+        _dbRef = _db.ref('supportpool');
+
+        _db.ref('.info/connected').on('value', snap => {
+            _firebaseOk = snap.val() === true;
+            setSyncDot(_firebaseOk ? 'online' : 'offline');
+            if (_firebaseOk && _syncPending) {
+                pushToFirebase();
+                _syncPending = false;
+            }
+        });
+
+        startFirebaseListener();
+        console.log('✅ Firebase initialisiert');
+    } catch(e) {
+        console.warn('Firebase Init Fehler:', e.message);
+        setSyncDot('offline');
+    }
+}
+
+function pushToFirebase() {
+    if (!_dbRef || !_firebaseOk) {
+        _syncPending = true;
+        return;
+    }
+    setSyncDot('syncing');
+    _lastOwnPush = Date.now(); // ✅ FIX 2: Zeitstempel vor dem Push merken
+
+    const payload = {
+        groups:      appData.groups   || {},
+        members:     appData.members  || {},
+        videos:      appData.videos   || {},
+        messages:    appData.messages || {},
+        settings:    appData.settings || {},
+        lastUpdated: _lastOwnPush
+    };
+    _dbRef.set(payload)
+        .then(() => { setSyncDot('online'); })
+        .catch(e => {
+            console.warn('Firebase Write Fehler:', e.message);
+            setSyncDot('offline');
+            _syncPending = true;
+        });
+}
+
+function startFirebaseListener() {
+    if (!_dbRef) return;
+    if (_listener) { _dbRef.off('value', _listener); }
+
+    _listener = _dbRef.on('value', snap => {
+        const remote = snap.val();
+        if (!remote || !remote.members || !remote.groups) return;
+
+        // ✅ FIX 2: Eigene Pushes exakt erkennen (5s Fenster statt 2s)
+        const age = Date.now() - (remote.lastUpdated || 0);
+        const ownAge = Date.now() - _lastOwnPush;
+        if (ownAge < 5000) return; // Eigene Änderung, ignorieren
+
+        const savedUser = appData.currentUser;
+        appData.groups   = remote.groups   || {};
+        appData.members  = remote.members  || {};
+        appData.videos   = remote.videos   || {};
+        appData.messages = remote.messages || {};
+        if (remote.settings) {
+            appData.settings = Object.assign({}, DEFAULT_SETTINGS, remote.settings);
+            if (!Array.isArray(appData.settings.admins)) appData.settings.admins = DEFAULT_ADMINS;
+        }
+        appData.currentUser = savedUser;
+
+        try { localStorage.setItem('support_pool_v5', JSON.stringify(appData)); } catch(e) {}
+
+        // ✅ FIX 4: Vollständiges Re-Render nach Remote-Update
+        updateAllStats();
+        if (appData.currentUser && appData.members[appData.currentUser]) {
+            renderDashboard();
+            if (appData.members[appData.currentUser].role === 'admin') {
+                renderAdminGroups();
+                renderAdminMessages();
+            }
+            renderUserReplies();
+        }
+        setSyncDot('online');
+        showToast('🔄 Daten aktualisiert', 1500);
+    });
+}
+
+// ✅ FIX 3: syncData ersetzt silentSave/saveData für alle Schreibvorgänge
+function syncData() {
+    try { localStorage.setItem('support_pool_v5', JSON.stringify(appData)); } catch(e) {}
+    pushToFirebase(); // pushToFirebase prüft intern ob _db und _firebaseOk gesetzt sind
+}
+
+// ... Rest deines Codes (KONSTANTEN, appData, loadData, etc.) unverändert ...
+// Ersetze alle Aufrufe von silentSave() und saveData() durch syncData()
+
+</script>
+</body>
+</html>
