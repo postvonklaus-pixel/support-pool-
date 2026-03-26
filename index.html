@@ -1,0 +1,2182 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
+<title>SUPPORT POOL</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<style>
+/* ═══════════════════════════════════════════
+   RESET & ROOT
+═══════════════════════════════════════════ */
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#04050a;
+  --bg2:#080b12;
+  --bg3:#0d1018;
+  --card:#0f1219;
+  --card2:#131720;
+  --border:rgba(255,215,0,0.08);
+  --border2:rgba(255,215,0,0.15);
+  --gold:#d4a843;
+  --gold2:#f0c060;
+  --gold3:#b8870b;
+  --gold-glow:rgba(212,168,67,0.18);
+  --gold-glow2:rgba(212,168,67,0.35);
+  --text:#e8e2d5;
+  --text2:#9a9080;
+  --text3:#5a5248;
+  --green:#22c55e;
+  --red:#ef4444;
+  --blue:#3b82f6;
+  --r:20px;
+  --r2:14px;
+  --r3:50px;
+  --shadow:0 8px 40px rgba(0,0,0,0.6);
+  --shadow-gold:0 0 40px rgba(212,168,67,0.2);
+}
+html,body{height:100%;overflow-x:hidden}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:'DM Sans',sans-serif;
+  font-size:14px;
+  line-height:1.5;
+  min-height:100vh;
+}
+/* Grain overlay */
+body::before{
+  content:'';position:fixed;inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events:none;z-index:0;opacity:0.4;
+}
+/* Ambient glow */
+body::after{
+  content:'';position:fixed;top:-20%;left:50%;transform:translateX(-50%);
+  width:600px;height:400px;
+  background:radial-gradient(ellipse,rgba(212,168,67,0.04) 0%,transparent 70%);
+  pointer-events:none;z-index:0;
+}
+
+/* ═══════════════════════════════════════════
+LAYOUT
+═══════════════════════════════════════════ */
+#app{
+position:relative;z-index:1;
+max-width:480px;margin:0 auto;
+padding:0 0 80px;
+min-height:100vh;
+}
+
+/* ═══════════════════════════════════════════
+TYPOGRAPHY
+═══════════════════════════════════════════ */
+.display{font-family:'Cormorant Garamond',serif;letter-spacing:0.05em}
+h1.brand{
+font-family:'Cormorant Garamond',serif;
+font-size:1.5rem;font-weight:700;
+letter-spacing:0.12em;text-transform:uppercase;
+background:linear-gradient(135deg,var(--gold2),var(--gold),var(--gold3));
+-webkit-background-clip:text;-webkit-text-fill-color:transparent;
+background-clip:text;
+}
+
+/* ═══════════════════════════════════════════
+HEADER
+═══════════════════════════════════════════ */
+#header{
+display:flex;align-items:center;justify-content:space-between;
+padding:16px 20px;
+background:rgba(4,5,10,0.85);
+backdrop-filter:blur(20px);
+border-bottom:1px solid var(--border);
+position:sticky;top:0;z-index:100;
+}
+.header-right{display:flex;align-items:center;gap:10px}
+.sync-indicator{
+width:7px;height:7px;border-radius:50%;
+background:var(--text3);transition:all 0.3s;
+}
+.sync-indicator.online{background:var(--green);box-shadow:0 0 8px var(--green)}
+.sync-indicator.offline{background:var(--red);box-shadow:0 0 8px var(--red)}
+.sync-indicator.syncing{background:var(--gold);animation:pulse 0.8s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+
+/* ═══════════════════════════════════════════
+SCREENS
+═══════════════════════════════════════════ */
+.screen{display:none;padding:20px;animation:fadeIn 0.25s ease}
+.screen.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ═══════════════════════════════════════════
+BOTTOM NAV
+═══════════════════════════════════════════ */
+#bottom-nav{
+position:fixed;bottom:0;left:50%;transform:translateX(-50%);
+width:100%;max-width:480px;
+background:rgba(8,11,18,0.95);
+backdrop-filter:blur(20px);
+border-top:1px solid var(--border);
+display:none;
+z-index:100;
+}
+#bottom-nav.visible{display:flex}
+.nav-tab{
+flex:1;display:flex;flex-direction:column;align-items:center;
+padding:10px 0 12px;gap:4px;
+color:var(--text3);font-size:10px;font-weight:500;
+cursor:pointer;transition:all 0.2s;border:none;background:none;
+position:relative;
+}
+.nav-tab .nav-icon{font-size:20px;transition:transform 0.2s}
+.nav-tab.active{color:var(--gold)}
+.nav-tab.active .nav-icon{transform:scale(1.15)}
+.nav-tab .badge{
+position:absolute;top:6px;right:calc(50% - 14px);
+background:var(--red);color:#fff;
+font-size:9px;font-weight:700;
+border-radius:10px;padding:1px 5px;
+min-width:16px;text-align:center;
+display:none;
+}
+.nav-tab .badge.visible{display:block}
+
+/* ═══════════════════════════════════════════
+CARDS & GLASS
+═══════════════════════════════════════════ */
+.card{
+background:var(--card);
+border:1px solid var(--border);
+border-radius:var(--r);
+padding:18px;
+margin-bottom:12px;
+}
+.card-glass{
+background:rgba(15,18,25,0.7);
+backdrop-filter:blur(12px);
+border:1px solid var(--border);
+border-radius:var(--r);
+padding:18px;
+margin-bottom:12px;
+}
+.card-gold{
+background:linear-gradient(135deg,rgba(212,168,67,0.06),rgba(212,168,67,0.02));
+border:1px solid var(--border2);
+border-radius:var(--r);
+padding:18px;
+margin-bottom:12px;
+}
+
+/* ═══════════════════════════════════════════
+BUTTONS
+═══════════════════════════════════════════ */
+.btn{
+display:flex;align-items:center;justify-content:center;gap:8px;
+padding:12px 20px;border-radius:var(--r3);
+font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;
+border:none;cursor:pointer;transition:all 0.2s;
+width:100%;
+}
+.btn:active{transform:scale(0.97)}
+.btn-gold{
+background:linear-gradient(135deg,var(--gold2),var(--gold));
+color:#0a0800;
+box-shadow:0 4px 20px rgba(212,168,67,0.3);
+}
+.btn-gold:hover{box-shadow:0 4px 30px rgba(212,168,67,0.5)}
+.btn-outline{
+background:transparent;
+border:1px solid var(--border2);
+color:var(--text2);
+}
+.btn-outline:hover{border-color:var(--gold);color:var(--gold)}
+.btn-ghost{background:rgba(255,255,255,0.04);color:var(--text2)}
+.btn-danger{background:rgba(239,68,68,0.12);color:var(--red);border:1px solid rgba(239,68,68,0.2)}
+.btn-sm{padding:8px 16px;font-size:12px}
+.btn:disabled{opacity:0.35;cursor:not-allowed;transform:none}
+
+/* ═══════════════════════════════════════════
+INPUTS
+═══════════════════════════════════════════ */
+.input{
+width:100%;padding:13px 18px;
+background:rgba(255,255,255,0.03);
+border:1px solid var(--border);
+border-radius:var(--r3);
+color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;
+outline:none;transition:all 0.2s;
+}
+.input:focus{border-color:var(--gold);background:rgba(212,168,67,0.04)}
+.input::placeholder{color:var(--text3)}
+textarea.input{border-radius:var(--r2);resize:vertical;min-height:80px}
+
+/* ═══════════════════════════════════════════
+DIVIDER
+═══════════════════════════════════════════ */
+.divider{
+display:flex;align-items:center;gap:12px;
+color:var(--text3);font-size:11px;margin:16px 0;
+}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* ═══════════════════════════════════════════
+BADGES & TAGS
+═══════════════════════════════════════════ */
+.badge-gold{
+display:inline-flex;align-items:center;gap:4px;
+background:rgba(212,168,67,0.12);
+border:1px solid var(--border2);
+color:var(--gold2);
+font-size:11px;font-weight:600;
+padding:3px 10px;border-radius:20px;
+}
+.badge-green{background:rgba(34,197,94,0.12);border-color:rgba(34,197,94,0.25);color:var(--green)}
+.badge-red{background:rgba(239,68,68,0.12);border-color:rgba(239,68,68,0.25);color:var(--red)}
+.badge-blue{background:rgba(59,130,246,0.12);border-color:rgba(59,130,246,0.25);color:var(--blue)}
+
+/* ═══════════════════════════════════════════
+PROGRESS RING
+═══════════════════════════════════════════ */
+.ring-wrap{position:relative;display:inline-flex;align-items:center;justify-content:center}
+.ring-svg{transform:rotate(-90deg)}
+.ring-bg{fill:none;stroke:var(--border);stroke-width:3}
+.ring-fill{fill:none;stroke:url(#ringGrad);stroke-width:3;stroke-linecap:round;transition:stroke-dashoffset 0.6s ease}
+.ring-label{
+position:absolute;text-align:center;
+font-size:11px;font-weight:700;color:var(--gold2);
+}
+
+/* ═══════════════════════════════════════════
+VIDEO CARD
+═══════════════════════════════════════════ */
+.video-card{
+background:var(--card2);
+border:1px solid var(--border);
+border-radius:var(--r);
+padding:16px;margin-bottom:10px;
+transition:border-color 0.2s,box-shadow 0.2s;
+}
+.video-card:hover{border-color:var(--border2);box-shadow:0 4px 20px rgba(212,168,67,0.08)}
+.video-card-header{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.video-avatar{
+width:38px;height:38px;border-radius:50%;
+background:linear-gradient(135deg,var(--gold3),var(--gold));
+display:flex;align-items:center;justify-content:center;
+font-size:16px;font-weight:700;color:#0a0800;
+flex-shrink:0;
+}
+.video-meta{flex:1;min-width:0}
+.video-owner{font-weight:600;font-size:13px;color:var(--text);margin-bottom:2px}
+.video-time{font-size:11px;color:var(--text3)}
+.video-round-badge{
+font-size:10px;font-weight:700;padding:2px 8px;
+border-radius:10px;
+background:rgba(212,168,67,0.15);color:var(--gold2);
+border:1px solid var(--border2);
+}
+.video-round-badge.r2{background:rgba(59,130,246,0.15);color:#60a5fa;border-color:rgba(59,130,246,0.3)}
+.video-progress-row{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.video-bar{flex:1;height:4px;background:var(--border);border-radius:2px;overflow:hidden}
+.video-bar-fill{height:100%;background:linear-gradient(90deg,var(--gold3),var(--gold2));border-radius:2px;transition:width 0.5s ease}
+.video-stats-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;font-size:12px}
+.video-countdown{color:var(--red);font-weight:600;font-size:11px}
+.video-countdown.safe{color:var(--text3)}
+.support-btn{
+width:100%;padding:11px;
+background:linear-gradient(135deg,rgba(212,168,67,0.15),rgba(212,168,67,0.08));
+border:1px solid var(--border2);
+border-radius:var(--r2);
+color:var(--gold2);font-weight:600;font-size:13px;
+cursor:pointer;transition:all 0.2s;
+display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.support-btn:hover:not(:disabled){
+background:linear-gradient(135deg,rgba(212,168,67,0.25),rgba(212,168,67,0.15));
+box-shadow:0 0 20px rgba(212,168,67,0.2);
+transform:translateY(-1px);
+}
+.support-btn:disabled{opacity:0.35;cursor:not-allowed;transform:none}
+
+/* ═══════════════════════════════════════════
+STAT GRID
+═══════════════════════════════════════════ */
+.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+.stat-cell{
+background:var(--card2);border:1px solid var(--border);
+border-radius:var(--r2);padding:12px 8px;text-align:center;
+}
+.stat-num{
+font-family:'Cormorant Garamond',serif;
+font-size:1.6rem;font-weight:700;
+color:var(--gold2);line-height:1;
+}
+.stat-label{font-size:10px;color:var(--text3);margin-top:4px;font-weight:500}
+
+/* ═══════════════════════════════════════════
+BALANCE CARD
+═══════════════════════════════════════════ */
+.balance-big{
+font-family:'Cormorant Garamond',serif;
+font-size:3rem;font-weight:700;
+line-height:1;
+color:var(--text);
+}
+.balance-big.pos{color:var(--green)}
+.balance-big.neg{color:var(--red)}
+.balance-bar{
+height:6px;background:var(--border);
+border-radius:3px;overflow:hidden;margin:10px 0 6px;
+}
+.balance-fill{
+height:100%;border-radius:3px;
+background:linear-gradient(90deg,var(--gold3),var(--gold2));
+transition:width 0.5s ease;
+}
+
+/* ═══════════════════════════════════════════
+TIMER PILL
+═══════════════════════════════════════════ */
+.timer-pill{
+display:inline-flex;align-items:center;gap:6px;
+padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;
+}
+.timer-ok{background:rgba(34,197,94,0.1);color:var(--green);border:1px solid rgba(34,197,94,0.2)}
+.timer-wait{background:rgba(239,68,68,0.1);color:var(--red);border:1px solid rgba(239,68,68,0.2)}
+.timer-soon{background:rgba(212,168,67,0.1);color:var(--gold2);border:1px solid var(--border2)}
+
+/* ═══════════════════════════════════════════
+RANK BADGE
+═══════════════════════════════════════════ */
+.rank-badge{
+display:inline-flex;align-items:center;gap:5px;
+padding:4px 12px;border-radius:20px;
+font-size:11px;font-weight:600;
+}
+.rank-0{background:rgba(34,197,94,0.1);color:#86efac;border:1px solid rgba(34,197,94,0.2)} /* Neuling */
+.rank-1{background:rgba(212,168,67,0.12);color:var(--gold2);border:1px solid var(--border2)} /* Aktiv */
+.rank-2{background:rgba(59,130,246,0.12);color:#93c5fd;border:1px solid rgba(59,130,246,0.25)} /* Veteran */
+.rank-3{background:rgba(168,85,247,0.12);color:#c4b5fd;border:1px solid rgba(168,85,247,0.25)} /* Elite */
+
+/* ═══════════════════════════════════════════
+PROFILE CARD
+═══════════════════════════════════════════ */
+.profile-avatar-big{
+width:70px;height:70px;border-radius:50%;
+background:linear-gradient(135deg,var(--gold3),var(--gold2));
+display:flex;align-items:center;justify-content:center;
+font-size:28px;
+border:2px solid var(--border2);
+box-shadow:var(--shadow-gold);
+margin:0 auto 12px;
+}
+
+/* ═══════════════════════════════════════════
+NOTIFICATION INLINE
+═══════════════════════════════════════════ */
+.notif-item{
+display:flex;align-items:flex-start;gap:12px;
+padding:12px;
+background:rgba(212,168,67,0.04);
+border:1px solid var(--border);
+border-radius:var(--r2);
+margin-bottom:8px;
+}
+.notif-icon{font-size:18px;flex-shrink:0;margin-top:1px}
+.notif-text{font-size:12px;color:var(--text2);line-height:1.4}
+.notif-time{font-size:10px;color:var(--text3);margin-top:3px}
+.notif-unread{border-color:var(--border2)}
+
+/* ═══════════════════════════════════════════
+ONBOARDING
+═══════════════════════════════════════════ */
+#onboarding{
+position:fixed;inset:0;z-index:500;
+background:var(--bg);
+display:none;overflow-y:auto;
+}
+#onboarding.active{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px 24px}
+.ob-step{display:none;text-align:center;max-width:380px;width:100%}
+.ob-step.active{display:block;animation:fadeIn 0.3s ease}
+.ob-icon{font-size:56px;margin-bottom:20px}
+.ob-title{font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:700;margin-bottom:12px;color:var(--gold2)}
+.ob-text{color:var(--text2);font-size:14px;line-height:1.7;margin-bottom:24px}
+.ob-bullets{text-align:left;margin-bottom:24px}
+.ob-bullet{
+display:flex;align-items:flex-start;gap:10px;
+padding:10px 0;border-bottom:1px solid var(--border);
+font-size:13px;color:var(--text2);line-height:1.5;
+}
+.ob-bullet:last-child{border-bottom:none}
+.ob-bullet-icon{font-size:16px;flex-shrink:0;margin-top:1px}
+.ob-dots{display:flex;gap:8px;justify-content:center;margin-bottom:24px}
+.ob-dot{width:8px;height:8px;border-radius:50%;background:var(--border2);transition:all 0.2s}
+.ob-dot.active{background:var(--gold);width:24px;border-radius:4px}
+
+/* ═══════════════════════════════════════════
+PIN PAD
+═══════════════════════════════════════════ */
+.pin-pad{
+position:fixed;inset:0;z-index:600;
+background:rgba(4,5,10,0.96);
+backdrop-filter:blur(20px);
+display:none;align-items:center;justify-content:center;
+}
+.pin-pad.active{display:flex}
+.pin-box{
+background:var(--card);
+border:1px solid var(--border2);
+border-radius:var(--r);
+padding:28px 24px;
+max-width:300px;width:92%;
+text-align:center;
+box-shadow:0 0 60px rgba(212,168,67,0.15);
+}
+.pin-title{font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:700;color:var(--gold2);margin-bottom:6px}
+.pin-sub{font-size:12px;color:var(--text3);margin-bottom:20px}
+.pin-dots-row{display:flex;justify-content:center;gap:10px;margin-bottom:20px}
+.pin-dot-ui{
+width:12px;height:12px;border-radius:50%;
+border:2px solid var(--border2);
+background:transparent;transition:all 0.15s;
+}
+.pin-dot-ui.filled{background:var(--gold);border-color:var(--gold)}
+.pin-grid-ui{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.pin-key-ui{
+padding:14px 0;
+border:1px solid var(--border);
+border-radius:12px;
+background:rgba(255,255,255,0.03);
+color:var(--text);font-size:1.2rem;font-weight:600;
+cursor:pointer;transition:all 0.15s;
+}
+.pin-key-ui:hover{background:rgba(212,168,67,0.1);border-color:var(--border2)}
+.pin-key-ui:active{transform:scale(0.94)}
+.pin-key-ui.del{color:var(--red);border-color:rgba(239,68,68,0.2)}
+.pin-error-ui{font-size:12px;color:var(--red);min-height:18px;margin-bottom:8px;font-weight:600}
+.pin-cancel-ui{font-size:12px;color:var(--text3);background:none;border:none;cursor:pointer;text-decoration:underline;padding:6px}
+
+/* ═══════════════════════════════════════════
+MODAL (generic)
+═══════════════════════════════════════════ */
+.modal-overlay{
+position:fixed;inset:0;z-index:400;
+background:rgba(4,5,10,0.92);
+backdrop-filter:blur(12px);
+display:none;align-items:center;justify-content:center;
+padding:20px;
+}
+.modal-overlay.active{display:flex;animation:fadeIn 0.2s ease}
+.modal-box{
+background:var(--card);
+border:1px solid var(--border2);
+border-radius:var(--r);
+padding:24px;
+max-width:360px;width:100%;
+max-height:90vh;overflow-y:auto;
+box-shadow:0 0 60px rgba(212,168,67,0.12);
+}
+.modal-title{font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:700;color:var(--gold2);margin-bottom:14px;text-align:center}
+.modal-footer{display:flex;gap:10px;margin-top:14px}
+.modal-footer .btn{margin-bottom:0}
+
+/* ═══════════════════════════════════════════
+TOAST
+═══════════════════════════════════════════ */
+#toast{
+position:fixed;top:80px;left:50%;transform:translateX(-50%);
+z-index:9999;pointer-events:none;
+display:flex;flex-direction:column;align-items:center;gap:8px;
+width:90%;max-width:380px;
+}
+.toast-item{
+background:var(--card2);
+border:1px solid var(--border2);
+border-radius:var(--r3);
+padding:10px 18px;
+font-size:13px;font-weight:500;
+color:var(--text);
+box-shadow:var(--shadow);
+animation:toastIn 0.25s ease;
+text-align:center;
+}
+.toast-item.success{border-color:rgba(34,197,94,0.3);color:#86efac}
+.toast-item.error{border-color:rgba(239,68,68,0.3);color:#fca5a5}
+.toast-item.info{border-color:var(--border2);color:var(--gold2)}
+@keyframes toastIn{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+
+/* ═══════════════════════════════════════════
+CELEBRATION
+═══════════════════════════════════════════ */
+#celebration{
+position:fixed;inset:0;z-index:800;
+pointer-events:none;display:none;
+align-items:center;justify-content:center;
+}
+#celebration.active{display:flex}
+.cel-center{text-align:center;animation:celPop 0.4s ease}
+.cel-emoji{font-size:60px;display:block;animation:celBounce 0.6s ease}
+.cel-text{font-family:'Cormorant Garamond',serif;font-size:1.6rem;font-weight:700;color:var(--gold2);margin-top:8px}
+@keyframes celPop{from{opacity:0;transform:scale(0.5)}to{opacity:1;transform:scale(1)}}
+@keyframes celBounce{0%{transform:scale(0)}50%{transform:scale(1.2)}100%{transform:scale(1)}}
+.confetti-piece{
+position:absolute;width:8px;height:8px;
+border-radius:2px;
+animation:confettiFall 1.5s ease forwards;
+}
+@keyframes confettiFall{
+0%{transform:translateY(-20px) rotate(0deg);opacity:1}
+100%{transform:translateY(120vh) rotate(720deg);opacity:0}
+}
+
+/* ═══════════════════════════════════════════
+SECTION HEADERS
+═══════════════════════════════════════════ */
+.section-hdr{
+display:flex;align-items:center;justify-content:space-between;
+margin-bottom:14px;
+}
+.section-hdr-title{
+font-family:'Cormorant Garamond',serif;
+font-size:1.1rem;font-weight:700;color:var(--text);
+letter-spacing:0.03em;
+}
+.count-pill{
+background:rgba(212,168,67,0.1);
+border:1px solid var(--border);
+color:var(--gold2);
+font-size:11px;font-weight:700;
+padding:2px 10px;border-radius:20px;
+}
+
+/* ═══════════════════════════════════════════
+ADMIN TABS
+═══════════════════════════════════════════ */
+.admin-tabs{
+display:flex;gap:6px;
+background:var(--card2);
+border:1px solid var(--border);
+border-radius:var(--r3);
+padding:4px;
+margin-bottom:16px;
+}
+.admin-tab{
+flex:1;padding:8px 6px;
+border-radius:var(--r3);
+border:none;background:transparent;
+color:var(--text3);font-size:11px;font-weight:600;
+cursor:pointer;transition:all 0.2s;text-align:center;
+}
+.admin-tab.active{background:var(--card);color:var(--gold2);box-shadow:0 2px 8px rgba(0,0,0,0.3)}
+
+/* ═══════════════════════════════════════════
+MEMBER ROW
+═══════════════════════════════════════════ */
+.member-row{
+display:flex;align-items:center;gap:10px;
+padding:10px 0;
+border-bottom:1px solid var(--border);
+}
+.member-row:last-child{border-bottom:none}
+.member-avatar{
+width:32px;height:32px;border-radius:50%;
+background:linear-gradient(135deg,rgba(212,168,67,0.2),rgba(212,168,67,0.05));
+border:1px solid var(--border2);
+display:flex;align-items:center;justify-content:center;
+font-size:14px;flex-shrink:0;
+}
+.member-info{flex:1;min-width:0}
+.member-name{font-size:13px;font-weight:600;color:var(--text)}
+.member-sub{font-size:10px;color:var(--text3)}
+
+/* ═══════════════════════════════════════════
+LANG GRID (Login)
+═══════════════════════════════════════════ */
+.lang-grid{
+display:grid;grid-template-columns:repeat(5,1fr);
+gap:6px;margin-bottom:20px;
+}
+.lang-btn-ui{
+display:flex;flex-direction:column;align-items:center;gap:3px;
+padding:8px 4px;
+background:rgba(255,255,255,0.03);
+border:1px solid var(--border);
+border-radius:var(--r2);
+cursor:pointer;transition:all 0.2s;
+font-size:18px;
+}
+.lang-btn-ui span{font-size:9px;color:var(--text3);font-weight:500}
+.lang-btn-ui.active{border-color:var(--gold);background:rgba(212,168,67,0.08)}
+.lang-btn-ui:hover{border-color:var(--border2)}
+
+/* ═══════════════════════════════════════════
+OFFLINE BANNER
+═══════════════════════════════════════════ */
+#offline-banner{
+display:none;
+background:rgba(239,68,68,0.1);
+border-bottom:1px solid rgba(239,68,68,0.2);
+color:#fca5a5;
+font-size:12px;font-weight:600;
+padding:8px 16px;text-align:center;
+}
+#offline-banner.visible{display:block}
+
+/* ═══════════════════════════════════════════
+FIREBASE HINT
+═══════════════════════════════════════════ */
+.fb-hint{
+background:rgba(59,130,246,0.06);
+border:1px solid rgba(59,130,246,0.2);
+border-radius:var(--r2);
+padding:14px;
+font-size:12px;color:#93c5fd;
+line-height:1.6;
+margin-bottom:12px;
+}
+.fb-hint strong{color:#60a5fa;display:block;margin-bottom:6px;font-size:13px}
+
+/* ═══════════════════════════════════════════
+EMPTY STATE
+═══════════════════════════════════════════ */
+.empty{
+text-align:center;padding:40px 20px;
+color:var(--text3);
+}
+.empty-icon{font-size:40px;margin-bottom:12px;opacity:0.5}
+.empty-text{font-size:13px;line-height:1.6}
+
+/* ═══════════════════════════════════════════
+SCROLLBAR
+═══════════════════════════════════════════ */
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+
+/* ═══════════════════════════════════════════
+UTILITIES
+═══════════════════════════════════════════ */
+.mt8{margin-top:8px}.mt12{margin-top:12px}.mt16{margin-top:16px}.mt20{margin-top:20px}
+.mb8{margin-bottom:8px}.mb12{margin-bottom:12px}.mb16{margin-bottom:16px}
+.flex{display:flex}.flex-center{align-items:center}.flex-between{justify-content:space-between}
+.gap8{gap:8px}.gap12{gap:12px}
+.text-gold{color:var(--gold2)}.text-muted{color:var(--text3)}.text-sm{font-size:12px}
+.text-xs{font-size:11px}.fw6{font-weight:600}.fw7{font-weight:700}
+.w100{width:100%}
+</style>
+
+</head>
+<body>
+
+<!-- ═══ TOAST CONTAINER ═══ -->
+<div id="toast"></div>
+
+<!-- ═══ CELEBRATION ═══ -->
+<div id="celebration">
+  <div class="cel-center">
+    <span class="cel-emoji">⭐</span>
+    <div class="cel-text" id="cel-text">Support gegeben!</div>
+  </div>
+</div>
+
+<!-- ═══ OFFLINE BANNER ═══ -->
+<div id="offline-banner">⚠️ <span id="offline-text">Offline – Supports nicht möglich</span></div>
+
+<!-- ═══ ONBOARDING ═══ -->
+<div id="onboarding">
+  <div class="ob-step active" id="ob0">
+    <div class="ob-icon">✨</div>
+    <div class="ob-title" id="ob-title-0">Willkommen im Support Pool</div>
+    <div class="ob-text" id="ob-text-0">Das Premium-Netzwerk für gegenseitige TikTok-Unterstützung. Kostenlos, fair und transparent.</div>
+    <div class="ob-dots"><div class="ob-dot active"></div><div class="ob-dot"></div><div class="ob-dot"></div></div>
+    <button class="btn btn-gold" onclick="obNext()"><span id="ob-btn-0">Weiter</span> →</button>
+  </div>
+  <div class="ob-step" id="ob1">
+    <div class="ob-icon">🎯</div>
+    <div class="ob-title" id="ob-title-1">So funktioniert es</div>
+    <div class="ob-bullets" id="ob-bullets-1">
+      <div class="ob-bullet"><span class="ob-bullet-icon">📹</span><span>Poste dein TikTok-Video – auch ältere Videos oder Videos von TikTok-Freunden sind erlaubt</span></div>
+      <div class="ob-bullet"><span class="ob-bullet-icon">❤️</span><span>Die ersten 10 Mitglieder supporten dein Video innerhalb von 12 Stunden</span></div>
+      <div class="ob-bullet"><span class="ob-bullet-icon">🔄</span><span>Nach 12 Stunden: Verlängerung – weitere 10 Mitglieder können supporten (bis zu 20 Supports pro Video!)</span></div>
+      <div class="ob-bullet"><span class="ob-bullet-icon">⚖️</span><span>Guthaben-System: Für jeden Support den du gibst, kannst du ein Video posten</span></div>
+    </div>
+    <div class="ob-dots"><div class="ob-dot"></div><div class="ob-dot active"></div><div class="ob-dot"></div></div>
+    <button class="btn btn-gold" onclick="obNext()"><span id="ob-btn-1">Weiter</span> →</button>
+  </div>
+  <div class="ob-step" id="ob2">
+    <div class="ob-icon">🚀</div>
+    <div class="ob-title" id="ob-title-2">Dein Start-Vorteil</div>
+    <div class="ob-bullets" id="ob-bullets-2">
+      <div class="ob-bullet"><span class="ob-bullet-icon">🎁</span><span>Dein erstes Video braucht nur 5 Supports statt 10 – als Willkommensbonus</span></div>
+      <div class="ob-bullet"><span class="ob-bullet-icon">💡</span><span>Danach: Gib 3 Supports, dann kannst du dein nächstes Video posten</span></div>
+      <div class="ob-bullet"><span class="ob-bullet-icon">📊</span><span>Ab dem 3. Video gilt das normale System: 10 Supports geben = 1 Video posten</span></div>
+      <div class="ob-bullet"><span class="ob-bullet-icon">🌐</span><span>Echte Supports zählen nur online – so bleibt alles fair</span></div>
+    </div>
+    <div class="ob-dots"><div class="ob-dot"></div><div class="ob-dot"></div><div class="ob-dot active"></div></div>
+    <button class="btn btn-gold" onclick="obFinish()" id="ob-btn-2">Los geht's! 🎉</button>
+  </div>
+</div>
+
+<!-- ═══ PIN PAD ═══ -->
+<div class="pin-pad" id="pinPad">
+  <div class="pin-box">
+    <div style="font-size:32px;margin-bottom:10px">🔐</div>
+    <div class="pin-title" id="pinTitle">Admin-Zugang</div>
+    <div class="pin-sub" id="pinSub">Gib den 4-stelligen PIN ein</div>
+    <div class="pin-dots-row">
+      <div class="pin-dot-ui" id="pd0"></div>
+      <div class="pin-dot-ui" id="pd1"></div>
+      <div class="pin-dot-ui" id="pd2"></div>
+      <div class="pin-dot-ui" id="pd3"></div>
+    </div>
+    <div class="pin-error-ui" id="pinErr"></div>
+    <div class="pin-grid-ui">
+      <button class="pin-key-ui" data-pin="1">1</button>
+      <button class="pin-key-ui" data-pin="2">2</button>
+      <button class="pin-key-ui" data-pin="3">3</button>
+      <button class="pin-key-ui" data-pin="4">4</button>
+      <button class="pin-key-ui" data-pin="5">5</button>
+      <button class="pin-key-ui" data-pin="6">6</button>
+      <button class="pin-key-ui" data-pin="7">7</button>
+      <button class="pin-key-ui" data-pin="8">8</button>
+      <button class="pin-key-ui" data-pin="9">9</button>
+      <button class="pin-key-ui del" data-pin="del">⌫</button>
+      <button class="pin-key-ui" data-pin="0">0</button>
+      <button class="pin-key-ui" data-pin="ok">✓</button>
+    </div>
+    <button class="pin-cancel-ui" id="pinCancel">Abbrechen</button>
+  </div>
+</div>
+
+<!-- ═══ MODALS ═══ -->
+<!-- Post Video Modal -->
+<div class="modal-overlay" id="postModal">
+  <div class="modal-box">
+    <div class="modal-title" id="m-post-title">📹 Video posten</div>
+    <div class="text-sm text-muted mb12" id="m-post-hint">TikTok-URL einfügen – eigene oder fremde Videos erlaubt</div>
+    <input type="url" class="input mb12" id="postUrl" placeholder="https://www.tiktok.com/..."/>
+    <div class="modal-footer">
+      <button class="btn btn-gold" id="postSubmitBtn" onclick="submitPost()"><span id="m-post-btn">Posten</span></button>
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('postModal')"><span id="m-cancel">Abbrechen</span></button>
+    </div>
+  </div>
+</div>
+
+<!-- Comment Editor Modal -->
+<div class="modal-overlay" id="commentModal">
+  <div class="modal-box">
+    <div class="modal-title">✏️ <span id="m-tpl-title">Kommentar-Template</span></div>
+    <div class="text-sm text-muted mb12" id="m-tpl-hint">Platzhalter: {gruppe} {name} {member} {date} {time}</div>
+    <textarea class="input mb12" id="tplInput" rows="3" oninput="updateTplPreview()"></textarea>
+    <div class="text-xs text-muted mb8" id="m-tpl-preview-label">Vorschau:</div>
+    <div style="background:var(--bg2);border:1px dashed var(--border2);border-radius:var(--r2);padding:12px;font-size:12px;color:var(--text2);white-space:pre-wrap;margin-bottom:12px" id="tplPreview"></div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">
+      <button class="btn btn-outline btn-sm" style="width:auto;padding:5px 10px" onclick="insTpl('{gruppe}')">gruppe</button>
+      <button class="btn btn-outline btn-sm" style="width:auto;padding:5px 10px" onclick="insTpl('{name}')">name</button>
+      <button class="btn btn-outline btn-sm" style="width:auto;padding:5px 10px" onclick="insTpl('{member}')">member</button>
+      <button class="btn btn-outline btn-sm" style="width:auto;padding:5px 10px" onclick="insTpl('{date}')">date</button>
+      <button class="btn btn-outline btn-sm" style="width:auto;padding:5px 10px" onclick="insTpl('{time}')">time</button>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-gold" onclick="saveTpl()"><span id="m-tpl-save">Speichern</span></button>
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('commentModal')"><span id="m-cancel2">Abbrechen</span></button>
+    </div>
+  </div>
+</div>
+
+<!-- Reply Modal -->
+<div class="modal-overlay" id="replyModal">
+  <div class="modal-box">
+    <div class="modal-title" id="replyTitle">Antwort senden</div>
+    <textarea class="input mb12" id="replyInput" rows="3" placeholder="Deine Antwort..."></textarea>
+    <div class="modal-footer">
+      <button class="btn btn-gold" onclick="submitReply()"><span id="m-reply-send">Senden</span></button>
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('replyModal')"><span id="m-cancel3">Abbrechen</span></button>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm Modal -->
+<div class="modal-overlay" id="confirmModal">
+  <div class="modal-box">
+    <div class="modal-title">⚠️ <span id="m-confirm-title">Bestätigen</span></div>
+    <div class="text-sm text-muted mb16" id="confirmText"></div>
+    <div class="modal-footer">
+      <button class="btn btn-gold" id="confirmYes"><span id="m-yes">Ja</span></button>
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('confirmModal')"><span id="m-no">Nein</span></button>
+    </div>
+  </div>
+</div>
+
+<!-- Import Modal -->
+<div class="modal-overlay" id="importModal">
+  <div class="modal-box">
+    <div class="modal-title" id="m-import-title">📥 Daten importieren</div>
+    <textarea class="input mb12" id="importInput" rows="6" placeholder="JSON hier einfügen..."></textarea>
+    <div class="modal-footer">
+      <button class="btn btn-gold" onclick="doImport()"><span id="m-import-btn">Importieren</span></button>
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('importModal')"><span id="m-cancel4">Abbrechen</span></button>
+    </div>
+  </div>
+</div>
+
+<!-- Change PIN Modal -->
+<div class="pin-pad" id="changePinPad">
+  <div class="pin-box">
+    <div style="font-size:32px;margin-bottom:10px">🔑</div>
+    <div class="pin-title" id="cpTitle">Neuen PIN festlegen</div>
+    <div class="pin-sub" id="cpSub">Gib deinen neuen 4-stelligen PIN ein</div>
+    <div class="pin-dots-row">
+      <div class="pin-dot-ui" id="cpd0"></div><div class="pin-dot-ui" id="cpd1"></div>
+      <div class="pin-dot-ui" id="cpd2"></div><div class="pin-dot-ui" id="cpd3"></div>
+    </div>
+    <div class="pin-error-ui" id="cpErr"></div>
+    <div class="pin-grid-ui">
+      <button class="pin-key-ui" data-cp="1">1</button><button class="pin-key-ui" data-cp="2">2</button><button class="pin-key-ui" data-cp="3">3</button>
+      <button class="pin-key-ui" data-cp="4">4</button><button class="pin-key-ui" data-cp="5">5</button><button class="pin-key-ui" data-cp="6">6</button>
+      <button class="pin-key-ui" data-cp="7">7</button><button class="pin-key-ui" data-cp="8">8</button><button class="pin-key-ui" data-cp="9">9</button>
+      <button class="pin-key-ui del" data-cp="del">⌫</button><button class="pin-key-ui" data-cp="0">0</button><button class="pin-key-ui" data-cp="ok">✓</button>
+    </div>
+    <button class="pin-cancel-ui" onclick="closeChangePinPad()">Abbrechen</button>
+  </div>
+</div>
+
+<!-- ═══ MAIN APP ═══ -->
+<div id="app" style="display:none">
+
+  <!-- HEADER -->
+  <div id="header">
+    <h1 class="brand">SUPPORT POOL</h1>
+    <div class="header-right">
+      <div class="sync-indicator" id="syncDot" title="Sync"></div>
+      <div id="userChip" style="display:none">
+        <div class="badge-gold" id="userChipName" style="cursor:pointer" onclick="showScreen('profile')"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREENS -->
+
+  <!-- ── LOGIN ── -->
+  <div class="screen active" id="screen-login">
+    <div style="text-align:center;padding:40px 0 30px">
+      <div style="font-size:56px;margin-bottom:16px">✨</div>
+      <div class="display" style="font-size:2rem;font-weight:700;color:var(--gold2);margin-bottom:8px">Support Pool</div>
+      <div class="text-sm text-muted">Das Premium TikTok Support Netzwerk</div>
+    </div>
+
+    <!-- Live Stats -->
+    <div class="stat-grid mb16" id="loginStats">
+      <div class="stat-cell"><div class="stat-num" id="ls-members">0</div><div class="stat-label" id="ls-lbl-members">Mitglieder</div></div>
+      <div class="stat-cell"><div class="stat-num" id="ls-groups">0</div><div class="stat-label" id="ls-lbl-groups">Gruppen</div></div>
+      <div class="stat-cell"><div class="stat-num" id="ls-supports">0</div><div class="stat-label" id="ls-lbl-supports">Supports</div></div>
+    </div>
+
+    <!-- Language -->
+    <div class="card-glass mb16">
+      <div class="text-xs text-muted mb12" id="lbl-lang" style="text-align:center;font-weight:600;letter-spacing:0.05em;text-transform:uppercase">Sprache wählen</div>
+      <div class="lang-grid" id="langGrid"></div>
+    </div>
+
+    <!-- Login -->
+    <div class="card-gold">
+      <div class="text-sm fw6 mb12" id="lbl-welcome" style="text-align:center">Willkommen zurück</div>
+      <input class="input mb12" id="loginInput" type="text" placeholder="TikTok Username" autocomplete="off"
+        onkeydown="if(event.key==='Enter')doLogin()"/>
+      <button class="btn btn-gold" onclick="doLogin()">
+        <span id="lbl-login">Einloggen</span> ✨
+      </button>
+      <div class="divider mt12"><span id="lbl-free">100% kostenlos · Premium für alle</span></div>
+    </div>
+  </div>
+
+  <!-- ── HOME (FEED) ── -->
+  <div class="screen" id="screen-home">
+    <!-- Balance -->
+    <div class="card-gold" id="balanceCard">
+      <div class="flex flex-between flex-center mb8">
+        <div>
+          <div class="text-xs text-muted fw6" id="lbl-balance">GUTHABEN</div>
+          <div class="balance-big" id="balanceNum">0</div>
+        </div>
+        <div class="ring-wrap">
+          <svg class="ring-svg" width="64" height="64">
+            <defs><linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" style="stop-color:#b8870b"/><stop offset="100%" style="stop-color:#f0c060"/>
+            </linearGradient></defs>
+            <circle class="ring-bg" cx="32" cy="32" r="27"/>
+            <circle class="ring-fill" id="balanceRing" cx="32" cy="32" r="27" stroke-dasharray="169.6" stroke-dashoffset="169.6"/>
+          </svg>
+          <div class="ring-label"><span id="balanceRingPct">0%</span></div>
+        </div>
+      </div>
+      <div class="balance-bar"><div class="balance-fill" id="balanceFill" style="width:0%"></div></div>
+      <div class="flex flex-between" style="font-size:11px;color:var(--text3)">
+        <span>↑ <span id="statGiven">0</span> <span id="lbl-given">gegeben</span></span>
+        <span id="postTimerPill"></span>
+        <span>↓ <span id="statReceived">0</span> <span id="lbl-received">erhalten</span></span>
+      </div>
+    </div>
+
+    <!-- Post Button -->
+    <button class="btn btn-gold mb16" id="postBtn" onclick="openPostModal()">
+      📹 <span id="lbl-post-btn">Video posten</span>
+    </button>
+
+    <!-- Open Videos -->
+    <div class="section-hdr">
+      <div class="section-hdr-title" id="lbl-open-videos">🔄 Offene Videos</div>
+      <div class="count-pill" id="openCount">0</div>
+    </div>
+    <div id="openVideosList">
+      <div class="empty"><div class="empty-icon">📭</div><div class="empty-text" id="lbl-no-open">Keine Videos zum Supporten</div></div>
+    </div>
+
+    <!-- My Videos -->
+    <div class="section-hdr mt16">
+      <div class="section-hdr-title" id="lbl-my-videos">📋 Meine Videos</div>
+      <div class="count-pill" id="myCount">0</div>
+    </div>
+    <div id="myVideosList">
+      <div class="empty"><div class="empty-icon">📹</div><div class="empty-text" id="lbl-no-my">Noch keine Videos gepostet</div></div>
+    </div>
+  </div>
+
+  <!-- ── PROFILE ── -->
+  <div class="screen" id="screen-profile">
+    <div class="card-gold" style="text-align:center;margin-bottom:16px">
+      <div class="profile-avatar-big" id="profAvatar">😊</div>
+      <div style="font-size:1.1rem;font-weight:700;margin-bottom:4px" id="profName">–</div>
+      <div id="profRank" class="mb12" style="display:flex;justify-content:center"></div>
+      <div class="stat-grid" style="margin-bottom:0">
+        <div class="stat-cell"><div class="stat-num" id="profGiven">0</div><div class="stat-label" id="lbl-prof-given">Gegeben</div></div>
+        <div class="stat-cell"><div class="stat-num" id="profReceived">0</div><div class="stat-label" id="lbl-prof-received">Erhalten</div></div>
+        <div class="stat-cell"><div class="stat-num" id="profVideos">0</div><div class="stat-label" id="lbl-prof-videos">Videos</div></div>
+      </div>
+    </div>
+
+    <!-- Notifications (inline) -->
+    <div class="section-hdr">
+      <div class="section-hdr-title" id="lbl-notifs">🔔 Benachrichtigungen</div>
+      <div class="count-pill" id="notifCount">0</div>
+    </div>
+    <div id="notifList">
+      <div class="empty"><div class="empty-icon">🔔</div><div class="empty-text" id="lbl-no-notif">Keine neuen Benachrichtigungen</div></div>
+    </div>
+
+    <!-- Message Admin -->
+    <div class="section-hdr mt16">
+      <div class="section-hdr-title" id="lbl-contact">💬 Admin kontaktieren</div>
+    </div>
+    <textarea class="input mb8" id="msgInput" rows="2" placeholder="Deine Nachricht..."></textarea>
+    <button class="btn btn-outline" onclick="sendMsg()">📨 <span id="lbl-send-msg">Senden</span></button>
+
+    <!-- Logout -->
+    <button class="btn btn-ghost mt16" onclick="doLogout()">🚪 <span id="lbl-logout">Abmelden</span></button>
+  </div>
+
+  <!-- ── ADMIN ── -->
+  <div class="screen" id="screen-admin">
+    <div class="fb-hint" id="fbHint" style="display:none">
+      <strong>🔒 Firebase-Konfiguration</strong>
+      Deine Firebase-Keys stehen direkt im Code. Für Produktionsbetrieb: Erstelle eine separate <code>config.js</code> Datei, die du über deinen Server auslieferst und nicht in öffentliche Repositories stellst. Alternativ: Firebase App Check aktivieren.
+    </div>
+
+    <div class="admin-tabs">
+      <button class="admin-tab active" onclick="adminTab('overview')" id="atab-overview">📊 <span id="lbl-at-overview">Übersicht</span></button>
+      <button class="admin-tab" onclick="adminTab('messages')" id="atab-messages">💬 <span id="lbl-at-msgs">Nachrichten</span></button>
+      <button class="admin-tab" onclick="adminTab('settings')" id="atab-settings">⚙️ <span id="lbl-at-settings">Einstellungen</span></button>
+    </div>
+
+    <!-- Overview -->
+    <div id="adminOverview">
+      <div class="stat-grid">
+        <div class="stat-cell"><div class="stat-num" id="a-groups">0</div><div class="stat-label" id="lbl-a-groups">Gruppen</div></div>
+        <div class="stat-cell"><div class="stat-num" id="a-members">0</div><div class="stat-label" id="lbl-a-members">Mitglieder</div></div>
+        <div class="stat-cell"><div class="stat-num" id="a-videos">0</div><div class="stat-label" id="lbl-a-videos">Videos</div></div>
+      </div>
+      <div id="adminGroupList"></div>
+    </div>
+
+    <!-- Messages -->
+    <div id="adminMessages" style="display:none">
+      <div id="adminMsgList">
+        <div class="empty"><div class="empty-icon">📭</div><div class="empty-text" id="lbl-no-msgs">Keine Nachrichten</div></div>
+      </div>
+    </div>
+
+    <!-- Settings -->
+    <div id="adminSettings" style="display:none">
+      <div class="card mb12">
+        <div class="fw6 mb12" id="lbl-comment-tpl">Kommentar-Template</div>
+        <button class="btn btn-outline" onclick="openCommentModal()">✏️ <span id="lbl-edit-tpl">Template bearbeiten</span></button>
+      </div>
+      <div class="card mb12">
+        <div class="fw6 mb12" id="lbl-inactive">Inaktive Mitglieder</div>
+        <div class="text-sm text-muted mb12" id="lbl-inactive-hint">Mitglieder die seit 7+ Tagen kein Video gepostet haben</div>
+        <div class="flex gap8">
+          <button class="btn btn-outline" style="flex:1" onclick="cleanupInactive()">🧹 <span id="lbl-cleanup">Bereinigen</span></button>
+          <button class="btn btn-ghost" style="flex:1" onclick="autoCleanInfo()">ℹ️ <span id="lbl-auto">Auto (7d)</span></button>
+        </div>
+      </div>
+      <div class="card mb12">
+        <div class="fw6 mb12" id="lbl-pin-section">Admin PIN</div>
+        <button class="btn btn-outline" onclick="openChangePinPad()">🔐 <span id="lbl-change-pin">PIN ändern</span></button>
+      </div>
+      <div class="card mb12">
+        <div class="fw6 mb12" id="lbl-backup">Backup</div>
+        <div class="flex gap8">
+          <button class="btn btn-outline" style="flex:1" onclick="doExport()">📤 <span id="lbl-export">Export</span></button>
+          <button class="btn btn-outline" style="flex:1" onclick="openModal('importModal')">📥 <span id="lbl-import">Import</span></button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div><!-- /app -->
+
+<!-- Hidden clipboard helper -->
+<textarea id="clipHelper" style="position:fixed;left:-9999px;top:-9999px;opacity:0"></textarea>
+
+<script>
+'use strict';
+// ════════════════════════════════════════════════════════
+//  SUPPORT POOL v4 — Complete Rewrite
+//  Architecture: Online-only writes, offline read-only
+// ════════════════════════════════════════════════════════
+
+// ── FIREBASE CONFIG ──────────────────────────────────────
+// ⚠️ SICHERHEITSHINWEIS: Für Produktion diese Werte in eine
+// separate server-seitige Config auslagern (nicht in git!)
+const FB_CONFIG = {
+  apiKey:"AIzaSyAwtRKoqHRpdwjXbtTUmUAuadgJIgkyleQ",
+  authDomain:"support-pool.firebaseapp.com",
+  databaseURL:"https://support-pool-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId:"support-pool",
+  storageBucket:"support-pool.firebasestorage.app",
+  messagingSenderId:"620989491854",
+  appId:"1:620989491854:web:ab99c2cb7864e63a98f7df"
+};
+
+// ── TRANSLATIONS ─────────────────────────────────────────
+const LANGS = {
+  de:{flag:'🇩🇪',name:'DE',
+    welcome:'Willkommen zurück',login:'Einloggen',logout:'Abmelden',
+    balance:'GUTHABEN',given:'gegeben',received:'erhalten',
+    postBtn:'Video posten',openVideos:'🔄 Offene Videos',myVideos:'📋 Meine Videos',
+    noOpen:'Keine Videos zum Supporten',noMy:'Noch keine Videos gepostet',
+    supportBtn:'✨ Supporten & öffnen',supportDone:'Bereits supportet',
+    notifs:'🔔 Benachrichtigungen',noNotif:'Keine neuen Benachrichtigungen',
+    contact:'💬 Admin kontaktieren',sendMsg:'Senden',
+    members:'Mitglieder',groups:'Gruppen',supports:'Supports',
+    langLbl:'Sprache wählen',free:'100% kostenlos · Premium für alle',
+    profGiven:'Gegeben',profReceived:'Erhalten',profVideos:'Videos',
+    atOverview:'Übersicht',atMsgs:'Nachrichten',atSettings:'Einstellungen',
+    aGroups:'Gruppen',aMembers:'Mitglieder',aVideos:'Videos',
+    noMsgs:'Keine Nachrichten',commentTpl:'Kommentar-Template',
+    editTpl:'Template bearbeiten',inactive:'Inaktive Mitglieder',
+    inactiveHint:'Mitglieder die seit 7+ Tagen kein Video gepostet haben',
+    cleanup:'Bereinigen',auto:'Auto (7d)',pinSection:'Admin PIN',
+    changePin:'PIN ändern',backup:'Backup',exportLbl:'Export',importLbl:'Import',
+    postTitle:'📹 Video posten',postHint:'TikTok-URL – eigene oder fremde Videos erlaubt',
+    postSubmit:'Posten',cancel:'Abbrechen',tplTitle:'Kommentar-Template',
+    tplHint:'Platzhalter: {gruppe} {name} {member} {date} {time}',
+    tplSave:'Speichern',replySend:'Senden',importTitle:'📥 Daten importieren',
+    importBtn:'Importieren',yes:'Ja',no:'Nein',confirmTitle:'Bestätigen',
+    round1:'Runde 1',round2:'Runde 2',expired:'Abgelaufen',done:'Abgeschlossen',
+    tplPreviewLabel:'Vorschau:',
+    offline:'Offline – Supports nur online möglich',
+    ranks:['🌱 Neuling','⭐ Aktiv','💎 Veteran','👑 Elite'],
+    obT0:'Willkommen im Support Pool',obT1:'So funktioniert es',obT2:'Dein Start-Vorteil',
+    obBtn0:'Weiter',obBtn1:'Weiter',obBtn2:'Los geht\'s! 🎉',
+    notifVideoSupport:'dein Video supportet',notifAdminReply:'Admin hat geantwortet',
+    celText:'Support gegeben! ⭐',
+    needed:'benötigt',timeLeft:'verbleibend',
+    errorOffline:'⚠️ Kein Internet – Support nicht möglich',
+    errorBalance:'❌ Erst supporten, dann posten!',
+    errorTimer:'⏳ Noch warten bis du posten kannst',
+    errorUrl:'❌ Bitte TikTok-URL eingeben',
+    errorName:'❌ Bitte Username eingeben',
+    successPost:'✅ Video gepostet!',successSupport:'✅ Support gezählt!',
+    successSave:'✅ Gespeichert',successImport:'✅ Importiert',
+    successExport:'📋 Exportiert & kopiert',
+  },
+  en:{flag:'🇬🇧',name:'EN',
+    welcome:'Welcome back',login:'Login',logout:'Logout',
+    balance:'BALANCE',given:'given',received:'received',
+    postBtn:'Post Video',openVideos:'🔄 Open Videos',myVideos:'📋 My Videos',
+    noOpen:'No videos to support',noMy:'No videos posted yet',
+    supportBtn:'✨ Support & Open',supportDone:'Already supported',
+    notifs:'🔔 Notifications',noNotif:'No new notifications',
+    contact:'💬 Contact Admin',sendMsg:'Send',
+    members:'Members',groups:'Groups',supports:'Supports',
+    langLbl:'Choose language',free:'100% free · Premium for all',
+    profGiven:'Given',profReceived:'Received',profVideos:'Videos',
+    atOverview:'Overview',atMsgs:'Messages',atSettings:'Settings',
+    aGroups:'Groups',aMembers:'Members',aVideos:'Videos',
+    noMsgs:'No messages',commentTpl:'Comment Template',
+    editTpl:'Edit template',inactive:'Inactive Members',
+    inactiveHint:'Members who haven\'t posted in 7+ days',
+    cleanup:'Clean up',auto:'Auto (7d)',pinSection:'Admin PIN',
+    changePin:'Change PIN',backup:'Backup',exportLbl:'Export',importLbl:'Import',
+    postTitle:'📹 Post Video',postHint:'TikTok URL – your own or friends\' videos',
+    postSubmit:'Post',cancel:'Cancel',tplTitle:'Comment Template',
+    tplHint:'Placeholders: {gruppe} {name} {member} {date} {time}',
+    tplSave:'Save',replySend:'Send',importTitle:'📥 Import Data',
+    importBtn:'Import',yes:'Yes',no:'No',confirmTitle:'Confirm',
+    round1:'Round 1',round2:'Round 2',expired:'Expired',done:'Done',
+    tplPreviewLabel:'Preview:',
+    offline:'Offline – Supports only possible online',
+    ranks:['🌱 Newbie','⭐ Active','💎 Veteran','👑 Elite'],
+    obT0:'Welcome to Support Pool',obT1:'How it works',obT2:'Your start bonus',
+    obBtn0:'Next',obBtn1:'Next',obBtn2:'Let\'s go! 🎉',
+    notifVideoSupport:'supported your video',notifAdminReply:'Admin replied',
+    celText:'Support given! ⭐',
+    needed:'needed',timeLeft:'remaining',
+    errorOffline:'⚠️ No internet – support not possible',
+    errorBalance:'❌ Give supports first before posting!',
+    errorTimer:'⏳ Wait before you can post again',
+    errorUrl:'❌ Please enter a TikTok URL',
+    errorName:'❌ Please enter your username',
+    successPost:'✅ Video posted!',successSupport:'✅ Support counted!',
+    successSave:'✅ Saved',successImport:'✅ Imported',successExport:'📋 Exported & copied',
+  },
+  id:{flag:'🇮🇩',name:'ID',welcome:'Selamat datang kembali',login:'Masuk',logout:'Keluar',balance:'SALDO',given:'diberikan',received:'diterima',postBtn:'Posting Video',openVideos:'🔄 Video Terbuka',myVideos:'📋 Video Saya',noOpen:'Tidak ada video untuk didukung',noMy:'Belum ada video diposting',supportBtn:'✨ Dukung & Buka',supportDone:'Sudah didukung',notifs:'🔔 Notifikasi',noNotif:'Tidak ada notifikasi baru',contact:'💬 Hubungi Admin',sendMsg:'Kirim',members:'Anggota',groups:'Grup',supports:'Dukungan',langLbl:'Pilih bahasa',free:'100% gratis · Premium untuk semua',profGiven:'Diberikan',profReceived:'Diterima',profVideos:'Video',atOverview:'Ikhtisar',atMsgs:'Pesan',atSettings:'Pengaturan',aGroups:'Grup',aMembers:'Anggota',aVideos:'Video',noMsgs:'Tidak ada pesan',commentTpl:'Template Komentar',editTpl:'Edit template',inactive:'Anggota Tidak Aktif',inactiveHint:'Anggota yang tidak posting selama 7+ hari',cleanup:'Bersihkan',auto:'Otomatis (7d)',pinSection:'PIN Admin',changePin:'Ubah PIN',backup:'Cadangan',exportLbl:'Ekspor',importLbl:'Impor',postTitle:'📹 Posting Video',postHint:'URL TikTok – video sendiri atau teman',postSubmit:'Posting',cancel:'Batal',tplTitle:'Template Komentar',tplHint:'Placeholder: {gruppe} {name} {member} {date} {time}',tplSave:'Simpan',replySend:'Kirim',importTitle:'📥 Impor Data',importBtn:'Impor',yes:'Ya',no:'Tidak',confirmTitle:'Konfirmasi',round1:'Ronde 1',round2:'Ronde 2',expired:'Kedaluwarsa',done:'Selesai',tplPreviewLabel:'Pratinjau:',offline:'Offline – Dukungan hanya online',ranks:['🌱 Pemula','⭐ Aktif','💎 Veteran','👑 Elite'],obT0:'Selamat datang',obT1:'Cara kerjanya',obT2:'Bonus awal Anda',obBtn0:'Lanjut',obBtn1:'Lanjut',obBtn2:'Mulai! 🎉',notifVideoSupport:'mendukung video Anda',notifAdminReply:'Admin membalas',celText:'Dukungan diberikan! ⭐',needed:'dibutuhkan',timeLeft:'tersisa',errorOffline:'⚠️ Tidak ada internet',errorBalance:'❌ Berikan dukungan dulu!',errorTimer:'⏳ Tunggu sebelum posting',errorUrl:'❌ Masukkan URL TikTok',errorName:'❌ Masukkan username',successPost:'✅ Video diposting!',successSupport:'✅ Dukungan dihitung!',successSave:'✅ Disimpan',successImport:'✅ Diimpor',successExport:'📋 Diekspor & disalin',},
+  it:{flag:'🇮🇹',name:'IT',welcome:'Bentornato',login:'Accedi',logout:'Esci',balance:'SALDO',given:'dati',received:'ricevuti',postBtn:'Pubblica Video',openVideos:'🔄 Video Aperti',myVideos:'📋 I Miei Video',noOpen:'Nessun video da supportare',noMy:'Nessun video pubblicato',supportBtn:'✨ Supporta & Apri',supportDone:'Già supportato',notifs:'🔔 Notifiche',noNotif:'Nessuna nuova notifica',contact:'💬 Contatta Admin',sendMsg:'Invia',members:'Membri',groups:'Gruppi',supports:'Supporti',langLbl:'Scegli lingua',free:'100% gratis · Premium per tutti',profGiven:'Dati',profReceived:'Ricevuti',profVideos:'Video',atOverview:'Panoramica',atMsgs:'Messaggi',atSettings:'Impostazioni',aGroups:'Gruppi',aMembers:'Membri',aVideos:'Video',noMsgs:'Nessun messaggio',commentTpl:'Template Commento',editTpl:'Modifica template',inactive:'Membri Inattivi',inactiveHint:'Membri che non pubblicano da 7+ giorni',cleanup:'Pulisci',auto:'Auto (7d)',pinSection:'PIN Admin',changePin:'Cambia PIN',backup:'Backup',exportLbl:'Esporta',importLbl:'Importa',postTitle:'📹 Pubblica Video',postHint:'URL TikTok – video propri o di amici',postSubmit:'Pubblica',cancel:'Annulla',tplTitle:'Template Commento',tplHint:'Segnaposto: {gruppe} {name} {member} {date} {time}',tplSave:'Salva',replySend:'Invia',importTitle:'📥 Importa Dati',importBtn:'Importa',yes:'Sì',no:'No',confirmTitle:'Conferma',round1:'Round 1',round2:'Round 2',expired:'Scaduto',done:'Completato',tplPreviewLabel:'Anteprima:',offline:'Offline – Supporti solo online',ranks:['🌱 Novizio','⭐ Attivo','💎 Veterano','👑 Elite'],obT0:'Benvenuto nel Support Pool',obT1:'Come funziona',obT2:'Il tuo bonus iniziale',obBtn0:'Avanti',obBtn1:'Avanti',obBtn2:'Iniziamo! 🎉',notifVideoSupport:'ha supportato il tuo video',notifAdminReply:'Admin ha risposto',celText:'Supporto dato! ⭐',needed:'necessari',timeLeft:'rimanente',errorOffline:'⚠️ Nessuna connessione',errorBalance:'❌ Prima dai supporti!',errorTimer:'⏳ Aspetta prima di pubblicare',errorUrl:'❌ Inserisci un URL TikTok',errorName:'❌ Inserisci il tuo username',successPost:'✅ Video pubblicato!',successSupport:'✅ Supporto contato!',successSave:'✅ Salvato',successImport:'✅ Importato',successExport:'📋 Esportato e copiato',},
+  es:{flag:'🇪🇸',name:'ES',welcome:'Bienvenido de nuevo',login:'Entrar',logout:'Salir',balance:'SALDO',given:'dados',received:'recibidos',postBtn:'Publicar Video',openVideos:'🔄 Videos Abiertos',myVideos:'📋 Mis Videos',noOpen:'No hay videos para apoyar',noMy:'No hay videos publicados',supportBtn:'✨ Apoyar & Abrir',supportDone:'Ya apoyado',notifs:'🔔 Notificaciones',noNotif:'Sin nuevas notificaciones',contact:'💬 Contactar Admin',sendMsg:'Enviar',members:'Miembros',groups:'Grupos',supports:'Apoyos',langLbl:'Elige idioma',free:'100% gratis · Premium para todos',profGiven:'Dados',profReceived:'Recibidos',profVideos:'Videos',atOverview:'Resumen',atMsgs:'Mensajes',atSettings:'Ajustes',aGroups:'Grupos',aMembers:'Miembros',aVideos:'Videos',noMsgs:'Sin mensajes',commentTpl:'Plantilla de Comentario',editTpl:'Editar plantilla',inactive:'Miembros Inactivos',inactiveHint:'Miembros sin publicar en 7+ días',cleanup:'Limpiar',auto:'Auto (7d)',pinSection:'PIN Admin',changePin:'Cambiar PIN',backup:'Copia de seguridad',exportLbl:'Exportar',importLbl:'Importar',postTitle:'📹 Publicar Video',postHint:'URL de TikTok – propios o de amigos',postSubmit:'Publicar',cancel:'Cancelar',tplTitle:'Plantilla de Comentario',tplHint:'Marcadores: {gruppe} {name} {member} {date} {time}',tplSave:'Guardar',replySend:'Enviar',importTitle:'📥 Importar Datos',importBtn:'Importar',yes:'Sí',no:'No',confirmTitle:'Confirmar',round1:'Ronda 1',round2:'Ronda 2',expired:'Caducado',done:'Completado',tplPreviewLabel:'Vista previa:',offline:'Offline – Apoyos solo online',ranks:['🌱 Novato','⭐ Activo','💎 Veterano','👑 Elite'],obT0:'Bienvenido al Support Pool',obT1:'Cómo funciona',obT2:'Tu ventaja inicial',obBtn0:'Siguiente',obBtn1:'Siguiente',obBtn2:'¡Vamos! 🎉',notifVideoSupport:'apoyó tu video',notifAdminReply:'Admin respondió',celText:'¡Apoyo dado! ⭐',needed:'necesarios',timeLeft:'restante',errorOffline:'⚠️ Sin internet – no es posible apoyar',errorBalance:'❌ ¡Da apoyos primero!',errorTimer:'⏳ Espera antes de publicar',errorUrl:'❌ Introduce una URL de TikTok',errorName:'❌ Introduce tu username',successPost:'✅ ¡Video publicado!',successSupport:'✅ ¡Apoyo contado!',successSave:'✅ Guardado',successImport:'✅ Importado',successExport:'📋 Exportado y copiado',},
+  tr:{flag:'🇹🇷',name:'TR',welcome:'Tekrar hoş geldiniz',login:'Giriş',logout:'Çıkış',balance:'BAKIYE',given:'verilen',received:'alınan',postBtn:'Video Paylaş',openVideos:'🔄 Açık Videolar',myVideos:'📋 Videolarım',noOpen:'Desteklenecek video yok',noMy:'Henüz video paylaşılmadı',supportBtn:'✨ Destekle & Aç',supportDone:'Zaten desteklendi',notifs:'🔔 Bildirimler',noNotif:'Yeni bildirim yok',contact:'💬 Admin ile İletişim',sendMsg:'Gönder',members:'Üyeler',groups:'Gruplar',supports:'Destekler',langLbl:'Dil seçin',free:'100% ücretsiz · Herkes için Premium',profGiven:'Verilen',profReceived:'Alınan',profVideos:'Videolar',atOverview:'Genel Bakış',atMsgs:'Mesajlar',atSettings:'Ayarlar',aGroups:'Gruplar',aMembers:'Üyeler',aVideos:'Videolar',noMsgs:'Mesaj yok',commentTpl:'Yorum Şablonu',editTpl:'Şablonu düzenle',inactive:'Aktif Olmayan Üyeler',inactiveHint:'7+ gündür video paylaşmayan üyeler',cleanup:'Temizle',auto:'Otomatik (7g)',pinSection:'Admin PIN',changePin:'PIN değiştir',backup:'Yedek',exportLbl:'Dışa Aktar',importLbl:'İçe Aktar',postTitle:'📹 Video Paylaş',postHint:'TikTok URL – kendi veya arkadaşların videoları',postSubmit:'Paylaş',cancel:'İptal',tplTitle:'Yorum Şablonu',tplHint:'Yer tutucu: {gruppe} {name} {member} {date} {time}',tplSave:'Kaydet',replySend:'Gönder',importTitle:'📥 Veri İçe Aktar',importBtn:'İçe Aktar',yes:'Evet',no:'Hayır',confirmTitle:'Onayla',round1:'Tur 1',round2:'Tur 2',expired:'Süresi doldu',done:'Tamamlandı',tplPreviewLabel:'Önizleme:',offline:'Çevrimdışı – Destekler yalnızca online',ranks:['🌱 Yeni','⭐ Aktif','💎 Deneyimli','👑 Elite'],obT0:'Support Pool\'a Hoş Geldiniz',obT1:'Nasıl çalışır',obT2:'Başlangıç avantajınız',obBtn0:'İleri',obBtn1:'İleri',obBtn2:'Hadi başlayalım! 🎉',notifVideoSupport:'videonuzu destekledi',notifAdminReply:'Admin yanıtladı',celText:'Destek verildi! ⭐',needed:'gerekli',timeLeft:'kalan',errorOffline:'⚠️ İnternet yok',errorBalance:'❌ Önce destek ver!',errorTimer:'⏳ Paylaşmadan önce bekle',errorUrl:'❌ TikTok URL girin',errorName:'❌ Kullanıcı adı girin',successPost:'✅ Video paylaşıldı!',successSupport:'✅ Destek sayıldı!',successSave:'✅ Kaydedildi',successImport:'✅ İçe aktarıldı',successExport:'📋 Dışa aktarıldı ve kopyalandı',},
+  ar:{flag:'🇸🇦',name:'AR',welcome:'مرحباً بعودتك',login:'دخول',logout:'خروج',balance:'الرصيد',given:'أُعطي',received:'مُستلم',postBtn:'نشر فيديو',openVideos:'🔄 فيديوهات مفتوحة',myVideos:'📋 فيديوهاتي',noOpen:'لا توجد فيديوهات للدعم',noMy:'لم يتم نشر فيديوهات بعد',supportBtn:'✨ دعم وفتح',supportDone:'تم الدعم مسبقاً',notifs:'🔔 الإشعارات',noNotif:'لا توجد إشعارات جديدة',contact:'💬 تواصل مع المشرف',sendMsg:'إرسال',members:'الأعضاء',groups:'المجموعات',supports:'الدعم',langLbl:'اختر اللغة',free:'مجاني 100% · مميز للجميع',profGiven:'أُعطي',profReceived:'مُستلم',profVideos:'فيديوهات',atOverview:'نظرة عامة',atMsgs:'الرسائل',atSettings:'الإعدادات',aGroups:'المجموعات',aMembers:'الأعضاء',aVideos:'فيديوهات',noMsgs:'لا توجد رسائل',commentTpl:'قالب التعليق',editTpl:'تعديل القالب',inactive:'الأعضاء غير النشطين',inactiveHint:'أعضاء لم ينشروا منذ 7+ أيام',cleanup:'تنظيف',auto:'تلقائي (7أ)',pinSection:'رمز المشرف',changePin:'تغيير الرمز',backup:'نسخة احتياطية',exportLbl:'تصدير',importLbl:'استيراد',postTitle:'📹 نشر فيديو',postHint:'رابط TikTok – فيديوهاتك أو أصدقائك',postSubmit:'نشر',cancel:'إلغاء',tplTitle:'قالب التعليق',tplHint:'العناصر النائبة: {gruppe} {name} {member} {date} {time}',tplSave:'حفظ',replySend:'إرسال',importTitle:'📥 استيراد البيانات',importBtn:'استيراد',yes:'نعم',no:'لا',confirmTitle:'تأكيد',round1:'الجولة 1',round2:'الجولة 2',expired:'منتهي',done:'مكتمل',tplPreviewLabel:'معاينة:',offline:'غير متصل – الدعم متاح فقط عبر الإنترنت',ranks:['🌱 مبتدئ','⭐ نشط','💎 متمرس','👑 نخبة'],obT0:'مرحباً في Support Pool',obT1:'كيف يعمل',obT2:'مزايا بدايتك',obBtn0:'التالي',obBtn1:'التالي',obBtn2:'لنبدأ! 🎉',notifVideoSupport:'دعم فيديوك',notifAdminReply:'رد المشرف',celText:'تم تقديم الدعم! ⭐',needed:'مطلوب',timeLeft:'متبقي',errorOffline:'⚠️ لا يوجد إنترنت',errorBalance:'❌ قدم الدعم أولاً!',errorTimer:'⏳ انتظر قبل النشر',errorUrl:'❌ أدخل رابط TikTok',errorName:'❌ أدخل اسم المستخدم',successPost:'✅ تم نشر الفيديو!',successSupport:'✅ تم احتساب الدعم!',successSave:'✅ تم الحفظ',successImport:'✅ تم الاستيراد',successExport:'📋 تم التصدير والنسخ',},
+  zh:{flag:'🇨🇳',name:'ZH',welcome:'欢迎回来',login:'登录',logout:'退出',balance:'余额',given:'已给出',received:'已收到',postBtn:'发布视频',openVideos:'🔄 开放视频',myVideos:'📋 我的视频',noOpen:'没有可支持的视频',noMy:'尚未发布视频',supportBtn:'✨ 支持并打开',supportDone:'已支持',notifs:'🔔 通知',noNotif:'没有新通知',contact:'💬 联系管理员',sendMsg:'发送',members:'成员',groups:'组',supports:'支持',langLbl:'选择语言',free:'100%免费·为所有人提供高级版',profGiven:'已给出',profReceived:'已收到',profVideos:'视频',atOverview:'概览',atMsgs:'消息',atSettings:'设置',aGroups:'组',aMembers:'成员',aVideos:'视频',noMsgs:'没有消息',commentTpl:'评论模板',editTpl:'编辑模板',inactive:'不活跃成员',inactiveHint:'7天以上未发布视频的成员',cleanup:'清理',auto:'自动(7天)',pinSection:'管理员PIN',changePin:'更改PIN',backup:'备份',exportLbl:'导出',importLbl:'导入',postTitle:'📹 发布视频',postHint:'TikTok链接–自己或朋友的视频',postSubmit:'发布',cancel:'取消',tplTitle:'评论模板',tplHint:'占位符: {gruppe} {name} {member} {date} {time}',tplSave:'保存',replySend:'发送',importTitle:'📥 导入数据',importBtn:'导入',yes:'是',no:'否',confirmTitle:'确认',round1:'第1轮',round2:'第2轮',expired:'已过期',done:'已完成',tplPreviewLabel:'预览:',offline:'离线–支持仅在线可用',ranks:['🌱 新手','⭐ 活跃','💎 老手','👑 精英'],obT0:'欢迎来到Support Pool',obT1:'如何运作',obT2:'您的起步优势',obBtn0:'下一步',obBtn1:'下一步',obBtn2:'开始吧！🎉',notifVideoSupport:'支持了您的视频',notifAdminReply:'管理员已回复',celText:'已给予支持！⭐',needed:'需要',timeLeft:'剩余',errorOffline:'⚠️ 没有网络',errorBalance:'❌ 先给予支持！',errorTimer:'⏳ 等待后再发布',errorUrl:'❌ 请输入TikTok链接',errorName:'❌ 请输入用户名',successPost:'✅ 视频已发布！',successSupport:'✅ 支持已计数！',successSave:'✅ 已保存',successImport:'✅ 已导入',successExport:'📋 已导出并复制',},
+  ja:{flag:'🇯🇵',name:'JA',welcome:'おかえりなさい',login:'ログイン',logout:'ログアウト',balance:'残高',given:'与えた',received:'受け取った',postBtn:'動画を投稿',openVideos:'🔄 オープン動画',myVideos:'📋 マイ動画',noOpen:'サポートする動画がありません',noMy:'まだ動画を投稿していません',supportBtn:'✨ サポート＆開く',supportDone:'サポート済み',notifs:'🔔 通知',noNotif:'新しい通知はありません',contact:'💬 管理者に連絡',sendMsg:'送信',members:'メンバー',groups:'グループ',supports:'サポート',langLbl:'言語を選択',free:'100%無料・全員にプレミアム',profGiven:'与えた',profReceived:'受け取った',profVideos:'動画',atOverview:'概要',atMsgs:'メッセージ',atSettings:'設定',aGroups:'グループ',aMembers:'メンバー',aVideos:'動画',noMsgs:'メッセージなし',commentTpl:'コメントテンプレート',editTpl:'テンプレート編集',inactive:'非アクティブメンバー',inactiveHint:'7日以上投稿していないメンバー',cleanup:'クリーンアップ',auto:'自動(7日)',pinSection:'管理者PIN',changePin:'PIN変更',backup:'バックアップ',exportLbl:'エクスポート',importLbl:'インポート',postTitle:'📹 動画を投稿',postHint:'TikTok URL – 自分や友達の動画',postSubmit:'投稿',cancel:'キャンセル',tplTitle:'コメントテンプレート',tplHint:'プレースホルダー: {gruppe} {name} {member} {date} {time}',tplSave:'保存',replySend:'送信',importTitle:'📥 データをインポート',importBtn:'インポート',yes:'はい',no:'いいえ',confirmTitle:'確認',round1:'ラウンド1',round2:'ラウンド2',expired:'期限切れ',done:'完了',tplPreviewLabel:'プレビュー:',offline:'オフライン – サポートはオンラインのみ',ranks:['🌱 新人','⭐ アクティブ','💎 ベテラン','👑 エリート'],obT0:'Support Poolへようこそ',obT1:'仕組み',obT2:'スタートボーナス',obBtn0:'次へ',obBtn1:'次へ',obBtn2:'始めよう！🎉',notifVideoSupport:'あなたの動画をサポートしました',notifAdminReply:'管理者が返信しました',celText:'サポートしました！⭐',needed:'必要',timeLeft:'残り',errorOffline:'⚠️ インターネットなし',errorBalance:'❌ 先にサポートしてください！',errorTimer:'⏳ 投稿前に待ってください',errorUrl:'❌ TikTok URLを入力してください',errorName:'❌ ユーザー名を入力してください',successPost:'✅ 動画を投稿しました！',successSupport:'✅ サポートをカウントしました！',successSave:'✅ 保存しました',successImport:'✅ インポートしました',successExport:'📋 エクスポート＆コピー済み',},
+  pl:{flag:'🇵🇱',name:'PL',welcome:'Witaj ponownie',login:'Zaloguj',logout:'Wyloguj',balance:'SALDO',given:'oddane',received:'otrzymane',postBtn:'Opublikuj wideo',openVideos:'🔄 Otwarte wideo',myVideos:'📋 Moje wideo',noOpen:'Brak wideo do wsparcia',noMy:'Brak opublikowanych wideo',supportBtn:'✨ Wesprzyj i otwórz',supportDone:'Już wsparłeś',notifs:'🔔 Powiadomienia',noNotif:'Brak nowych powiadomień',contact:'💬 Kontakt z adminem',sendMsg:'Wyślij',members:'Członkowie',groups:'Grupy',supports:'Wsparcia',langLbl:'Wybierz język',free:'100% bezpłatnie · Premium dla wszystkich',profGiven:'Oddane',profReceived:'Otrzymane',profVideos:'Wideo',atOverview:'Przegląd',atMsgs:'Wiadomości',atSettings:'Ustawienia',aGroups:'Grupy',aMembers:'Członkowie',aVideos:'Wideo',noMsgs:'Brak wiadomości',commentTpl:'Szablon komentarza',editTpl:'Edytuj szablon',inactive:'Nieaktywni członkowie',inactiveHint:'Członkowie bez postów od 7+ dni',cleanup:'Wyczyść',auto:'Auto (7d)',pinSection:'PIN admina',changePin:'Zmień PIN',backup:'Kopia zapasowa',exportLbl:'Eksportuj',importLbl:'Importuj',postTitle:'📹 Opublikuj wideo',postHint:'URL TikTok – własne lub znajomych',postSubmit:'Opublikuj',cancel:'Anuluj',tplTitle:'Szablon komentarza',tplHint:'Zastępniki: {gruppe} {name} {member} {date} {time}',tplSave:'Zapisz',replySend:'Wyślij',importTitle:'📥 Importuj dane',importBtn:'Importuj',yes:'Tak',no:'Nie',confirmTitle:'Potwierdź',round1:'Runda 1',round2:'Runda 2',expired:'Wygasłe',done:'Ukończone',tplPreviewLabel:'Podgląd:',offline:'Offline – Wsparcia tylko online',ranks:['🌱 Nowicjusz','⭐ Aktywny','💎 Weteran','👑 Elite'],obT0:'Witaj w Support Pool',obT1:'Jak to działa',obT2:'Twój bonus startowy',obBtn0:'Dalej',obBtn1:'Dalej',obBtn2:'Zaczynamy! 🎉',notifVideoSupport:'wsparł Twoje wideo',notifAdminReply:'Admin odpowiedział',celText:'Wsparcie udzielone! ⭐',needed:'potrzebne',timeLeft:'pozostało',errorOffline:'⚠️ Brak internetu',errorBalance:'❌ Najpierw wesprzyj innych!',errorTimer:'⏳ Poczekaj przed publikacją',errorUrl:'❌ Wpisz URL TikTok',errorName:'❌ Wpisz nazwę użytkownika',successPost:'✅ Wideo opublikowane!',successSupport:'✅ Wsparcie policzone!',successSave:'✅ Zapisano',successImport:'✅ Zaimportowano',successExport:'📋 Wyeksportowano i skopiowano',},
+};
+
+// ── CONSTANTS ─────────────────────────────────────────────
+const DEFAULT_ADMINS = ['admin','support','master'];
+const DEFAULT_TPL    = '✨ support by {member} aus Gruppe {gruppe} fuer @{name} ✨';
+const PIN_KEY        = 'sp_pin_v4';
+const LANG_KEY       = 'sp_lang_v4';
+const LS_KEY         = 'sp_data_v4';
+const DEFAULT_PIN    = hashPin('1234');
+const ROUND1_MS      = 12*3600*1000;   // 12 hours
+const ROUND2_MS      = 24*3600*1000;   // 24 hours
+const MAX_GROUP      = 10;
+const ROUND1_NEED    = 10;
+const ROUND2_NEED    = 10;
+
+// Rank thresholds
+const RANKS = [0,10,50,200]; // given supports
+
+// ── STATE ─────────────────────────────────────────────────
+let DB = {
+  groups:{}, members:{}, videos:{}, messages:{},
+  settings:{ admins:DEFAULT_ADMINS, tpl:DEFAULT_TPL, nextGroup:2 }
+};
+let CU       = null; // currentUser key (firebase-safe)
+let LANG     = 'de';
+let ONLINE   = false;
+let FB       = null;  // firebase.database()
+let FB_REF   = null;  // database reference
+let FB_LISTENER = null;
+let FB_LAST_PUSH = 0;
+let PENDING_DELETE = null;
+let PENDING_REPLY  = null;
+let PIN_BUF  = '';
+let PIN_DISP = '';
+let PIN_ATT  = 0;
+let CP_BUF   = '';
+let CP_STEP  = 'new';
+let CP_FIRST = '';
+
+// ── FIREBASE KEY ENCODING ─────────────────────────────────
+function fbKey(n){ return n.replace(/%/g,'%25').replace(/\./g,'%2E').replace(/\$/g,'%24').replace(/#/g,'%23').replace(/\[/g,'%5B').replace(/\]/g,'%5D').replace(/\//g,'%2F'); }
+function fbDec(k){ try{return decodeURIComponent(k);}catch(e){return k;} }
+
+// ── PIN HASH ──────────────────────────────────────────────
+function hashPin(p){ let h=5381; for(let i=0;i<p.length;i++){h=((h<<5)+h)^p.charCodeAt(i);h=h>>>0;} return h.toString(16); }
+function getPin(){ try{return localStorage.getItem(PIN_KEY)||DEFAULT_PIN;}catch(e){return DEFAULT_PIN;} }
+function setPin(h){ try{localStorage.setItem(PIN_KEY,h);}catch(e){} }
+
+// ── TRANSLATION ───────────────────────────────────────────
+function t(k){ return (LANGS[LANG]||LANGS.de)[k]||LANGS.de[k]||k; }
+function applyLang(){
+  // Apply all data-t attributes
+  const L = LANGS[LANG]||LANGS.de;
+  document.getElementById('lbl-welcome').textContent   = L.welcome;
+  document.getElementById('lbl-login').textContent     = L.login;
+  document.getElementById('lbl-logout').textContent    = L.logout;
+  document.getElementById('lbl-lang').textContent      = L.langLbl;
+  document.getElementById('lbl-free').textContent      = L.free;
+  document.getElementById('lbl-balance').textContent   = L.balance;
+  document.getElementById('lbl-given').textContent     = L.given;
+  document.getElementById('lbl-received').textContent  = L.received;
+  document.getElementById('lbl-post-btn').textContent  = L.postBtn;
+  document.getElementById('lbl-open-videos').textContent = L.openVideos;
+  document.getElementById('lbl-my-videos').textContent   = L.myVideos;
+  document.getElementById('lbl-no-open').textContent     = L.noOpen;
+  document.getElementById('lbl-no-my').textContent       = L.noMy;
+  document.getElementById('lbl-notifs').textContent      = L.notifs;
+  document.getElementById('lbl-no-notif').textContent    = L.noNotif;
+  document.getElementById('lbl-contact').textContent     = L.contact;
+  document.getElementById('lbl-send-msg').textContent    = L.sendMsg;
+  document.getElementById('ls-lbl-members').textContent = L.members;
+  document.getElementById('ls-lbl-groups').textContent  = L.groups;
+  document.getElementById('ls-lbl-supports').textContent= L.supports;
+  document.getElementById('lbl-prof-given').textContent   = L.profGiven;
+  document.getElementById('lbl-prof-received').textContent= L.profReceived;
+  document.getElementById('lbl-prof-videos').textContent  = L.profVideos;
+  document.getElementById('lbl-at-overview').textContent = L.atOverview;
+  document.getElementById('lbl-at-msgs').textContent     = L.atMsgs;
+  document.getElementById('lbl-at-settings').textContent = L.atSettings;
+  document.getElementById('lbl-a-groups').textContent  = L.aGroups;
+  document.getElementById('lbl-a-members').textContent = L.aMembers;
+  document.getElementById('lbl-a-videos').textContent  = L.aVideos;
+  document.getElementById('lbl-no-msgs').textContent   = L.noMsgs;
+  document.getElementById('lbl-comment-tpl').textContent= L.commentTpl;
+  document.getElementById('lbl-edit-tpl').textContent  = L.editTpl;
+  document.getElementById('lbl-inactive').textContent  = L.inactive;
+  document.getElementById('lbl-inactive-hint').textContent = L.inactiveHint;
+  document.getElementById('lbl-cleanup').textContent   = L.cleanup;
+  document.getElementById('lbl-auto').textContent      = L.auto;
+  document.getElementById('lbl-pin-section').textContent = L.pinSection;
+  document.getElementById('lbl-change-pin').textContent  = L.changePin;
+  document.getElementById('lbl-backup').textContent    = L.backup;
+  document.getElementById('lbl-export').textContent    = L.exportLbl;
+  document.getElementById('lbl-import').textContent    = L.importLbl;
+  // Modals
+  document.getElementById('m-post-title').textContent  = L.postTitle;
+  document.getElementById('m-post-hint').textContent   = L.postHint;
+  document.getElementById('m-post-btn').textContent    = L.postSubmit;
+  document.getElementById('m-cancel').textContent      = L.cancel;
+  document.getElementById('m-tpl-title').textContent   = L.tplTitle;
+  document.getElementById('m-tpl-hint').textContent    = L.tplHint;
+  document.getElementById('m-tpl-save').textContent    = L.tplSave;
+  document.getElementById('m-cancel2').textContent     = L.cancel;
+  document.getElementById('m-reply-send').textContent  = L.replySend;
+  document.getElementById('m-cancel3').textContent     = L.cancel;
+  document.getElementById('m-import-title').textContent= L.importTitle;
+  document.getElementById('m-import-btn').textContent  = L.importBtn;
+  document.getElementById('m-cancel4').textContent     = L.cancel;
+  document.getElementById('m-yes').textContent         = L.yes;
+  document.getElementById('m-no').textContent          = L.no;
+  document.getElementById('m-confirm-title').textContent= L.confirmTitle;
+  document.getElementById('m-tpl-preview-label').textContent= L.tplPreviewLabel;
+  document.getElementById('offline-text').textContent  = L.offline;
+  // Onboarding
+  document.getElementById('ob-title-0').textContent = L.obT0;
+  document.getElementById('ob-title-1').textContent = L.obT1;
+  document.getElementById('ob-title-2').textContent = L.obT2;
+  document.getElementById('ob-btn-0').textContent   = L.obBtn0;
+  document.getElementById('ob-btn-1').textContent   = L.obBtn1;
+  document.getElementById('ob-btn-2').textContent   = L.obBtn2;
+}
+
+// ── RANK ──────────────────────────────────────────────────
+function getRankIdx(given){ if(given>=200)return 3; if(given>=50)return 2; if(given>=10)return 1; return 0; }
+function rankHTML(given){
+  const idx=getRankIdx(given);
+  const lbl=t('ranks').split(',')[idx]||(LANGS[LANG]||LANGS.de).ranks[idx];
+  return `<span class="rank-badge rank-${idx}">${lbl}</span>`;
+}
+
+// ── TOAST ─────────────────────────────────────────────────
+function toast(msg,type='info',dur=2500){
+  const c=document.getElementById('toast');
+  const el=document.createElement('div');
+  el.className=`toast-item ${type}`;el.textContent=msg;
+  c.appendChild(el);
+  setTimeout(()=>el.style.opacity='0',dur-300);
+  setTimeout(()=>el.remove(),dur);
+}
+
+// ── SYNC DOT ──────────────────────────────────────────────
+function setSyncDot(s){
+  const d=document.getElementById('syncDot');
+  d.className='sync-indicator'+(s?' '+s:'');
+}
+
+// ── ONLINE / OFFLINE ──────────────────────────────────────
+window.addEventListener('online', ()=>{ ONLINE=true; document.getElementById('offline-banner').classList.remove('visible'); setSyncDot('online'); });
+window.addEventListener('offline',()=>{ ONLINE=false; document.getElementById('offline-banner').classList.add('visible'); setSyncDot('offline'); });
+
+// ── FIREBASE ──────────────────────────────────────────────
+function initFB(){
+  if(!FB_CONFIG.apiKey||FB_CONFIG.apiKey==='YOUR_KEY'){setSyncDot('');document.getElementById('fbHint').style.display='block';return;}
+  try{
+    const app=firebase.apps.length?firebase.app():firebase.initializeApp(FB_CONFIG);
+    FB=firebase.database();
+    FB_REF=FB.ref('sp4');
+    FB.ref('.info/connected').on('value',s=>{
+      ONLINE=s.val()===true;
+      setSyncDot(ONLINE?'online':'offline');
+      document.getElementById('offline-banner').classList.toggle('visible',!ONLINE);
+    });
+    startFBListener();
+  }catch(e){console.warn('FB:',e);setSyncDot('offline');}
+}
+
+function pushFB(){
+  if(!FB_REF||!ONLINE)return;
+  setSyncDot('syncing');
+  FB_LAST_PUSH=Date.now();
+  FB_REF.set({
+    groups:DB.groups, members:DB.members,
+    videos:DB.videos, messages:DB.messages,
+    settings:DB.settings, ts:FB_LAST_PUSH
+  }).then(()=>setSyncDot('online'))
+    .catch(e=>{console.warn('FB push:',e);setSyncDot('offline');});
+}
+
+function startFBListener(){
+  if(!FB_REF)return;
+  if(FB_LISTENER)FB_REF.off('value',FB_LISTENER);
+  FB_LISTENER=FB_REF.on('value',snap=>{
+    const r=snap.val();
+    if(!r||!r.members||!r.groups)return;
+    if(Date.now()-FB_LAST_PUSH<6000)return; // own push
+    if((r.ts||0)<=(DB._ts||0))return;       // stale
+    const cu=CU;
+    DB.groups=r.groups||{};DB.members=r.members||{};
+    DB.videos=r.videos||{};DB.messages=r.messages||{};
+    if(r.settings)DB.settings=Object.assign({admins:DEFAULT_ADMINS,tpl:DEFAULT_TPL,nextGroup:2},r.settings);
+    DB._ts=r.ts||0;CU=cu;
+    saveLS();renderAll();
+    toast('🔄 Live-Update',  'info',1500);
+  });
+}
+
+// ── LOCAL STORAGE ─────────────────────────────────────────
+function saveLS(){
+  try{localStorage.setItem(LS_KEY,JSON.stringify({groups:DB.groups,members:DB.members,videos:DB.videos,messages:DB.messages,settings:DB.settings,_ts:DB._ts||0}));}catch(e){}
+}
+function loadLS(){
+  try{
+    const r=JSON.parse(localStorage.getItem(LS_KEY)||'null');
+    if(r&&r.groups&&r.members){
+      DB.groups=r.groups||{};DB.members=r.members||{};
+      DB.videos=r.videos||{};DB.messages=r.messages||{};
+      DB._ts=r._ts||0;
+      if(r.settings)DB.settings=Object.assign({admins:DEFAULT_ADMINS,tpl:DEFAULT_TPL,nextGroup:2},r.settings);
+    }else{initDemo();}
+  }catch(e){initDemo();}
+}
+function initDemo(){
+  DB.groups={g1:{id:'g1',name:'SUPPORT POOL 1',number:1,members:['admin']}};
+  DB.members={admin:{name:'admin',key:'admin',role:'admin',group:'g1',status:'active',
+    stats:{given:0,received:0},myVideos:[],lastPost:null,postsTotal:0,joined:Date.now(),lang:'de'}};
+  DB.videos={};DB.messages={};DB._ts=0;
+  saveLS();
+}
+
+// ── SAVE (write-through) ──────────────────────────────────
+function save(){
+  // Online guard: no local-only stat changes that go to firebase
+  // All stat mutations must call save() only when ONLINE
+  saveLS();
+  pushFB();
+  renderAll();
+}
+
+// ── SCREEN NAVIGATION ─────────────────────────────────────
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  const s=document.getElementById('screen-'+id);
+  if(s)s.classList.add('active');
+  // Update nav
+  document.querySelectorAll('.nav-tab').forEach(t2=>t2.classList.remove('active'));
+  const tab=document.querySelector(`.nav-tab[data-screen="${id}"]`);
+  if(tab)tab.classList.add('active');
+  if(id==='home')renderHome();
+  if(id==='profile')renderProfile();
+  if(id==='admin')renderAdmin();
+}
+
+// ── MODAL HELPERS ─────────────────────────────────────────
+function openModal(id){document.getElementById(id).classList.add('active');}
+function closeModal(id){document.getElementById(id).classList.remove('active');}
+function openCommentModal(){
+  document.getElementById('tplInput').value=DB.settings.tpl||DEFAULT_TPL;
+  updateTplPreview();openModal('commentModal');
+}
+
+// ── LANG SWITCHER ─────────────────────────────────────────
+function buildLangGrid(){
+  const g=document.getElementById('langGrid');
+  g.innerHTML=Object.entries(LANGS).map(([k,v])=>`
+    <button class="lang-btn-ui${k===LANG?' active':''}" onclick="setLang('${k}')">
+      ${v.flag}<span>${v.name}</span>
+    </button>`).join('');
+}
+function setLang(k){
+  LANG=k;
+  try{localStorage.setItem(LANG_KEY,k);}catch(e){}
+  buildLangGrid();applyLang();
+}
+
+// ── ONBOARDING ────────────────────────────────────────────
+let OB_STEP=0;
+function showOnboarding(){
+  document.getElementById('onboarding').classList.add('active');
+  OB_STEP=0;goOb(0);
+}
+function goOb(n){
+  OB_STEP=n;
+  document.querySelectorAll('.ob-step').forEach((s,i)=>s.classList.toggle('active',i===n));
+}
+function obNext(){goOb(Math.min(OB_STEP+1,2));}
+function obFinish(){
+  document.getElementById('onboarding').classList.remove('active');
+  DB.members[CU].onboarded=true;
+  save();
+}
+
+// ── LOGIN ─────────────────────────────────────────────────
+function doLogin(){
+  const raw=(document.getElementById('loginInput').value||'').trim().toLowerCase();
+  if(!raw){toast(t('errorName'),'error');return;}
+  document.getElementById('loginInput').value='';
+  const key=fbKey(raw);
+  const admins=DB.settings.admins||DEFAULT_ADMINS;
+  const isAdmin=admins.includes(key)||admins.includes(raw)||(DB.members[key]&&DB.members[key].role==='admin');
+  if(isAdmin){openPinPad(key,raw);return;}
+  completeLogin(key,raw);
+}
+function completeLogin(key,disp){
+  if(!disp)disp=fbDec(key);
+  // If online: reload from Firebase first (anti-manipulation)
+  if(ONLINE&&FB_REF){
+    FB_REF.once('value').then(snap=>{
+      const r=snap.val();
+      if(r&&r.members){
+        DB.groups=r.groups||DB.groups;DB.members=r.members||DB.members;
+        DB.videos=r.videos||DB.videos;DB.messages=r.messages||DB.messages;
+        if(r.settings)DB.settings=Object.assign({admins:DEFAULT_ADMINS,tpl:DEFAULT_TPL,nextGroup:2},r.settings);
+        DB._ts=r.ts||0;
+      }
+      _finishLogin(key,disp);
+    }).catch(()=>_finishLogin(key,disp));
+  }else{
+    _finishLogin(key,disp);
+  }
+}
+function _finishLogin(key,disp){
+  const admins=DB.settings.admins||DEFAULT_ADMINS;
+  const isAdmin=admins.includes(key)||admins.includes(disp)||(DB.members[key]&&DB.members[key].role==='admin');
+  if(DB.members[key]){
+    const m=DB.members[key];
+    if(!m.name||m.name===key)m.name=disp;
+    if(m.status==='inactive'){
+      const g=findGroupSlot();
+      if(!g){toast('❌ Keine Gruppe','error');return;}
+      m.status='active';m.group=g.id;if(!g.members.includes(key))g.members.push(key);
+    }
+    CU=key;
+    toast(`✨ ${t('welcome')}, ${m.name||disp}!`,'success');
+  }else{
+    const g=findGroupSlot();
+    if(!g){toast('❌ Keine Gruppe','error');return;}
+    DB.members[key]={
+      name:disp,key,role:isAdmin?'admin':'member',group:g.id,status:'active',
+      stats:{given:0,received:0},myVideos:[],lastPost:null,postsTotal:0,
+      joined:Date.now(),lang:LANG,onboarded:false
+    };
+    g.members.push(key);
+    CU=key;
+    toast('🎉 Willkommen!','success');
+  }
+  saveLS(); // local only (no FB push on login)
+  enterApp();
+}
+function findGroupSlot(){
+  const sorted=Object.values(DB.groups).sort((a,b)=>a.number-b.number);
+  for(const g of sorted){if((g.members||[]).length<MAX_GROUP)return g;}
+  const num=DB.settings.nextGroup||2;
+  const id='g'+num;
+  DB.groups[id]={id,name:'SUPPORT POOL '+num,number:num,members:[]};
+  DB.settings.nextGroup=num+1;
+  return DB.groups[id];
+}
+function enterApp(){
+  document.getElementById('app').style.display='block';
+  document.getElementById('bottom-nav').classList.add('visible');
+  document.getElementById('userChip').style.display='block';
+  const u=DB.members[CU];
+  document.getElementById('userChipName').textContent=u.name||CU;
+  if(u.role==='admin')document.querySelector('.nav-tab[data-screen="admin"]').style.display='flex';
+  checkExpired();
+  showScreen('home');
+  // Show onboarding for new members
+  if(!u.onboarded&&u.role!=='admin'){showOnboarding();}
+  // Push to FB only if online (anti-manipulation: fresh data already loaded above)
+  if(ONLINE)pushFB();
+}
+function doLogout(){
+  CU=null;
+  document.getElementById('app').style.display='none';
+  document.getElementById('bottom-nav').classList.remove('visible');
+  document.getElementById('userChip').style.display='none';
+  document.getElementById('screen-login').classList.add('active');
+  document.querySelectorAll('.screen:not(#screen-login)').forEach(s=>s.classList.remove('active'));
+}
+
+// ── RENDER ALL ────────────────────────────────────────────
+function renderAll(){
+  renderLoginStats();
+  if(!CU)return;
+  const sc=document.querySelector('.screen.active');
+  if(!sc)return;
+  const id=sc.id.replace('screen-','');
+  if(id==='home')renderHome();
+  else if(id==='profile')renderProfile();
+  else if(id==='admin')renderAdmin();
+  updateNavBadges();
+}
+
+function renderLoginStats(){
+  const members=Object.values(DB.members).filter(m=>m.status==='active'&&m.role!=='admin').length;
+  const groups=Object.keys(DB.groups).length;
+  const supports=Object.values(DB.videos).reduce((s,v)=>s+(v.r1Supporters||[]).length+(v.r2Supporters||[]).length,0);
+  document.getElementById('ls-members').textContent=members;
+  document.getElementById('ls-groups').textContent=groups;
+  document.getElementById('ls-supports').textContent=supports;
+}
+
+// ── HOME ──────────────────────────────────────────────────
+function renderHome(){
+  if(!CU||!DB.members[CU])return;
+  renderBalance();
+  renderOpenVideos();
+  renderMyVideos();
+  updateNavBadges();
+}
+
+function renderBalance(){
+  const u=DB.members[CU];
+  const given=u.stats.given||0,received=u.stats.received||0;
+  const bal=given-received;
+  const el=document.getElementById('balanceNum');
+  el.textContent=bal;
+  el.className='balance-big'+(bal>0?' pos':bal<0?' neg':'');
+  document.getElementById('statGiven').textContent=given;
+  document.getElementById('statReceived').textContent=received;
+  // Ring: show ratio given/(given+received) or 0
+  const total=given+received;
+  const pct=total>0?Math.round(given/total*100):0;
+  const circ=169.6;
+  const off=circ-(circ*pct/100);
+  document.getElementById('balanceRing').style.strokeDashoffset=off;
+  document.getElementById('balanceRingPct').textContent=pct+'%';
+  document.getElementById('balanceFill').style.width=pct+'%';
+  // Timer
+  renderPostTimer(u);
+}
+
+function renderPostTimer(u){
+  const el=document.getElementById('postTimerPill');
+  const now=Date.now();
+  const total=u.postsTotal||0;
+
+  // Determine required balance to post
+  let reqBal=0;
+  if(total===0)reqBal=0; // first post free (soft)
+  else if(total===1)reqBal=3; // must have given 3
+  else reqBal=10; // must have given 10
+
+  const given=u.stats.given||0;
+  const received=u.stats.received||0;
+  const bal=given-received;
+
+  if(u.lastPost&&(now-u.lastPost)<ROUND1_MS){
+    const rem=ROUND1_MS-(now-u.lastPost);
+    const h=Math.floor(rem/3600000),m=Math.floor((rem%3600000)/60000);
+    el.innerHTML=`<span class="timer-pill timer-wait">⏳ ${h}h ${m}m</span>`;
+    return;
+  }
+  if(total===0){el.innerHTML=`<span class="timer-pill timer-ok">🎁 Erster Post</span>`;return;}
+  if(total===1&&given<3){el.innerHTML=`<span class="timer-pill timer-soon">🔄 ${3-given} ${t('needed')}</span>`;return;}
+  if(total>=2&&bal<10){el.innerHTML=`<span class="timer-pill timer-wait">⚠️ ${10-bal} ${t('needed')}</span>`;return;}
+  el.innerHTML=`<span class="timer-pill timer-ok">✅ ${t('postBtn')}</span>`;
+}
+
+function renderOpenVideos(){
+  const u=DB.members[CU];const myKey=CU;const now=Date.now();
+  const list=document.getElementById('openVideosList');
+  const allSupByMe=v=>{
+    const r1=(v.r1Supporters||[]).map(k=>k.toLowerCase());
+    const r2=(v.r2Supporters||[]).map(k=>k.toLowerCase());
+    return r1.includes(myKey)||r2.includes(myKey);
+  };
+  const open=Object.values(DB.videos).filter(v=>{
+    if(v.status==='done'||v.status==='expired')return false;
+    const owk=(v.ownerKey||v.owner||'').toLowerCase();
+    if(owk===myKey)return false;
+    if(allSupByMe(v))return false;
+    // Check if current round is available
+    if(v.round===1&&(v.r1Supporters||[]).length>=ROUND1_NEED)return false;
+    if(v.round===2&&(v.r2Supporters||[]).length>=ROUND2_NEED)return false;
+    return true;
+  }).sort((a,b)=>(a.expiresR1||a.expiresR2||0)-(b.expiresR1||b.expiresR2||0));
+
+  document.getElementById('openCount').textContent=open.length;
+  if(!open.length){list.innerHTML=`<div class="empty"><div class="empty-icon">📭</div><div class="empty-text">${t('noOpen')}</div></div>`;return;}
+
+  list.innerHTML=open.map(v=>{
+    const r=v.round||1;
+    const supporters=r===1?(v.r1Supporters||[]):(v.r2Supporters||[]);
+    const need=ROUND1_NEED;
+    const done=supporters.length;
+    const pct=Math.round(done/need*100);
+    const expiry=r===1?(v.expiresR1||0):(v.expiresR2||0);
+    const left=Math.max(0,expiry-now);
+    const h=Math.floor(left/3600000),m=Math.floor((left%3600000)/60000);
+    const urgent=left<3600000;
+    const ownerName=fbDec(v.ownerKey||v.owner||'?');
+    const initials=(ownerName[0]||'?').toUpperCase();
+    const canSupport=canUserSupport(u);
+    return `<div class="video-card">
+      <div class="video-card-header">
+        <div class="video-avatar">${initials}</div>
+        <div class="video-meta">
+          <div class="video-owner">@${ownerName}</div>
+          <div class="video-time">${urgent?'🔴':'🕐'} ${h}h ${m}m ${t('timeLeft')}</div>
+        </div>
+        <div class="video-round-badge${r===2?' r2':''}">${t('round'+r)}</div>
+      </div>
+      <div class="video-progress-row">
+        <div class="video-bar"><div class="video-bar-fill" style="width:${pct}%"></div></div>
+        <span class="text-xs text-muted">${done}/${need}</span>
+      </div>
+      <button class="support-btn" data-vid="${v.id}" onclick="handleSupport('${v.id}')" ${canSupport?'':'disabled'}>
+        ${canSupport?t('supportBtn'):t('supportDone')}
+      </button>
+    </div>`;
+  }).join('');
+}
+
+function canUserSupport(u){
+  return true; // balance check is done inside handleSupport, button just shows the UI
+}
+
+function renderMyVideos(){
+  const u=DB.members[CU];
+  const list=document.getElementById('myVideosList');
+  const mine=(u.myVideos||[]).map(id=>DB.videos[id]).filter(Boolean).sort((a,b)=>b.posted-a.posted);
+  document.getElementById('myCount').textContent=mine.length;
+  if(!mine.length){list.innerHTML=`<div class="empty"><div class="empty-icon">📹</div><div class="empty-text">${t('noMy')}</div></div>`;return;}
+  const now=Date.now();
+  list.innerHTML=mine.slice(0,5).map(v=>{
+    const r1done=(v.r1Supporters||[]).length;
+    const r2done=(v.r2Supporters||[]).length;
+    const total=r1done+r2done;
+    const icon=v.status==='done'?'✅':v.status==='expired'?'⏰':v.round===2?'🔵':'⏳';
+    const statusLbl=v.status==='done'?t('done'):v.status==='expired'?t('expired'):`${t('round'+v.round)}`;
+    return `<div class="video-card" style="cursor:default">
+      <div class="flex flex-between flex-center">
+        <div class="flex flex-center gap8">
+          <span style="font-size:20px">${icon}</span>
+          <div>
+            <div class="text-sm fw6">${statusLbl}</div>
+            <div class="text-xs text-muted">${new Date(v.posted).toLocaleDateString()}</div>
+          </div>
+        </div>
+        <div style="text-align:right">
+          <div class="text-sm fw6 text-gold">${total}/20</div>
+          <div class="text-xs text-muted">${t('supports')}</div>
+        </div>
+      </div>
+      <div class="video-progress-row mt8">
+        <div class="video-bar"><div class="video-bar-fill" style="width:${Math.min(100,total/20*100)}%"></div></div>
+        <span class="text-xs text-muted">${Math.round(total/20*100)}%</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── POST VIDEO ────────────────────────────────────────────
+function openPostModal(){
+  const u=DB.members[CU];
+  const now=Date.now();
+  const total=u.postsTotal||0;
+  const given=u.stats.given||0;
+  const received=u.stats.received||0;
+  const bal=given-received;
+
+  if(u.lastPost&&(now-u.lastPost)<ROUND1_MS){
+    const rem=ROUND1_MS-(now-u.lastPost);
+    const h=Math.floor(rem/3600000),m=Math.floor((rem%3600000)/60000);
+    toast(`${t('errorTimer')}: ${h}h ${m}m`,'error');return;
+  }
+  if(total===1&&given<3){toast(t('errorBalance'),'error');return;}
+  if(total>=2&&bal<10){toast(t('errorBalance'),'error');return;}
+  openModal('postModal');
+}
+function submitPost(){
+  if(!ONLINE){toast(t('errorOffline'),'error');return;}
+  const url=(document.getElementById('postUrl').value||'').trim();
+  if(!url||!url.includes('tiktok')){toast(t('errorUrl'),'error');return;}
+  const u=DB.members[CU];
+  const now=Date.now();
+  const group=DB.groups[u.group];
+  const tpl=DB.settings.tpl||DEFAULT_TPL;
+  const dt=new Date();
+  const comment=tpl
+    .replace(/{gruppe}/g,group?group.number:1)
+    .replace(/{name}/g,u.name||CU)
+    .replace(/{member}/g,CU)
+    .replace(/{date}/g,dt.toLocaleDateString())
+    .replace(/{time}/g,dt.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}));
+  const vid='v'+now;
+  const isFirst=(u.postsTotal||0)===0;
+  DB.videos[vid]={
+    id:vid,ownerKey:CU,owner:u.name||CU,group:u.group,
+    groupNumber:group?group.number:1,
+    url,posted:now,comment,
+    round:1,
+    r1Supporters:[],r2Supporters:[],
+    expiresR1:now+ROUND1_MS,
+    expiresR2:now+ROUND2_MS,
+    status:'open',
+    r1Need:isFirst?5:ROUND1_NEED,
+  };
+  if(!u.myVideos)u.myVideos=[];
+  u.myVideos.push(vid);
+  u.lastPost=now;
+  u.postsTotal=(u.postsTotal||0)+1;
+  closeModal('postModal');
+  document.getElementById('postUrl').value='';
+  toast(t('successPost'),'success');
+  // Add notification for self
+  addNotif(CU,'📹',`Video gepostet und wartet auf ${isFirst?5:ROUND1_NEED} Supports`);
+  save();
+}
+
+// ── SUPPORT ───────────────────────────────────────────────
+function handleSupport(vid){
+  if(!ONLINE){toast(t('errorOffline'),'error');return;}
+  const u=DB.members[CU];
+  const v=DB.videos[vid];
+  if(!v){toast('❌ Video nicht gefunden','error');return;}
+  const myKey=CU.toLowerCase();
+
+  // Check already supported
+  if((v.r1Supporters||[]).map(k=>k.toLowerCase()).includes(myKey)||
+     (v.r2Supporters||[]).map(k=>k.toLowerCase()).includes(myKey)){
+    toast('❌ '+t('supportDone'),'error');return;
+  }
+  if(v.status==='done'||v.status==='expired'){toast('❌ '+t('expired'),'error');return;}
+
+  // Build & copy comment
+  const tpl=DB.settings.tpl||DEFAULT_TPL;
+  const group=DB.groups[v.group];
+  const now2=new Date();
+  const fresh=tpl
+    .replace(/{gruppe}/g,group?group.number:(v.groupNumber||1))
+    .replace(/{name}/g,v.owner||fbDec(v.ownerKey||''))
+    .replace(/{member}/g,CU)
+    .replace(/{date}/g,now2.toLocaleDateString())
+    .replace(/{time}/g,now2.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}))
+    +makeUnique();
+  fallbackCopy(fresh);
+  try{if(navigator.clipboard&&window.isSecureContext)navigator.clipboard.writeText(fresh).catch(()=>{});}catch(e){}
+
+  // Commit stats (only after copy, before navigation)
+  const r=v.round||1;
+  if(r===1){
+    v.r1Supporters=v.r1Supporters||[];
+    v.r1Supporters.push(CU);
+  }else{
+    v.r2Supporters=v.r2Supporters||[];
+    v.r2Supporters.push(CU);
+  }
+
+  u.stats.given=(u.stats.given||0)+1;
+  u.stats.balance=(u.stats.given||0)-(u.stats.received||0);
+
+  // Owner stats
+  const owner=DB.members[v.ownerKey];
+  if(owner){
+    owner.stats.received=(owner.stats.received||0)+1;
+    owner.stats.balance=(owner.stats.given||0)-(owner.stats.received||0);
+    addNotif(v.ownerKey,'❤️',`@${u.name||CU} ${t('notifVideoSupport')}`);
+  }
+
+  // Check round completion
+  const need=r===1?(v.r1Need||ROUND1_NEED):ROUND2_NEED;
+  const done=r===1?(v.r1Supporters||[]).length:(v.r2Supporters||[]).length;
+  if(done>=need){
+    if(r===1){
+      // Move to round 2 if time allows
+      const timeLeft=v.expiresR2-Date.now();
+      if(timeLeft>0){v.round=2;v.status='open';}
+      else{v.status='done';}
+    }else{v.status='done';}
+  }
+
+  // Celebration then navigate
+  celebrate(t('celText'));
+  save();
+  setTimeout(()=>{
+    try{
+      const a=document.createElement('a');
+      a.href=v.url;a.target='_blank';a.rel='noopener noreferrer';
+      document.body.appendChild(a);a.click();document.body.removeChild(a);
+    }catch(e){window.open(v.url,'_blank');}
+  },1400);
+}
+
+function makeUnique(){
+  const chars=['\u200B','\u200C','\u200D','\uFEFF'];
+  return chars[Math.floor(Math.random()*chars.length)]+chars[Math.floor(Math.random()*chars.length)];
+}
+
+// ── CELEBRATION ───────────────────────────────────────────
+function celebrate(msg){
+  const el=document.getElementById('celebration');
+  document.getElementById('cel-text').textContent=msg;
+  el.classList.add('active');
+  // Confetti
+  const colors=['#d4a843','#f0c060','#fff','#22c55e','#3b82f6'];
+  for(let i=0;i<30;i++){
+    const p=document.createElement('div');
+    p.className='confetti-piece';
+    p.style.cssText=`left:${Math.random()*100}%;top:${Math.random()*40+10}%;background:${colors[Math.floor(Math.random()*colors.length)]};animation-delay:${Math.random()*0.5}s;animation-duration:${1+Math.random()*0.8}s`;
+    el.appendChild(p);
+  }
+  setTimeout(()=>{
+    el.classList.remove('active');
+    el.querySelectorAll('.confetti-piece').forEach(p=>p.remove());
+  },1500);
+}
+
+// ── CHECK EXPIRED ─────────────────────────────────────────
+function checkExpired(){
+  const now=Date.now();let changed=false;
+  Object.values(DB.videos).forEach(v=>{
+    if(v.status==='done'||v.status==='expired')return;
+    // R1 to R2 transition
+    if(v.round===1&&now>v.expiresR1){
+      const done=(v.r1Supporters||[]).length;
+      const need=v.r1Need||ROUND1_NEED;
+      if(done<need&&now<v.expiresR2){v.round=2;v.status='open';changed=true;}
+      else if(now>=v.expiresR2){v.status=done>=need?'done':'expired';changed=true;}
+    }
+    if(v.round===2&&now>v.expiresR2){
+      v.status=(v.r2Supporters||[]).length>=ROUND2_NEED?'done':'expired';changed=true;
+    }
+  });
+  if(changed){save();}
+}
+
+// ── PROFILE ───────────────────────────────────────────────
+function renderProfile(){
+  if(!CU||!DB.members[CU])return;
+  const u=DB.members[CU];
+  document.getElementById('profName').textContent=u.name||CU;
+  document.getElementById('profAvatar').textContent=getAvatar(u);
+  document.getElementById('profRank').innerHTML=rankHTML(u.stats.given||0);
+  document.getElementById('profGiven').textContent=u.stats.given||0;
+  document.getElementById('profReceived').textContent=u.stats.received||0;
+  document.getElementById('profVideos').textContent=(u.myVideos||[]).length;
+  renderNotifs();
+}
+function getAvatar(u){
+  const emojis=['😊','🦊','🐯','🦁','🐸','🦋','🌟','🔥','💎','🦅'];
+  const h=(u.key||u.name||'').split('').reduce((a,c)=>a+c.charCodeAt(0),0);
+  return emojis[h%emojis.length];
+}
+function renderNotifs(){
+  const list=document.getElementById('notifList');
+  const myNotifs=Object.values(DB.messages||{})
+    .filter(m=>m.to===CU&&(m.type==='notif'||m.reply))
+    .sort((a,b)=>b.ts-a.ts).slice(0,20);
+  document.getElementById('notifCount').textContent=myNotifs.filter(m=>!m.read).length;
+  if(!myNotifs.length){list.innerHTML=`<div class="empty"><div class="empty-icon">🔔</div><div class="empty-text">${t('noNotif')}</div></div>`;return;}
+  list.innerHTML=myNotifs.map(m=>`
+    <div class="notif-item${!m.read?' notif-unread':''}" onclick="markRead('${m.id}');this.classList.remove('notif-unread')">
+      <div class="notif-icon">${m.icon||'📩'}</div>
+      <div><div class="notif-text">${m.text||m.message||''}</div>
+      ${m.reply?`<div class="notif-text" style="margin-top:6px;padding-top:6px;border-top:1px solid var(--border);color:var(--gold2)">💬 ${m.reply}</div>`:''}
+      <div class="notif-time">${new Date(m.ts||m.timestamp||0).toLocaleString()}</div></div>
+    </div>`).join('');
+}
+function markRead(id){if(DB.messages[id]){DB.messages[id].read=true;saveLS();updateNavBadges();}}
+function addNotif(toKey,icon,text){
+  const id='n'+Date.now()+'_'+Math.random().toString(36).slice(2,6);
+  DB.messages[id]={id,to:toKey,icon,text,type:'notif',read:false,ts:Date.now()};
+}
+
+function sendMsg(){
+  const msg=(document.getElementById('msgInput').value||'').trim();
+  if(!msg){return;}
+  const id='m'+Date.now();
+  DB.messages[id]={id,from:CU,to:'admin',message:msg,timestamp:Date.now(),read:false,reply:null};
+  document.getElementById('msgInput').value='';
+  toast(t('successSave'),'success');
+  save();
+}
+function updateNavBadges(){
+  // Notifications badge
+  const unread=Object.values(DB.messages||{}).filter(m=>m.to===CU&&!m.read).length;
+  const nb=document.querySelector('.nav-tab[data-screen="profile"] .badge');
+  if(nb){nb.textContent=unread;nb.classList.toggle('visible',unread>0);}
+}
+
+// ── ADMIN ─────────────────────────────────────────────────
+let ADMIN_TAB='overview';
+function adminTab(t2){
+  ADMIN_TAB=t2;
+  ['overview','messages','settings'].forEach(s=>{
+    document.getElementById('admin'+s.charAt(0).toUpperCase()+s.slice(1)).style.display=s===t2?'block':'none';
+    document.getElementById('atab-'+s).classList.toggle('active',s===t2);
+  });
+  if(t2==='messages')renderAdminMsgs();
+  if(t2==='overview')renderAdminOverview();
+}
+function renderAdmin(){
+  if(!CU||DB.members[CU]?.role!=='admin')return;
+  document.getElementById('fbHint').style.display=ONLINE?'none':'block';
+  adminTab(ADMIN_TAB);
+}
+function renderAdminOverview(){
+  const groups=Object.keys(DB.groups).length;
+  const members=Object.values(DB.members).filter(m=>m.status==='active'&&m.role!=='admin').length;
+  const videos=Object.keys(DB.videos).length;
+  document.getElementById('a-groups').textContent=groups;
+  document.getElementById('a-members').textContent=members;
+  document.getElementById('a-videos').textContent=videos;
+  const list=document.getElementById('adminGroupList');
+  const sorted=Object.values(DB.groups).sort((a,b)=>a.number-b.number);
+  list.innerHTML=sorted.map(g=>{
+    const active=(g.members||[]).filter(k=>DB.members[k]?.status==='active');
+    return `<div class="card mb12">
+      <div class="flex flex-between flex-center mb12">
+        <div class="fw6 text-gold">${g.name}</div>
+        <div class="count-pill">${active.length}/${g.members.length}</div>
+      </div>
+      ${active.map(k=>{
+        const m=DB.members[k];if(!m)return '';
+        const days=m.lastPost?Math.floor((Date.now()-m.lastPost)/86400000):null;
+        const bal=(m.stats.given||0)-(m.stats.received||0);
+        return `<div class="member-row">
+          <div class="member-avatar">${getAvatar(m)}</div>
+          <div class="member-info">
+            <div class="member-name">${m.name||k}${m.role==='admin'?' 👑':''}</div>
+            <div class="member-sub">${days!==null?days+'d ago':'new'} · bal: ${bal>0?'+':''}${bal}</div>
+          </div>
+          ${m.role!=='admin'?`<button class="btn btn-danger btn-sm" style="width:auto;padding:6px 12px" onclick="confirmRemove('${g.id}','${k}')">✕</button>`:''}
+        </div>`;
+      }).join('')}
+    </div>`;
+  }).join('')||'<div class="empty"><div class="empty-icon">👥</div><div class="empty-text">Keine Gruppen</div></div>';
+}
+function renderAdminMsgs(){
+  const list=document.getElementById('adminMsgList');
+  const msgs=Object.entries(DB.messages||{})
+    .filter(([,m])=>m.to==='admin'&&m.message)
+    .sort((a,b)=>b[1].timestamp-a[1].timestamp).slice(0,50);
+  if(!msgs.length){list.innerHTML=`<div class="empty"><div class="empty-icon">📭</div><div class="empty-text">${t('noMsgs')}</div></div>`;return;}
+  list.innerHTML=msgs.map(([id,m])=>`
+    <div class="card mb8${!m.read?' notif-unread':''}">
+      <div class="flex flex-between flex-center mb8">
+        <div class="fw6 text-gold">@${m.from}</div>
+        <div class="text-xs text-muted">${new Date(m.timestamp).toLocaleString()}</div>
+      </div>
+      <div class="text-sm mb8">${m.message}</div>
+      ${m.reply?`<div style="padding:8px;background:var(--bg2);border-radius:var(--r2);font-size:12px;color:var(--gold2)">💬 ${m.reply}</div>`:''}
+      <button class="btn btn-outline btn-sm mt8" onclick="openReply('${id}','${m.from}')">💬 ${t('replySend')}</button>
+    </div>`).join('');
+}
+function openReply(id,from){
+  PENDING_REPLY={id,from};
+  document.getElementById('replyTitle').textContent=`@ ${from}`;
+  document.getElementById('replyInput').value='';
+  openModal('replyModal');
+}
+function submitReply(){
+  if(!PENDING_REPLY)return;
+  const r=(document.getElementById('replyInput').value||'').trim();
+  if(!r)return;
+  const msg=DB.messages[PENDING_REPLY.id];
+  if(msg){
+    msg.reply=r;msg.read=true;
+    // Add notification for user
+    addNotif(msg.from,'💬',`${t('notifAdminReply')}: ${r}`);
+  }
+  closeModal('replyModal');PENDING_REPLY=null;
+  toast(t('successSave'),'success');save();renderAdminMsgs();
+}
+function confirmRemove(gid,key){
+  PENDING_DELETE={gid,key};
+  document.getElementById('confirmText').textContent=`"${DB.members[key]?.name||key}" entfernen?`;
+  document.getElementById('confirmYes').onclick=()=>{doRemove();closeModal('confirmModal');};
+  openModal('confirmModal');
+}
+function doRemove(){
+  if(!PENDING_DELETE)return;
+  const g=DB.groups[PENDING_DELETE.gid];
+  if(g)g.members=g.members.filter(k=>k!==PENDING_DELETE.key);
+  if(DB.members[PENDING_DELETE.key]){DB.members[PENDING_DELETE.key].status='inactive';DB.members[PENDING_DELETE.key].group=null;}
+  PENDING_DELETE=null;
+  toast('✅ Entfernt','success');save();renderAdminOverview();
+}
+function cleanupInactive(){
+  const thr=7*86400000;const now=Date.now();let n=0;
+  Object.values(DB.groups).forEach(g=>{
+    g.members=(g.members||[]).filter(k=>{
+      const m=DB.members[k];if(!m)return false;
+      if(m.role==='admin')return true;
+      if(m.lastPost&&(now-m.lastPost)>thr){m.status='inactive';n++;return false;}
+      return true;
+    });
+  });
+  toast(`✅ ${n} entfernt`,'success');if(n)save();
+}
+function autoCleanInfo(){toast('Auto-Cleanup: täglich nach 7 Tagen Inaktivität','info');}
+
+// ── COMMENT TEMPLATE ─────────────────────────────────────
+function insTpl(ph){
+  const el=document.getElementById('tplInput');
+  const s=el.selectionStart,e=el.selectionEnd;
+  el.value=el.value.slice(0,s)+ph+el.value.slice(e);
+  el.focus();el.setSelectionRange(s+ph.length,s+ph.length);
+  updateTplPreview();
+}
+function updateTplPreview(){
+  const raw=document.getElementById('tplInput').value;
+  document.getElementById('tplPreview').textContent=raw
+    .replace(/{gruppe}/g,'1').replace(/{name}/g,'meinTikTok')
+    .replace(/{member}/g,'supporter').replace(/{date}/g,'01.01.2025')
+    .replace(/{time}/g,'14:30');
+}
+function saveTpl(){
+  const raw=(document.getElementById('tplInput').value||'').trim();
+  if(!raw)return;
+  DB.settings.tpl=raw;closeModal('commentModal');
+  toast(t('successSave'),'success');save();
+}
+
+// ── BACKUP ────────────────────────────────────────────────
+function doExport(){
+  const str=JSON.stringify({groups:DB.groups,members:DB.members,videos:DB.videos,messages:DB.messages,settings:DB.settings,v:4},null,2);
+  fallbackCopy(str);
+  try{if(navigator.clipboard&&window.isSecureContext)navigator.clipboard.writeText(str).catch(()=>{});}catch(e){}
+  toast(t('successExport'),'success');
+}
+function doImport(){
+  const raw=(document.getElementById('importInput').value||'').trim();
+  if(!raw)return;
+  try{
+    const imp=JSON.parse(raw);
+    if(!imp.groups||!imp.members)throw new Error('Invalid format');
+    DB.groups=imp.groups||{};DB.members=imp.members||{};
+    DB.videos=imp.videos||{};DB.messages=imp.messages||{};
+    DB._ts=Date.now();
+    if(imp.settings)DB.settings=Object.assign({admins:DEFAULT_ADMINS,tpl:DEFAULT_TPL,nextGroup:2},imp.settings);
+    saveLS();
+    if(ONLINE){FB_LAST_PUSH=Date.now();pushFB();}
+    closeModal('importModal');
+    toast(t('successImport'),'success');
+    renderAll();
+  }catch(e){toast('❌ '+e.message,'error');}
+}
+
+// ── CLIPBOARD ─────────────────────────────────────────────
+function fallbackCopy(t2){
+  try{const el=document.getElementById('clipHelper');el.value=t2;el.removeAttribute('disabled');el.focus();el.select();document.execCommand('copy');el.setAttribute('disabled','');}catch(e){}
+}
+
+// ── PIN PAD ───────────────────────────────────────────────
+let PIN_LOGIN_KEY='',PIN_LOGIN_DISP='';
+function openPinPad(key,disp){
+  PIN_LOGIN_KEY=key;PIN_LOGIN_DISP=disp;
+  PIN_BUF='';PIN_ATT=0;
+  document.getElementById('pinErr').textContent='';
+  updatePinDots4('pd',PIN_BUF);
+  document.getElementById('pinPad').classList.add('active');
+}
+function closePinPad(){document.getElementById('pinPad').classList.remove('active');PIN_BUF='';}
+function updatePinDots4(pre,buf){for(let i=0;i<4;i++){const d=document.getElementById(pre+i);if(d)d.classList.toggle('filled',i<buf.length);}}
+function handlePinKey(v){
+  if(v==='del'){PIN_BUF=PIN_BUF.slice(0,-1);updatePinDots4('pd',PIN_BUF);document.getElementById('pinErr').textContent='';return;}
+  if(v==='ok'){confirmPin();return;}
+  if(PIN_BUF.length>=4)return;
+  PIN_BUF+=v;updatePinDots4('pd',PIN_BUF);
+  if(PIN_BUF.length===4)setTimeout(confirmPin,120);
+}
+function confirmPin(){
+  if(PIN_BUF.length<4){document.getElementById('pinErr').textContent='4 Ziffern eingeben';return;}
+  if(hashPin(PIN_BUF)===getPin()){
+    closePinPad();PIN_ATT=0;
+    completeLogin(PIN_LOGIN_KEY,PIN_LOGIN_DISP);
+  }else{
+    PIN_ATT++;PIN_BUF='';updatePinDots4('pd',PIN_BUF);
+    if(PIN_ATT>=5){closePinPad();toast('❌ Gesperrt (30s)','error');const b=document.querySelector('.btn-gold');if(b){b.disabled=true;setTimeout(()=>b.disabled=false,30000);}return;}
+    document.getElementById('pinErr').textContent=`❌ Falsch (${PIN_ATT}/5)`;
+  }
+}
+document.getElementById('pinCancel').onclick=()=>{closePinPad();toast('🔒 Abgebrochen','info');};
+document.querySelectorAll('.pin-key-ui').forEach(btn=>{
+  btn.addEventListener('click',()=>{const v=btn.dataset.pin;if(v)handlePinKey(v);});
+});
+
+// Change PIN
+function openChangePinPad(){CP_BUF='';CP_STEP='new';CP_FIRST='';document.getElementById('cpErr').textContent='';document.getElementById('cpTitle').textContent='Neuen PIN festlegen';document.getElementById('cpSub').textContent='Gib deinen neuen PIN ein';updatePinDots4('cpd',CP_BUF);document.getElementById('changePinPad').classList.add('active');}
+function closeChangePinPad(){document.getElementById('changePinPad').classList.remove('active');}
+function handleCpKey(v){
+  if(v==='del'){CP_BUF=CP_BUF.slice(0,-1);updatePinDots4('cpd',CP_BUF);return;}
+  if(v==='ok'){confirmCp();return;}
+  if(CP_BUF.length>=4)return;
+  CP_BUF+=v;updatePinDots4('cpd',CP_BUF);
+  if(CP_BUF.length===4)setTimeout(confirmCp,120);
+}
+function confirmCp(){
+  if(CP_BUF.length<4){document.getElementById('cpErr').textContent='4 Ziffern';return;}
+  if(CP_STEP==='new'){CP_FIRST=CP_BUF;CP_BUF='';CP_STEP='confirm';updatePinDots4('cpd',CP_BUF);document.getElementById('cpTitle').textContent='PIN bestätigen';document.getElementById('cpSub').textContent='Nochmals eingeben';}
+  else{
+    if(CP_BUF===CP_FIRST){setPin(hashPin(CP_BUF));closeChangePinPad();toast('✅ PIN geändert','success');}
+    else{CP_BUF='';CP_FIRST='';CP_STEP='new';updatePinDots4('cpd',CP_BUF);document.getElementById('cpErr').textContent='❌ Nicht übereinstimmend';}
+  }
+}
+document.querySelectorAll('.pin-key-ui[data-cp]').forEach(btn=>{
+  btn.addEventListener('click',()=>{const v=btn.dataset.cp;if(v)handleCpKey(v);});
+});
+
+// Keyboard for PIN pads
+document.addEventListener('keydown',e=>{
+  if(document.getElementById('pinPad').classList.contains('active')){
+    if(e.key>='0'&&e.key<='9')handlePinKey(e.key);
+    else if(e.key==='Backspace')handlePinKey('del');
+    else if(e.key==='Enter')handlePinKey('ok');
+    else if(e.key==='Escape')closePinPad();
+  }
+  if(document.getElementById('changePinPad').classList.contains('active')){
+    if(e.key>='0'&&e.key<='9')handleCpKey(e.key);
+    else if(e.key==='Backspace')handleCpKey('del');
+    else if(e.key==='Enter')handleCpKey('ok');
+    else if(e.key==='Escape')closeChangePinPad();
+  }
+});
+
+// ── BOTTOM NAV ────────────────────────────────────────────
+document.querySelectorAll('.nav-tab[data-screen]').forEach(tab=>{
+  tab.addEventListener('click',()=>showScreen(tab.dataset.screen));
+});
+
+// ── BOOT ──────────────────────────────────────────────────
+(function boot(){
+  try{LANG=localStorage.getItem(LANG_KEY)||'de';}catch(e){}
+  buildLangGrid();applyLang();
+  loadLS();
+  renderLoginStats();
+  initFB();
+  // Start expired-check interval
+  setInterval(checkExpired,60000);
+  setInterval(renderAll,30000);
+  // Login screen visible
+  document.getElementById('screen-login').classList.add('active');
+})();
+</script>
+
+</body>
+</html>
