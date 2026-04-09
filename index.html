@@ -449,6 +449,13 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;color:#f0f2
 @keyframes logoFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
 .login-logo-ring{animation:logoGlow 3s ease-in-out infinite}
 .login-logo-inner{animation:logoFloat 3s ease-in-out infinite}
+/* ── WIDYAMORA SUBTITLE ─────────────────────────────────────── */
+.login-subtitle{font-family:'Space Grotesk',sans-serif;font-size:1.1rem;font-weight:700;letter-spacing:.14em;margin-bottom:6px;display:flex;align-items:center;justify-content:center;gap:1px;line-height:1}
+.widyamora-text{background:linear-gradient(90deg,#a78bfa,#06d6a0);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+@keyframes crownShine{0%,100%{filter:drop-shadow(0 0 2px rgba(255,215,0,.2))}40%{filter:drop-shadow(0 0 8px rgba(255,215,0,.95)) drop-shadow(0 0 16px rgba(255,180,0,.5))}60%{filter:drop-shadow(0 0 14px rgba(255,235,0,1)) drop-shadow(0 0 22px rgba(255,210,0,.6))}100%{filter:drop-shadow(0 0 2px rgba(255,215,0,.2))}}
+.crown-glow{display:inline-block;font-size:1em;line-height:1;animation:crownShine 2.4s ease-in-out infinite}
+@keyframes flagWave{0%,100%{transform:rotate(-2deg)}50%{transform:rotate(3deg) scaleX(1.05)}}
+.flag-id-anim{display:inline-block;font-size:1em;line-height:1;animation:flagWave 2.8s ease-in-out infinite;transform-origin:left center}
 /* ── GOAL-WRAP label colors ─────────────────────────────────── */
 .goal-title{font-size:12px;font-weight:700;color:var(--v3)!important;margin-bottom:2px}
 .goal-sub{font-size:11px;color:var(--t2)!important}
@@ -689,6 +696,7 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;color:#f0f2
         </div>
       </div>
       <div class="login-title">SUPPORT POOL</div>
+      <div class="login-subtitle"><span class="crown-glow">👑</span><span class="widyamora-text">WIDYAMORA</span><span class="flag-id-anim">🇮🇩</span></div>
       <div class="login-tagline" id="t-tagline">Das Premium TikTok Support-Netzwerk</div>
       <div class="live-stats" id="live-stats">
         <div class="live-stat">
@@ -2376,7 +2384,6 @@ function enterApp() {
   }
   if (ONLINE) pushFB();
   setTimeout(checkPendingOnBoot, 1500);
-  setTimeout(animateWorldClock, 900);
 }
 
 function doLogout() {
@@ -3771,6 +3778,7 @@ function closeTour() {
   buildLangRow();
   buildWcRow();
   startWcTick();
+  setTimeout(animateWorldClock, 600);
   checkBC();
   applyLang();
   renderLoginStats();
