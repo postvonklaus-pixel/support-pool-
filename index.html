@@ -419,6 +419,23 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;color:#f0f2
 .ts-ok{cursor:pointer;transition:all .2s}
 .ts-ok:hover{background:rgba(6,214,160,.2);transform:scale(1.02)}
 
+/* ── LIVE STATS (login hero) ──────────────────────────────── */
+.live-stats{display:flex;gap:20px;justify-content:center;margin-top:16px}
+.live-stat{text-align:center}
+.live-stat-num{font-family:'Space Grotesk',sans-serif;font-size:1.6rem;font-weight:700;color:var(--v3);line-height:1}
+.live-stat-lbl{font-size:11px;color:var(--t2);margin-top:3px;letter-spacing:.04em}
+/* ── LOGO RING (login) ─────────────────────────────────────── */
+.login-logo-ring{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,rgba(124,58,237,.3),rgba(6,214,160,.2));border:2px solid var(--vb2);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;box-shadow:0 0 30px rgba(124,58,237,.3)}
+.login-logo-inner{text-align:center}
+.logo-trophy{font-size:28px;display:block;line-height:1}
+.logo-number{font-size:11px;font-weight:700;color:var(--v3);letter-spacing:.08em}
+/* ── LOGIN TITLE ───────────────────────────────────────────── */
+.login-title{font-family:'Space Grotesk',sans-serif;font-size:1.6rem;font-weight:700;letter-spacing:.08em;color:var(--text);margin-bottom:4px}
+.login-tagline{font-size:13px;color:var(--t2);margin-bottom:12px}
+/* ── NAV NOTIF BADGE ───────────────────────────────────────── */
+.nav-notif{display:none;position:absolute;top:4px;right:calc(50% - 18px);background:var(--red);color:#fff;font-size:9px;font-weight:700;min-width:15px;height:15px;border-radius:10px;align-items:center;justify-content:center;padding:0 3px}
+.nav-notif.active{display:flex}
+
 </style>
 </head>
 <body>
@@ -921,7 +938,7 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;color:#f0f2
   </div>
 
   <!-- BOTTOM NAV -->
-  <div id="bottom-nav" class="show">
+  <div id="bottom-nav">
     <button class="ni active" id="ni-home" data-sc="home" onclick="goScreen('home')">
       <span class="nav-icon">🏠</span>
       <span id="t-nav-home">Home</span>
@@ -929,7 +946,7 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;color:#f0f2
     <button class="ni" id="ni-profile" data-sc="profile" onclick="goScreen('profile')">
       <span class="nav-icon">👤</span>
       <span id="t-nav-profile">Profil</span>
-      <span class="nav-notif" id="nav-notif-badge">0</span>
+      <span class="nav-notif" id="nav-notif-badge"></span>
     </button>
     <button class="ni" data-sc="admin" id="admin-nav" style="display:none" onclick="goScreen('admin')">
       <span class="nav-icon">👑</span>
@@ -1239,7 +1256,7 @@ de: {
   obLi:['Poste dein TikTok-Video – auch ältere oder Videos von Freunden sind erlaubt','10 Mitglieder supporten es in 12 Std – Kommentar wird auto-kopiert','Nach 12 Std: Verlängerung – weitere 10 Supports = bis zu 20 Supports!','Erstes Video: nur 5 Supports nötig. Dann 3 Supports zurückgeben.','Nur online zählen Supports – fair und manipulationssicher'],
   ranks:['Neuling','Aufsteiger','Aktiv','Veteran','Elite'],
   delVid:'🗑 Video löschen',scheduled:'Vorgemerkt',cancelSchedTxt:'Löschen',
-  dmSearch:'Suchen',dmNotFound:(l.dmNotFound||'Kein Mitglied gefunden'),dmSelect:'Auswählen',dmPicked:'ausgewählt',
+  dmSearch:'Suchen',dmNotFound:'Kein Mitglied gefunden',dmSelect:'Auswählen',dmPicked:'ausgewählt',
   dmPlaceholder:'Nachricht schreiben...',toAdmin:'An Admin',toMember:'An Mitglied',
   postSuccessTitle:'🚀 Jetzt startklar!',
   postSuccessBody:'Dein Video wurde an {n} Mitglieder gesendet.',
@@ -2614,7 +2631,9 @@ function renderNotifs() {
     return m.to===CU && (m.type==='notif'||m.type==='dm'||m.reply);
   }).sort(function(a,b){ return (b.ts||b.timestamp||0)-(a.ts||a.timestamp||0); }).slice(0,30);
   var unread = notifs.filter(function(m){ return !m.read; }).length;
-  st('notif-count', unread);
+  st('notif-count', unread > 0 ? unread : '');
+  var badge = ge('nav-notif-badge');
+  if (badge) badge.className = 'nav-notif' + (unread > 0 ? ' active' : '');
   // Animate bell on nav if unread
   var profNav = ge('ni-profile');
   if (profNav) {
