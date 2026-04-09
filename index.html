@@ -377,6 +377,48 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;color:#f0f2
 .flex{display:flex}.gap8{gap:8px}.items-center{align-items:center}.justify-between{justify-content:space-between}
 .text-sm{font-size:12px}.text-xs{font-size:11px}.fw6{font-weight:600}.fw7{font-weight:700}.w100{width:100%}
 .text-v{color:var(--v3)}.text-muted{color:var(--t2)}
+/* ── NAV ACTIVE INDICATOR ─────────────────────────────────── */
+.ni{position:relative;flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 4px;background:none;border:none;color:var(--t2);font-size:10px;font-weight:600;cursor:pointer;transition:all .25s;font-family:inherit;letter-spacing:.02em}
+.ni .nav-icon{font-size:20px;transition:transform .25s}
+.ni.active{color:var(--v3)}
+.ni.active .nav-icon{transform:scale(1.15)}
+.ni.active::after{content:'';display:block;width:22px;height:2px;background:var(--v3);border-radius:2px;margin:-2px auto 0;box-shadow:0 0 8px var(--v)}
+/* ── BELL SHAKE ────────────────────────────────────────────── */
+@keyframes bellShake{0%,100%{transform:rotate(0)}15%{transform:rotate(18deg)}30%{transform:rotate(-14deg)}45%{transform:rotate(10deg)}60%{transform:rotate(-6deg)}75%{transform:rotate(4deg)}}
+.bell-shake{animation:bellShake 1.2s ease-in-out infinite}
+/* ── TOUR OVERLAY ──────────────────────────────────────────── */
+#tour-overlay{position:fixed;inset:0;z-index:9000;background:rgba(6,7,15,.96);display:none;align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(4px)}
+#tour-overlay.active{display:flex}
+.tour-box{background:var(--card2);border:1px solid var(--vb2);border-radius:24px;padding:28px 22px;max-width:360px;width:100%;text-align:center}
+.tour-icon{font-size:52px;margin-bottom:10px;display:block}
+.tour-title{font-size:1.2rem;font-weight:700;color:var(--v3);margin-bottom:10px}
+.tour-body{font-size:14px;color:var(--text);line-height:1.65;margin-bottom:18px}
+.tour-dots{display:flex;gap:7px;justify-content:center;margin-bottom:20px}
+.tour-dot{width:8px;height:8px;border-radius:50%;background:var(--t3);transition:all .25s}
+.tour-dot.active{background:var(--v3);width:22px;border-radius:4px}
+.tour-footer{display:flex;gap:8px}
+/* ── POST SUCCESS MODAL ────────────────────────────────────── */
+#postSuccessModal .modal-box{text-align:center}
+/* ── RANK CURRENT ROW ──────────────────────────────────────── */
+.rank-current{background:linear-gradient(90deg,rgba(124,58,237,.18),rgba(6,214,160,.08));border:1px solid var(--vb2);border-radius:10px;padding:7px 12px;color:var(--v3)!important;font-weight:700!important;font-size:13px;display:inline-block;margin:2px 0;position:relative;padding-left:22px}
+.rank-current::before{content:'▶';position:absolute;left:7px;top:50%;transform:translateY(-50%);font-size:9px;color:var(--teal)}
+/* ── BRIGHTENED CARDS ──────────────────────────────────────── */
+:root{
+  --bg:#080912;--bg2:#0d0e1e;--card:#151628;--card2:#1a1b30;
+  --bdr:rgba(255,255,255,.10);--bdr2:rgba(255,255,255,.16);
+  --t2:#a0a8c0;--t3:#505878;
+  --vd:rgba(124,58,237,.14);--vd2:rgba(124,58,237,.26);
+  --vb:rgba(124,58,237,.28);--vb2:rgba(124,58,237,.45);
+}
+.card{background:var(--card2);border-color:var(--bdr2)}
+.bal-card{background:linear-gradient(145deg,rgba(91,33,182,.24) 0%,rgba(124,58,237,.14) 40%,rgba(21,22,40,.98) 100%);border-color:var(--vb2)}
+.vc,.mvc{border-color:var(--bdr2);background:var(--card)}
+.modal-box{background:var(--card2);border-color:var(--bdr2)}
+.pin-box{background:var(--card2);border-color:var(--bdr2)}
+/* ── TS-OK BUTTON STATE ────────────────────────────────────── */
+.ts-ok{cursor:pointer;transition:all .2s}
+.ts-ok:hover{background:rgba(6,214,160,.2);transform:scale(1.02)}
+
 </style>
 </head>
 <body>
@@ -798,7 +840,7 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;color:#f0f2
         <div class="sec-title" id="t-contact">💬 Admin kontaktieren</div>
       </div>
       <div class="dm-to-row" id="prof-dm-to-row"></div>
-      <textarea class="sp-input mb8" id="msgInput" rows="2" placeholder="Deine Nachricht..."></textarea>
+      <textarea class="sp-input mb8" id="msgInput" rows="2" placeholder="..."></textarea>
       <button class="btn-sec mb16" onclick="sendMsg()">📨 <span id="t-send-msg">Senden</span></button>
 
       <!-- Notifications -->
@@ -893,8 +935,37 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;color:#f0f2
       <span class="nav-icon">👑</span>
       <span id="t-nav-admin">Admin</span>
     </button>
+    <button class="ni" id="ni-tour" onclick="startTour()">
+      <span class="nav-icon">🧭</span>
+      <span id="t-nav-tour">Rundgang</span>
+    </button>
   </div>
 
+
+<!-- Post Success Modal -->
+<div class="modal-bg" id="postSuccessModal">
+  <div class="modal-box" style="text-align:center">
+    <div style="font-size:54px;margin-bottom:10px">🚀</div>
+    <div id="psm-title" style="font-size:1.25rem;font-weight:700;color:var(--teal);margin-bottom:10px">Du bist startklar!</div>
+    <div id="psm-body" style="font-size:14px;color:var(--text);margin-bottom:8px;line-height:1.6"></div>
+    <div id="psm-sub" style="font-size:12px;color:var(--t2);margin-bottom:20px;line-height:1.5"></div>
+    <button class="btn-prime" onclick="closeModal('postSuccessModal')" id="psm-ok">Ich habe verstanden!</button>
+  </div>
+</div>
+
+<!-- Tour Overlay -->
+<div id="tour-overlay">
+  <div class="tour-box">
+    <div class="tour-icon" id="tour-icon">👋</div>
+    <div class="tour-title" id="tour-title">Willkommen!</div>
+    <div class="tour-body" id="tour-body">Lass uns die App gemeinsam entdecken.</div>
+    <div class="tour-dots" id="tour-dots"></div>
+    <div class="tour-footer">
+      <button class="btn-ghost btn-sm" id="tour-skip" onclick="closeTour()">✕</button>
+      <button class="btn-prime" id="tour-next" onclick="tourNext()" style="flex:1">Verstanden ✓</button>
+    </div>
+  </div>
+</div>
 </div><!-- /app -->
 
 <textarea id="clip-helper" style="position:fixed;left:-9999px;top:-9999px;opacity:0"></textarea>
@@ -1016,16 +1087,17 @@ function setDmTarget(key) {
 function buildDmToRow() {
   var row = ge('prof-dm-to-row');
   if (!row) return;
-  row.innerHTML = '<div style="display:flex;gap:7px;margin-bottom:8px">'
-    + '<input style="flex:1;padding:10px 14px;border-radius:50px;background:rgba(12,18,35,0.98);border:1.5px solid rgba(255,255,255,0.1);color:#f4edd8;-webkit-text-fill-color:#f4edd8;caret-color:#ffd166;font-size:13px;outline:none;-webkit-appearance:none;font-family:inherit;transition:border-color 0.2s" id="dm-search-inp" type="text" autocomplete="off" placeholder="@TikTok Username..." onkeydown="if(event.key===\'Enter\')searchDm()"/>'
-    + '<button onclick="searchDm()" style="padding:10px 14px;border-radius:50px;background:rgba(232,184,75,0.18);border:1px solid rgba(232,184,75,0.35);color:#ffd166;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap">🔍 Suchen</button>'
+  var l = L[LANG]||L.de;
+  row.innerHTML = '<div style="display:flex;gap:7px;margin-bottom:10px">'
+    + '<input style="flex:1;padding:10px 14px;border-radius:50px;background:rgba(14,15,30,.98);border:1.5px solid var(--bdr2);color:var(--text);caret-color:var(--v3);font-size:13px;outline:none;font-family:inherit;transition:border-color 0.2s" id="dm-search-inp" type="text" autocomplete="off" placeholder="@TikTok Username..." onkeydown="if(event.key===\'Enter\')searchDm()"/>'
+    + '<button onclick="searchDm()" style="padding:10px 14px;border-radius:50px;background:var(--vd2);border:1px solid var(--vb);color:var(--v3);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap">🔍 '+(l.dmSearch||'Suchen')+'</button>'
     + '</div>'
-    + '<div id="dm-res" style="display:none;align-items:center;gap:9px;padding:10px 12px;border-radius:13px;background:rgba(232,184,75,0.07);border:1px solid rgba(232,184,75,0.2);margin-bottom:7px;cursor:pointer;transition:all 0.2s" onclick="pickDmRes()">'
+    + '<div id="dm-res" style="display:none;align-items:center;gap:9px;padding:10px 12px;border-radius:13px;background:var(--vd);border:1px solid var(--vb);margin-bottom:7px;cursor:pointer;transition:all 0.2s" onclick="pickDmRes()">'
     + '<span id="dm-res-av" style="font-size:18px">&#128512;</span>'
-    + '<span id="dm-res-name" style="font-size:13px;font-weight:600;color:#f4edd8;flex:1"></span>'
-    + '<span style="font-size:11px;color:var(--text3)">Ausw\u00E4hlen →</span>'
+    + '<span id="dm-res-name" style="font-size:13px;font-weight:600;color:var(--text);flex:1"></span>'
+    + '<span style="font-size:11px;color:var(--t2)">'+(l.dmSelect||'Auswählen')+' →</span>'
     + '</div>'
-    + '<div id="dm-res-nf" style="display:none;font-size:12px;color:var(--text3);padding:5px 0">Kein Mitglied gefunden</div>';
+    + '<div id="dm-res-nf" style="display:none;font-size:12px;color:var(--t2);padding:5px 0">'+(l.dmNotFound||'Kein Mitglied gefunden')+'</div>';
   if (!_dmTarget) _dmTarget = 'admin';
 }
 
@@ -1057,7 +1129,7 @@ function searchDm() {
 
 function pickDmRes() {
   var n=ge('dm-res-name');
-  if(n) toast('✅ '+n.textContent+' ausgew\u00E4hlt','success',1200);
+  var l2=L[LANG]||L.de; if(n) toast('✅ '+n.textContent+' '+(l2.dmPicked||'ausgewählt'),'success',1200);
 }
 
 // BROADCAST (Admin)
@@ -1067,7 +1139,7 @@ function sendBroadcast() {
   if (!DB.settings) DB.settings = {};
   DB.settings.broadcast = msg;
   ge('broadcastInput').value = '';
-  toast('&#128226; Broadcast gesendet!', 'success');
+  toast('📢 '+(t('okSave')||'Gesendet'), 'success');
   save();
 }
 
@@ -1165,7 +1237,23 @@ de: {
   obT1:'So funktioniert es',obT2:'Du bist bereit!',obB2:'Klicke auf Video posten und füge deine TikTok-URL ein!',
   obBtn0:'Weiter →',obBtn1:'Weiter →',obBtn2:'Los geht\'s! 🎉',
   obLi:['Poste dein TikTok-Video – auch ältere oder Videos von Freunden sind erlaubt','10 Mitglieder supporten es in 12 Std – Kommentar wird auto-kopiert','Nach 12 Std: Verlängerung – weitere 10 Supports = bis zu 20 Supports!','Erstes Video: nur 5 Supports nötig. Dann 3 Supports zurückgeben.','Nur online zählen Supports – fair und manipulationssicher'],
-  ranks:['🌱 Neuling','⭐ Aktiv','💎 Veteran','👑 Elite']
+  ranks:['Neuling','Aufsteiger','Aktiv','Veteran','Elite'],
+  delVid:'🗑 Video löschen',scheduled:'Vorgemerkt',cancelSchedTxt:'Löschen',
+  dmSearch:'Suchen',dmNotFound:(l.dmNotFound||'Kein Mitglied gefunden'),dmSelect:'Auswählen',dmPicked:'ausgewählt',
+  dmPlaceholder:'Nachricht schreiben...',toAdmin:'An Admin',toMember:'An Mitglied',
+  postSuccessTitle:'🚀 Jetzt startklar!',
+  postSuccessBody:'Dein Video wurde an {n} Mitglieder gesendet.',
+  postSuccessSub:'Supporte jetzt auch andere Mitglieder. Du findest sie unter Offene Videos.',
+  postSuccessOk:'Ich habe verstanden!',
+  navTour:'Rundgang',delOk:'✅ Video gelöscht',
+  tourSteps:[
+    {icon:'👋',title:'Willkommen!',body:'Lass uns die App gemeinsam entdecken. Jeder Schritt erklärt dir, was du wo findest.'},
+    {icon:'🏠',title:'Home – Dein Guthaben',body:'Hier siehst du dein Support-Guthaben. Gibst du Supports, steigt dein Guthaben – nur mit positivem Guthaben kannst du neue Videos posten.'},
+    {icon:'📹',title:'Video posten',body:'Klicke auf „Video posten" und gib deine TikTok-URL ein. Dein Video erscheint dann bei anderen Mitgliedern unter „Offene Videos".'},
+    {icon:'🔄',title:'Offene Videos supporten',body:'Andere Mitglieder haben Videos gepostet. Klicke auf „Supporten & öffnen", kopiere den Kommentar und füge ihn bei TikTok ein.'},
+    {icon:'👤',title:'Profil & Benachrichtigungen',body:'Im Profil siehst du deinen Rang, deine Statistiken und alle Benachrichtigungen. Hier kannst du auch dem Admin oder Mitgliedern schreiben.'},
+    {icon:'✅',title:'Fertig!',body:'Du kennst jetzt alles Wichtige. Viel Spaß im Support Pool! 🎉'}
+  ]
 },
 en: {
   tagline:'The Premium TikTok Support Network',lsMem:'Members',lsGrp:'Groups',lsSup:'Supports',
@@ -1213,7 +1301,23 @@ en: {
   obT1:'How it works',obT2:'You are ready!',obB2:'Click Post Video and paste your TikTok URL!',
   obBtn0:'Next →',obBtn1:'Next →',obBtn2:'Let\'s go! 🎉',
   obLi:['Post your TikTok video – older or friends\' videos allowed','10 members support it in 12h – comment is auto-copied','After 12h: extension – 10 more supports = up to 20 supports!','First video: only 5 supports needed. Then give back 3.','Only online supports count – fair and manipulation-proof'],
-  ranks:['🌱 Newbie','⭐ Active','💎 Veteran','👑 Elite']
+  ranks:['Newcomer','Rising','Active','Veteran','Elite'],
+  delVid:'🗑 Delete Video',scheduled:'Scheduled',cancelSchedTxt:'Remove',
+  dmSearch:'Search',dmNotFound:'No member found',dmSelect:'Select',dmPicked:'selected',
+  dmPlaceholder:'Write message...',toAdmin:'To Admin',toMember:'To Member',
+  postSuccessTitle:'🚀 You are ready!',
+  postSuccessBody:'Your video was sent to {n} members.',
+  postSuccessSub:'Now support other members too. You find them under Open Videos.',
+  postSuccessOk:'Got it!',
+  navTour:'Tour',delOk:'✅ Video deleted',
+  tourSteps:[
+    {icon:'👋',title:'Welcome!',body:'Let us explore the app together. Each step explains what you find where.'},
+    {icon:'🏠',title:'Home – Your Balance',body:'Here you see your support balance. Give supports to increase it.'},
+    {icon:'📹',title:'Post Video',body:'Click Post Video and enter your TikTok URL.'},
+    {icon:'🔄',title:'Support Open Videos',body:'Other members posted videos. Click Support & Open, copy the comment and paste on TikTok.'},
+    {icon:'👤',title:'Profile & Notifications',body:'In your profile you see your rank, stats and all notifications.'},
+    {icon:'✅',title:'Done!',body:'You now know everything important. Have fun in Support Pool! 🎉'}
+  ]
 },
 id: {
   tagline:'Jaringan Dukungan TikTok Premium',lsMem:'Anggota',lsGrp:'Grup',lsSup:'Dukungan',
@@ -1261,7 +1365,23 @@ id: {
   obT1:'Cara kerjanya',obT2:'Anda siap!',obB2:'Klik Posting Video dan tempel URL TikTok Anda!',
   obBtn0:'Lanjut →',obBtn1:'Lanjut →',obBtn2:'Mulai! 🎉',
   obLi:['Posting video TikTok Anda – video lama atau teman juga boleh','10 anggota pertama mendukungnya dalam 12 jam – komentar disalin otomatis','Setelah 12 jam: perpanjangan – 10 dukungan lagi = hingga 20!','Video pertama: hanya butuh 5 dukungan. Kemudian berikan 3 balik.','Hanya dukungan online yang dihitung – adil dan aman'],
-  ranks:['🌱 Pemula','⭐ Aktif','💎 Veteran','👑 Elite']
+  ranks:['Pemula','Naik','Aktif','Veteran','Elite'],
+  delVid:'🗑 Hapus Video',scheduled:'Dijadwalkan',cancelSchedTxt:'Hapus',
+  dmSearch:'Cari',dmNotFound:'Anggota tidak ditemukan',dmSelect:'Pilih',dmPicked:'dipilih',
+  dmPlaceholder:'Tulis pesan...',toAdmin:'Ke Admin',toMember:'Ke Anggota',
+  postSuccessTitle:'🚀 Kamu siap!',
+  postSuccessBody:'Video kamu telah dikirim ke {n} anggota.',
+  postSuccessSub:'Sekarang dukung juga video anggota lain. Temukan di Video Terbuka.',
+  postSuccessOk:'Saya mengerti!',
+  navTour:'Panduan',delOk:'✅ Video dihapus',
+  tourSteps:[
+    {icon:'👋',title:'Selamat datang!',body:'Mari jelajahi aplikasi bersama. Setiap langkah menjelaskan apa yang ada di mana.'},
+    {icon:'🏠',title:'Beranda – Saldo',body:'Di sini kamu melihat saldo dukungan. Beri dukungan untuk meningkatkannya.'},
+    {icon:'📹',title:'Posting Video',body:'Klik "Posting Video" dan masukkan URL TikTok kamu.'},
+    {icon:'🔄',title:'Dukung Video Terbuka',body:'Anggota lain telah memposting video. Klik "Dukung & Buka", salin komentar dan tempelkan di TikTok.'},
+    {icon:'👤',title:'Profil & Notifikasi',body:'Di profil kamu bisa melihat peringkat, statistik, dan semua notifikasi.'},
+    {icon:'✅',title:'Selesai!',body:'Kamu sekarang tahu segalanya. Selamat bersenang-senang! 🎉'}
+  ]
 },
 it: {
   tagline:'La Rete Premium di Supporto TikTok',lsMem:'Membri',lsGrp:'Gruppi',lsSup:'Supporti',
@@ -1309,7 +1429,23 @@ it: {
   obT1:'Come funziona',obT2:'Sei pronto!',obB2:'Clicca Pubblica Video e incolla il tuo URL TikTok!',
   obBtn0:'Avanti →',obBtn1:'Avanti →',obBtn2:'Iniziamo! 🎉',
   obLi:['Pubblica il tuo video TikTok – anche video vecchi o di amici','I primi 10 membri lo supportano in 12 ore – il commento viene copiato automaticamente','Dopo 12 ore: estensione – altri 10 support = fino a 20!','Primo video: solo 5 support necessari. Poi dai indietro 3.','Solo i support online contano – equo e a prova di manipolazione'],
-  ranks:['🌱 Novizio','⭐ Attivo','💎 Veterano','👑 Elite']
+  ranks:['Principiante','In salita','Attivo','Veterano','Elite'],
+  delVid:'🗑 Elimina Video',scheduled:'Programmato',cancelSchedTxt:'Rimuovi',
+  dmSearch:'Cerca',dmNotFound:'Nessun membro trovato',dmSelect:'Seleziona',dmPicked:'selezionato',
+  dmPlaceholder:'Scrivi messaggio...',toAdmin:'All Admin',toMember:'Al Membro',
+  postSuccessTitle:'🚀 Sei pronto!',
+  postSuccessBody:'Il tuo video è stato inviato a {n} membri.',
+  postSuccessSub:'Supporta anche i video degli altri. Li trovi in Video Aperti.',
+  postSuccessOk:'Ho capito!',
+  navTour:'Tour',delOk:'✅ Video eliminato',
+  tourSteps:[
+    {icon:'👋',title:'Benvenuto!',body:'Esploriamo insieme l app. Ogni passaggio spiega cosa trovi dove.'},
+    {icon:'🏠',title:'Home – Il tuo Saldo',body:'Qui vedi il tuo saldo di supporto. Dai supporti per aumentarlo.'},
+    {icon:'📹',title:'Pubblica Video',body:'Clicca su Pubblica Video e inserisci il tuo URL TikTok.'},
+    {icon:'🔄',title:'Supporta Video Aperti',body:'Altri hanno pubblicato video. Clicca Supporta e Apri, copia il commento e incollalo su TikTok.'},
+    {icon:'👤',title:'Profilo e Notifiche',body:'Nel profilo vedi rango, statistiche e tutte le notifiche.'},
+    {icon:'✅',title:'Fatto!',body:'Ora sai tutto. Buon divertimento nel Support Pool! 🎉'}
+  ]
 },
 es: {
   tagline:'La Red Premium de Apoyo TikTok',lsMem:'Miembros',lsGrp:'Grupos',lsSup:'Apoyos',
@@ -1357,7 +1493,23 @@ es: {
   obT1:'Como funciona',obT2:'Estas listo!',obB2:'Haz clic en Publicar Video y pega tu URL de TikTok!',
   obBtn0:'Siguiente →',obBtn1:'Siguiente →',obBtn2:'Vamos! 🎉',
   obLi:['Publica tu video de TikTok – tambien se permiten videos antiguos o de amigos','Los primeros 10 miembros lo apoyan en 12h – el comentario se copia automaticamente','Despues de 12h: extension – 10 apoyos mas = hasta 20!','Primer video: solo 5 apoyos necesarios. Luego devuelve 3.','Solo los apoyos online cuentan – justo y a prueba de manipulacion'],
-  ranks:['🌱 Novato','⭐ Activo','💎 Veterano','👑 Elite']
+  ranks:['Novato','Subiendo','Activo','Veterano','Elite'],
+  delVid:'🗑 Eliminar Video',scheduled:'Programado',cancelSchedTxt:'Quitar',
+  dmSearch:'Buscar',dmNotFound:'Miembro no encontrado',dmSelect:'Seleccionar',dmPicked:'seleccionado',
+  dmPlaceholder:'Escribir mensaje...',toAdmin:'Al Admin',toMember:'Al Miembro',
+  postSuccessTitle:'🚀 ¡Estás listo!',
+  postSuccessBody:'Tu video fue enviado a {n} miembros.',
+  postSuccessSub:'Ahora también apoya los videos de otros miembros. Los encuentras en Videos Abiertos.',
+  postSuccessOk:'¡Lo entendí!',
+  navTour:'Recorrido',delOk:'✅ Video eliminado',
+  tourSteps:[
+    {icon:'👋',title:'¡Bienvenido!',body:'Exploremos juntos la app. Cada paso explica qué encuentras dónde.'},
+    {icon:'🏠',title:'Inicio – Tu Saldo',body:'Aquí ves tu saldo de apoyo. Da apoyos para aumentarlo.'},
+    {icon:'📹',title:'Publicar Video',body:'Haz clic en "Publicar Video" e ingresa tu URL de TikTok.'},
+    {icon:'🔄',title:'Apoyar Videos Abiertos',body:'Otros miembros han publicado videos. Haz clic en "Apoyar & Abrir", copia el comentario y pégalo en TikTok.'},
+    {icon:'👤',title:'Perfil & Notificaciones',body:'En tu perfil ves tu rango, estadísticas y todas las notificaciones.'},
+    {icon:'✅',title:'¡Listo!',body:'Ahora sabes todo lo importante. ¡Diviértete en Support Pool! 🎉'}
+  ]
 },
 tr: {
   tagline:'Premium TikTok Destek Agi',lsMem:'Uyeler',lsGrp:'Gruplar',lsSup:'Destekler',
@@ -1405,7 +1557,23 @@ tr: {
   obT1:'Nasil calisir',obT2:'Hazirsiniz!',obB2:'Video Paylas a tiklayin ve TikTok URL nizi yapistirin!',
   obBtn0:'Ileri →',obBtn1:'Ileri →',obBtn2:'Hadi baslavalim! 🎉',
   obLi:['TikTok videonuzu paylasin – eski videolar veya arkadas videolari da kabul edilir','Ilk 10 uye 12 saatte destekler – yorum otomatik kopyalanir','12 saatin ardindan: uzatma – 10 destek daha = toplam 20!','Ilk videonuz: sadece 5 destek gerekli. Ardindan 3 destek verin.','Yalnizca cevrimici destekler sayilir – adil ve manipulasyona karsi'],
-  ranks:['🌱 Yeni','⭐ Aktif','💎 Deneyimli','👑 Elite']
+  ranks:['Yeni','Yükselen','Aktif','Veteran','Elite'],
+  delVid:'🗑 Videoyu Sil',scheduled:'Planlandı',cancelSchedTxt:'Kaldır',
+  dmSearch:'Ara',dmNotFound:'Üye bulunamadı',dmSelect:'Seç',dmPicked:'seçildi',
+  dmPlaceholder:'Mesaj yaz...',toAdmin:'Admine',toMember:'Üyeye',
+  postSuccessTitle:'🚀 Hazırsın!',
+  postSuccessBody:'Videon {n} üyeye gönderildi.',
+  postSuccessSub:'Şimdi diğer üyelerin videolarını da destekle. Açık Videolar da bulabilirsin.',
+  postSuccessOk:'Anladım!',
+  navTour:'Tur',delOk:'✅ Video silindi',
+  tourSteps:[
+    {icon:'👋',title:'Hoş geldin!',body:'Uygulamayı birlikte keşfedelim. Her adım neyin nerede olduğunu açıklar.'},
+    {icon:'🏠',title:'Ana Sayfa – Bakiyen',body:'Burada destek bakiyeni görürsün. Destek ver, bakiyeni artır.'},
+    {icon:'📹',title:'Video Paylaş',body:'Video Paylaş a tıkla ve TikTok URL ni gir.'},
+    {icon:'🔄',title:'Açık Videoları Destekle',body:'Diğer üyeler video paylaştı. Destekle ve Aç a tıkla, yorumu kopyala ve TikTok ta yapıştır.'},
+    {icon:'👤',title:'Profil ve Bildirimler',body:'Profilinde sıralama, istatistikler ve tüm bildirimleri görürsün.'},
+    {icon:'✅',title:'Bitti!',body:'Artık her şeyi biliyorsun. Support Pool da iyi eğlenceler! 🎉'}
+  ]
 },
 ar: {
   tagline:'شبكة دعم TikTok المتميزة',lsMem:'الأعضاء',lsGrp:'المجموعات',lsSup:'الدعم',
@@ -1453,7 +1621,23 @@ ar: {
   obT1:'كيف يعمل',obT2:'أنت مستعد!',obB2:'انقر على نشر فيديو والصق رابط TikTok الخاص بك!',
   obBtn0:'التالي →',obBtn1:'التالي →',obBtn2:'هيا نبدأ! 🎉',
   obLi:['انشر فيديو TikTok الخاص بك – الفيديوهات القديمة أو فيديوهات الأصدقاء مسموح بها','أول 10 أعضاء يدعمونه في 12 ساعة – ينسخ التعليق تلقائيا','بعد 12 ساعة: تمديد – 10 دعم إضافي = حتى 20!','فيديوك الأول: تحتاج فقط 5 دعم. ثم أعط 3 بالمقابل.','الدعم عبر الإنترنت فقط هو المحسوب – عادل ومقاوم للتلاعب'],
-  ranks:['🌱 مبتدئ','⭐ نشط','💎 متمرس','👑 نخبة']
+  ranks:['مبتدئ','صاعد','نشط','محترف','نخبة'],
+  delVid:'🗑 حذف الفيديو',scheduled:'مجدول',cancelSchedTxt:'إزالة',
+  dmSearch:'بحث',dmNotFound:'لم يتم العثور على عضو',dmSelect:'اختيار',dmPicked:'تم الاختيار',
+  dmPlaceholder:'اكتب رسالة...',toAdmin:'إلى المشرف',toMember:'إلى العضو',
+  postSuccessTitle:'🚀 أنت مستعد!',
+  postSuccessBody:'تم إرسال فيديوك إلى {n} أعضاء.',
+  postSuccessSub:'ادعم الآن فيديوهات الأعضاء الآخرين. ستجدهم في الفيديوهات المفتوحة.',
+  postSuccessOk:'فهمت!',
+  navTour:'جولة',delOk:'✅ تم حذف الفيديو',
+  tourSteps:[
+    {icon:'👋',title:'مرحباً!',body:'دعنا نستكشف التطبيق معاً. كل خطوة تشرح ما ستجده أين.'},
+    {icon:'🏠',title:'الرئيسية – رصيدك',body:'هنا ترى رصيد الدعم الخاص بك. أعطِ الدعم لزيادته.'},
+    {icon:'📹',title:'نشر فيديو',body:'انقر على نشر فيديو وأدخل رابط TikTok الخاص بك.'},
+    {icon:'🔄',title:'دعم الفيديوهات المفتوحة',body:'نشر أعضاء آخرون فيديوهات. انقر على دعم وفتح، انسخ التعليق والصقه في TikTok.'},
+    {icon:'👤',title:'الملف الشخصي والإشعارات',body:'في ملفك الشخصي ترى رتبتك وإحصائياتك وجميع الإشعارات.'},
+    {icon:'✅',title:'تم!',body:'أنت الآن تعرف كل شيء مهم. استمتع في Support Pool! 🎉'}
+  ]
 },
 zh: {
   tagline:'高级TikTok支持网络',lsMem:'成员',lsGrp:'组',lsSup:'支持',
@@ -1501,7 +1685,23 @@ zh: {
   obT1:'如何运作',obT2:'您准备好了！',obB2:'点击发布视频并粘贴您的TikTok链接！',
   obBtn0:'下一步 →',obBtn1:'下一步 →',obBtn2:'开始！🎉',
   obLi:['发布您的TikTok视频 – 也允许发布旧视频或朋友的视频','前10名成员在12小时内支持它 – 评论自动复制','12小时后延伸 – 再获10个支持 = 最多20个！','您的第一个视频只需5个支持。然后回馈3个。','只有在线支持才算数 – 公平和防操纵'],
-  ranks:['🌱 新手','⭐ 活跃','💎 老手','👑 精英']
+  ranks:['新手','上升','活跃','老手','精英'],
+  delVid:'🗑 删除视频',scheduled:'已计划',cancelSchedTxt:'移除',
+  dmSearch:'搜索',dmNotFound:'未找到成员',dmSelect:'选择',dmPicked:'已选择',
+  dmPlaceholder:'写消息...',toAdmin:'给管理员',toMember:'给成员',
+  postSuccessTitle:'🚀 准备好了！',
+  postSuccessBody:'你的视频已发送给 {n} 名成员。',
+  postSuccessSub:'现在也支持其他成员的视频。在开放视频中找到它们。',
+  postSuccessOk:'我明白了！',
+  navTour:'导览',delOk:'✅ 视频已删除',
+  tourSteps:[
+    {icon:'👋',title:'欢迎！',body:'让我们一起探索这个应用。每一步都解释你在哪里找到什么。'},
+    {icon:'🏠',title:'主页 – 你的余额',body:'在这里你看到你的支持余额。给予支持来增加它。'},
+    {icon:'📹',title:'发布视频',body:'点击发布视频并输入你的TikTok链接。'},
+    {icon:'🔄',title:'支持开放视频',body:'其他成员发布了视频。点击支持并打开，复制评论并粘贴到TikTok。'},
+    {icon:'👤',title:'个人资料和通知',body:'在你的个人资料中查看你的等级、统计数据和所有通知。'},
+    {icon:'✅',title:'完成！',body:'你现在知道所有重要的事情了。祝你在支持池中玩得开心！🎉'}
+  ]
 },
 ja: {
   tagline:'プレミアムTikTokサポートネットワーク',lsMem:'メンバー',lsGrp:'グループ',lsSup:'サポート',
@@ -1549,7 +1749,23 @@ ja: {
   obT1:'仕組み',obT2:'準備完了！',obB2:'動画を投稿をクリックしてTikTok URLを貼り付けてください！',
   obBtn0:'次へ →',obBtn1:'次へ →',obBtn2:'始めよう！🎉',
   obLi:['TikTok動画を投稿 – 古い動画や友達の動画も許可されています','最初の10人のメンバーが12時間以内にサポート – コメントが自動コピーされます','12時間後延長 – さらに10サポート可能 = 最大20！','最初の動画は5サポートのみ必要。その後3サポートを返してください。','オンラインサポートのみカウント – 公平性と操作防止を維持'],
-  ranks:['🌱 新人','⭐ アクティブ','💎 ベテラン','👑 エリート']
+  ranks:['新人','上昇中','アクティブ','ベテラン','エリート'],
+  delVid:'🗑 動画を削除',scheduled:'予約済み',cancelSchedTxt:'削除',
+  dmSearch:'検索',dmNotFound:'メンバーが見つかりません',dmSelect:'選択',dmPicked:'選択済み',
+  dmPlaceholder:'メッセージを書く...',toAdmin:'管理者へ',toMember:'メンバーへ',
+  postSuccessTitle:'🚀 準備完了！',
+  postSuccessBody:'あなたの動画が{n}人のメンバーに送信されました。',
+  postSuccessSub:'他のメンバーの動画もサポートしてください。オープン動画で見つけられます。',
+  postSuccessOk:'わかりました！',
+  navTour:'ツアー',delOk:'✅ 動画を削除しました',
+  tourSteps:[
+    {icon:'👋',title:'ようこそ！',body:'一緒にアプリを探索しましょう。各ステップでどこに何があるかを説明します。'},
+    {icon:'🏠',title:'ホーム – あなたの残高',body:'ここでサポート残高を確認できます。サポートを増やして残高を上げましょう。'},
+    {icon:'📹',title:'動画を投稿',body:'動画を投稿をクリックしてTikTokのURLを入力してください。'},
+    {icon:'🔄',title:'オープン動画をサポート',body:'他のメンバーが動画を投稿しました。サポート＆開くをクリックし、コメントをコピーしてTikTokに貼り付けてください。'},
+    {icon:'👤',title:'プロフィールと通知',body:'プロフィールでランク、統計、すべての通知を確認できます。'},
+    {icon:'✅',title:'完了！',body:'これで全て把握できました。サポートプールを楽しんでください！🎉'}
+  ]
 },
 pl: {
   tagline:'Siec Premium Wsparcia TikTok',lsMem:'Czlonkowie',lsGrp:'Grupy',lsSup:'Wsparcia',
@@ -1597,7 +1813,23 @@ pl: {
   obT1:'Jak to dziala',obT2:'Jestes gotowy!',obB2:'Kliknij Opublikuj wideo i wklej swoj URL TikTok!',
   obBtn0:'Dalej →',obBtn1:'Dalej →',obBtn2:'Zaczynamy! 🎉',
   obLi:['Opublikuj swoje wideo TikTok – dozwolone sa rowniez starsze filmy lub filmiki znajomych','Pierwszych 10 czlonkow wspiera je w ciagu 12h – komentarz jest automatycznie kopiowany','Po 12h przedluzenie – kolejne 10 wsparc = do 20!','Twoj pierwszy film: potrzebujesz tylko 5 wsparc. Potem oddaj 3.','Tylko wsparcia online sa liczone – wszystko pozostaje uczciwe'],
-  ranks:['🌱 Nowicjusz','⭐ Aktywny','💎 Weteran','👑 Elite']
+  ranks:['Nowicjusz','Wschodzący','Aktywny','Weteran','Elite'],
+  delVid:'🗑 Usuń wideo',scheduled:'Zaplanowano',cancelSchedTxt:'Usuń',
+  dmSearch:'Szukaj',dmNotFound:'Nie znaleziono członka',dmSelect:'Wybierz',dmPicked:'wybrano',
+  dmPlaceholder:'Napisz wiadomość...',toAdmin:'Do Admina',toMember:'Do Członka',
+  postSuccessTitle:'🚀 Jesteś gotowy!',
+  postSuccessBody:'Twoje wideo zostało wysłane do {n} członków.',
+  postSuccessSub:'Teraz wspieraj też filmy innych członków. Znajdziesz je w Otwarte wideo.',
+  postSuccessOk:'Rozumiem!',
+  navTour:'Wycieczka',delOk:'✅ Wideo usunięte',
+  tourSteps:[
+    {icon:'👋',title:'Witamy!',body:'Odkryjmy razem aplikację. Każdy krok wyjaśnia co gdzie znajdziesz.'},
+    {icon:'🏠',title:'Strona główna – Twoje saldo',body:'Tutaj widzisz swoje saldo wsparcia. Dawaj wsparcie, aby je zwiększać.'},
+    {icon:'📹',title:'Opublikuj wideo',body:'Kliknij Opublikuj wideo i wprowadź swój adres URL TikTok.'},
+    {icon:'🔄',title:'Wspieraj otwarte wideo',body:'Inni członkowie opublikowali filmy. Kliknij Wspieraj i otwórz, skopiuj komentarz i wklej go na TikToku.'},
+    {icon:'👤',title:'Profil i powiadomienia',body:'W profilu zobaczysz swój rang, statystyki i wszystkie powiadomienia.'},
+    {icon:'✅',title:'Gotowe!',body:'Teraz wiesz wszystko co ważne. Baw się dobrze w Support Pool! 🎉'}
+  ]
 }
 };
 
@@ -1770,6 +2002,7 @@ function applyLang() {
   st('t-guide-title', l.guideTitle); st('t-g1', l.g1); st('t-g2', l.g2); st('t-g3', l.g3);
   // Profile
   st('t-contact', l.contact); st('t-send-msg', l.sendMsg);
+  sa('msgInput','placeholder',l.dmPlaceholder||'Nachricht...');
   st('t-notifs', l.notifs); st('t-no-notif', l.noNotif); st('t-logout', l.logout);
   st('t-p-given', l.pGiven); st('t-p-recv', l.pRecv); st('t-p-vids', l.pVids);
   // Admin
@@ -1777,6 +2010,7 @@ function applyLang() {
   st('t-a-grp', l.aGrp); st('t-a-mem', l.aMem); st('t-a-vid', l.aVid);
   // Nav
   st('t-nav-home', l.navHome); st('t-nav-profile', l.navProfile); st('t-nav-admin', l.navAdmin);
+  st('t-nav-tour', l.navTour||'Rundgang');
   // Modals
   st('t-post-title', l.postBtn); st('t-post-hint', 'TikTok URL');
   // PIN
@@ -2055,7 +2289,7 @@ function renderTimer(u) {
     startPostCountdown();
     return;
   }
-  if (tot===0) { wrap.innerHTML = '<div class="timer-strip ts-ok">'+(t('firstVideo')||'🎁 Erstes Video – Los!')+'</div>'; return; }
+  if (tot===0) { wrap.innerHTML = '<button class="timer-strip ts-ok" onclick="openPostModal()" style="cursor:pointer;width:100%;border:none;font-family:inherit">'+(t('firstVideo')||'🎁 Erstes Video – Los!')+' →</button>'; return; }
   if (tot===1 && g<3) { wrap.innerHTML = '<div class="timer-strip ts-soon">🔄 Noch '+(3-g)+' '+t('needed')+'</div>'; return; }
   if (tot>=2 && bal<0) {
     wrap.innerHTML = '';
@@ -2072,7 +2306,7 @@ function renderTimer(u) {
   var pbb2 = document.getElementById('postBtn');
   if (pbw2) pbw2.style.display = 'none';
   if (pbb2) pbb2.style.display = '';
-    wrap.innerHTML = '<div class="timer-strip ts-ok">'+(t('postNow')||'✅ '+t('postBtn')+' jetzt möglich')+'</div>';
+    wrap.innerHTML = '<button class="timer-strip ts-ok" onclick="openPostModal()" style="cursor:pointer;width:100%;border:none;font-family:inherit">'+(t('postNow')||'✅ '+t('postBtn')+' jetzt möglich')+' →</button>';
 }
 
 function renderOpenList() {
@@ -2178,8 +2412,8 @@ function renderMyList(u) {
     html += '<div style="text-align:right"><div style="font-family:Playfair Display,serif;font-size:1.5rem;font-weight:900;color:#ffd166;line-height:1">'+tot+'<span style="font-size:0.6rem;color:var(--text3)">/20</span></div><div style="font-size:9px;color:var(--text3)">Supports</div></div>';
     html += '</div>';
     html += '<div style="display:flex;align-items:center;gap:9px;font-size:11px;color:var(--text2);margin-bottom:'+(isAct?'9':'0')+'px;flex-wrap:wrap">';
-    html += '<span>📅 '+new Date(v.posted).toLocaleDateString('de-DE')+'</span>';
-    html += '<span>🕐 '+new Date(v.posted).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})+'</span>';
+    html += '<span>📅 '+new Date(v.posted).toLocaleDateString()+'</span>';
+    html += '<span>🕐 '+new Date(v.posted).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})+'</span>';
     if(isAct) html += '<span data-expires="'+expiry+'">'+buildCountdownHTML(left)+'</span>';
     html += '</div>';
     if(isAct) {
@@ -2226,6 +2460,25 @@ function openPostModal() {
   openModal('postModal');
 }
 
+function showPostSuccess() {
+  var l = L[LANG]||L.de;
+  var memberCount = Object.values(DB.members).filter(function(m){
+    return m.status==='active' && m.key !== CU;
+  }).length;
+  var title = l.postSuccessTitle || '🚀 Du bist startklar!';
+  var body = (l.postSuccessBody || 'Dein Video wurde an {n} Mitglieder gesendet.').replace('{n}','<strong style="color:var(--teal)">'+memberCount+'</strong>');
+  var sub = l.postSuccessSub || 'Supporte jetzt auch andere Mitglieder. Du findest sie unter Offene Videos.';
+  var okTxt = l.postSuccessOk || 'Ich habe verstanden!';
+  var modal = ge('postSuccessModal');
+  if (modal) {
+    var el = ge('psm-title'); if(el) el.innerHTML = title;
+    var el2 = ge('psm-body'); if(el2) el2.innerHTML = body;
+    var el3 = ge('psm-sub'); if(el3) el3.textContent = sub;
+    var el4 = ge('psm-ok'); if(el4) el4.textContent = okTxt;
+    openModal('postSuccessModal');
+  }
+}
+
 function submitPost() {
   if (!ONLINE && !FB_REF) { toast(t('errOff'), 'error'); return; }
   var url = (ge('postUrl').value || '').trim();
@@ -2247,6 +2500,8 @@ function submitPost() {
   toast(t('okPost'), 'success');
   addNotif(CU, '📹', 'Video gepostet – '+(isFirst?5:R1_NEED)+' Supports in 12h benötigt');
   save();
+  // Show success modal with member count
+  showPostSuccess();
 }
 
 // ── SUPPORT ──────────────────────────────────────────────────────────────
@@ -2342,7 +2597,10 @@ function renderProfile() {
     ];
     var currentIdx = rankIdx(u);
     agendaEl.innerHTML = agendaItems.map(function(item, idx) {
-      return '<span style="'+(idx===currentIdx?'color:var(--gold2);font-weight:600':'')+'">'+item+'</span>';
+      if (idx === currentIdx) {
+        return '<span class="rank-current">'+item+'</span>';
+      }
+      return '<span style="color:var(--t2);font-size:12px">'+item+'</span>';
     }).join('<br>');
   }
   st('p-given', u.stats.given||0); st('p-recv', u.stats.received||0); st('p-vids', (u.myVideos||[]).length);
@@ -2357,6 +2615,20 @@ function renderNotifs() {
   }).sort(function(a,b){ return (b.ts||b.timestamp||0)-(a.ts||a.timestamp||0); }).slice(0,30);
   var unread = notifs.filter(function(m){ return !m.read; }).length;
   st('notif-count', unread);
+  // Animate bell on nav if unread
+  var profNav = ge('ni-profile');
+  if (profNav) {
+    var bellIcon = profNav.querySelector('.nav-icon');
+    if (bellIcon) {
+      if (unread > 0) {
+        bellIcon.textContent = '🔔';
+        bellIcon.classList.add('bell-shake');
+      } else {
+        bellIcon.textContent = '👤';
+        bellIcon.classList.remove('bell-shake');
+      }
+    }
+  }
   if (!notifs.length) {
     list.innerHTML = '<div class="empty"><div class="empty-ic">&#128276;</div><div class="empty-txt">'+t('noNotif')+'</div></div>';
     return;
@@ -2382,7 +2654,7 @@ function renderNotifs() {
         + ' style="margin-top:6px;padding:5px 12px;border-radius:20px;background:rgba(232,184,75,0.12);border:1px solid rgba(232,184,75,0.3);color:#ffd166;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit">'
         + '&#8617; An @'+esc(fromName||fromKey)+'</button>';
     }
-    html += '<div class="notif-time">'+new Date(m.ts||m.timestamp||0).toLocaleString('de-DE')+'</div>';
+    html += '<div class="notif-time">'+new Date(m.ts||m.timestamp||0).toLocaleString()+'</div>';
     html += '</div>';
     html += '<button class="notif-del" data-del-notif="'+esc(mid)+'">&#128465;</button>';
     html += '</div>';
@@ -2741,6 +3013,14 @@ function obDone() {
   if (CU && DB.members[CU]) DB.members[CU].onboarded = true;
   save();
   goScreen('home');
+  // Offer tour to new users
+  setTimeout(function() {
+    var l = L[LANG]||L.de;
+    var okTxt = l.postSuccessOk || 'Ich habe verstanden!';
+    // Show a toast invite for the tour
+    var msg = (l.tourSteps && l.tourSteps[0] && l.tourSteps[0].title) ? '🧭 '+(l.navTour||'Rundgang')+' verfügbar!' : '🧭 Rundgang verfügbar!';
+    toast(msg, 'info', 3500);
+  }, 800);
 }
 
 // ── ONLINE / OFFLINE ─────────────────────────────────────────────────────────
@@ -3268,8 +3548,66 @@ function delMyVid(vid) {
   var u=DB.members[CU];
   u.myVideos=(u.myVideos||[]).filter(function(id){ return id!==vid; });
   if(DB.videos[vid]) delete DB.videos[vid];
-  toast('✅ Video gel\u00F6scht','success',1500);
+  toast(t('delOk')||'✅ Video gelöscht','success',1500);
   save();
+}
+
+
+// ── VIRTUAL TOUR ──────────────────────────────────────────────────────────
+var _tourStep = 0;
+
+function getTourSteps() {
+  var l = L[LANG]||L.de;
+  return l.tourSteps || [
+    {icon:'👋',title:'Willkommen!',body:'Lass uns die App gemeinsam entdecken.'},
+    {icon:'🏠',title:'Home – Guthaben',body:'Hier siehst du dein Support-Guthaben.'},
+    {icon:'📹',title:'Video posten',body:'Klicke auf Video posten und gib deine TikTok-URL ein.'},
+    {icon:'🔄',title:'Offene Videos',body:'Andere Mitglieder haben Videos gepostet. Supporte sie!'},
+    {icon:'👤',title:'Profil',body:'Im Profil siehst du deinen Rang und Benachrichtigungen.'},
+    {icon:'✅',title:'Fertig!',body:'Viel Spaß im Support Pool! 🎉'}
+  ];
+}
+
+function startTour() {
+  _tourStep = 0;
+  renderTourStep();
+  var overlay = ge('tour-overlay');
+  if (overlay) overlay.classList.add('active');
+}
+
+function renderTourStep() {
+  var steps = getTourSteps();
+  var s = steps[_tourStep] || steps[0];
+  var iconEl = ge('tour-icon'); if(iconEl) iconEl.textContent = s.icon;
+  var titleEl = ge('tour-title'); if(titleEl) titleEl.textContent = s.title;
+  var bodyEl = ge('tour-body'); if(bodyEl) bodyEl.textContent = s.body;
+  // Dots
+  var dotsEl = ge('tour-dots');
+  if (dotsEl) {
+    var dh = '';
+    for (var i=0;i<steps.length;i++) dh += '<div class="tour-dot'+(i===_tourStep?' active':'')+'"></div>';
+    dotsEl.innerHTML = dh;
+  }
+  // Next button text
+  var l = L[LANG]||L.de;
+  var nextBtn = ge('tour-next');
+  var skipBtn = ge('tour-skip');
+  if (nextBtn) nextBtn.textContent = (_tourStep === steps.length-1) ? (l.postSuccessOk||'Fertig!') : 'Verstanden ✓';
+  if (skipBtn) skipBtn.style.display = _tourStep === 0 ? 'none' : '';
+}
+
+function tourNext() {
+  var steps = getTourSteps();
+  if (_tourStep >= steps.length - 1) {
+    closeTour(); return;
+  }
+  _tourStep++;
+  renderTourStep();
+}
+
+function closeTour() {
+  var overlay = ge('tour-overlay');
+  if (overlay) overlay.classList.remove('active');
 }
 
 (function boot() {
