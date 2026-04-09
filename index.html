@@ -460,6 +460,9 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;color:#f0f2
 .contact-tab{flex:1;padding:10px 8px;border-radius:14px;border:1px solid var(--bdr2);background:rgba(255,255,255,.03);color:var(--t2);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px}
 .contact-tab.active{background:var(--vd2);border-color:var(--vb2);color:var(--v3)}
 .contact-target-badge{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:12px;background:var(--vd);border:1px solid var(--vb);margin-bottom:10px;font-size:13px;font-weight:600;color:var(--text)}
+/* ── WORLD CLOCK INTRO ANIMATION ───────────────────────────── */
+@keyframes wcIntro{0%{opacity:0;transform:scale(0.8) translateY(6px)}60%{opacity:1;transform:scale(1.08) translateY(-1px)}100%{opacity:1;transform:scale(1) translateY(0)}}
+.wc-item.wc-intro{animation:wcIntro 0.45s ease forwards}
 
 </style>
 </head>
@@ -593,7 +596,7 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;color:#f0f2
     <div class="modal-hint" id="t-post-hint">Füge deine TikTok-URL ein. Eigene Videos, ältere Videos oder Videos von TikTok-Freunden – alles erlaubt!</div>
     <input type="url" class="sp-input" id="postUrl" placeholder="z.B. https://vm.tiktok.com/abc123"/>
     <div class="modal-footer">
-      <button class="btn-prime" onclick="submitPost()" id="post-submit-btn">Posten ✨</button>
+      <button class="btn-prime" onclick="submitPost()" id="post-submit-btn"><span id="t-post-submit">Posten</span> ✨</button>
       <button class="btn-ghost btn-sm" onclick="closeModal('postModal')" id="t-cancel">Abbrechen</button>
     </div>
   </div>
@@ -1102,6 +1105,29 @@ function startWcTick() {
   _wcInt = setInterval(updateWcTimes, 10000);
 }
 
+function animateWorldClock() {
+  var items = document.querySelectorAll('.wc-item');
+  var scroll = document.querySelector('.wc-scroll');
+  if (!items.length) return;
+  // Staggered entrance animation for each flag
+  for (var i = 0; i < items.length; i++) {
+    (function(item, idx) {
+      setTimeout(function() {
+        item.classList.add('wc-intro');
+        setTimeout(function() { item.classList.remove('wc-intro'); }, 550);
+      }, idx * 65);
+    })(items[i], i);
+  }
+  // Auto-scroll right then back to show there are more countries
+  if (scroll) {
+    var maxScroll = scroll.scrollWidth;
+    setTimeout(function() {
+      scroll.scrollTo({left: maxScroll, behavior: 'smooth'});
+      setTimeout(function() { scroll.scrollTo({left: 0, behavior: 'smooth'}); }, 1300);
+    }, 350);
+  }
+}
+
 // BROADCAST BANNER
 function checkBC() {
   var bc = (DB.settings && DB.settings.broadcast) || '';
@@ -1177,6 +1203,21 @@ function buildDmToRow() {
   var row = ge('prof-dm-to-row');
   if (!row) return;
   var l = L[LANG]||L.de;
+  // If a member is already selected, show a persistent badge (survives re-renders)
+  if (_dmTarget && _dmTarget !== 'admin') {
+    var mem = DB.members[_dmTarget];
+    if (mem) {
+      var mname = '@' + (mem.name||mem.key);
+      var mavatar = getAvatar(mem);
+      row.innerHTML = '<div id="dm-selected-badge" style="display:flex;align-items:center;gap:10px;padding:11px 14px;border-radius:14px;background:linear-gradient(135deg,rgba(124,58,237,.15),rgba(6,214,160,.08));border:1.5px solid var(--vb2);margin-bottom:8px">'
+        + '<span style="font-size:20px">'+mavatar+'</span>'
+        + '<span style="flex:1;font-size:13px;font-weight:700;color:var(--v3)">'+mname+'</span>'
+        + '<button onclick="clearDmTarget()" style="background:rgba(255,255,255,.06);border:1px solid var(--bdr);color:var(--t2);cursor:pointer;font-size:12px;padding:4px 10px;border-radius:8px;font-family:inherit;white-space:nowrap">✕ '+(l.dmChange||'Ändern')+'</button>'
+        + '</div>';
+      return;
+    }
+  }
+  // Show search UI
   row.innerHTML = '<div style="display:flex;gap:7px;margin-bottom:10px">'
     + '<input style="flex:1;padding:10px 14px;border-radius:50px;background:rgba(14,15,30,.98);border:1.5px solid var(--bdr2);color:var(--text);caret-color:var(--v3);font-size:13px;outline:none;font-family:inherit;transition:border-color 0.2s" id="dm-search-inp" type="text" autocomplete="off" placeholder="@TikTok Username..." onkeydown="if(event.key===\'Enter\')searchDm()"/>'
     + '<button onclick="searchDm()" style="padding:10px 14px;border-radius:50px;background:var(--vd2);border:1px solid var(--vb);color:var(--v3);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap">🔍 '+(l.dmSearch||'Suchen')+'</button>'
@@ -1187,7 +1228,11 @@ function buildDmToRow() {
     + '<span style="font-size:11px;color:var(--t2)">'+(l.dmSelect||'Auswählen')+' →</span>'
     + '</div>'
     + '<div id="dm-res-nf" style="display:none;font-size:12px;color:var(--t2);padding:5px 0">'+(l.dmNotFound||'Kein Mitglied gefunden')+'</div>';
-  if (!_dmTarget) _dmTarget = 'admin';
+}
+
+function clearDmTarget() {
+  _dmTarget = null;
+  buildDmToRow();
 }
 
 function searchDm() {
@@ -1210,9 +1255,7 @@ function searchDm() {
   });
   if (found) {
     _dmTarget=found.key;
-    ge('dm-res-av').textContent=getAvatar(found);
-    ge('dm-res-name').textContent='@'+(found.name||found.key);
-    res.style.display='flex';
+    buildDmToRow(); // Shows persistent badge immediately
   } else { _dmTarget=null; nf.style.display='block'; }
 }
 
@@ -1335,7 +1378,7 @@ de: {
   postSuccessSub:'Supporte jetzt auch andere Mitglieder. Du findest sie unter Offene Videos.',
   postSuccessOk:'Ich habe verstanden!',
   navTour:'Rundgang',delOk:'✅ Video gelöscht',
-  welcome:'✨ Willkommen, ',welcomeNew:'🎉 Willkommen im Support Pool!',tourNextBtn:'Verstanden ✓',pushTitle:'Push-Benachrichtigungen',pushDesc:'Erhalte eine Meldung, wenn jemand dein Video supportet',pushActivate:'Aktivieren',toAdminLabel:'📩 An Admin schreiben',toMemberLabel:'🔍 Mitglied suchen',msgPlaceholderAdmin:'Nachricht an Admin...',msgPlaceholderMem:'Nachricht an @{name}...',
+  welcome:'✨ Willkommen, ',welcomeNew:'🎉 Willkommen im Support Pool!',tourNextBtn:'Verstanden ✓',pushTitle:'Push-Benachrichtigungen',pushDesc:'Erhalte eine Meldung, wenn jemand dein Video supportet',pushActivate:'Aktivieren',toAdminLabel:'📩 An Admin schreiben',toMemberLabel:'🔍 Mitglied suchen',msgPlaceholderAdmin:'Nachricht an Admin...',msgPlaceholderMem:'Nachricht an @{name}...',cancel:'Abbrechen',postSubmit:'Posten',dmChange:'Ändern',
   tourSteps:[
     {icon:'👋',title:'Willkommen!',body:'Lass uns die App gemeinsam entdecken. Jeder Schritt erklärt dir, was du wo findest.'},
     {icon:'🏠',title:'Home – Dein Guthaben',body:'Hier siehst du dein Support-Guthaben. Gibst du Supports, steigt dein Guthaben – nur mit positivem Guthaben kannst du neue Videos posten.'},
@@ -1400,7 +1443,7 @@ en: {
   postSuccessSub:'Now support other members too. You find them under Open Videos.',
   postSuccessOk:'Got it!',
   navTour:'Tour',delOk:'✅ Video deleted',
-  welcome:'✨ Welcome, ',welcomeNew:'🎉 Welcome to Support Pool!',tourNextBtn:'Got it ✓',pushTitle:'Push Notifications',pushDesc:'Get notified when someone supports your video',pushActivate:'Enable',toAdminLabel:'📩 Write to Admin',toMemberLabel:'🔍 Find Member',msgPlaceholderAdmin:'Message to Admin...',msgPlaceholderMem:'Message to @{name}...',
+  welcome:'✨ Welcome, ',welcomeNew:'🎉 Welcome to Support Pool!',tourNextBtn:'Got it ✓',pushTitle:'Push Notifications',pushDesc:'Get notified when someone supports your video',pushActivate:'Enable',toAdminLabel:'📩 Write to Admin',toMemberLabel:'🔍 Find Member',msgPlaceholderAdmin:'Message to Admin...',msgPlaceholderMem:'Message to @{name}...',cancel:'Cancel',postSubmit:'Post',dmChange:'Change',
   tourSteps:[
     {icon:'👋',title:'Welcome!',body:'Let us explore the app together. Each step explains what you find where.'},
     {icon:'🏠',title:'Home – Your Balance',body:'Here you see your support balance. Give supports to increase it.'},
@@ -1465,7 +1508,7 @@ id: {
   postSuccessSub:'Sekarang dukung juga video anggota lain. Temukan di Video Terbuka.',
   postSuccessOk:'Saya mengerti!',
   navTour:'Panduan',delOk:'✅ Video dihapus',
-  welcome:'✨ Selamat datang, ',welcomeNew:'🎉 Selamat datang di Support Pool!',tourNextBtn:'Mengerti ✓',pushTitle:'Notifikasi Push',pushDesc:'Dapatkan pemberitahuan saat seseorang mendukung video Anda',pushActivate:'Aktifkan',toAdminLabel:'📩 Tulis ke Admin',toMemberLabel:'🔍 Cari Anggota',msgPlaceholderAdmin:'Pesan ke Admin...',msgPlaceholderMem:'Pesan ke @{name}...',
+  welcome:'✨ Selamat datang, ',welcomeNew:'🎉 Selamat datang di Support Pool!',tourNextBtn:'Mengerti ✓',pushTitle:'Notifikasi Push',pushDesc:'Dapatkan pemberitahuan saat seseorang mendukung video Anda',pushActivate:'Aktifkan',toAdminLabel:'📩 Tulis ke Admin',toMemberLabel:'🔍 Cari Anggota',msgPlaceholderAdmin:'Pesan ke Admin...',msgPlaceholderMem:'Pesan ke @{name}...',cancel:'Batal',postSubmit:'Posting',dmChange:'Ganti',
   tourSteps:[
     {icon:'👋',title:'Selamat datang!',body:'Mari jelajahi aplikasi bersama. Setiap langkah menjelaskan apa yang ada di mana.'},
     {icon:'🏠',title:'Beranda – Saldo',body:'Di sini kamu melihat saldo dukungan. Beri dukungan untuk meningkatkannya.'},
@@ -1530,7 +1573,7 @@ it: {
   postSuccessSub:'Supporta anche i video degli altri. Li trovi in Video Aperti.',
   postSuccessOk:'Ho capito!',
   navTour:'Tour',delOk:'✅ Video eliminato',
-  welcome:'✨ Benvenuto, ',welcomeNew:'🎉 Benvenuto nel Support Pool!',tourNextBtn:'Capito ✓',pushTitle:'Notifiche Push',pushDesc:'Ricevi una notifica quando qualcuno supporta il tuo video',pushActivate:'Attiva',toAdminLabel:'📩 Scrivi all Admin',toMemberLabel:'🔍 Cerca Membro',msgPlaceholderAdmin:'Messaggio all Admin...',msgPlaceholderMem:'Messaggio a @{name}...',
+  welcome:'✨ Benvenuto, ',welcomeNew:'🎉 Benvenuto nel Support Pool!',tourNextBtn:'Capito ✓',pushTitle:'Notifiche Push',pushDesc:'Ricevi una notifica quando qualcuno supporta il tuo video',pushActivate:'Attiva',toAdminLabel:'📩 Scrivi all Admin',toMemberLabel:'🔍 Cerca Membro',msgPlaceholderAdmin:'Messaggio all Admin...',msgPlaceholderMem:'Messaggio a @{name}...',cancel:'Annulla',postSubmit:'Pubblica',dmChange:'Cambia',
   tourSteps:[
     {icon:'👋',title:'Benvenuto!',body:'Esploriamo insieme l app. Ogni passaggio spiega cosa trovi dove.'},
     {icon:'🏠',title:'Home – Il tuo Saldo',body:'Qui vedi il tuo saldo di supporto. Dai supporti per aumentarlo.'},
@@ -1595,7 +1638,7 @@ es: {
   postSuccessSub:'Ahora también apoya los videos de otros miembros. Los encuentras en Videos Abiertos.',
   postSuccessOk:'¡Lo entendí!',
   navTour:'Recorrido',delOk:'✅ Video eliminado',
-  welcome:'✨ Bienvenido, ',welcomeNew:'🎉 ¡Bienvenido al Support Pool!',tourNextBtn:'Entendido ✓',pushTitle:'Notificaciones Push',pushDesc:'Recibe una notificación cuando alguien apoya tu video',pushActivate:'Activar',toAdminLabel:'📩 Escribir al Admin',toMemberLabel:'🔍 Buscar Miembro',msgPlaceholderAdmin:'Mensaje al Admin...',msgPlaceholderMem:'Mensaje a @{name}...',
+  welcome:'✨ Bienvenido, ',welcomeNew:'🎉 ¡Bienvenido al Support Pool!',tourNextBtn:'Entendido ✓',pushTitle:'Notificaciones Push',pushDesc:'Recibe una notificación cuando alguien apoya tu video',pushActivate:'Activar',toAdminLabel:'📩 Escribir al Admin',toMemberLabel:'🔍 Buscar Miembro',msgPlaceholderAdmin:'Mensaje al Admin...',msgPlaceholderMem:'Mensaje a @{name}...',cancel:'Cancelar',postSubmit:'Publicar',dmChange:'Cambiar',
   tourSteps:[
     {icon:'👋',title:'¡Bienvenido!',body:'Exploremos juntos la app. Cada paso explica qué encuentras dónde.'},
     {icon:'🏠',title:'Inicio – Tu Saldo',body:'Aquí ves tu saldo de apoyo. Da apoyos para aumentarlo.'},
@@ -1660,7 +1703,7 @@ tr: {
   postSuccessSub:'Şimdi diğer üyelerin videolarını da destekle. Açık Videolar da bulabilirsin.',
   postSuccessOk:'Anladım!',
   navTour:'Tur',delOk:'✅ Video silindi',
-  welcome:'✨ Hoş geldin, ',welcomeNew:"🎉 Support Pool'a hoş geldin!",tourNextBtn:'Anladım ✓',pushTitle:'Push Bildirimleri',pushDesc:'Birisi videonuzu desteklediğinde bildirim alın',pushActivate:'Etkinleştir',toAdminLabel:'📩 Admine Yaz',toMemberLabel:'🔍 Üye Ara',msgPlaceholderAdmin:'Admine mesaj...',msgPlaceholderMem:'@{name} kişisine mesaj...',
+  welcome:'✨ Hoş geldin, ',welcomeNew:"🎉 Support Pool'a hoş geldin!",tourNextBtn:'Anladım ✓',pushTitle:'Push Bildirimleri',pushDesc:'Birisi videonuzu desteklediğinde bildirim alın',pushActivate:'Etkinleştir',toAdminLabel:'📩 Admine Yaz',toMemberLabel:'🔍 Üye Ara',msgPlaceholderAdmin:'Admine mesaj...',msgPlaceholderMem:'@{name} kişisine mesaj...',cancel:'İptal',postSubmit:'Paylaş',dmChange:'Değiştir',
   tourSteps:[
     {icon:'👋',title:'Hoş geldin!',body:'Uygulamayı birlikte keşfedelim. Her adım neyin nerede olduğunu açıklar.'},
     {icon:'🏠',title:'Ana Sayfa – Bakiyen',body:'Burada destek bakiyeni görürsün. Destek ver, bakiyeni artır.'},
@@ -1725,7 +1768,7 @@ ar: {
   postSuccessSub:'ادعم الآن فيديوهات الأعضاء الآخرين. ستجدهم في الفيديوهات المفتوحة.',
   postSuccessOk:'فهمت!',
   navTour:'جولة',delOk:'✅ تم حذف الفيديو',
-  welcome:'✨ مرحباً, ',welcomeNew:'🎉 مرحباً في Support Pool!',tourNextBtn:'فهمت ✓',pushTitle:'إشعارات الدفع',pushDesc:'احصل على إشعار عندما يدعم شخص ما فيديوك',pushActivate:'تفعيل',toAdminLabel:'📩 اكتب للمشرف',toMemberLabel:'🔍 ابحث عن عضو',msgPlaceholderAdmin:'رسالة إلى المشرف...',msgPlaceholderMem:'رسالة إلى @{name}...',
+  welcome:'✨ مرحباً, ',welcomeNew:'🎉 مرحباً في Support Pool!',tourNextBtn:'فهمت ✓',pushTitle:'إشعارات الدفع',pushDesc:'احصل على إشعار عندما يدعم شخص ما فيديوك',pushActivate:'تفعيل',toAdminLabel:'📩 اكتب للمشرف',toMemberLabel:'🔍 ابحث عن عضو',msgPlaceholderAdmin:'رسالة إلى المشرف...',msgPlaceholderMem:'رسالة إلى @{name}...',cancel:'إلغاء',postSubmit:'نشر',dmChange:'تغيير',
   tourSteps:[
     {icon:'👋',title:'مرحباً!',body:'دعنا نستكشف التطبيق معاً. كل خطوة تشرح ما ستجده أين.'},
     {icon:'🏠',title:'الرئيسية – رصيدك',body:'هنا ترى رصيد الدعم الخاص بك. أعطِ الدعم لزيادته.'},
@@ -1790,7 +1833,7 @@ zh: {
   postSuccessSub:'现在也支持其他成员的视频。在开放视频中找到它们。',
   postSuccessOk:'我明白了！',
   navTour:'导览',delOk:'✅ 视频已删除',
-  welcome:'✨ 欢迎, ',welcomeNew:'🎉 欢迎来到Support Pool!',tourNextBtn:'明白了 ✓',pushTitle:'推送通知',pushDesc:'当有人支持你的视频时获得通知',pushActivate:'启用',toAdminLabel:'📩 写信给管理员',toMemberLabel:'🔍 搜索成员',msgPlaceholderAdmin:'给管理员的消息...',msgPlaceholderMem:'给 @{name} 的消息...',
+  welcome:'✨ 欢迎, ',welcomeNew:'🎉 欢迎来到Support Pool!',tourNextBtn:'明白了 ✓',pushTitle:'推送通知',pushDesc:'当有人支持你的视频时获得通知',pushActivate:'启用',toAdminLabel:'📩 写信给管理员',toMemberLabel:'🔍 搜索成员',msgPlaceholderAdmin:'给管理员的消息...',msgPlaceholderMem:'给 @{name} 的消息...',cancel:'取消',postSubmit:'发布',dmChange:'更改',
   tourSteps:[
     {icon:'👋',title:'欢迎！',body:'让我们一起探索这个应用。每一步都解释你在哪里找到什么。'},
     {icon:'🏠',title:'主页 – 你的余额',body:'在这里你看到你的支持余额。给予支持来增加它。'},
@@ -1855,7 +1898,7 @@ ja: {
   postSuccessSub:'他のメンバーの動画もサポートしてください。オープン動画で見つけられます。',
   postSuccessOk:'わかりました！',
   navTour:'ツアー',delOk:'✅ 動画を削除しました',
-  welcome:'✨ ようこそ、',welcomeNew:'🎉 Support Poolへようこそ!',tourNextBtn:'わかりました ✓',pushTitle:'プッシュ通知',pushDesc:'誰かがあなたの動画をサポートしたときに通知を受け取る',pushActivate:'有効にする',toAdminLabel:'📩 管理者に書く',toMemberLabel:'🔍 メンバーを検索',msgPlaceholderAdmin:'管理者へのメッセージ...',msgPlaceholderMem:'@{name} へのメッセージ...',
+  welcome:'✨ ようこそ、',welcomeNew:'🎉 Support Poolへようこそ!',tourNextBtn:'わかりました ✓',pushTitle:'プッシュ通知',pushDesc:'誰かがあなたの動画をサポートしたときに通知を受け取る',pushActivate:'有効にする',toAdminLabel:'📩 管理者に書く',toMemberLabel:'🔍 メンバーを検索',msgPlaceholderAdmin:'管理者へのメッセージ...',msgPlaceholderMem:'@{name} へのメッセージ...',cancel:'キャンセル',postSubmit:'投稿',dmChange:'変更',
   tourSteps:[
     {icon:'👋',title:'ようこそ！',body:'一緒にアプリを探索しましょう。各ステップでどこに何があるかを説明します。'},
     {icon:'🏠',title:'ホーム – あなたの残高',body:'ここでサポート残高を確認できます。サポートを増やして残高を上げましょう。'},
@@ -1920,7 +1963,7 @@ pl: {
   postSuccessSub:'Teraz wspieraj też filmy innych członków. Znajdziesz je w Otwarte wideo.',
   postSuccessOk:'Rozumiem!',
   navTour:'Wycieczka',delOk:'✅ Wideo usunięte',
-  welcome:'✨ Witaj, ',welcomeNew:'🎉 Witamy w Support Pool!',tourNextBtn:'Rozumiem ✓',pushTitle:'Powiadomienia Push',pushDesc:'Otrzymaj powiadomienie, gdy ktoś wesprze Twoje wideo',pushActivate:'Włącz',toAdminLabel:'📩 Napisz do Admina',toMemberLabel:'🔍 Szukaj Członka',msgPlaceholderAdmin:'Wiadomość do Admina...',msgPlaceholderMem:'Wiadomość do @{name}...',
+  welcome:'✨ Witaj, ',welcomeNew:'🎉 Witamy w Support Pool!',tourNextBtn:'Rozumiem ✓',pushTitle:'Powiadomienia Push',pushDesc:'Otrzymaj powiadomienie, gdy ktoś wesprze Twoje wideo',pushActivate:'Włącz',toAdminLabel:'📩 Napisz do Admina',toMemberLabel:'🔍 Szukaj Członka',msgPlaceholderAdmin:'Wiadomość do Admina...',msgPlaceholderMem:'Wiadomość do @{name}...',cancel:'Anuluj',postSubmit:'Opublikuj',dmChange:'Zmień',
   tourSteps:[
     {icon:'👋',title:'Witamy!',body:'Odkryjmy razem aplikację. Każdy krok wyjaśnia co gdzie znajdziesz.'},
     {icon:'🏠',title:'Strona główna – Twoje saldo',body:'Tutaj widzisz swoje saldo wsparcia. Dawaj wsparcie, aby je zwiększać.'},
@@ -2123,6 +2166,7 @@ function applyLang() {
   st('t-push-activate', l.pushActivate||'Aktivieren');
   // Modals
   st('t-post-title', l.postBtn); st('t-post-hint', 'TikTok URL');
+  st('t-post-submit', l.postSubmit||'Posten'); st('t-cancel', l.cancel||'Abbrechen');
   // PIN
   st('pin-title', l.pinTitle); st('pin-sub', l.pinSub);
   // Offline
@@ -2332,6 +2376,7 @@ function enterApp() {
   }
   if (ONLINE) pushFB();
   setTimeout(checkPendingOnBoot, 1500);
+  setTimeout(animateWorldClock, 900);
 }
 
 function doLogout() {
@@ -2531,7 +2576,7 @@ function renderMyList(u) {
       html += '<div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3)"><span>'+r1c+(rnd===2?'+'+r2c:'')+' Supports</span><span>'+pct+'%</span></div>';
     }
     if(v.status==='done'||v.status==='expired') {
-      html += '<button data-del-vid="'+esc(v.id)+'" style="margin-top:9px;width:100%;padding:8px;border-radius:12px;background:rgba(255,107,107,0.08);border:1px solid rgba(255,107,107,0.2);color:#ff6b6b;font-size:12px;cursor:pointer;font-family:inherit;font-weight:600">🗑 Video l\u00F6schen</button>';
+      html += '<button data-del-vid="'+esc(v.id)+'" style="margin-top:9px;width:100%;padding:8px;border-radius:12px;background:rgba(255,107,107,0.08);border:1px solid rgba(255,107,107,0.2);color:#ff6b6b;font-size:12px;cursor:pointer;font-family:inherit;font-weight:600">'+t('delVid')+'</button>';
     }
     html += '</div>';
   }
@@ -2838,10 +2883,8 @@ function sendMsg() {
     };
     addNotif(dmTo, '&#128172;', '@' + (DB.members[CU] ? DB.members[CU].name : CU) + ': ' + msg);
     ge('msgInput').value = '';
-    var _si = ge('dm-search-inp'); if (_si) _si.value = '';
-    var _sr = ge('dm-res'); if (_sr) _sr.style.display = 'none';
-    var _snf = ge('dm-res-nf'); if (_snf) _snf.style.display = 'none';
     _dmTarget = null;
+    buildDmToRow(); // Reset to search UI after sending
     toast(t('dmSent') || 'Nachricht gesendet!', 'success');
     save();
     return;
