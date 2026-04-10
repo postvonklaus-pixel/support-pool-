@@ -3501,9 +3501,9 @@ function renderDailyGoal(u) {
   var wrap = document.getElementById('goal-wrap');
   var ringFill = document.getElementById('goal-ring-fill');
   var ringNum = document.getElementById('goal-ring-num');
-  var goalSub = document.getElementById('goal-sub');
-  var goalTitle = document.getElementById('goal-title');
-  if (!wrap || !ringFill) return;
+  var goalSub = document.getElementById('t-goal-sub');
+  var goalTitle = document.getElementById('t-goal-title');
+  if (!wrap || !ringFill || !ringNum || !goalSub || !goalTitle) return;
   var d4 = new Date();
   var today = d4.getFullYear()+'-'+String(d4.getMonth()+1).padStart(2,'0')+'-'+String(d4.getDate()).padStart(2,'0');
   var done = (u.todayDate === today) ? (u.todayCount || 0) : 0;
