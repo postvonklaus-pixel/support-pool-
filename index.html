@@ -864,7 +864,8 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;color:#f0f2
       <div class="profile-hero">
         <div class="prof-avatar" id="prof-avatar">😊</div>
         <div class="prof-name" id="prof-name">–</div>
-        <div id="prof-rank" style="margin-bottom:8px"></div>
+        <div id="prof-rank" style="margin-bottom:4px"></div>
+        <div id="prof-since" style="font-size:11px;color:var(--t2);margin-bottom:8px;letter-spacing:.02em"></div>
         <div id="rank-agenda" style="font-size:11px;color:var(--t2);text-align:center;margin-bottom:8px;line-height:1.6"></div>
         <div class="streak-wrap">
           <div class="streak-title" id="t-streak-title">7-Tage Aktivität</div>
@@ -1138,8 +1139,17 @@ function animateWorldClock() {
 
 // BROADCAST BANNER
 function checkBC() {
-  var bc = (DB.settings && DB.settings.broadcast) || '';
+  if (!DB.settings) return;
+  var bc = DB.settings.broadcast || '';
   if (!bc) return;
+  // Auto-expire broadcast after 24 hours
+  var ts = DB.settings.broadcastTs || 0;
+  if (ts && (Date.now() - ts) >= 86400000) {
+    DB.settings.broadcast = '';
+    DB.settings.broadcastTs = 0;
+    save();
+    return;
+  }
   var dim = '';
   try { dim = localStorage.getItem('sp_bc_dim') || ''; } catch(e) {}
   if (dim === bc) return;
@@ -1278,6 +1288,7 @@ function sendBroadcast() {
   if (!msg) return;
   if (!DB.settings) DB.settings = {};
   DB.settings.broadcast = msg;
+  DB.settings.broadcastTs = Date.now();
   ge('broadcastInput').value = '';
   toast('📢 '+(t('okSave')||'Gesendet'), 'success');
   save();
@@ -2418,6 +2429,10 @@ function renderAll() {
 function renderHome() {
   if (!CU || !DB.members[CU]) return;
   var u = DB.members[CU];
+  // Defensive: ensure stats object always exists
+  if (!u.stats) { u.stats = {given:0, received:0}; }
+  // Backfill joined timestamp for members created before this field existed
+  if (!u.joined) { u.joined = Date.now(); save(); }
   var g = u.stats.given||0, r = u.stats.received||0, bal = g - r;
   var bel = ge('bal-num');
   bel.textContent = bal;
@@ -2440,6 +2455,7 @@ function renderHome() {
 
 function renderTimer(u) {
   var wrap = ge('post-timer-wrap');
+  if (!u.stats) u.stats = {given:0, received:0};
   var now = Date.now(), tot = u.postsTotal||0, g = u.stats.given||0, r2 = u.stats.received||0, bal = g-r2;
   if (u.lastPost && (now-u.lastPost) < R1_MS) {
     var rem = R1_MS-(now-u.lastPost);
@@ -2739,10 +2755,15 @@ function checkExpired() {
 function renderProfile() {
   if (!CU || !DB.members[CU]) return;
   var u = DB.members[CU];
+  if (!u.stats) { u.stats = {given:0, received:0}; }
   initPush();
   st('prof-name', u.name||fbDec(CU));
   ge('prof-avatar').textContent = getAvatar(u);
   ge('prof-rank').innerHTML = rankBadge(u);
+  // Days in pool
+  var daysInPool = u.joined ? Math.max(0, Math.floor((Date.now() - u.joined) / 86400000)) : 0;
+  var sincEl = ge('prof-since');
+  if (sincEl) sincEl.textContent = '📅 ' + daysInPool + ' ' + ((L[LANG]||L.de).streakDays||'Tage') + ' im Support Pool';
   // Auto-record today if user is active but has no streak history yet
   if ((u.stats.given||0) > 0 && (!u.supportDays || u.supportDays.length === 0)) {
     recordSupportToday();
@@ -2940,9 +2961,10 @@ function renderAdmOv() {
     html += '</div>';
     for (var j = 0; j < actMs.length; j++) {
       var mk = actMs[j], m = DB.members[mk]; if (!m) continue;
+      if (!m.stats) m.stats = {given:0, received:0};
       var hasLive = false;
       (m.myVideos||[]).forEach(function(vid){ var v=DB.videos[vid]; if(v&&v.status==='open') hasLive=true; });
-      var days = m.lastPost ? Math.floor((Date.now()-m.lastPost)/86400000) : null;
+      var daysJoined = m.joined ? Math.max(0, Math.floor((Date.now()-m.joined)/86400000)) : null;
       var bal = (m.stats.given||0)-(m.stats.received||0);
       var bc = bal>0?'var(--green)':bal<0?'var(--red)':'var(--text3)';
       html += '<div style="display:flex;align-items:center;gap:9px;background:linear-gradient(135deg,rgba(15,18,40,0.98),rgba(10,14,32,0.95));border:1px solid rgba(232,184,75,0.1);border-radius:14px;padding:10px 11px;margin-bottom:6px;transition:border-color 0.2s">';
@@ -2950,7 +2972,7 @@ function renderAdmOv() {
       html += '<div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(m.name||mk)+(m.role==='admin'?' &#128081;':'')+'</div>';
       html += '<div style="font-size:10px;color:var(--text3);margin-top:2px;display:flex;align-items:center;gap:5px">'+trophySmall(m);
       if (hasLive) html += ' <span style="display:inline-flex;align-items:center;gap:3px;color:#10d98a;font-weight:700"><span style="width:7px;height:7px;border-radius:50%;background:#10d98a;box-shadow:0 0 6px #10d98a;display:inline-block;animation:liveP 1.2s ease-in-out infinite"></span>LIVE</span>';
-      if (days!==null) html += ' · '+days+'d';
+      if (daysJoined!==null) html += ' · 📅 '+daysJoined+'d';
       html += '</div></div>';
       html += '<div style="font-size:13px;font-weight:700;color:'+bc+';flex-shrink:0">'+(bal>0?'+':'')+bal+'</div>';
       if (m.role!=='admin') html += '<button class="btn-danger" data-rm-g="'+esc(grp.id)+'" data-rm-k="'+esc(mk)+'" style="margin-left:5px;padding:5px 9px;border-radius:9px;font-size:14px">&#128465;</button>';
@@ -3338,9 +3360,11 @@ function openTkLink() {
     var rndS = vs.round||1;
     if (rndS===1) { vs.r1Supporters=vs.r1Supporters||[]; if(vs.r1Supporters.indexOf(CU)<0) vs.r1Supporters.push(CU); }
     else { vs.r2Supporters=vs.r2Supporters||[]; if(vs.r2Supporters.indexOf(CU)<0) vs.r2Supporters.push(CU); }
+    if (!us.stats) us.stats = {given:0, received:0};
     us.stats.given = (us.stats.given||0) + 1;
     var ownerS = DB.members[vs.ownerKey];
     if (ownerS) {
+      if (!ownerS.stats) ownerS.stats = {given:0, received:0};
       ownerS.stats.received = (ownerS.stats.received||0) + 1;
       addNotif(vs.ownerKey, '❤️', '@'+(us.name||CU)+' '+(t('supportMsg')||'hat dein Video supportet'));
       sendPushNotif('SUPPORT POOL ✨', '@'+(us.name||CU)+' hat dein Video supportet!');
