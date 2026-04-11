@@ -1025,6 +1025,36 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;color:#f0f2
   </div>
 </div>
 
+<!-- Balance Adjust Modal (Admin) -->
+<div class="modal-bg" id="balAdjModal">
+  <div class="modal-box">
+    <div class="modal-title">⚖️ Balance anpassen</div>
+    <div id="ba-member-info" style="display:flex;align-items:center;gap:12px;background:linear-gradient(135deg,rgba(124,58,237,.12),rgba(6,214,160,.06));border:1.5px solid var(--vb2);border-radius:14px;padding:12px 14px;margin-bottom:16px">
+      <div id="ba-avatar" style="font-size:26px;flex-shrink:0">😊</div>
+      <div>
+        <div id="ba-name" style="font-size:14px;font-weight:700;color:var(--text)">–</div>
+        <div id="ba-cur-stats" style="font-size:11px;color:var(--t2);margin-top:3px">Gegeben: 0 · Erhalten: 0 · Balance: 0</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;margin-bottom:14px">
+      <div style="flex:1">
+        <div style="font-size:11px;font-weight:700;color:var(--v3);margin-bottom:5px">✅ Gegeben</div>
+        <input type="number" id="ba-given" min="0" style="width:100%;padding:10px 12px;border-radius:12px;background:rgba(14,15,30,.98);border:1.5px solid var(--vb2);color:var(--text);font-size:15px;font-weight:700;font-family:inherit;outline:none;text-align:center;box-sizing:border-box"/>
+      </div>
+      <div style="flex:1">
+        <div style="font-size:11px;font-weight:700;color:var(--t2);margin-bottom:5px">📥 Erhalten</div>
+        <input type="number" id="ba-recv" min="0" style="width:100%;padding:10px 12px;border-radius:12px;background:rgba(14,15,30,.98);border:1.5px solid var(--bdr2);color:var(--text);font-size:15px;font-weight:700;font-family:inherit;outline:none;text-align:center;box-sizing:border-box"/>
+      </div>
+    </div>
+    <div id="ba-preview" style="text-align:center;font-size:13px;font-weight:700;margin-bottom:14px;padding:8px;border-radius:10px;background:rgba(255,255,255,.04)">Balance: 0</div>
+    <button onclick="balAutoFix()" style="width:100%;padding:11px;border-radius:12px;background:linear-gradient(135deg,rgba(124,58,237,.2),rgba(6,214,160,.12));border:1.5px solid var(--vb2);color:var(--v3);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:10px">⚡ Auto-Ausgleich (Balance auf +1 setzen)</button>
+    <div class="modal-footer">
+      <button class="btn-prime" onclick="saveBalAdj()">💾 Speichern</button>
+      <button class="btn-ghost btn-sm" onclick="closeModal('balAdjModal')">Abbrechen</button>
+    </div>
+  </div>
+</div>
+
 <!-- Tour Overlay -->
 <div id="tour-overlay">
   <div class="tour-box">
@@ -2974,14 +3004,26 @@ function renderAdmOv() {
       if (hasLive) html += ' <span style="display:inline-flex;align-items:center;gap:3px;color:#10d98a;font-weight:700"><span style="width:7px;height:7px;border-radius:50%;background:#10d98a;box-shadow:0 0 6px #10d98a;display:inline-block;animation:liveP 1.2s ease-in-out infinite"></span>LIVE</span>';
       if (daysJoined!==null) html += ' · 📅 '+daysJoined+'d';
       html += '</div></div>';
-      html += '<div style="font-size:13px;font-weight:700;color:'+bc+';flex-shrink:0">'+(bal>0?'+':'')+bal+'</div>';
-      if (m.role!=='admin') html += '<button class="btn-danger" data-rm-g="'+esc(grp.id)+'" data-rm-k="'+esc(mk)+'" style="margin-left:5px;padding:5px 9px;border-radius:9px;font-size:14px">&#128465;</button>';
+      html += '<div style="display:flex;align-items:center;gap:5px;flex-shrink:0">';
+      html += '<div style="font-size:13px;font-weight:700;color:'+bc+'">'+(bal>0?'+':'')+bal+'</div>';
+      if (m.role!=='admin') {
+        var adjBtnColor = bal<0 ? 'rgba(255,107,107,.22)' : 'rgba(124,58,237,.15)';
+        var adjBtnBdr = bal<0 ? 'rgba(255,107,107,.5)' : 'var(--vb)';
+        html += '<button data-adj-k="'+esc(mk)+'" style="padding:4px 7px;border-radius:8px;background:'+adjBtnColor+';border:1px solid '+adjBtnBdr+';color:var(--v3);cursor:pointer;font-size:12px;line-height:1" title="Balance anpassen">⚖️</button>';
+        html += '<button class="btn-danger" data-rm-g="'+esc(grp.id)+'" data-rm-k="'+esc(mk)+'" style="padding:5px 9px;border-radius:9px;font-size:14px">&#128465;</button>';
+      }
+      html += '</div>';
       html += '</div>';
     }
     html += '</div>';
   }
   list.innerHTML = html || '<div class="empty-state"><div style="font-size:36px">&#128101;</div></div>';
-  list.onclick = function(e) { var btn=e.target.closest('[data-rm-g]'); if(btn) confirmRemove(btn.getAttribute('data-rm-g'),btn.getAttribute('data-rm-k')); };
+  list.onclick = function(e) {
+    var ab = e.target.closest('[data-adj-k]');
+    if (ab) { openBalAdj(ab.getAttribute('data-adj-k')); return; }
+    var rb = e.target.closest('[data-rm-g]');
+    if (rb) confirmRemove(rb.getAttribute('data-rm-g'), rb.getAttribute('data-rm-k'));
+  };
 }
 
 function renderAdmMsg() {
@@ -3055,6 +3097,63 @@ function confirmRemove(gid, key) {
     save(); renderAdmOv();
   };
   openModal('confirmModal');
+}
+
+// ── BALANCE ADJUST (Admin) ─────────────────────────────────────────────────
+var _balAdjKey = null;
+
+function openBalAdj(key) {
+  var m = DB.members[key];
+  if (!m) return;
+  if (!m.stats) m.stats = {given:0, received:0};
+  _balAdjKey = key;
+  var g = m.stats.given||0, r = m.stats.received||0, bal = g - r;
+  ge('ba-avatar').textContent = getAvatar(m);
+  ge('ba-name').textContent = '@'+(m.name||key);
+  ge('ba-cur-stats').textContent = 'Gegeben: '+g+' · Erhalten: '+r+' · Balance: '+(bal>0?'+':'')+bal;
+  ge('ba-given').value = g;
+  ge('ba-recv').value = r;
+  updateBalPreview();
+  ge('ba-given').oninput = updateBalPreview;
+  ge('ba-recv').oninput = updateBalPreview;
+  openModal('balAdjModal');
+}
+
+function updateBalPreview() {
+  var g = parseInt(ge('ba-given').value)||0;
+  var r = parseInt(ge('ba-recv').value)||0;
+  var bal = g - r;
+  var prev = ge('ba-preview');
+  prev.textContent = 'Neue Balance: ' + (bal>0?'+':'') + bal;
+  prev.style.color = bal>0?'var(--green)':bal<0?'var(--red)':'var(--t2)';
+  prev.style.background = bal>0?'rgba(16,217,138,.08)':bal<0?'rgba(255,107,107,.08)':'rgba(255,255,255,.04)';
+}
+
+function balAutoFix() {
+  var m = DB.members[_balAdjKey];
+  if (!m) return;
+  if (!m.stats) m.stats = {given:0, received:0};
+  // Set given = received + 1 so balance becomes exactly +1 (just enough to post)
+  var r = parseInt(ge('ba-recv').value)||0;
+  ge('ba-given').value = Math.max(r + 1, (m.stats.given||0));
+  updateBalPreview();
+}
+
+function saveBalAdj() {
+  var m = DB.members[_balAdjKey];
+  if (!m) { closeModal('balAdjModal'); return; }
+  if (!m.stats) m.stats = {given:0, received:0};
+  var newG = Math.max(0, parseInt(ge('ba-given').value)||0);
+  var newR = Math.max(0, parseInt(ge('ba-recv').value)||0);
+  m.stats.given = newG;
+  m.stats.received = newR;
+  var bal = newG - newR;
+  addNotif(_balAdjKey, '⚖️', 'Admin hat deine Balance angepasst. Neue Balance: '+(bal>0?'+':'')+bal);
+  closeModal('balAdjModal');
+  _balAdjKey = null;
+  toast('✅ Balance gespeichert', 'success');
+  save();
+  renderAdmOv();
 }
 
 function cleanInactive() {
