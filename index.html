@@ -22,6 +22,7 @@
   --red:#ef4444;--red2:#f87171;
   --blue:#60a5fa;--blue2:#93c5fd;
   --orange:#f97316;--purple:#c084fc;
+  --gold:#e8b84b;--gold2:#ffd166;--gold3:#f5c878;
   --text:#f0f2ff;--t2:#8b92a8;--t3:#3d4460;
   --bdr:rgba(255,255,255,.06);--bdr2:rgba(255,255,255,.1);
 }
@@ -174,9 +175,9 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;color:#f0f2
 .guide-text{font-size:12px;color:var(--t2);line-height:1.5;padding-top:3px}
 
 /* ── VIDEO CARDS ── */
-.vc{background:linear-gradient(145deg,rgba(14,15,30,.98),rgba(19,20,42,.95));border:1px solid var(--bdr);border-radius:18px;padding:14px;margin-bottom:9px;transition:all .25s;position:relative;overflow:hidden}
-.vc::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(124,58,237,.2),transparent);pointer-events:none}
-.vc:hover{border-color:var(--vb2);box-shadow:0 8px 28px rgba(124,58,237,.12);transform:translateY(-1px)}
+.vc{background:linear-gradient(145deg,rgba(14,15,30,.98),rgba(19,20,42,.95));border:1.5px solid rgba(6,214,160,.3);border-radius:18px;padding:14px;margin-bottom:9px;transition:all .25s;position:relative;overflow:hidden;box-shadow:0 0 14px rgba(6,214,160,.07)}
+.vc::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(6,214,160,.45),transparent);pointer-events:none}
+.vc:hover{border-color:rgba(6,214,160,.6);box-shadow:0 0 28px rgba(6,214,160,.18),0 8px 24px rgba(0,0,0,.3);transform:translateY(-1px)}
 .vc-top{display:flex;align-items:center;gap:10px;margin-bottom:10px}
 .vc-av{width:40px;height:40px;border-radius:50%;flex-shrink:0;background:linear-gradient(135deg,var(--v),var(--v2));display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 3px 10px rgba(124,58,237,.28);border:2px solid rgba(124,58,237,.3)}
 .vc-info{flex:1;min-width:0}
@@ -412,7 +413,7 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;color:#f0f2
 }
 .card{background:var(--card2);border-color:var(--bdr2)}
 .bal-card{background:linear-gradient(145deg,rgba(91,33,182,.24) 0%,rgba(124,58,237,.14) 40%,rgba(21,22,40,.98) 100%);border-color:var(--vb2)}
-.vc,.mvc{border-color:var(--bdr2);background:var(--card)}
+.mvc{border-color:var(--bdr2);background:var(--card)}
 .modal-box{background:var(--card2);border-color:var(--bdr2)}
 .pin-box{background:var(--card2);border-color:var(--bdr2)}
 /* ── TS-OK BUTTON STATE ────────────────────────────────────── */
@@ -1021,7 +1022,7 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;color:#f0f2
     <div id="psm-title" style="font-size:1.25rem;font-weight:700;color:var(--teal);margin-bottom:10px">Du bist startklar!</div>
     <div id="psm-body" style="font-size:14px;color:var(--text);margin-bottom:8px;line-height:1.6"></div>
     <div id="psm-sub" style="font-size:12px;color:var(--t2);margin-bottom:20px;line-height:1.5"></div>
-    <button class="btn-prime" onclick="closeModal('postSuccessModal')" id="psm-ok">Ich habe verstanden!</button>
+    <button class="btn-prime" onclick="closeModal('postSuccessModal');scrollToMyVideos()" id="psm-ok">Ich habe verstanden!</button>
   </div>
 </div>
 
@@ -1385,7 +1386,7 @@ de: {
   online:'Online',offline:'Offline',syncing:'Sync...',connecting:'Verbinde...',
   errOff:'⚠️ Kein Internet',errBal:'❌ Erst supporten, dann posten!',errTimer:'⏳ Noch warten',errUrl:'❌ TikTok-URL eingeben',errName:'❌ Username eingeben',
   okPost:'✅ Video gepostet!',okSup:'✅ Support gezählt!',okSave:'✅ Gespeichert',okImport:'✅ Importiert',okExport:'📋 Exportiert & kopiert',
-  r1:'Runde 1',r2:'Runde 2',done:'Abgeschlossen',expired:'Abgelaufen',timeLeft:'verbleibend',needed:'benötigt',noMsgs:'Keine Nachrichten',
+  r1:'Runde 1',r2:'Runde 2',done:'Abgeschlossen',expired:'Abgelaufen',timeLeft:'verbleibend',needed:'benötigt',noMsgs:'Keine Nachrichten',vidActive:'Aktiv',
   celText:'Support gegeben! ⭐',
   noStreak: 'Heute aktiv werden!',
   schedLabel: 'Vorgemerkt', schedPostsIn: 'Wird gepostet in',
@@ -1450,7 +1451,7 @@ en: {
   online:'Online',offline:'Offline',syncing:'Syncing...',connecting:'Connecting...',
   errOff:'⚠️ No internet',errBal:'❌ Give supports first!',errTimer:'⏳ Please wait',errUrl:'❌ Enter TikTok URL',errName:'❌ Enter username',
   okPost:'✅ Video posted!',okSup:'✅ Support counted!',okSave:'✅ Saved',okImport:'✅ Imported',okExport:'📋 Exported & copied',
-  r1:'Round 1',r2:'Round 2',done:'Done',expired:'Expired',timeLeft:'remaining',needed:'needed',noMsgs:'No messages',
+  r1:'Round 1',r2:'Round 2',done:'Done',expired:'Expired',timeLeft:'remaining',needed:'needed',noMsgs:'No messages',vidActive:'Active',
   celText:'Support given! ⭐',
   noStreak: 'Get active today!',
   schedLabel: 'Scheduled', schedPostsIn: 'Posts in',
@@ -1515,7 +1516,7 @@ id: {
   online:'Online',offline:'Offline',syncing:'Sinkronisasi...',connecting:'Menghubungkan...',
   errOff:'⚠️ Tidak ada internet',errBal:'❌ Berikan dukungan dulu!',errTimer:'⏳ Harap tunggu',errUrl:'❌ Masukkan URL TikTok',errName:'❌ Masukkan nama pengguna',
   okPost:'✅ Video diposting!',okSup:'✅ Dukungan terhitung!',okSave:'✅ Disimpan',okImport:'✅ Diimpor',okExport:'📋 Diekspor',
-  r1:'Ronde 1',r2:'Ronde 2',done:'Selesai',expired:'Kedaluwarsa',timeLeft:'tersisa',needed:'dibutuhkan',noMsgs:'Tidak ada pesan',
+  r1:'Ronde 1',r2:'Ronde 2',done:'Selesai',expired:'Kedaluwarsa',timeLeft:'tersisa',needed:'dibutuhkan',noMsgs:'Tidak ada pesan',vidActive:'Aktif',
   celText:'Dukungan diberikan! ⭐',
   noStreak: 'Aktif hari ini!',
   schedLabel: 'Dijadwalkan', schedPostsIn: 'Diposting dalam',
@@ -1580,7 +1581,7 @@ it: {
   online:'Online',offline:'Offline',syncing:'Sincronizzazione...',connecting:'Connessione...',
   errOff:'⚠️ Nessuna connessione',errBal:'❌ Prima dai supporti!',errTimer:'⏳ Aspetta',errUrl:'❌ Inserisci URL TikTok',errName:'❌ Inserisci username',
   okPost:'✅ Video pubblicato!',okSup:'✅ Supporto contato!',okSave:'✅ Salvato',okImport:'✅ Importato',okExport:'📋 Esportato',
-  r1:'Round 1',r2:'Round 2',done:'Completato',expired:'Scaduto',timeLeft:'rimanente',needed:'necessari',noMsgs:'Nessun messaggio',
+  r1:'Round 1',r2:'Round 2',done:'Completato',expired:'Scaduto',timeLeft:'rimanente',needed:'necessari',noMsgs:'Nessun messaggio',vidActive:'Attivo',
   celText:'Supporto dato! ⭐',
   noStreak: 'Sii attivo oggi!',
   schedLabel: 'Programmato', schedPostsIn: 'Sarà pubblicato in',
@@ -1645,7 +1646,7 @@ es: {
   online:'Online',offline:'Offline',syncing:'Sincronizando...',connecting:'Conectando...',
   errOff:'⚠️ Sin internet',errBal:'❌ Da apoyos primero!',errTimer:'⏳ Espera',errUrl:'❌ Introduce URL TikTok',errName:'❌ Introduce username',
   okPost:'✅ Video publicado!',okSup:'✅ Apoyo contado!',okSave:'✅ Guardado',okImport:'✅ Importado',okExport:'📋 Exportado',
-  r1:'Ronda 1',r2:'Ronda 2',done:'Completado',expired:'Caducado',timeLeft:'restante',needed:'necesarios',noMsgs:'Sin mensajes',
+  r1:'Ronda 1',r2:'Ronda 2',done:'Completado',expired:'Caducado',timeLeft:'restante',needed:'necesarios',noMsgs:'Sin mensajes',vidActive:'Activo',
   celText:'Apoyo dado! ⭐',
   noStreak: '¡Sé activo hoy!',
   schedLabel: 'Programado', schedPostsIn: 'Se publica en',
@@ -1710,7 +1711,7 @@ tr: {
   online:'Online',offline:'Cevrimdisi',syncing:'Senkronize...',connecting:'Baglanıyor...',
   errOff:'⚠️ Internet yok',errBal:'❌ Once destek ver!',errTimer:'⏳ Bekle',errUrl:'❌ TikTok URL gir',errName:'❌ Kullanici adi gir',
   okPost:'✅ Video paylasıldı!',okSup:'✅ Destek sayıldı!',okSave:'✅ Kaydedildi',okImport:'✅ Iceaktarıldı',okExport:'📋 Disaaktarıldı',
-  r1:'Tur 1',r2:'Tur 2',done:'Tamamlandı',expired:'Suresi doldu',timeLeft:'kalan',needed:'gerekli',noMsgs:'Mesaj yok',
+  r1:'Tur 1',r2:'Tur 2',done:'Tamamlandı',expired:'Suresi doldu',timeLeft:'kalan',needed:'gerekli',noMsgs:'Mesaj yok',vidActive:'Aktif',
   celText:'Destek verildi! ⭐',
   noStreak: 'Bugün aktif ol!',
   schedLabel: 'Planlandı', schedPostsIn: 'Yayınlanıyor',
@@ -1775,7 +1776,7 @@ ar: {
   online:'متصل',offline:'غير متصل',syncing:'مزامنة...',connecting:'اتصال...',
   errOff:'⚠️ لا يوجد إنترنت',errBal:'❌ قدم الدعم أولا!',errTimer:'⏳ انتظر',errUrl:'❌ أدخل رابط TikTok',errName:'❌ أدخل اسم المستخدم',
   okPost:'✅ تم نشر الفيديو!',okSup:'✅ تم احتساب الدعم!',okSave:'✅ تم الحفظ',okImport:'✅ تم الاستيراد',okExport:'📋 تم التصدير',
-  r1:'الجولة 1',r2:'الجولة 2',done:'مكتمل',expired:'منته',timeLeft:'متبقي',needed:'مطلوب',noMsgs:'لا توجد رسائل',
+  r1:'الجولة 1',r2:'الجولة 2',done:'مكتمل',expired:'منته',timeLeft:'متبقي',needed:'مطلوب',noMsgs:'لا توجد رسائل',vidActive:'نشط',
   celText:'تم تقديم الدعم! ⭐',
   noStreak: 'كن نشطاً اليوم!',
   schedLabel: 'مجدول', schedPostsIn: 'ينشر خلال',
@@ -1840,7 +1841,7 @@ zh: {
   online:'在线',offline:'离线',syncing:'同步中...',connecting:'连接中...',
   errOff:'⚠️ 没有网络',errBal:'❌ 先给予支持！',errTimer:'⏳ 请等待',errUrl:'❌ 请输入TikTok链接',errName:'❌ 请输入用户名',
   okPost:'✅ 视频已发布！',okSup:'✅ 支持已计数！',okSave:'✅ 已保存',okImport:'✅ 已导入',okExport:'📋 已导出',
-  r1:'第1轮',r2:'第2轮',done:'已完成',expired:'已过期',timeLeft:'剩余',needed:'需要',noMsgs:'没有消息',
+  r1:'第1轮',r2:'第2轮',done:'已完成',expired:'已过期',timeLeft:'剩余',needed:'需要',noMsgs:'没有消息',vidActive:'进行中',
   celText:'已给予支持！⭐',
   noStreak: '今天开始活跃！',
   schedLabel: '已预约', schedPostsIn: '将在后发布',
@@ -1905,7 +1906,7 @@ ja: {
   online:'オンライン',offline:'オフライン',syncing:'同期中...',connecting:'接続中...',
   errOff:'⚠️ インターネットなし',errBal:'❌ 先にサポートしてください！',errTimer:'⏳ 待ってください',errUrl:'❌ TikTok URLを入力してください',errName:'❌ ユーザー名を入力してください',
   okPost:'✅ 動画を投稿しました！',okSup:'✅ サポートをカウントしました！',okSave:'✅ 保存しました',okImport:'✅ インポートしました',okExport:'📋 エクスポート済み',
-  r1:'ラウンド1',r2:'ラウンド2',done:'完了',expired:'期限切れ',timeLeft:'残り',needed:'必要',noMsgs:'メッセージなし',
+  r1:'ラウンド1',r2:'ラウンド2',done:'完了',expired:'期限切れ',timeLeft:'残り',needed:'必要',noMsgs:'メッセージなし',vidActive:'アクティブ',
   celText:'サポートしました！⭐',
   noStreak: '今日から活動しよう！',
   schedLabel: '予約済み', schedPostsIn: '後に投稿',
@@ -1970,7 +1971,7 @@ pl: {
   online:'Online',offline:'Offline',syncing:'Synchronizacja...',connecting:'Laczenie...',
   errOff:'⚠️ Brak internetu',errBal:'❌ Najpierw wesprzyj innych!',errTimer:'⏳ Poczekaj',errUrl:'❌ Wpisz URL TikTok',errName:'❌ Wpisz nazwe uzytkownika',
   okPost:'✅ Wideo opublikowane!',okSup:'✅ Wsparcie policzone!',okSave:'✅ Zapisano',okImport:'✅ Zaimportowano',okExport:'📋 Wyeksportowano',
-  r1:'Runda 1',r2:'Runda 2',done:'Ukonczone',expired:'Wygasle',timeLeft:'pozostalo',needed:'potrzebne',noMsgs:'Brak wiadomosci',
+  r1:'Runda 1',r2:'Runda 2',done:'Ukonczone',expired:'Wygasle',timeLeft:'pozostalo',needed:'potrzebne',noMsgs:'Brak wiadomosci',vidActive:'Aktywny',
   celText:'Wsparcie udzielone! ⭐',
   noStreak: 'Bądź aktywny dzisiaj!',
   schedLabel: 'Zaplanowane', schedPostsIn: 'Zostanie opublikowane za',
@@ -2605,15 +2606,18 @@ function renderMyList(u) {
     var pct=Math.min(100,Math.round(tot/20*100)), isAct=v.status==='open', rnd=v.round||1;
     var barC=rnd===2?'#5b9cff':'#10d98a', barG=rnd===2?'rgba(91,156,255,0.4)':'rgba(16,217,138,0.4)';
     var rndHtml='';
+    var activeBadge = isAct ? '<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:rgba(6,214,160,.13);color:#06d6a0;border:1px solid rgba(6,214,160,.35);margin-left:5px;vertical-align:middle">🟢 '+(t('vidActive')||'Aktiv')+'</span>' : '';
     if(v.status==='done') rndHtml='<span style="font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;background:rgba(16,217,138,0.12);color:#10d98a;border:1px solid rgba(16,217,138,0.25)">✅ '+t('done')+'</span>';
     else if(v.status==='expired') rndHtml='<span style="font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;background:rgba(255,107,107,0.1);color:#ff6b6b;border:1px solid rgba(255,107,107,0.2)">⏰ '+t('expired')+'</span>';
-    else if(rnd===2) rndHtml='<span style="font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;background:rgba(91,156,255,0.14);color:#5b9cff;border:1px solid rgba(91,156,255,0.28)">🔵 '+t('r2')+'</span>';
-    else rndHtml='<span style="font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;background:rgba(232,184,75,0.14);color:#ffd166;border:1px solid rgba(232,184,75,0.28)"><span class="anim-hourglass">⏳</span> '+t('r1')+'</span>';
+    else if(rnd===2) rndHtml='<span style="font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;background:rgba(91,156,255,0.14);color:#5b9cff;border:1px solid rgba(91,156,255,0.28)">🔵 '+t('r2')+'</span>'+activeBadge;
+    else rndHtml='<span style="font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;background:rgba(232,184,75,0.14);color:#ffd166;border:1px solid rgba(232,184,75,0.28)"><span class="anim-hourglass">⏳</span> '+t('r1')+'</span>'+activeBadge;
     var expiry=rnd===1?(v.expiresR1||0):(v.expiresR2||0);
     var left=isAct?Math.max(0,expiry-Date.now()):0;
-    var bdrC=isAct?(rnd===2?'rgba(91,156,255,0.2)':'rgba(16,217,138,0.18)'):'rgba(255,255,255,0.06)';
-    var topLine=isAct?(rnd===2?'rgba(91,156,255,0.2)':'rgba(16,217,138,0.18)'):'rgba(255,255,255,0.06)';
-    html += '<div style="background:linear-gradient(135deg,rgba(12,16,34,0.98),rgba(8,12,26,0.95));border:1px solid '+bdrC+';border-radius:18px;padding:14px;margin-bottom:9px;position:relative;overflow:hidden">';
+    // Bright glowing border for active videos, dim for finished
+    var bdrC=isAct?(rnd===2?'rgba(91,156,255,0.6)':'rgba(6,214,160,0.55)'):'rgba(255,255,255,0.07)';
+    var glowS=isAct?(rnd===2?'0 0 22px rgba(91,156,255,.14),0 4px 18px rgba(0,0,0,.4)':'0 0 22px rgba(6,214,160,.13),0 4px 18px rgba(0,0,0,.4)'):'none';
+    var topLine=isAct?(rnd===2?'rgba(91,156,255,0.5)':'rgba(6,214,160,0.5)'):'rgba(255,255,255,0.04)';
+    html += '<div style="background:linear-gradient(135deg,rgba(12,16,34,0.98),rgba(8,12,26,0.95));border:1.5px solid '+bdrC+';border-radius:18px;padding:14px;margin-bottom:9px;position:relative;overflow:hidden;box-shadow:'+glowS+'">';
     html += '<div style="position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,'+topLine+',transparent);pointer-events:none"></div>';
     html += '<div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:9px">';
     html += '<div>'+rndHtml+'</div>';
@@ -2685,6 +2689,33 @@ function showPostSuccess() {
     var el4 = ge('psm-ok'); if(el4) el4.textContent = okTxt;
     openModal('postSuccessModal');
   }
+}
+
+function scrollToMyVideos() {
+  // Switch to home if needed, then scroll to "Meine Videos" section
+  goScreen('home');
+  setTimeout(function() {
+    var myListSection = ge('my-list');
+    if (!myListSection) return;
+    // Scroll the content area to the my-list section
+    var content = myListSection.closest('.content') || document.querySelector('.content');
+    if (content) {
+      var offset = myListSection.getBoundingClientRect().top + content.scrollTop - 80;
+      content.scrollTo({top: offset, behavior: 'smooth'});
+    } else {
+      myListSection.scrollIntoView({behavior: 'smooth', block: 'start'});
+    }
+    // Briefly flash the newest card to confirm it's there
+    setTimeout(function() {
+      var first = myListSection.querySelector('[data-del-vid], [style*="border-radius:18px"]');
+      if (!first) first = myListSection.firstElementChild;
+      if (first) {
+        first.style.transition = 'box-shadow .4s ease';
+        first.style.boxShadow = '0 0 0 3px rgba(6,214,160,.7), 0 0 30px rgba(6,214,160,.3)';
+        setTimeout(function() { first.style.boxShadow = ''; }, 1800);
+      }
+    }, 500);
+  }, 200);
 }
 
 function submitPost() {
