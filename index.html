@@ -3140,20 +3140,55 @@ function balAutoFix() {
 }
 
 function saveBalAdj() {
-  var m = DB.members[_balAdjKey];
+  var key = _balAdjKey;
+  var m = DB.members[key];
   if (!m) { closeModal('balAdjModal'); return; }
   if (!m.stats) m.stats = {given:0, received:0};
   var newG = Math.max(0, parseInt(ge('ba-given').value)||0);
   var newR = Math.max(0, parseInt(ge('ba-recv').value)||0);
+
+  // Update local state immediately
   m.stats.given = newG;
   m.stats.received = newR;
   var bal = newG - newR;
-  addNotif(_balAdjKey, '⚖️', 'Admin hat deine Balance angepasst. Neue Balance: '+(bal>0?'+':'')+bal);
+
+  // Notify the affected member
+  addNotif(key, '⚖️', 'Admin hat deine Balance angepasst. Neue Balance: '+(bal>0?'+':'')+bal);
+
   closeModal('balAdjModal');
   _balAdjKey = null;
-  toast('✅ Balance gespeichert', 'success');
-  save();
+
+  // Always persist to localStorage first
+  saveLS();
   renderAdmOv();
+
+  if (FB_REF && ONLINE) {
+    // Targeted partial update — only writes the changed fields,
+    // atomic and race-condition safe (does NOT overwrite concurrent member actions)
+    var now = Date.now();
+    FB_PUSH_TS = now;
+    var patch = {};
+    patch['members/' + key + '/stats/given']    = newG;
+    patch['members/' + key + '/stats/received'] = newR;
+    patch['messages']                            = DB.messages;
+    patch['_ts']                                 = now;
+    FB_REF.update(patch)
+      .then(function() {
+        DB._ts = now;
+        saveLS();
+        setSyncUI('online');
+        toast('✅ Balance in Firebase gespeichert', 'success');
+      })
+      .catch(function(err) {
+        setSyncUI('offline');
+        FB_PENDING = true;
+        toast('⚠️ Firebase-Fehler – lokal gespeichert, wird bei Verbindung synchronisiert', 'error', 4000);
+      });
+  } else {
+    // Offline: mark as pending so pushFB retries when connection returns
+    FB_PENDING = true;
+    toast('⚠️ Offline – lokal gespeichert, wird bei Verbindung synchronisiert', 'error', 4000);
+  }
 }
 
 function cleanInactive() {
@@ -3921,7 +3956,20 @@ function closeTour() {
   // Pull fresh data from Firebase on load
   setTimeout(forceSyncNow, 2000);
   setInterval(renderAll, 15000);
-  setInterval(function(){ if(ONLINE&&FB_REF&&!FB_PENDING){FB_REF.once('value',function(snap){var r=snap.val();if(!r||!r.members)return;DB.groups=r.groups||{};DB.members=r.members||{};DB.videos=r.videos||{};DB.messages=r.messages||{};DB._ts=r._ts||0;saveLS();renderAll();});} }, 15000);
+  setInterval(function(){
+    if(ONLINE&&FB_REF&&!FB_PENDING){
+      FB_REF.once('value',function(snap){
+        var r=snap.val();
+        if(!r||!r.members) return;
+        // Never overwrite local data that is newer than what Firebase returned
+        if(Date.now()-FB_PUSH_TS < 3000) return;
+        if((r._ts||0)>0 && (r._ts||0)<=(DB._ts||0)) return;
+        DB.groups=r.groups||{};DB.members=r.members||{};DB.videos=r.videos||{};
+        DB.messages=r.messages||{};DB._ts=r._ts||0;
+        saveLS();renderAll();
+      });
+    }
+  }, 15000);
 })();
 
 
