@@ -2181,6 +2181,26 @@ function setLang(k) {
   try { localStorage.setItem(LANG_KEY, k); } catch(e) {}
   buildLangRow();
   applyLang();
+  // Animate all flags with a staggered bounce, then scroll selected into view
+  var items = document.querySelectorAll('.wc-item');
+  for (var i = 0; i < items.length; i++) {
+    (function(item, idx) {
+      setTimeout(function() {
+        item.classList.add('wc-intro');
+        setTimeout(function() { item.classList.remove('wc-intro'); }, 480);
+      }, idx * 40);
+    })(items[i], i);
+  }
+  // Scroll the active item into the center of the scroll container
+  setTimeout(function() {
+    var active = document.querySelector('.wc-item.wc-active');
+    var scroll = document.querySelector('.wc-scroll');
+    if (active && scroll) {
+      var itemCenter = active.offsetLeft + active.offsetWidth / 2;
+      var scrollCenter = scroll.offsetWidth / 2;
+      scroll.scrollTo({ left: itemCenter - scrollCenter, behavior: 'smooth' });
+    }
+  }, items.length * 40 + 100);
 }
 
 function applyLang() {
@@ -2592,50 +2612,50 @@ function renderMyList(u) {
   if (u.pendingUrl) {
     var remMs = u.lastPost?Math.max(0,(u.lastPost+R1_MS)-Date.now()):0;
     var shortU = u.pendingUrl.length>40?u.pendingUrl.slice(0,40)+'...':u.pendingUrl;
-    html += '<div style="background:linear-gradient(135deg,rgba(176,141,255,0.12),rgba(91,156,255,0.07));border:1.5px solid rgba(176,141,255,0.35);border-radius:18px;padding:14px;margin-bottom:9px">';
+    html += '<div style="background:#fff;border:1.5px solid rgba(212,134,10,.28);border-radius:16px;padding:14px;margin-bottom:9px;box-shadow:0 1px 6px rgba(0,0,0,.06)">';
     html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:7px">';
-    html += '<div style="font-size:13px;font-weight:700;color:#b08dff;display:flex;align-items:center;gap:6px">⏰ Vorgemerkt</div>';
-    html += '<button onclick="cancelScheduled()" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px;padding:0;line-height:1">×</button>';
+    html += '<div style="font-size:12px;font-weight:800;color:#d4860a;display:flex;align-items:center;gap:6px;text-transform:uppercase;letter-spacing:.05em">⏰ Vorgemerkt</div>';
+    html += '<button onclick="cancelScheduled()" style="background:none;border:none;color:#aeaeb2;cursor:pointer;font-size:18px;padding:0;line-height:1">×</button>';
     html += '</div>';
-    html += '<div style="font-size:11px;color:var(--text2);word-break:break-all;background:rgba(0,0,0,0.2);padding:6px 9px;border-radius:9px;margin-bottom:8px">'+esc(shortU)+'</div>';
-    html += '<div style="font-size:12px;font-weight:700;color:#b08dff">⏳ Postet in: <span id="sched-cd" data-until="'+(u.lastPost?u.lastPost+R1_MS:0)+'">'+fmtMs(remMs)+'</span></div>';
+    html += '<div style="font-size:11px;color:#636366;word-break:break-all;background:#f2f2f7;padding:6px 9px;border-radius:9px;margin-bottom:8px">'+esc(shortU)+'</div>';
+    html += '<div style="font-size:12px;font-weight:700;color:#d4860a;text-transform:uppercase;letter-spacing:.04em">⏳ Postet in: <span id="sched-cd" data-until="'+(u.lastPost?u.lastPost+R1_MS:0)+'">'+fmtMs(remMs)+'</span></div>';
     html += '</div>';
   }
-  if (!mine.length&&!u.pendingUrl) { list.innerHTML='<div class="empty-state"><div style="font-size:36px">📹</div><div style="font-size:13px;margin-top:8px">'+t('noMy')+'</div></div>'; return; }
+  if (!mine.length&&!u.pendingUrl) { list.innerHTML='<div class="empty-state"><div style="font-size:36px">📹</div><div style="font-size:11px;margin-top:8px;text-transform:uppercase;letter-spacing:.04em">'+t('noMy')+'</div></div>'; return; }
   if (!mine.length) { list.innerHTML=html; return; }
   for (var i = 0; i < Math.min(mine.length,7); i++) {
     var v=mine[i], r1c=(v.r1Supporters||[]).length, r2c=(v.r2Supporters||[]).length, tot=r1c+r2c;
     var pct=Math.min(100,Math.round(tot/20*100)), isAct=v.status==='open', rnd=v.round||1;
-    var barC=rnd===2?'#5b9cff':'#10d98a', barG=rnd===2?'rgba(91,156,255,0.4)':'rgba(16,217,138,0.4)';
+    var barC=rnd===2?'#007aff':'#34c759';
     var rndHtml='';
-    var activeBadge = isAct ? '<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:rgba(6,214,160,.13);color:#06d6a0;border:1px solid rgba(6,214,160,.35);margin-left:5px;vertical-align:middle">🟢 '+(t('vidActive')||'Aktiv')+'</span>' : '';
-    if(v.status==='done') rndHtml='<span style="font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;background:rgba(16,217,138,0.12);color:#10d98a;border:1px solid rgba(16,217,138,0.25)">✅ '+t('done')+'</span>';
-    else if(v.status==='expired') rndHtml='<span style="font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;background:rgba(255,107,107,0.1);color:#ff6b6b;border:1px solid rgba(255,107,107,0.2)">⏰ '+t('expired')+'</span>';
-    else if(rnd===2) rndHtml='<span style="font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;background:rgba(91,156,255,0.14);color:#5b9cff;border:1px solid rgba(91,156,255,0.28)">🔵 '+t('r2')+'</span>'+activeBadge;
-    else rndHtml='<span style="font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;background:rgba(232,184,75,0.14);color:#ffd166;border:1px solid rgba(232,184,75,0.28)"><span class="anim-hourglass">⏳</span> '+t('r1')+'</span>'+activeBadge;
+    var activeBadge = isAct ? '<span style="font-size:9px;font-weight:800;padding:2px 8px;border-radius:20px;background:rgba(52,199,89,.1);color:#34c759;border:1.5px solid rgba(52,199,89,.28);margin-left:5px;vertical-align:middle;text-transform:uppercase;letter-spacing:.04em">🟢 '+(t('vidActive')||'Aktiv')+'</span>' : '';
+    if(v.status==='done') rndHtml='<span style="font-size:9px;font-weight:800;padding:3px 9px;border-radius:20px;background:rgba(52,199,89,.1);color:#34c759;border:1.5px solid rgba(52,199,89,.25);text-transform:uppercase;letter-spacing:.04em">✅ '+t('done')+'</span>';
+    else if(v.status==='expired') rndHtml='<span style="font-size:9px;font-weight:800;padding:3px 9px;border-radius:20px;background:rgba(255,59,48,.08);color:#ff3b30;border:1.5px solid rgba(255,59,48,.2);text-transform:uppercase;letter-spacing:.04em">⏰ '+t('expired')+'</span>';
+    else if(rnd===2) rndHtml='<span style="font-size:9px;font-weight:800;padding:3px 9px;border-radius:20px;background:rgba(0,122,255,.08);color:#007aff;border:1.5px solid rgba(0,122,255,.25);text-transform:uppercase;letter-spacing:.04em">🔵 '+t('r2')+'</span>'+activeBadge;
+    else rndHtml='<span style="font-size:9px;font-weight:800;padding:3px 9px;border-radius:20px;background:rgba(212,134,10,.1);color:#d4860a;border:1.5px solid rgba(212,134,10,.28);text-transform:uppercase;letter-spacing:.04em"><span class="anim-hourglass">⏳</span> '+t('r1')+'</span>'+activeBadge;
     var expiry=rnd===1?(v.expiresR1||0):(v.expiresR2||0);
     var left=isAct?Math.max(0,expiry-Date.now()):0;
-    // Bright glowing border for active videos, dim for finished
-    var bdrC=isAct?(rnd===2?'rgba(91,156,255,0.6)':'rgba(6,214,160,0.55)'):'rgba(255,255,255,0.07)';
-    var glowS=isAct?(rnd===2?'0 0 22px rgba(91,156,255,.14),0 4px 18px rgba(0,0,0,.4)':'0 0 22px rgba(6,214,160,.13),0 4px 18px rgba(0,0,0,.4)'):'none';
-    var topLine=isAct?(rnd===2?'rgba(91,156,255,0.5)':'rgba(6,214,160,0.5)'):'rgba(255,255,255,0.04)';
-    html += '<div style="background:linear-gradient(135deg,rgba(12,16,34,0.98),rgba(8,12,26,0.95));border:1.5px solid '+bdrC+';border-radius:18px;padding:14px;margin-bottom:9px;position:relative;overflow:hidden;box-shadow:'+glowS+'">';
-    html += '<div style="position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,'+topLine+',transparent);pointer-events:none"></div>';
+    // Light-theme border: active = colored, done/expired = subtle
+    var bdrC=isAct?(rnd===2?'rgba(0,122,255,.35)':'rgba(52,199,89,.35)'):'rgba(0,0,0,.07)';
+    var glowS=isAct?(rnd===2?'0 2px 12px rgba(0,122,255,.1)':'0 2px 12px rgba(52,199,89,.1)'):'0 1px 6px rgba(0,0,0,.06)';
+    var stripC=isAct?(rnd===2?'#007aff':'#34c759'):'#aeaeb2';
+    html += '<div style="background:#fff;border:1.5px solid '+bdrC+';border-radius:16px;padding:14px;margin-bottom:9px;position:relative;overflow:hidden;box-shadow:'+glowS+'">';
+    html += '<div style="position:absolute;top:0;left:0;width:4px;height:100%;background:'+stripC+';opacity:.5;border-radius:16px 0 0 16px;pointer-events:none"></div>';
     html += '<div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:9px">';
     html += '<div>'+rndHtml+'</div>';
-    html += '<div style="text-align:right"><div style="font-family:Playfair Display,serif;font-size:1.5rem;font-weight:900;color:#ffd166;line-height:1">'+tot+'<span style="font-size:0.6rem;color:var(--text3)">/20</span></div><div style="font-size:9px;color:var(--text3)">Supports</div></div>';
+    html += '<div style="text-align:right"><div style="font-family:Space Grotesk,sans-serif;font-size:1.4rem;font-weight:900;color:#1c1c1e;line-height:1">'+tot+'<span style="font-size:0.6rem;color:#aeaeb2">/20</span></div><div style="font-size:9px;color:#aeaeb2;text-transform:uppercase;letter-spacing:.05em">Supports</div></div>';
     html += '</div>';
-    html += '<div style="display:flex;align-items:center;gap:9px;font-size:11px;color:var(--text2);margin-bottom:'+(isAct?'9':'0')+'px;flex-wrap:wrap">';
+    html += '<div style="display:flex;align-items:center;gap:9px;font-size:10px;color:#636366;margin-bottom:'+(isAct?'9':'0')+'px;flex-wrap:wrap;text-transform:uppercase;letter-spacing:.03em">';
     html += '<span>📅 '+new Date(v.posted).toLocaleDateString()+'</span>';
     html += '<span>🕐 '+new Date(v.posted).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})+'</span>';
     if(isAct) html += '<span data-expires="'+expiry+'">'+buildCountdownHTML(left)+'</span>';
     html += '</div>';
     if(isAct) {
-      html += '<div style="height:5px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden;margin-bottom:4px"><div style="height:100%;border-radius:3px;width:'+pct+'%;background:'+barC+';box-shadow:0 0 8px '+barG+';transition:width 0.6s ease"></div></div>';
-      html += '<div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3)"><span>'+r1c+(rnd===2?'+'+r2c:'')+' Supports</span><span>'+pct+'%</span></div>';
+      html += '<div style="height:5px;background:#e5e5ea;border-radius:3px;overflow:hidden;margin-bottom:4px"><div style="height:100%;border-radius:3px;width:'+pct+'%;background:'+barC+';transition:width 0.6s ease"></div></div>';
+      html += '<div style="display:flex;justify-content:space-between;font-size:10px;color:#636366;text-transform:uppercase;letter-spacing:.03em"><span>'+r1c+(rnd===2?'+'+r2c:'')+' Supports</span><span>'+pct+'%</span></div>';
     }
     if(v.status==='done'||v.status==='expired') {
-      html += '<button data-del-vid="'+esc(v.id)+'" style="margin-top:9px;width:100%;padding:8px;border-radius:12px;background:rgba(255,107,107,0.08);border:1px solid rgba(255,107,107,0.2);color:#ff6b6b;font-size:12px;cursor:pointer;font-family:inherit;font-weight:600">'+t('delVid')+'</button>';
+      html += '<button data-del-vid="'+esc(v.id)+'" style="margin-top:9px;width:100%;padding:8px;border-radius:12px;background:rgba(255,59,48,.07);border:none;border-left:3px solid #ff3b30;color:#ff3b30;font-size:11px;cursor:pointer;font-family:inherit;font-weight:700;text-transform:uppercase;letter-spacing:.04em">'+t('delVid')+'</button>';
     }
     html += '</div>';
   }
