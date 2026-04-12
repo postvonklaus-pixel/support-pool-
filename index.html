@@ -63,7 +63,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Space 
 .bc-text{font-size:12px;color:var(--orange);line-height:1.5;flex:1;font-weight:600;text-transform:uppercase;letter-spacing:.02em}
 .bc-close{background:none;border:none;color:var(--t2);cursor:pointer;font-size:16px;padding:0;flex-shrink:0}
 #lang-row{margin-bottom:16px}
-.sp-input{width:100%;padding:13px 16px;background:#fff!important;border:1.5px solid var(--bdr2);border-radius:14px;color:var(--text)!important;-webkit-text-fill-color:var(--text)!important;font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:600;outline:none;transition:all .2s;margin-bottom:10px;-webkit-appearance:none;caret-color:var(--v);text-transform:uppercase;letter-spacing:.04em}
+.sp-input{width:100%;padding:13px 16px;background:#fff!important;border:1.5px solid var(--bdr2);border-radius:14px;color:var(--text)!important;-webkit-text-fill-color:var(--text)!important;font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:600;outline:none;transition:all .2s;margin-bottom:10px;-webkit-appearance:none;caret-color:var(--v);text-transform:uppercase;letter-spacing:.03em}
 .sp-input:-webkit-autofill,.sp-input:-webkit-autofill:hover,.sp-input:-webkit-autofill:focus{-webkit-box-shadow:0 0 0 1000px #fff inset!important;-webkit-text-fill-color:var(--text)!important;border-color:var(--v)!important}
 .sp-input:focus{border-color:var(--v);box-shadow:0 0 0 3px rgba(212,134,10,.1)}
 .sp-input::placeholder{color:var(--t3);font-weight:500;text-transform:uppercase;letter-spacing:.04em}
@@ -191,7 +191,7 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
 .vc-info{flex:1;min-width:0}
 .vc-name{font-size:12px;font-weight:700;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-transform:uppercase;letter-spacing:.04em;color:var(--text)}
 .vc-meta{font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:.05em}
-.vc-time{font-size:10px;color:var(--t2);text-transform:uppercase;letter-spacing:.04em;font-weight:600}
+.vc-time{font-size:10px;color:var(--t2);text-transform:uppercase;letter-spacing:.03em;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:90px}
 .vc-time.urgent{color:var(--red)}.vc-time.warn{color:var(--orange)}
 .rbadge{font-size:9px;font-weight:800;padding:3px 8px;border-radius:20px;white-space:nowrap;flex-shrink:0;text-transform:uppercase;letter-spacing:.04em}
 .rbadge.r1{background:rgba(212,134,10,.1);color:var(--v);border:1.5px solid var(--vb)}
@@ -199,7 +199,7 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
 .prog-row{display:flex;align-items:center;gap:9px;margin-bottom:10px}
 .prog-bar{flex:1;height:5px;background:var(--bg2);border-radius:3px;overflow:hidden}
 .prog-fill{height:100%;border-radius:3px;transition:width .5s ease}
-.sup-btn{width:100%;padding:12px;border-radius:50px;background:var(--bg2);border:none;border-left:4px solid var(--blue);color:var(--blue);font-size:12px;font-weight:700;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:7px;font-family:'Space Grotesk',sans-serif;text-transform:uppercase;letter-spacing:.06em}
+.sup-btn{width:100%;padding:12px;border-radius:50px;background:var(--bg2);border:none;border-left:4px solid var(--blue);color:var(--blue);font-size:12px;font-weight:700;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:5px;font-family:'Space Grotesk',sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:.02em}
 .sup-btn:hover:not(:disabled){background:rgba(0,122,255,.08);transform:translateY(-1px);box-shadow:0 3px 10px rgba(0,122,255,.12)}
 .sup-btn:active:not(:disabled){transform:scale(.97)}
 .sup-btn:disabled{opacity:.3;cursor:not-allowed}
@@ -248,11 +248,11 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
 .logout-btn:hover{background:rgba(255,59,48,.12);border-color:rgba(255,59,48,.32)}
 
 /* ── NOTIFICATIONS ── */
-.notif-item{display:flex;gap:11px;padding:12px;background:#fff;border:1.5px solid var(--bdr);border-radius:14px;margin-bottom:7px;transition:border-color .2s;position:relative;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.notif-item{display:flex;gap:11px;padding:12px 40px 12px 12px;background:#fff;border:1.5px solid var(--bdr);border-radius:14px;margin-bottom:7px;transition:border-color .2s;position:relative;box-shadow:0 1px 3px rgba(0,0,0,.04)}
 .notif-item.unread{border-color:var(--vb)}
 .notif-icon{font-size:18px;flex-shrink:0}
-.notif-body{flex:1;min-width:0}
-.notif-text{font-size:12px;color:var(--t2);line-height:1.5;margin-bottom:3px}
+.notif-body{flex:1;min-width:0;overflow:hidden}
+.notif-text{font-size:12px;color:var(--t2);line-height:1.5;margin-bottom:3px;word-break:break-word;overflow-wrap:break-word}
 .notif-reply{font-size:12px;color:var(--v);padding:7px;background:var(--vd);border-radius:9px;margin-top:5px;line-height:1.4;font-weight:600}
 .notif-orig{font-size:11px;color:var(--t2);padding:5px 7px;background:var(--bg2);border-radius:7px;margin-top:5px;line-height:1.4;border-left:3px solid var(--vb);font-style:italic}
 .notif-time{font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:.04em}
@@ -362,7 +362,7 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
 
 /* ── TOAST ── */
 #toast-wrap{position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:99999;pointer-events:none;width:92%;max-width:380px;display:flex;flex-direction:column;align-items:center;gap:6px}
-.toast{background:#fff;border:2px solid var(--bdr2);border-radius:50px;padding:10px 20px;font-size:12px;font-weight:700;color:var(--text);box-shadow:0 6px 20px rgba(0,0,0,.12);animation:toastIn .25s ease;text-align:center;white-space:nowrap;pointer-events:auto;text-transform:uppercase;letter-spacing:.05em}
+.toast{background:#fff;border:2px solid var(--bdr2);border-radius:22px;padding:10px 20px;font-size:12px;font-weight:700;color:var(--text);box-shadow:0 6px 20px rgba(0,0,0,.12);animation:toastIn .25s ease;text-align:center;pointer-events:auto;text-transform:uppercase;letter-spacing:.04em;word-break:break-word;max-width:100%}
 .toast.ok{border-color:rgba(52,199,89,.45);color:var(--green)}
 .toast.err{border-color:rgba(255,59,48,.45);color:var(--red)}
 .toast.info{border-color:var(--vb);color:var(--v)}
@@ -1260,25 +1260,25 @@ function buildDmToRow() {
     if (mem) {
       var mname = '@' + (mem.name||mem.key);
       var mavatar = getAvatar(mem);
-      row.innerHTML = '<div id="dm-selected-badge" style="display:flex;align-items:center;gap:10px;padding:11px 14px;border-radius:14px;background:linear-gradient(135deg,rgba(124,58,237,.15),rgba(6,214,160,.08));border:1.5px solid var(--vb2);margin-bottom:8px">'
+      row.innerHTML = '<div id="dm-selected-badge" style="display:flex;align-items:center;gap:10px;padding:11px 14px;border-radius:14px;background:#fff;border:1.5px solid rgba(212,134,10,.3);margin-bottom:8px;box-shadow:0 1px 4px rgba(0,0,0,.06)">'
         + '<span style="font-size:20px">'+mavatar+'</span>'
-        + '<span style="flex:1;font-size:13px;font-weight:700;color:var(--v3)">'+mname+'</span>'
-        + '<button onclick="clearDmTarget()" style="background:rgba(255,255,255,.06);border:1px solid var(--bdr);color:var(--t2);cursor:pointer;font-size:12px;padding:4px 10px;border-radius:8px;font-family:inherit;white-space:nowrap">✕ '+(l.dmChange||'Ändern')+'</button>'
+        + '<span style="flex:1;font-size:13px;font-weight:700;color:#d4860a;text-transform:uppercase;letter-spacing:.04em;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+mname+'</span>'
+        + '<button onclick="clearDmTarget()" style="background:#e5e5ea;border:none;border-left:3px solid #aeaeb2;color:#636366;cursor:pointer;font-size:11px;padding:5px 10px;border-radius:8px;font-family:inherit;white-space:nowrap;font-weight:700;text-transform:uppercase;letter-spacing:.04em;flex-shrink:0">✕ '+(l.dmChange||'Ändern')+'</button>'
         + '</div>';
       return;
     }
   }
   // Show search UI
   row.innerHTML = '<div style="display:flex;gap:7px;margin-bottom:10px">'
-    + '<input style="flex:1;padding:10px 14px;border-radius:50px;background:rgba(14,15,30,.98);border:1.5px solid var(--bdr2);color:var(--text);caret-color:var(--v3);font-size:13px;outline:none;font-family:inherit;transition:border-color 0.2s" id="dm-search-inp" type="text" autocomplete="off" placeholder="@TikTok Username..." onkeydown="if(event.key===\'Enter\')searchDm()"/>'
-    + '<button onclick="searchDm()" style="padding:10px 14px;border-radius:50px;background:var(--vd2);border:1px solid var(--vb);color:var(--v3);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap">🔍 '+(l.dmSearch||'Suchen')+'</button>'
+    + '<input style="flex:1;padding:10px 14px;border-radius:50px;background:#fff;border:1.5px solid rgba(0,0,0,.12);color:#1c1c1e;-webkit-text-fill-color:#1c1c1e;caret-color:#d4860a;font-size:16px;font-weight:600;outline:none;font-family:Space Grotesk,sans-serif;transition:border-color 0.2s;-webkit-appearance:none;letter-spacing:.02em;min-width:0" id="dm-search-inp" type="text" autocomplete="off" placeholder="@Username..." onkeydown="if(event.key===\'Enter\')searchDm()"/>'
+    + '<button onclick="searchDm()" style="padding:10px 14px;border-radius:50px;background:#d4860a;border:none;color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:Space Grotesk,sans-serif;white-space:nowrap;text-transform:uppercase;letter-spacing:.05em;flex-shrink:0;box-shadow:0 2px 8px rgba(212,134,10,.3)">🔍 '+(l.dmSearch||'Suchen')+'</button>'
     + '</div>'
-    + '<div id="dm-res" style="display:none;align-items:center;gap:9px;padding:10px 12px;border-radius:13px;background:var(--vd);border:1px solid var(--vb);margin-bottom:7px;cursor:pointer;transition:all 0.2s" onclick="pickDmRes()">'
-    + '<span id="dm-res-av" style="font-size:18px">&#128512;</span>'
-    + '<span id="dm-res-name" style="font-size:13px;font-weight:600;color:var(--text);flex:1"></span>'
-    + '<span style="font-size:11px;color:var(--t2)">'+(l.dmSelect||'Auswählen')+' →</span>'
+    + '<div id="dm-res" style="display:none;align-items:center;gap:9px;padding:10px 12px;border-radius:13px;background:#fff;border:1.5px solid rgba(212,134,10,.28);margin-bottom:7px;cursor:pointer;transition:all 0.2s;box-shadow:0 1px 4px rgba(0,0,0,.06)" onclick="pickDmRes()">'
+    + '<span id="dm-res-av" style="font-size:18px;flex-shrink:0">&#128512;</span>'
+    + '<span id="dm-res-name" style="font-size:12px;font-weight:700;color:#1c1c1e;flex:1;text-transform:uppercase;letter-spacing:.04em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>'
+    + '<span style="font-size:11px;color:#d4860a;font-weight:700;flex-shrink:0;text-transform:uppercase;letter-spacing:.04em">'+(l.dmSelect||'Auswählen')+' →</span>'
     + '</div>'
-    + '<div id="dm-res-nf" style="display:none;font-size:12px;color:var(--t2);padding:5px 0">'+(l.dmNotFound||'Kein Mitglied gefunden')+'</div>';
+    + '<div id="dm-res-nf" style="display:none;font-size:11px;color:#636366;padding:5px 0;text-transform:uppercase;letter-spacing:.04em">'+(l.dmNotFound||'Kein Mitglied gefunden')+'</div>';
 }
 
 function clearDmTarget() {
