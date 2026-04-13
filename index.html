@@ -1308,7 +1308,9 @@ function searchDm() {
     if(!found&&(n.indexOf(q)>=0||k.indexOf(q)>=0)) found=m;
   });
   if (found) {
-    _dmTarget=found.key;
+    _dmTarget = found.key;
+    inp.value = ''; // clear so buildDmToRow() focus guard doesn't block
+    res.style.display = 'none'; nf.style.display = 'none';
     buildDmToRow(); // Shows persistent badge immediately
   } else { _dmTarget=null; nf.style.display='block'; }
 }
@@ -2035,7 +2037,7 @@ var LANG = 'de';
 var ONLINE = navigator.onLine;
 var CU = null;
 var DB = {groups:{}, members:{}, videos:{}, messages:{}, settings:{admins:DEFAULT_ADMINS, tpl:DEFAULT_TPL, nextG:2}, _ts:0};
-var FB = null, FB_REF = null, FB_PUSH_TS = 0, FB_PENDING = false;
+var FB = null, FB_REF = null, FB_PUSH_TS = 0, FB_PENDING = false, FB_RECEIVED_ONCE = false;
 var PIN_BUF = '', PIN_ATT = 0, PIN_USER = '', PIN_DISP_NAME = '';
 var CP_BUF = '', CP_STEP = 'new', CP_FIRST = '';
 var PENDING_DEL = null, PENDING_REPLY = null;
@@ -2289,8 +2291,12 @@ function initFB() {
     FB_REF.on('value', function(snap) {
       var r = snap.val();
       if (!r || !r.members) return;
-      if (Date.now() - FB_PUSH_TS < 2000) return;
-      if ((r._ts||0) > 0 && (r._ts||0) <= (DB._ts||0)) return;
+      // Always accept first Firebase data on boot — overrides stale localStorage
+      if (FB_RECEIVED_ONCE) {
+        if (Date.now() - FB_PUSH_TS < 2000) return; // we just pushed, skip echo
+        if ((r._ts||0) > 0 && (r._ts||0) <= (DB._ts||0)) return; // not newer
+      }
+      FB_RECEIVED_ONCE = true;
       var cu = CU;
       DB.groups = r.groups || {};
       DB.members = r.members || {};
