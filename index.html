@@ -259,6 +259,9 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
 .notif-del{position:absolute;top:10px;right:10px;background:none;border:none;color:var(--t3);cursor:pointer;font-size:14px;padding:2px;transition:color .2s}
 .notif-del:hover{color:var(--red)}
 .notif-reply-btn{margin-top:6px;padding:5px 11px;border-radius:20px;background:var(--vd);border:1.5px solid var(--vb);color:var(--v);font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;text-transform:uppercase;letter-spacing:.04em}
+.notif-sender{font-size:12px;font-weight:800;color:var(--blue);margin-bottom:3px;letter-spacing:.01em}
+.notif-dm-msg{font-size:13px;color:var(--text);word-break:break-word;overflow-wrap:break-word;line-height:1.5;margin-top:1px}
+.notif-quote{font-size:11px;color:var(--t2);padding:4px 8px;background:var(--bg2);border-radius:6px;margin:4px 0;border-left:3px solid var(--t3);font-style:italic;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
 .dm-to-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:7px}
 
 /* ── ADMIN (dark theme – keep old design) ── */
@@ -2919,17 +2922,27 @@ function renderNotifs() {
     html += '<div class="notif-item'+(m.read?'':' unread')+'" data-notif-id="'+esc(mid)+'">';
     html += '<div class="notif-icon">'+(m.icon||'&#128233;')+'</div>';
     html += '<div class="notif-body">';
-    html += '<div class="notif-text">'+esc(m.text||m.message||'')+'</div>';
-    if (m.reply && m.message) {
-      html += '<div class="notif-orig">&#10067; '+esc(m.message)+'</div>';
-      html += '<div class="notif-reply">&#128172; '+esc(m.reply)+'</div>';
-    } else if (m.reply) {
-      html += '<div class="notif-reply">&#128172; '+esc(m.reply)+'</div>';
-    }
-    if (isDm && fromKey && fromKey !== CU) {
-      html += '<button class="notif-reply-btn" data-reply-id="'+esc(mid)+'" data-reply-from="'+esc(fromKey)+'"'
-        + ' style="margin-top:6px;padding:5px 12px;border-radius:8px;background:#e5f0ff;border:none;border-left:3px solid #007aff;color:#007aff;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;letter-spacing:.02em">'
-        + '&#8617; @'+esc(fromName||fromKey)+'</button>';
+    if (isDm && fromKey) {
+      // DM: sender name prominently, optional reply-context, message, reply button
+      html += '<div class="notif-sender">@'+esc(fromName||fromKey)+'</div>';
+      if (m.inReplyTo) {
+        html += '<div class="notif-quote">&#8617; &#8220;'+esc(m.inReplyTo)+'&#8221;</div>';
+      }
+      html += '<div class="notif-dm-msg">'+esc(m.message||m.text||'')+'</div>';
+      if (fromKey !== CU) {
+        html += '<button class="notif-reply-btn" data-reply-id="'+esc(mid)+'" data-reply-from="'+esc(fromKey)+'"'
+          + ' style="margin-top:6px;padding:5px 12px;border-radius:8px;background:#e5f0ff;border:none;border-left:3px solid #007aff;color:#007aff;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">'
+          + '&#8617; @'+esc(fromName||fromKey)+'</button>';
+      }
+    } else {
+      // System notification (support received, broadcast, etc.)
+      html += '<div class="notif-text">'+esc(m.text||m.message||'')+'</div>';
+      if (m.reply && m.message) {
+        html += '<div class="notif-orig">&#10067; '+esc(m.message)+'</div>';
+        html += '<div class="notif-reply">&#128172; '+esc(m.reply)+'</div>';
+      } else if (m.reply) {
+        html += '<div class="notif-reply">&#128172; '+esc(m.reply)+'</div>';
+      }
     }
     html += '<div class="notif-time">'+new Date(m.ts||m.timestamp||0).toLocaleString()+'</div>';
     html += '</div>';
@@ -3118,7 +3131,22 @@ function submitReply() {
   var m = DB.messages[PENDING_REPLY.id];
   if (m) {
     m.reply = r; m.read = true;
-    addNotif(m.from, '💬', 'Re: "'+m.message+'" → '+r);
+    // Create a proper DM so recipient sees who replied, the original context, and can reply back
+    var replierName = DB.members[CU] ? (DB.members[CU].name || CU) : CU;
+    var replyId = 'dmr' + Date.now();
+    DB.messages[replyId] = {
+      id: replyId,
+      from: CU,
+      to: m.from,
+      type: 'dm',
+      icon: '&#128172;',
+      text: '@' + replierName + ': ' + r,
+      message: r,
+      inReplyTo: m.message || m.text || '',
+      ts: Date.now(),
+      timestamp: Date.now(),
+      read: false
+    };
   }
   closeModal('replyModal');
   PENDING_REPLY = null;
