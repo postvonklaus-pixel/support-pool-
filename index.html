@@ -1253,6 +1253,9 @@ function setDmTarget(key) {
 function buildDmToRow() {
   var row = ge('prof-dm-to-row');
   if (!row) return;
+  // Guard: don't rebuild while user is typing in the search input
+  var existingInp = ge('dm-search-inp');
+  if (existingInp && (document.activeElement === existingInp || existingInp.value.trim())) return;
   var l = L[LANG]||L.de;
   // If a member is already selected, show a persistent badge (survives re-renders)
   if (_dmTarget && _dmTarget !== 'admin') {
@@ -2918,9 +2921,9 @@ function renderNotifs() {
       html += '<div class="notif-reply">&#128172; '+esc(m.reply)+'</div>';
     }
     if (isDm && fromKey && fromKey !== CU) {
-      html += '<button class="notif-reply-btn" data-reply-to="'+esc(fromKey)+'" data-reply-name="'+esc(fromName)+'"'
-        + ' style="margin-top:6px;padding:5px 12px;border-radius:20px;background:rgba(232,184,75,0.12);border:1px solid rgba(232,184,75,0.3);color:#ffd166;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit">'
-        + '&#8617; An @'+esc(fromName||fromKey)+'</button>';
+      html += '<button class="notif-reply-btn" data-reply-id="'+esc(mid)+'" data-reply-from="'+esc(fromKey)+'"'
+        + ' style="margin-top:6px;padding:5px 12px;border-radius:8px;background:#e5f0ff;border:none;border-left:3px solid #007aff;color:#007aff;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;letter-spacing:.02em">'
+        + '&#8617; @'+esc(fromName||fromKey)+'</button>';
     }
     html += '<div class="notif-time">'+new Date(m.ts||m.timestamp||0).toLocaleString()+'</div>';
     html += '</div>';
@@ -2931,25 +2934,12 @@ function renderNotifs() {
   list.onclick = function(e) {
     var delBtn = e.target.closest('[data-del-notif]');
     if (delBtn) { e.stopPropagation(); delNotif(delBtn.getAttribute('data-del-notif')); return; }
-    var replyBtn = e.target.closest('[data-reply-to]');
+    var replyBtn = e.target.closest('[data-reply-id]');
     if (replyBtn) {
       e.stopPropagation();
-      var rKey = replyBtn.getAttribute('data-reply-to');
-      var rName = replyBtn.getAttribute('data-reply-name');
-      _dmTarget = rKey;
-      var si = ge('dm-search-inp');
-      if (si) {
-        si.value = rName || rKey;
-        var resDom = ge('dm-res'), rAv = ge('dm-res-av'), rNm = ge('dm-res-name');
-        if (resDom && rAv && rNm) {
-          rAv.textContent = DB.members[rKey] ? getAvatar(DB.members[rKey]) : '&#128512;';
-          rNm.textContent = '@'+(rName||rKey);
-          resDom.style.display = 'flex';
-        }
-      }
-      var mi = ge('msgInput');
-      if (mi) { mi.focus(); mi.scrollIntoView({behavior:'smooth',block:'center'}); }
-      toast('&#128172; Antwort an @'+(rName||rKey), 'info', 1500);
+      var rId = replyBtn.getAttribute('data-reply-id');
+      var rFrom = replyBtn.getAttribute('data-reply-from');
+      openReply(rId, rFrom);
       return;
     }
     var item = e.target.closest('[data-notif-id]');
@@ -2992,7 +2982,6 @@ function sendMsg() {
       text: '@' + (DB.members[CU] ? DB.members[CU].name : CU) + ': ' + msg,
       message: msg, timestamp: Date.now(), ts: Date.now(), read: false
     };
-    addNotif(dmTo, '&#128172;', '@' + (DB.members[CU] ? DB.members[CU].name : CU) + ': ' + msg);
     ge('msgInput').value = '';
     _dmTarget = null;
     buildDmToRow(); // Reset to search UI after sending
@@ -3128,7 +3117,7 @@ function submitReply() {
   closeModal('replyModal');
   PENDING_REPLY = null;
   toast(t('okSave'), 'success');
-  save(); renderAdmMsg();
+  save(); renderAdmMsg(); renderNotifs();
 }
 
 function delAdminMsg(id) {
