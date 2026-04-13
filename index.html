@@ -171,8 +171,8 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
 #postBtn{animation:postPulse 3.5s ease-in-out infinite}
 @keyframes postPulse{0%,100%{box-shadow:0 4px 16px rgba(212,134,10,.32)}50%{box-shadow:0 6px 28px rgba(212,134,10,.58),0 0 40px rgba(212,134,10,.12)}}
 #post-bal-warn{display:none;background:rgba(255,59,48,.06);border:1.5px solid rgba(255,59,48,.18);border-radius:14px;padding:14px;margin-bottom:10px;text-align:center}
-#post-bal-warn-text{font-size:15px;font-weight:700;color:var(--red);text-transform:uppercase}
-#post-bal-warn-sub{font-size:11px;color:var(--t2);margin-top:4px;text-transform:uppercase;letter-spacing:.04em}
+#post-bal-warn-text{font-size:18px;font-weight:800;color:var(--red)}
+#post-bal-warn-sub{font-size:12px;color:var(--t2);margin-top:5px;font-weight:600}
 
 /* ── GUIDE CARD ── */
 .guide-card{background:#fff;border:1.5px solid rgba(0,122,255,.15);border-radius:18px;padding:16px;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
@@ -2530,7 +2530,7 @@ function renderTimer(u) {
     return;
   }
   if (tot===0) { wrap.innerHTML = '<button class="timer-strip ts-ok" onclick="openPostModal()" style="cursor:pointer;width:100%;border:none;font-family:inherit">'+(t('firstVideo')||'🎁 Erstes Video – Los!')+' →</button>'; return; }
-  if (tot===1 && g<3) { wrap.innerHTML = '<div class="timer-strip ts-soon">🔄 Noch '+(3-g)+' '+t('needed')+'</div>'; return; }
+  if (tot===1 && g<3) { wrap.innerHTML = '<div class="timer-strip ts-soon">🔄 '+(3-g)+' '+t('needed')+'</div>'; return; }
   if (tot>=2 && bal<0) {
     wrap.innerHTML = '';
     var pbw = document.getElementById('post-bal-warn');
@@ -2539,8 +2539,8 @@ function renderTimer(u) {
     var pbb = document.getElementById('postBtn');
     if (pbw) pbw.style.display = 'block';
     if (pbb) pbb.style.display = 'none';
-    if (pbwt) pbwt.textContent = Math.abs(bal) + ' ' + (t('needed')||'benötigt');
-    if (pbws) pbws.textContent = t('errBal') || 'Erst andere Videos supporten'; return; }
+    if (pbwt) pbwt.textContent = Math.abs(bal) + ' ' + t('needed');
+    if (pbws) pbws.textContent = t('errBal'); return; }
   // Hide balance warning when OK
   var pbw2 = document.getElementById('post-bal-warn');
   var pbb2 = document.getElementById('postBtn');
