@@ -2919,23 +2919,47 @@ function renderNotifs() {
     var isDm = m.type === 'dm';
     var fromKey = m.from || null;
     var fromName = fromKey && DB.members[fromKey] ? (DB.members[fromKey].name||fromKey) : (fromKey||'');
+    var displayMsg = m.message || '';
+    var displayQuote = m.inReplyTo || null;
+
+    // Recover sender for old-format notifs: text = 'Re: "originalMsg" → replyText'
+    if (!fromKey && !isDm && m.text && m.text.indexOf('Re: "') === 0) {
+      var inner = m.text.slice(5); // strip leading 'Re: "'
+      var sepIdx = inner.indexOf('" \u2192 ');
+      if (sepIdx >= 0) {
+        var origTxt = inner.slice(0, sepIdx);
+        var replyTxt = inner.slice(sepIdx + 4);
+        displayMsg = replyTxt;
+        displayQuote = origTxt;
+        // Find the original DM that CU sent (which was replied to) to identify the replier
+        var msgs = Object.values(DB.messages||{});
+        for (var j = 0; j < msgs.length; j++) {
+          if (msgs[j].from === CU && msgs[j].to && msgs[j].reply === replyTxt) {
+            fromKey = msgs[j].to;
+            fromName = DB.members[fromKey] ? (DB.members[fromKey].name||fromKey) : fromKey;
+            break;
+          }
+        }
+      }
+    }
+
     html += '<div class="notif-item'+(m.read?'':' unread')+'" data-notif-id="'+esc(mid)+'">';
     html += '<div class="notif-icon">'+(m.icon||'&#128233;')+'</div>';
     html += '<div class="notif-body">';
-    if (isDm && fromKey) {
-      // DM: sender name prominently, optional reply-context, message, reply button
+    if (fromKey) {
+      // DM or recovered old reply: show sender prominently
       html += '<div class="notif-sender">@'+esc(fromName||fromKey)+'</div>';
-      if (m.inReplyTo) {
-        html += '<div class="notif-quote">&#8617; &#8220;'+esc(m.inReplyTo)+'&#8221;</div>';
+      if (displayQuote) {
+        html += '<div class="notif-quote">&#8617; &#8220;'+esc(displayQuote)+'&#8221;</div>';
       }
-      html += '<div class="notif-dm-msg">'+esc(m.message||m.text||'')+'</div>';
+      html += '<div class="notif-dm-msg">'+esc(displayMsg||m.text||'')+'</div>';
       if (fromKey !== CU) {
         html += '<button class="notif-reply-btn" data-reply-id="'+esc(mid)+'" data-reply-from="'+esc(fromKey)+'"'
           + ' style="margin-top:6px;padding:5px 12px;border-radius:8px;background:#e5f0ff;border:none;border-left:3px solid #007aff;color:#007aff;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">'
           + '&#8617; @'+esc(fromName||fromKey)+'</button>';
       }
     } else {
-      // System notification (support received, broadcast, etc.)
+      // System notification (support, broadcast, etc.)
       html += '<div class="notif-text">'+esc(m.text||m.message||'')+'</div>';
       if (m.reply && m.message) {
         html += '<div class="notif-orig">&#10067; '+esc(m.message)+'</div>';
@@ -3119,7 +3143,8 @@ function renderAdmMsg() {
 
 function openReply(id, from) {
   PENDING_REPLY = {id:id, from:from};
-  ge('reply-title').textContent = '@ ' + from;
+  var fromName = from && DB.members[from] ? (DB.members[from].name || from) : from;
+  ge('reply-title').textContent = '@' + fromName;
   ge('replyInput').value = '';
   openModal('replyModal');
 }
@@ -3128,24 +3153,29 @@ function submitReply() {
   if (!PENDING_REPLY) return;
   var r = (ge('replyInput').value || '').trim();
   if (!r) return;
+  var targetKey = PENDING_REPLY.from; // explicit reply target set from the reply button
   var m = DB.messages[PENDING_REPLY.id];
-  if (m) {
-    m.reply = r; m.read = true;
-    // Create a proper DM so recipient sees who replied, the original context, and can reply back
+  if (targetKey) {
+    if (m) { m.reply = r; m.read = true; }
     var replierName = DB.members[CU] ? (DB.members[CU].name || CU) : CU;
     var replyId = 'dmr' + Date.now();
+    // Extract inReplyTo: for new DMs use m.message, for old notifs extract reply text
+    var inReplyContext = '';
+    if (m) {
+      if (m.inReplyTo !== undefined) {
+        inReplyContext = m.message || '';
+      } else if (m.text && m.text.indexOf('Re: "') === 0) {
+        var ri = m.text.slice(5), rsi = ri.indexOf('" \u2192 ');
+        inReplyContext = rsi >= 0 ? ri.slice(rsi + 4) : (m.message || m.text || '');
+      } else {
+        inReplyContext = m.message || m.text || '';
+      }
+    }
     DB.messages[replyId] = {
-      id: replyId,
-      from: CU,
-      to: m.from,
-      type: 'dm',
-      icon: '&#128172;',
+      id: replyId, from: CU, to: targetKey, type: 'dm', icon: '&#128172;',
       text: '@' + replierName + ': ' + r,
-      message: r,
-      inReplyTo: m.message || m.text || '',
-      ts: Date.now(),
-      timestamp: Date.now(),
-      read: false
+      message: r, inReplyTo: inReplyContext,
+      ts: Date.now(), timestamp: Date.now(), read: false
     };
   }
   closeModal('replyModal');
