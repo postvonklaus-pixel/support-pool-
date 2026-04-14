@@ -50,7 +50,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Space 
 .lh-stat-l{font-size:9px;color:var(--t3);margin-top:2px;text-transform:uppercase;letter-spacing:.06em}
 .login-panel{flex:1;background:#fff;padding:20px 20px 44px}
 .wc-scroll{overflow:hidden;padding:8px 0 6px;margin:0 20px;border-radius:14px;background:#fff}
-.wc-row{display:flex;gap:5px;padding:0 14px;background:#fff}
+.wc-row{display:flex;gap:5px;padding:0;background:#fff}
 .wc-item{display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 10px;border-radius:12px;cursor:pointer;transition:background .2s,border-color .2s,box-shadow .2s;border:1.5px solid transparent;min-width:56px;flex-shrink:0;background:var(--bg2)}
 .wc-item.wc-active{background:#fff;border-color:var(--vb);box-shadow:0 2px 8px rgba(212,134,10,.12)}
 .wc-flag{font-size:18px;line-height:1}
@@ -449,6 +449,13 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
 .live-stat-num{font-family:'Space Grotesk',sans-serif;font-size:1.4rem;font-weight:700;color:var(--v);line-height:1}
 .live-stat-lbl{font-size:9px;color:var(--t2);margin-top:3px;letter-spacing:.06em;text-transform:uppercase}
 
+/* ── LOGIN AUTOCOMPLETE ── */
+#login-suggest{display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:#fff;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.13);overflow:hidden;z-index:100}
+.login-sug-item{padding:11px 16px;cursor:pointer;font-size:14px;color:var(--text);border-bottom:1px solid var(--bdr);text-align:left}
+.login-sug-item:last-child{border-bottom:none}
+.login-sug-item:hover,.login-sug-item:active{background:var(--bg2)}
+.login-sug-at{color:var(--t2);font-size:13px}
+
 /* ── NAV NOTIF BADGE ── */
 .nav-notif{display:none;position:absolute;top:4px;right:calc(50% - 18px);background:var(--red);color:#fff;font-size:9px;font-weight:700;min-width:15px;height:15px;border-radius:10px;align-items:center;justify-content:center;padding:0 3px}
 .nav-notif.active{display:flex}
@@ -718,6 +725,10 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
           <div class="live-stat-num" id="ls-sup">0</div>
           <div class="live-stat-lbl" id="t-ls-sup">Supports</div>
         </div>
+        <div class="live-stat">
+          <div class="live-stat-num" id="ls-vid">0</div>
+          <div class="live-stat-lbl" id="t-ls-vid">Live</div>
+        </div>
       </div>
     </div>
 
@@ -735,8 +746,14 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
       <!-- Language Row -->
       <div class="lang-row" id="lang-row"></div>
       <!-- Input -->
-      <input class="sp-input" id="loginInput" type="text" autocomplete="off"
-             placeholder="TikTok Username" onkeydown="if(event.key==='Enter')doLogin()"/>
+      <div style="position:relative">
+        <input class="sp-input" id="loginInput" type="text" autocomplete="off"
+               placeholder="TikTok Username"
+               oninput="onLoginInput()"
+               onblur="setTimeout(function(){var s=ge('login-suggest');if(s)s.style.display='none';},160)"
+               onkeydown="handleLoginKey(event)"/>
+        <div id="login-suggest"></div>
+      </div>
       <button id="login-btn" onclick="doLogin()">
         <span id="t-login">Einloggen</span>
       </button>
@@ -1129,42 +1146,48 @@ function buildWcRow() {
 }
 
 function clipWcRow() {
+  _doClipWcRow();
+  // Re-measure once web fonts (Space Grotesk) are guaranteed loaded
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(function() { if (ge('wc-row')) _doClipWcRow(); });
+  }
+}
+
+function _doClipWcRow() {
   var scroll = document.querySelector('.wc-scroll');
   var row = ge('wc-row');
   if (!scroll || !row) return;
   var items = row.querySelectorAll('.wc-item');
   if (!items.length) return;
-  // Reset tile widths so we can measure natural (text-driven) sizes
+  // Reset widths so we measure natural text-driven sizes
   for (var i = 0; i < items.length; i++) {
     items[i].style.width = '';
     items[i].style.minWidth = '';
   }
   row.style.transition = 'none';
-  requestAnimationFrame(function() {
-    // Find the widest tile (city name drives width)
-    var maxW = 0;
-    for (var i = 0; i < items.length; i++) {
-      var w = items[i].getBoundingClientRect().width;
-      if (w > maxW) maxW = w;
-    }
-    maxW = Math.ceil(maxW);
-    WC_TILE_W = maxW;
-    // Equalise all tiles to the widest
-    for (var i = 0; i < items.length; i++) {
-      items[i].style.width = maxW + 'px';
-      items[i].style.minWidth = maxW + 'px';
-    }
-    // Size the container to show exactly 4 complete tiles
-    var GAP = 5;   // matches .wc-row gap:5px
-    var PAD = 14;  // matches .wc-row padding:0 14px
-    var SHOW = 4;
-    var containerW = SHOW * maxW + (SHOW - 1) * GAP + 2 * PAD;
-    var winW = window.innerWidth || document.documentElement.clientWidth;
-    var sideM = Math.max(12, Math.round((winW - containerW) / 2));
-    scroll.style.margin = '0 ' + sideM + 'px';
-    // Slide row (no animation on initial build)
-    wcSlideToActive(false);
-  });
+  // Force synchronous layout so getBoundingClientRect is accurate right now
+  void scroll.offsetWidth;
+  // Find widest tile (driven by city name length at current font)
+  var maxW = 0;
+  for (var i = 0; i < items.length; i++) {
+    var w = items[i].getBoundingClientRect().width;
+    if (w > maxW) maxW = w;
+  }
+  maxW = Math.ceil(maxW);
+  WC_TILE_W = maxW;
+  // Equalise all tiles to the widest
+  for (var i = 0; i < items.length; i++) {
+    items[i].style.width = maxW + 'px';
+    items[i].style.minWidth = maxW + 'px';
+  }
+  // Container = exactly 4 tiles + 3 gaps, no extra padding.
+  // With overflow:hidden this makes the 5th tile start *outside* the clip boundary.
+  var GAP = 5, SHOW = 4;
+  var containerW = SHOW * maxW + (SHOW - 1) * GAP; // 4*maxW + 15
+  var winW = window.innerWidth || document.documentElement.clientWidth;
+  var sideM = Math.max(12, Math.round((winW - containerW) / 2));
+  scroll.style.margin = '0 ' + sideM + 'px';
+  wcSlideToActive(false);
 }
 
 // Translate .wc-row so the active tile appears at slot 1 (2nd of 4 visible)
@@ -1223,20 +1246,21 @@ function animateWorldClock() {
       }, idx * 65);
     })(items[i], i);
   }
-  // Nudge right then back to hint that more tiles are available
-  var row = ge('wc-row');
-  if (row && WC_TILE_W) {
+  // Nudge one tile right then back to hint there are more tiles
+  setTimeout(function() {
+    var row = ge('wc-row');
+    if (!row || !WC_TILE_W) return;
+    var allItems = row.querySelectorAll('.wc-item');
+    var maxOffset = Math.max(0, (allItems.length - 4) * (WC_TILE_W + 5));
+    var cur = parseFloat((row.style.transform || '').replace('translateX(','').replace('px)','')) || 0;
+    var nudge = Math.min(Math.abs(cur) + WC_TILE_W + 5, maxOffset);
+    row.style.transition = 'transform 0.5s ease';
+    row.style.transform = 'translateX(-' + nudge + 'px)';
     setTimeout(function() {
-      var cur = parseFloat((row.style.transform || '').replace('translateX(','').replace('px)','')) || 0;
-      var nudge = Math.abs(cur) + WC_TILE_W + 5;
       row.style.transition = 'transform 0.5s ease';
-      row.style.transform = 'translateX(-' + nudge + 'px)';
-      setTimeout(function() {
-        row.style.transition = 'transform 0.5s ease';
-        row.style.transform = cur ? 'translateX(' + cur + 'px)' : 'translateX(0)';
-      }, 900);
-    }, 350);
-  }
+      row.style.transform = cur ? 'translateX(' + cur + 'px)' : 'translateX(0)';
+    }, 900);
+  }, 350);
 }
 
 // BROADCAST BANNER
@@ -1450,7 +1474,7 @@ var DEFAULT_PIN = hp('1234');
 // Translations
 var L = {
 de: {
-  tagline:'Das Premium TikTok Support-Netzwerk',lsMem:'Mitglieder',lsGrp:'Gruppen',lsSup:'Supports',
+  tagline:'Das Premium TikTok Support-Netzwerk',lsMem:'Mitglieder',lsGrp:'Gruppen',lsSup:'Supports',lsVid:'Live',
   login:'Einloggen',free:'100% kostenlos',balance:'GUTHABEN',given:'Gegeben',recv:'Erhalten',vids:'Videos',
   postBtn:'Video posten',open:'🔄 Offene Videos',my:'📋 Meine Videos',noOpen:'Keine Videos zum Supporten',noMy:'Noch keine Videos',
   supBtn:'✨ Supporten & öffnen',contact:'💬 Admin kontaktieren',sendMsg:'Senden',
@@ -1515,7 +1539,7 @@ de: {
   ]
 },
 en: {
-  tagline:'The Premium TikTok Support Network',lsMem:'Members',lsGrp:'Groups',lsSup:'Supports',
+  tagline:'The Premium TikTok Support Network',lsMem:'Members',lsGrp:'Groups',lsSup:'Supports',lsVid:'Live',
   login:'Login',free:'100% free',balance:'BALANCE',given:'Given',recv:'Received',vids:'Videos',
   postBtn:'Post Video',open:'🔄 Open Videos',my:'📋 My Videos',noOpen:'No videos to support',noMy:'No videos yet',
   supBtn:'✨ Support & Open',contact:'💬 Contact Admin',sendMsg:'Send',
@@ -1580,7 +1604,7 @@ en: {
   ]
 },
 id: {
-  tagline:'Jaringan Dukungan TikTok Premium',lsMem:'Anggota',lsGrp:'Grup',lsSup:'Dukungan',
+  tagline:'Jaringan Dukungan TikTok Premium',lsMem:'Anggota',lsGrp:'Grup',lsSup:'Dukungan',lsVid:'Live',
   login:'Masuk',free:'100% gratis',balance:'SALDO',given:'Diberikan',recv:'Diterima',vids:'Video',
   postBtn:'Posting Video',open:'🔄 Video Terbuka',my:'📋 Video Saya',noOpen:'Tidak ada video',noMy:'Belum ada video',
   supBtn:'✨ Dukung & Buka',contact:'💬 Hubungi Admin',sendMsg:'Kirim',
@@ -1645,7 +1669,7 @@ id: {
   ]
 },
 it: {
-  tagline:'La Rete Premium di Supporto TikTok',lsMem:'Membri',lsGrp:'Gruppi',lsSup:'Supporti',
+  tagline:'La Rete Premium di Supporto TikTok',lsMem:'Membri',lsGrp:'Gruppi',lsSup:'Supporti',lsVid:'Live',
   login:'Accedi',free:'100% gratis',balance:'SALDO',given:'Dati',recv:'Ricevuti',vids:'Video',
   postBtn:'Pubblica Video',open:'🔄 Video Aperti',my:'📋 I Miei Video',noOpen:'Nessun video',noMy:'Nessun video ancora',
   supBtn:'✨ Supporta & Apri',contact:'💬 Contatta Admin',sendMsg:'Invia',
@@ -1710,7 +1734,7 @@ it: {
   ]
 },
 es: {
-  tagline:'La Red Premium de Apoyo TikTok',lsMem:'Miembros',lsGrp:'Grupos',lsSup:'Apoyos',
+  tagline:'La Red Premium de Apoyo TikTok',lsMem:'Miembros',lsGrp:'Grupos',lsSup:'Apoyos',lsVid:'Live',
   login:'Entrar',free:'100% gratis',balance:'SALDO',given:'Dados',recv:'Recibidos',vids:'Videos',
   postBtn:'Publicar Video',open:'🔄 Videos Abiertos',my:'📋 Mis Videos',noOpen:'No hay videos',noMy:'Sin videos aun',
   supBtn:'✨ Apoyar & Abrir',contact:'💬 Contactar Admin',sendMsg:'Enviar',
@@ -1775,7 +1799,7 @@ es: {
   ]
 },
 tr: {
-  tagline:'Premium TikTok Destek Agi',lsMem:'Uyeler',lsGrp:'Gruplar',lsSup:'Destekler',
+  tagline:'Premium TikTok Destek Agi',lsMem:'Uyeler',lsGrp:'Gruplar',lsSup:'Destekler',lsVid:'Canlı',
   login:'Giris',free:'100% ucretsiz',balance:'BAKIYE',given:'Verilen',recv:'Alinan',vids:'Videolar',
   postBtn:'Video Paylas',open:'🔄 Acik Videolar',my:'📋 Videolarim',noOpen:'Desteklenecek video yok',noMy:'Henuz video yok',
   supBtn:'✨ Destekle & Ac',contact:'💬 Admin ile Iletisim',sendMsg:'Gonder',
@@ -1840,7 +1864,7 @@ tr: {
   ]
 },
 ar: {
-  tagline:'شبكة دعم TikTok المتميزة',lsMem:'الأعضاء',lsGrp:'المجموعات',lsSup:'الدعم',
+  tagline:'شبكة دعم TikTok المتميزة',lsMem:'الأعضاء',lsGrp:'المجموعات',lsSup:'الدعم',lsVid:'مباشر',
   login:'دخول',free:'مجاني 100٪',balance:'الرصيد',given:'أعطي',recv:'مستلم',vids:'فيديوهات',
   postBtn:'نشر فيديو',open:'🔄 فيديوهات مفتوحة',my:'📋 فيديوهاتي',noOpen:'لا توجد فيديوهات',noMy:'لا توجد فيديوهات بعد',
   supBtn:'✨ دعم وفتح',contact:'💬 تواصل مع المشرف',sendMsg:'إرسال',
@@ -1905,7 +1929,7 @@ ar: {
   ]
 },
 zh: {
-  tagline:'高级TikTok支持网络',lsMem:'成员',lsGrp:'组',lsSup:'支持',
+  tagline:'高级TikTok支持网络',lsMem:'成员',lsGrp:'组',lsSup:'支持',lsVid:'直播',
   login:'登录',free:'100%免费',balance:'余额',given:'已给出',recv:'已收到',vids:'视频',
   postBtn:'发布视频',open:'🔄 开放视频',my:'📋 我的视频',noOpen:'没有可支持的视频',noMy:'尚未发布视频',
   supBtn:'✨ 支持并打开',contact:'💬 联系管理员',sendMsg:'发送',
@@ -1970,7 +1994,7 @@ zh: {
   ]
 },
 ja: {
-  tagline:'プレミアムTikTokサポートネットワーク',lsMem:'メンバー',lsGrp:'グループ',lsSup:'サポート',
+  tagline:'プレミアムTikTokサポートネットワーク',lsMem:'メンバー',lsGrp:'グループ',lsSup:'サポート',lsVid:'ライブ',
   login:'ログイン',free:'100%無料',balance:'残高',given:'与えた',recv:'受取',vids:'動画',
   postBtn:'動画を投稿',open:'🔄 オープン動画',my:'📋 マイ動画',noOpen:'サポートする動画がありません',noMy:'動画がありません',
   supBtn:'✨ サポート&開く',contact:'💬 管理者に連絡',sendMsg:'送信',
@@ -2035,7 +2059,7 @@ ja: {
   ]
 },
 pl: {
-  tagline:'Siec Premium Wsparcia TikTok',lsMem:'Czlonkowie',lsGrp:'Grupy',lsSup:'Wsparcia',
+  tagline:'Siec Premium Wsparcia TikTok',lsMem:'Czlonkowie',lsGrp:'Grupy',lsSup:'Wsparcia',lsVid:'Live',
   login:'Zaloguj',free:'100% bezplatnie',balance:'SALDO',given:'Oddane',recv:'Otrzymane',vids:'Wideo',
   postBtn:'Opublikuj wideo',open:'🔄 Otwarte wideo',my:'📋 Moje wideo',noOpen:'Brak wideo do wsparcia',noMy:'Brak wideo',
   supBtn:'✨ Wesprzyj i otworz',contact:'💬 Kontakt z adminem',sendMsg:'Wyslij',
@@ -2272,7 +2296,7 @@ function setLang(k) {
 function applyLang() {
   var l = L[LANG] || L.de;
   // Login
-  st('t-tagline', l.tagline); st('t-ls-mem', l.lsMem); st('t-ls-grp', l.lsGrp); st('t-ls-sup', l.lsSup);
+  st('t-tagline', l.tagline); st('t-ls-mem', l.lsMem); st('t-ls-grp', l.lsGrp); st('t-ls-sup', l.lsSup); st('t-ls-vid', l.lsVid||'Live');
   st('t-login', l.login); st('t-free', l.free);
   sa('loginInput', 'placeholder', t('loginPH')||'TikTok @username');
   // Home
@@ -2427,7 +2451,46 @@ function renderLoginStats() {
   var mem = Object.values(DB.members).filter(function(m){ return m.status==='active'&&m.role!=='admin'; }).length;
   var grp = Object.keys(DB.groups).length;
   var sup = Object.values(DB.videos).reduce(function(s,v){ return s+(v.r1Supporters||[]).length+(v.r2Supporters||[]).length; }, 0);
-  st('ls-mem', mem); st('ls-grp', grp); st('ls-sup', sup);
+  var vid = Object.values(DB.videos).filter(function(v){ return v.status==='open'; }).length;
+  st('ls-mem', mem); st('ls-grp', grp); st('ls-sup', sup); st('ls-vid', vid);
+}
+
+// ── LOGIN AUTOCOMPLETE ─────────────────────────────────────────────────
+function onLoginInput() {
+  var inp = ge('loginInput'), sug = ge('login-suggest');
+  if (!inp || !sug) return;
+  var raw = (inp.value || '').trim().toLowerCase().replace(/^@/, '');
+  if (!raw) { sug.style.display = 'none'; return; }
+  var members = Object.values(DB.members).filter(function(m) {
+    return m.status === 'active' && m.role !== 'admin' && m.key !== 'admin';
+  });
+  var matches = members.filter(function(m) {
+    var name = (m.name || '').toLowerCase();
+    var key  = (m.key  || '').toLowerCase();
+    return name.indexOf(raw) === 0 || key.indexOf(raw) === 0;
+  }).slice(0, 6);
+  if (!matches.length) { sug.style.display = 'none'; return; }
+  var html = '';
+  for (var i = 0; i < matches.length; i++) {
+    var m = matches[i];
+    var display = esc(m.name || m.key);
+    html += '<div class="login-sug-item" onmousedown="pickLoginSug(event,\'' + esc(m.key) + '\',\'' + display + '\')">'
+          + '<span class="login-sug-at">@</span>' + display + '</div>';
+  }
+  sug.innerHTML = html;
+  sug.style.display = 'block';
+}
+
+function pickLoginSug(e, key, name) {
+  e.preventDefault();
+  var inp = ge('loginInput'), sug = ge('login-suggest');
+  if (inp) { inp.value = name || key; inp.focus(); }
+  if (sug) sug.style.display = 'none';
+}
+
+function handleLoginKey(e) {
+  if (e.key === 'Enter') { doLogin(); return; }
+  if (e.key === 'Escape') { var s = ge('login-suggest'); if (s) s.style.display = 'none'; }
 }
 
 // ── LOGIN ──────────────────────────────────────────────────────────────
@@ -4101,6 +4164,7 @@ function closeTour() {
   buildWcRow();
   startWcTick();
   setTimeout(animateWorldClock, 600);
+  window.addEventListener('resize', function() { if (ge('wc-row')) _doClipWcRow(); });
   checkBC();
   applyLang();
   renderLoginStats();
