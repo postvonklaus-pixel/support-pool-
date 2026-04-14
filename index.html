@@ -2391,6 +2391,10 @@ function initFB() {
       CU = cu;
       if (r.settings) DB.settings = Object.assign({admins:DEFAULT_ADMINS,tpl:DEFAULT_TPL,nextG:2}, r.settings);
       saveLS(); renderAll(); checkBC();
+      // If a local action was queued before this first sync arrived, push it now
+      // (pushFB already merged the snapshots in its own once() call; here we only
+      //  flush the case where pushFB was blocked and no once() was started yet)
+      if (FB_PENDING) { FB_PENDING = false; setTimeout(_commitPush, 80); }
       toast('🔄 Live-Update', 'info', 1200);
     });
   } catch(e) { console.warn('FB:', e); }
@@ -2399,13 +2403,67 @@ function initFB() {
 function pushFB() {
   if (!FB_REF) { FB_PENDING = true; return; }
   if (!ONLINE) { FB_PENDING = true; setSyncUI('syncing'); return; }
+
+  if (!FB_RECEIVED_ONCE) {
+    // We haven't received the initial Firebase snapshot yet.
+    // Pushing now would overwrite the server's current state (which may be
+    // much newer than stale localStorage data) with our stale DB.
+    // Fix: read the server first, merge our local changes on top, then push.
+    FB_PENDING = true;
+    // Capture local changes NOW — the on('value') listener may fire any moment
+    // and overwrite DB.videos / DB.messages with server data.
+    var snapVids   = JSON.parse(JSON.stringify(DB.videos   || {}));
+    var snapMsgs   = JSON.parse(JSON.stringify(DB.messages || {}));
+    var snapMember = CU && DB.members[CU] ? JSON.parse(JSON.stringify(DB.members[CU])) : null;
+    FB_REF.once('value').then(function(snap) {
+      var r = snap.val();
+      if (r && r.members) {
+        // Start from server as the authoritative base
+        DB.groups  = r.groups || DB.groups;
+        DB.members = Object.assign({}, r.members);
+        if (snapMember && CU) DB.members[CU] = snapMember; // keep our own latest stats
+        // Videos: overlay local version if it has MORE supporters
+        // (handles the case where we just supported a video before sync)
+        DB.videos = Object.assign({}, r.videos || {});
+        Object.keys(snapVids).forEach(function(vid) {
+          var lv = snapVids[vid], sv = DB.videos[vid];
+          if (!sv) {
+            DB.videos[vid] = lv; // we just posted it — server doesn't have it yet
+          } else {
+            var ls = (lv.r1Supporters||[]).length + (lv.r2Supporters||[]).length;
+            var ss = (sv.r1Supporters||[]).length + (sv.r2Supporters||[]).length;
+            if (ls > ss) DB.videos[vid] = lv; // our local version is more up-to-date
+          }
+        });
+        // Messages: union — local may have new DMs not yet on server
+        DB.messages = Object.assign({}, r.messages || {}, snapMsgs);
+        if (r.settings) DB.settings = Object.assign({admins:DEFAULT_ADMINS,tpl:DEFAULT_TPL,nextG:2}, r.settings);
+        DB._ts = r._ts || DB._ts;
+        FB_RECEIVED_ONCE = true;
+        saveLS(); renderAll();
+      }
+      FB_PENDING = false;
+      _commitPush();
+    }).catch(function() {
+      // Read failed — push with local data (best effort, user is likely offline anyway)
+      FB_PENDING = false;
+      _commitPush();
+    });
+    return;
+  }
+  _commitPush();
+}
+
+function _commitPush() {
   FB_PENDING = false;
   setSyncUI('syncing');
-  FB_PUSH_TS = Date.now();
-  FB_REF.set({groups:DB.groups, members:DB.members, videos:DB.videos, messages:DB.messages, settings:DB.settings, _ts:FB_PUSH_TS})
-    .then(function(){ setSyncUI('online'); })
-    .catch(function(){ setSyncUI('offline'); FB_PENDING = true; });
+  var pushTs = Date.now();
+  FB_PUSH_TS = pushTs;
+  FB_REF.set({groups:DB.groups, members:DB.members, videos:DB.videos, messages:DB.messages, settings:DB.settings, _ts:pushTs})
+    .then(function() { DB._ts = pushTs; saveLS(); setSyncUI('online'); })
+    .catch(function() { setSyncUI('offline'); FB_PENDING = true; });
 }
+
 
 // ── LOCAL STORAGE ────────────────────────────────────────────────────
 function saveLS() {
