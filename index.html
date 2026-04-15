@@ -392,7 +392,54 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
 .tks-title{font-family:'Space Grotesk',sans-serif;font-size:1rem;font-weight:800;color:var(--text);text-align:center;margin-bottom:3px;text-transform:uppercase;letter-spacing:.07em}
 .tks-sub{font-size:11px;color:var(--t2);text-align:center;margin-bottom:11px;text-transform:uppercase;letter-spacing:.04em}
 .tks-url{background:var(--bg2);border-radius:9px;padding:7px 11px;font-size:11px;color:var(--t2);word-break:break-all;margin-bottom:11px}
-.tks-open{width:100%;padding:14px;border:none;border-radius:14px;background:var(--v);color:#fff;font-size:.95rem;font-weight:800;cursor:pointer;margin-bottom:8px;font-family:inherit;text-transform:uppercase;letter-spacing:.07em;box-shadow:0 4px 14px rgba(212,134,10,.3)}
+.tks-open{
+  width:100%;padding:18px 20px;border:none;border-radius:18px;
+  background:linear-gradient(155deg,#f7c04a 0%,#e09010 28%,#c47200 62%,#a05800 100%);
+  color:#fff;font-size:1.05rem;font-weight:900;cursor:pointer;margin-bottom:10px;
+  font-family:'Space Grotesk',sans-serif;text-transform:uppercase;letter-spacing:.1em;
+  position:relative;overflow:hidden;
+  transition:transform .1s cubic-bezier(.34,1.56,.64,1),box-shadow .12s;
+  box-shadow:
+    inset 0 1.5px 0 rgba(255,255,255,.32),
+    inset 0 -1px 0 rgba(0,0,0,.18),
+    0 5px 0 #7a4200,
+    0 8px 32px rgba(212,134,10,.55),
+    0 2px 8px rgba(0,0,0,.18);
+  text-shadow:0 1px 3px rgba(0,0,0,.28)}
+.tks-open::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(100deg,transparent 0%,rgba(255,255,255,.22) 50%,transparent 100%);
+  transform:translateX(-100%);animation:tksShimmer 3.2s 1.2s infinite}
+@keyframes tksShimmer{0%,25%{transform:translateX(-120%)}75%,100%{transform:translateX(200%)}}
+.tks-open:active{
+  transform:translateY(4px);
+  box-shadow:
+    inset 0 1.5px 0 rgba(255,255,255,.32),
+    inset 0 -1px 0 rgba(0,0,0,.18),
+    0 1px 0 #7a4200,
+    0 3px 14px rgba(212,134,10,.4)}
+.tks-back-btn{
+  width:100%;padding:18px 20px;border:none;border-radius:18px;
+  background:linear-gradient(155deg,#5ce47c 0%,#2db84e 40%,#1a9a3c 100%);
+  color:#fff;font-size:1.05rem;font-weight:900;cursor:pointer;margin-bottom:10px;
+  font-family:'Space Grotesk',sans-serif;text-transform:uppercase;letter-spacing:.08em;
+  transition:transform .1s cubic-bezier(.34,1.56,.64,1),box-shadow .12s;
+  box-shadow:
+    inset 0 1.5px 0 rgba(255,255,255,.3),
+    inset 0 -1px 0 rgba(0,0,0,.16),
+    0 5px 0 #0e6b28,
+    0 8px 28px rgba(30,185,80,.5),
+    0 2px 8px rgba(0,0,0,.14);
+  text-shadow:0 1px 3px rgba(0,0,0,.22)}
+.tks-back-btn:active{
+  transform:translateY(4px);
+  box-shadow:
+    inset 0 1.5px 0 rgba(255,255,255,.3),
+    inset 0 -1px 0 rgba(0,0,0,.16),
+    0 1px 0 #0e6b28,
+    0 3px 12px rgba(30,185,80,.35)}
+@keyframes tksIconPop{0%{transform:scale(.4);opacity:0}100%{transform:scale(1);opacity:1}}
+.tks-done-icon{font-size:50px;text-align:center;margin-bottom:10px;display:block;animation:tksIconPop .4s cubic-bezier(.34,1.56,.64,1)}
 .tks-close{width:100%;padding:11px;border:1.5px solid var(--bdr2);border-radius:13px;background:transparent;color:var(--t2);font-size:12px;cursor:pointer;font-family:inherit;text-transform:uppercase;letter-spacing:.04em}
 
 /* ── LIVE DOT & UTILS ── */
@@ -1507,6 +1554,9 @@ de: {
   importTitle: '📥 Importieren',
   replyTitle: 'Antworten',
   tksClose: '✕  Schließen',
+  tksBackTitle: 'TikTok geöffnet!',
+  tksBackSub: 'Kommentar einfügen — dann hier tippen',
+  tksBack: '✅ Fertig – Zurück zur App',
   tksOpen: '▶  TikTok Video jetzt öffnen',
   tksSub: 'Kommentar kopiert — bei TikTok einfügen',
   tksTitle: '📹 TikTok Video öffnen',
@@ -1572,6 +1622,9 @@ en: {
   importTitle: '📥 Import',
   replyTitle: 'Reply',
   tksClose: '✕  Close',
+  tksBackTitle: 'TikTok opened!',
+  tksBackSub: 'Paste the comment — then tap here',
+  tksBack: '✅ Done – Back to App',
   tksOpen: '▶  Open TikTok Video Now',
   tksSub: 'Comment copied — paste it on TikTok',
   tksTitle: '📹 Open TikTok Video',
@@ -1637,6 +1690,9 @@ id: {
   importTitle: '📥 Impor',
   replyTitle: 'Balas',
   tksClose: '✕  Tutup',
+  tksBackTitle: 'TikTok dibuka!',
+  tksBackSub: 'Tempel komentar — lalu ketuk di sini',
+  tksBack: '✅ Selesai – Kembali ke App',
   tksOpen: '▶  Buka Video TikTok Sekarang',
   tksSub: 'Komentar disalin — tempel di TikTok',
   tksTitle: '📹 Buka Video TikTok',
@@ -1702,6 +1758,9 @@ it: {
   importTitle: '📥 Importa',
   replyTitle: 'Rispondi',
   tksClose: '✕  Chiudi',
+  tksBackTitle: 'TikTok aperto!',
+  tksBackSub: 'Incolla il commento — poi tocca qui',
+  tksBack: '✅ Fatto – Torna all\'App',
   tksOpen: '▶  Apri Video TikTok Ora',
   tksSub: 'Commento copiato — incollalo su TikTok',
   tksTitle: '📹 Apri Video TikTok',
@@ -1767,6 +1826,9 @@ es: {
   importTitle: '📥 Importar',
   replyTitle: 'Responder',
   tksClose: '✕  Cerrar',
+  tksBackTitle: '¡TikTok abierto!',
+  tksBackSub: 'Pega el comentario — luego toca aquí',
+  tksBack: '✅ Listo – Volver a la App',
   tksOpen: '▶  Abrir Video TikTok Ahora',
   tksSub: 'Comentario copiado — pégalo en TikTok',
   tksTitle: '📹 Abrir Video TikTok',
@@ -1832,6 +1894,9 @@ tr: {
   importTitle: '📥 İçe Aktar',
   replyTitle: 'Yanıtla',
   tksClose: '✕  Kapat',
+  tksBackTitle: 'TikTok açıldı!',
+  tksBackSub: 'Yorumu yapıştır — sonra buraya dokun',
+  tksBack: '✅ Tamam – Uygulamaya Dön',
   tksOpen: '▶  TikTok Videosunu Şimdi Aç',
   tksSub: 'Yorum kopyalandı — TikTok\'a yapıştır',
   tksTitle: '📹 TikTok Videosunu Aç',
@@ -1897,6 +1962,9 @@ ar: {
   importTitle: '📥 استيراد',
   replyTitle: 'رد',
   tksClose: '✕  إغلاق',
+  tksBackTitle: 'تم فتح TikTok!',
+  tksBackSub: 'الصق التعليق — ثم انقر هنا',
+  tksBack: '✅ تم – العودة إلى التطبيق',
   tksOpen: '▶  افتح فيديو TikTok الآن',
   tksSub: 'تم نسخ التعليق — الصقه في TikTok',
   tksTitle: '📹 فتح فيديو TikTok',
@@ -1962,6 +2030,9 @@ zh: {
   importTitle: '📥 导入',
   replyTitle: '回复',
   tksClose: '✕  关闭',
+  tksBackTitle: 'TikTok已打开！',
+  tksBackSub: '粘贴评论 — 然后点击这里',
+  tksBack: '✅ 完成 – 返回应用',
   tksOpen: '▶  立即打开TikTok视频',
   tksSub: '评论已复制 — 粘贴到TikTok',
   tksTitle: '📹 打开TikTok视频',
@@ -2027,6 +2098,9 @@ ja: {
   importTitle: '📥 インポート',
   replyTitle: '返信',
   tksClose: '✕  閉じる',
+  tksBackTitle: 'TikTokが開きました！',
+  tksBackSub: 'コメントを貼り付け — そしてここをタップ',
+  tksBack: '✅ 完了 – アプリに戻る',
   tksOpen: '▶  TikTok動画を今すぐ開く',
   tksSub: 'コメントをコピーしました — TikTokに貼り付け',
   tksTitle: '📹 TikTok動画を開く',
@@ -2092,6 +2166,9 @@ pl: {
   importTitle: '📥 Importuj',
   replyTitle: 'Odpowiedz',
   tksClose: '✕  Zamknij',
+  tksBackTitle: 'TikTok otwarty!',
+  tksBackSub: 'Wklej komentarz — a potem kliknij tutaj',
+  tksBack: '✅ Gotowe – Wróć do Aplikacji',
   tksOpen: '▶  Otwórz Film TikTok Teraz',
   tksSub: 'Skomentuj skopiowany — wklej na TikTok',
   tksTitle: '📹 Otwórz Film TikTok',
@@ -3752,23 +3829,27 @@ var _tkUrl = '';
 function openTkSheet(url) {
   _tkUrl = url;
   var l = L[LANG] || L.de;
-  var sheet = document.getElementById('tiktok-sheet');
-  document.getElementById('tks-url').textContent = url;
-  document.getElementById('tks-title').textContent = l.tksTitle || 'TikTok öffnen';
-  document.getElementById('tks-sub').textContent = l.tksSub || 'Kommentar kopiert — bei TikTok einfügen';
-  document.getElementById('tks-open-btn').textContent = l.tksOpen || '▶ TikTok Video öffnen';
-  document.getElementById('tks-close-btn').textContent = l.tksClose || '✕ Schließen';
-  sheet.classList.add('open');
+  ge('tks-url').textContent = url;
+  ge('tks-title').textContent = l.tksTitle || 'TikTok öffnen';
+  ge('tks-sub').textContent = l.tksSub || 'Kommentar kopiert — bei TikTok einfügen';
+  ge('tks-open-btn').textContent = l.tksOpen || '▶  TikTok Video öffnen';
+  ge('tks-close-btn').textContent = l.tksClose || '✕ Schließen';
+  // Always reset to state 1 on open
+  ge('tks-state-1').style.display = '';
+  ge('tks-state-2').style.display = 'none';
+  ge('tiktok-sheet').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
 function closeTkSheet() {
-  // Cancel — clear pending (no support counted, video stays visible)
   _pendingSupportVid = null;
   _pendingSupportComment = '';
-  var cel = document.getElementById('cel');
+  var cel = ge('cel');
   if (cel) cel.classList.remove('active');
-  document.getElementById('tiktok-sheet').classList.remove('open');
+  ge('tiktok-sheet').classList.remove('open');
   document.body.style.overflow = '';
+  // Reset sheet to state 1 for next use
+  ge('tks-state-1').style.display = '';
+  ge('tks-state-2').style.display = 'none';
   renderAll();
 }
 function openTkLink() {
@@ -3800,7 +3881,16 @@ function openTkLink() {
     _pendingSupportVid = null;
   }
   if (_tkUrl) window.open(_tkUrl, '_blank');
-  closeTkSheet();
+  // Transition to "back to app" state instead of closing
+  var l = L[LANG] || L.de;
+  var s1 = ge('tks-state-1'), s2 = ge('tks-state-2');
+  if (s1) s1.style.display = 'none';
+  if (s2) {
+    s2.style.display = '';
+    var bt = ge('tks-back-title'); if (bt) bt.textContent = l.tksBackTitle || 'TikTok geöffnet!';
+    var bs = ge('tks-back-sub'); if (bs) bs.textContent = l.tksBackSub || 'Kommentar einfügen — dann hier tippen';
+    var bb = ge('tks-back-btn'); if (bb) bb.textContent = l.tksBack || '✅ Fertig – Zurück zur App';
+  }
 }
 function forceSyncNow() {
   if (!FB_REF) { toast('Keine Firebase-Verbindung', 'error'); return; }
@@ -4272,12 +4362,23 @@ function closeTour() {
 <div id="tiktok-sheet" onclick="if(event.target===this)closeTkSheet()">
   <div class="tks-box">
     <div class="tks-handle"></div>
-    <div class="tks-icon">📹</div>
-    <div class="tks-title" id="tks-title">TikTok öffnen</div>
-    <div class="tks-sub" id="tks-sub">Kommentar kopiert — bei TikTok einfügen</div>
-    <div class="tks-url" id="tks-url"></div>
-    <button class="tks-open" id="tks-open-btn" onclick="openTkLink()"></button>
-    <button class="tks-close" id="tks-close-btn" onclick="closeTkSheet()">✕ Schließen</button>
+    <!-- State 1: before opening TikTok -->
+    <div id="tks-state-1">
+      <div class="tks-icon">📹</div>
+      <div class="tks-title" id="tks-title">TikTok öffnen</div>
+      <div class="tks-sub" id="tks-sub">Kommentar kopiert — bei TikTok einfügen</div>
+      <div class="tks-url" id="tks-url"></div>
+      <button class="tks-open" id="tks-open-btn" onclick="openTkLink()"></button>
+      <button class="tks-close" id="tks-close-btn" onclick="closeTkSheet()">✕ Schließen</button>
+    </div>
+    <!-- State 2: TikTok opened, waiting for user to return -->
+    <div id="tks-state-2" style="display:none;text-align:center;padding:6px 0 4px">
+      <span class="tks-done-icon">📲</span>
+      <div class="tks-title" id="tks-back-title">TikTok geöffnet!</div>
+      <div class="tks-sub" id="tks-back-sub">Kommentar einfügen — dann hier tippen</div>
+      <div style="height:20px"></div>
+      <button class="tks-back-btn" id="tks-back-btn" onclick="closeTkSheet()"></button>
+    </div>
   </div>
 </div>
 </body>
