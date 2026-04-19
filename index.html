@@ -559,6 +559,34 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
 @keyframes wcIntro{0%{opacity:0;transform:scale(0.8) translateY(6px)}60%{opacity:1;transform:scale(1.08) translateY(-1px)}100%{opacity:1;transform:scale(1) translateY(0)}}
 .wc-item.wc-intro{animation:wcIntro 0.45s ease forwards}
 
+/* ── INTERACTIVE GUIDE ── */
+#guide-wrap{position:fixed;bottom:0;left:0;right:0;z-index:8500;pointer-events:none;display:none}
+.guide-panel{background:#fff;border-radius:24px 24px 0 0;box-shadow:0 -6px 40px rgba(0,0,0,.16);padding:18px 20px max(28px,env(safe-area-inset-bottom));max-height:78vh;overflow-y:auto;pointer-events:all;transform:translateY(0);transition:transform .38s cubic-bezier(.4,0,.2,1)}
+.guide-panel.gmin{transform:translateY(calc(100% - 62px))}
+.guide-hdr{display:flex;align-items:center;gap:12px;margin-bottom:16px;cursor:pointer;user-select:none}
+.guide-char{font-size:28px;line-height:1;flex-shrink:0}
+.guide-hdr-txt{flex:1;min-width:0}
+.guide-hdr-title{font-family:'Space Grotesk',sans-serif;font-size:12px;font-weight:800;color:var(--text);text-transform:uppercase;letter-spacing:.07em}
+.guide-hdr-sub{font-size:11px;color:var(--t2);margin-top:2px}
+.guide-min-btn{background:var(--bg2);border:none;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:16px;color:var(--t2);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:monospace}
+.guide-checks{list-style:none;margin:0 0 14px;padding:0}
+.guide-chk{display:flex;align-items:flex-start;gap:12px;padding:5px 0;position:relative}
+.guide-chk:not(:last-child)::after{content:'';position:absolute;left:13px;top:30px;width:2px;height:calc(100% - 6px);background:var(--bg2);z-index:0}
+.guide-chk.g-done::after,.guide-chk.g-active::after{background:#007aff}
+.guide-dot{width:28px;height:28px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;border:2.5px solid var(--bg2);background:#fff;z-index:1;color:var(--t2);position:relative}
+.guide-chk.g-done .guide-dot,.guide-chk.g-active .guide-dot{background:#007aff;border-color:#007aff;color:#fff}
+.guide-chk.g-active .guide-dot{animation:gDotPulse 1.6s infinite}
+@keyframes gDotPulse{0%,100%{box-shadow:0 0 0 0 rgba(0,122,255,.3)}50%{box-shadow:0 0 0 7px rgba(0,122,255,0)}}
+.guide-chk-lbl{padding-top:5px;font-size:13px;font-weight:700;color:var(--text);line-height:1.3}
+.guide-chk.g-done .guide-chk-lbl{color:var(--t3);font-weight:500;text-decoration:line-through}
+.guide-bubble{background:var(--bg);border-radius:16px;padding:14px 16px;margin-bottom:14px;font-size:14px;color:var(--text);line-height:1.58;border-left:3.5px solid #007aff}
+.guide-btns{display:flex;flex-direction:column;gap:8px}
+.g-btn-main{width:100%;padding:14px;border-radius:14px;border:none;background:#007aff;color:#fff;font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:800;cursor:pointer;text-transform:uppercase;letter-spacing:.05em;transition:opacity .15s}
+.g-btn-main:active{opacity:.82}
+.g-btn-sec{width:100%;padding:11px;border-radius:12px;border:none;background:var(--bg2);color:var(--t2);font-family:'Space Grotesk',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:opacity .15s}
+.g-btn-sec:active{opacity:.7}
+#guide-float{position:fixed;bottom:76px;right:16px;z-index:8600;background:#007aff;color:#fff;border:none;border-radius:50px;padding:9px 14px;font-family:'Space Grotesk',sans-serif;font-size:12px;font-weight:800;cursor:pointer;box-shadow:0 4px 16px rgba(0,122,255,.4);display:none;align-items:center;gap:6px;letter-spacing:.04em}
+
 </style>
 </head>
 <body>
@@ -1584,6 +1612,18 @@ de: {
   tksBackTitle: 'TikTok geöffnet!',
   tksBackSub: 'Kommentar einfügen — dann hier tippen',
   tksBack: '✅ Fertig – Zurück zur App',
+  gTitle:'Support Pool Guide',gStepLbl:'Schritt {n} von {total}',gFloatLbl:'Guide',
+  gChk0:'Willkommen',gChk1:'Erstes Video posten',gChk2:'Ersten Support geben',gChk3:'Profil entdecken',gChk4:'Fertig!',
+  gS0text:'👋 Hey! Schön, dass du da bist. Ich bin dein persönlicher Support Pool Guide. Ich zeige dir heute alles, was du brauchst — vom ersten Video bis zum ersten Support. Versprochen, es dauert weniger als einen Kaffee. Oder zwei, wenn du langsam liest. Ich warte trotzdem. ☕',
+  gS0btn1:'Los geht\'s! 🚀',gS0btn2:'Ich kenn mich schon aus 💪',
+  gS1text:'📹 Dein erstes Abenteuer: ein TikTok-Video posten! Geh auf TikTok, such dir ein Video aus — dein eigenes oder das eines Freundes — und kopiere den Link. Dann kommst du wieder hierher und klickst auf die Schaltfläche. Keine Eile! Wenn du möchtest, kannst du zwischendurch auch einen Kaffee trinken. Ich bin hier. Ich warte. ☕',
+  gS1btn1:'Ich habe einen Link! → Video posten 📋',gS1btn2:'Erst mal umsehen 👀',
+  gS2text:'❤️ Jetzt kommt das Herzstück des Systems. Scrolle zu „Offene Videos" und klick auf „Supporten & öffnen" bei einem Video. Der Kommentar wird automatisch kopiert, du fügst ihn bei TikTok ein — fertig. So einfach! Die anderen Mitglieder machen das genauso für dich.',
+  gS2btn:'Zeig mir ein offenes Video →',gS2wait:'📲 Fast geschafft! Du bist gleich bei TikTok. Kommentar einfügen, dann zurückkommen — ich warte hier auf dich!',
+  gS3text:'👤 Super! Lass uns noch kurz dein Profil anschauen. Dort siehst du deinen Rang, deine Statistiken und wie viele Supports du gegeben und bekommen hast. Klick auf „Profil" unten in der Navigation!',
+  gS3btn:'Zum Profil →',
+  gS4text:'🎓 Du hast alles gelernt! Vom Video posten bis zum Supporten bis zum Profil. Du bist jetzt offiziell Teil der Support Pool Familie. Ich bin ein kleines bisschen stolz auf dich. Wirklich. Die anderen Mitglieder freuen sich auf dich — los geht\'s! 🎉',
+  gS4btn:'Auf eigene Faust! 🚀',
   tksOpen: '▶  TikTok Video jetzt öffnen',
   tksSub: 'Kommentar kopiert — bei TikTok einfügen',
   tksTitle: '📹 TikTok Video öffnen',
@@ -1652,6 +1692,18 @@ en: {
   tksBackTitle: 'TikTok opened!',
   tksBackSub: 'Paste the comment — then tap here',
   tksBack: '✅ Done – Back to App',
+  gTitle:'Support Pool Guide',gStepLbl:'Step {n} of {total}',gFloatLbl:'Guide',
+  gChk0:'Welcome',gChk1:'Post first video',gChk2:'Give first support',gChk3:'Discover profile',gChk4:'Ready!',
+  gS0text:'👋 Hey! Great to have you here. I\'m your personal Support Pool Guide. I\'ll show you everything you need today. I promise it takes less than one coffee. Or two, if you read slowly. I\'ll wait either way. ☕',
+  gS0btn1:'Let\'s go! 🚀',gS0btn2:'I already know my way around 💪',
+  gS1text:'📹 Your first adventure: post a TikTok video! Go to TikTok, find a video — yours or a friend\'s — and copy the link. Then come back here and tap the button below. No rush! Feel free to grab a coffee on the way. I\'ll be right here waiting.',
+  gS1btn1:'I have a link! → Post video 📋',gS1btn2:'Just browsing first 👀',
+  gS2text:'❤️ Now for the heart of the system. Scroll down to "Open Videos" and tap "Support & Open" on any video. The comment is copied automatically — just paste it on TikTok. That\'s it! Other members do the same for you.',
+  gS2btn:'Show me an open video →',gS2wait:'📲 Almost there! You\'re heading to TikTok now. Paste the comment, then come back — I\'ll be waiting right here!',
+  gS3text:'👤 Almost done! Let\'s quickly check out your profile. You\'ll see your rank, stats, and how many supports you\'ve given and received. Tap "Profile" in the navigation at the bottom!',
+  gS3btn:'Go to Profile →',
+  gS4text:'🎓 You\'ve learned everything! From posting a video to supporting others to exploring your profile. You\'re now officially part of the Support Pool family. I\'m a little proud of you. Really. The other members are excited to have you — let\'s go! 🎉',
+  gS4btn:'Flying solo! 🚀',
   tksOpen: '▶  Open TikTok Video Now',
   tksSub: 'Comment copied — paste it on TikTok',
   tksTitle: '📹 Open TikTok Video',
@@ -1720,6 +1772,18 @@ id: {
   tksBackTitle: 'TikTok dibuka!',
   tksBackSub: 'Tempel komentar — lalu ketuk di sini',
   tksBack: '✅ Selesai – Kembali ke App',
+  gTitle:'Panduan Support Pool',gStepLbl:'Langkah {n} dari {total}',gFloatLbl:'Panduan',
+  gChk0:'Selamat datang',gChk1:'Posting video pertama',gChk2:'Support pertama',gChk3:'Temukan profil',gChk4:'Siap!',
+  gS0text:'👋 Hei! Senang kamu di sini. Aku adalah panduan pribadi Support Pool-mu. Aku akan menunjukkan semua yang kamu butuhkan hari ini. Dijanjikan, tidak lebih dari waktu minum kopi — mungkin dua cangkir kalau kamu membaca lambat. Aku tetap menunggu. ☕',
+  gS0btn1:'Ayo mulai! 🚀',gS0btn2:'Aku sudah tahu caranya 💪',
+  gS1text:'📹 Petualangan pertamamu: posting video TikTok! Buka TikTok, pilih video — milikmu atau teman — dan salin tautannya. Lalu kembali ke sini dan ketuk tombol di bawah. Tidak perlu buru-buru! Boleh minum kopi dulu. Aku di sini menunggumu. ☕',
+  gS1btn1:'Aku punya link! → Posting video 📋',gS1btn2:'Lihat-lihat dulu 👀',
+  gS2text:'❤️ Sekarang inti sistemnya. Gulir ke "Video Terbuka" dan ketuk "Support & Buka" pada video mana saja. Komentarnya otomatis disalin — tempel saja di TikTok. Semudah itu! Anggota lain melakukan hal yang sama untukmu.',
+  gS2btn:'Tunjukkan video terbuka →',gS2wait:'📲 Hampir selesai! Kamu akan ke TikTok sekarang. Tempel komentar, lalu kembali — aku di sini menunggumu!',
+  gS3text:'👤 Hampir selesai! Mari kita cek profilmu. Kamu akan melihat peringkat, statistik, dan berapa banyak support yang sudah kamu beri dan terima. Ketuk "Profil" di navigasi bawah!',
+  gS3btn:'Ke Profil →',
+  gS4text:'🎓 Kamu sudah belajar segalanya! Dari posting video sampai mendukung orang lain hingga menjelajahi profil. Kamu sekarang resmi bagian dari keluarga Support Pool. Aku sedikit bangga padamu. Sungguh. Anggota lain senang kamu ada — ayo! 🎉',
+  gS4btn:'Terbang sendiri! 🚀',
   tksOpen: '▶  Buka Video TikTok Sekarang',
   tksSub: 'Komentar disalin — tempel di TikTok',
   tksTitle: '📹 Buka Video TikTok',
@@ -1788,6 +1852,18 @@ it: {
   tksBackTitle: 'TikTok aperto!',
   tksBackSub: 'Incolla il commento — poi tocca qui',
   tksBack: '✅ Fatto – Torna all\'App',
+  gTitle:'Guida Support Pool',gStepLbl:'Passo {n} di {total}',gFloatLbl:'Guida',
+  gChk0:'Benvenuto',gChk1:'Primo video',gChk2:'Primo supporto',gChk3:'Scopri il profilo',gChk4:'Pronto!',
+  gS0text:'👋 Ciao! Sono la tua guida personale del Support Pool. Ti mostrerò tutto quello che ti serve oggi. Promesso, ci vuole meno di un caffè. O due, se leggi lentamente. Aspetto lo stesso. ☕',
+  gS0btn1:'Iniziamo! 🚀',gS0btn2:'Me la cavo già 💪',
+  gS1text:'📹 La tua prima avventura: postare un video TikTok! Vai su TikTok, scegli un video — tuo o di un amico — e copia il link. Poi torna qui e premi il pulsante. Nessuna fretta! Prenditi pure un caffè. Aspetto qui. ☕',
+  gS1btn1:'Ho il link! → Pubblica video 📋',gS1btn2:'Prima do un\'occhiata 👀',
+  gS2text:'❤️ Ora il cuore del sistema. Scorri verso "Video Aperti" e tocca "Supporta e Apri" su un video. Il commento viene copiato automaticamente — incollalo su TikTok. Così semplice! Gli altri membri fanno lo stesso per te.',
+  gS2btn:'Mostrami un video aperto →',gS2wait:'📲 Quasi fatto! Stai per andare su TikTok. Incolla il commento, poi torna — sono qui ad aspettarti!',
+  gS3text:'👤 Quasi finito! Diamoci un\'occhiata al profilo. Vedrai il tuo rango, le statistiche e quanti supporti hai dato e ricevuto. Tocca "Profilo" nella navigazione in basso!',
+  gS3btn:'Vai al Profilo →',
+  gS4text:'🎓 Hai imparato tutto! Dal postare video al supportare gli altri fino al profilo. Sei ora ufficialmente parte della famiglia Support Pool. Sono un po\' orgoglioso di te. Gli altri membri sono felici di averti — andiamo! 🎉',
+  gS4btn:'In autonomia! 🚀',
   tksOpen: '▶  Apri Video TikTok Ora',
   tksSub: 'Commento copiato — incollalo su TikTok',
   tksTitle: '📹 Apri Video TikTok',
@@ -1856,6 +1932,18 @@ es: {
   tksBackTitle: '¡TikTok abierto!',
   tksBackSub: 'Pega el comentario — luego toca aquí',
   tksBack: '✅ Listo – Volver a la App',
+  gTitle:'Guía de Support Pool',gStepLbl:'Paso {n} de {total}',gFloatLbl:'Guía',
+  gChk0:'Bienvenido',gChk1:'Primer video',gChk2:'Primer apoyo',gChk3:'Descubre el perfil',gChk4:'¡Listo!',
+  gS0text:'👋 ¡Hola! Soy tu guía personal del Support Pool. Hoy te enseñaré todo lo que necesitas. Prometo que tarda menos que un café. O dos, si lees despacio. De todos modos te espero. ☕',
+  gS0btn1:'¡Vamos! 🚀',gS0btn2:'Ya me las arreglo solo 💪',
+  gS1text:'📹 Tu primera aventura: ¡publicar un video de TikTok! Ve a TikTok, elige un video — tuyo o de un amigo — y copia el enlace. Luego vuelve aquí y pulsa el botón. ¡Sin prisa! Tómate un café si quieres. Estaré aquí esperando. ☕',
+  gS1btn1:'¡Tengo el enlace! → Publicar video 📋',gS1btn2:'Primero echar un vistazo 👀',
+  gS2text:'❤️ Ahora el corazón del sistema. Desplázate a "Videos Abiertos" y pulsa "Apoyar y Abrir" en cualquier video. El comentario se copia automáticamente — solo pégalo en TikTok. ¡Así de fácil! Los demás miembros hacen lo mismo por ti.',
+  gS2btn:'Muéstrame un video abierto →',gS2wait:'📲 ¡Casi listo! Vas a ir a TikTok ahora. Pega el comentario y vuelve — ¡aquí te espero!',
+  gS3text:'👤 ¡Casi terminamos! Revisemos tu perfil. Verás tu rango, estadísticas y cuántos apoyos has dado y recibido. ¡Toca "Perfil" en la navegación de abajo!',
+  gS3btn:'Ir al Perfil →',
+  gS4text:'🎓 ¡Ya lo aprendiste todo! Desde publicar un video hasta apoyar a otros y explorar tu perfil. Ahora eres oficialmente parte de la familia Support Pool. Estoy un poco orgulloso de ti. Los demás miembros están contentos de tenerte — ¡adelante! 🎉',
+  gS4btn:'¡Por mi cuenta! 🚀',
   tksOpen: '▶  Abrir Video TikTok Ahora',
   tksSub: 'Comentario copiado — pégalo en TikTok',
   tksTitle: '📹 Abrir Video TikTok',
@@ -1924,6 +2012,18 @@ tr: {
   tksBackTitle: 'TikTok açıldı!',
   tksBackSub: 'Yorumu yapıştır — sonra buraya dokun',
   tksBack: '✅ Tamam – Uygulamaya Dön',
+  gTitle:'Support Pool Rehberi',gStepLbl:'{total} adımdan {n}. adım',gFloatLbl:'Rehber',
+  gChk0:'Hoş geldin',gChk1:'İlk video',gChk2:'İlk destek',gChk3:'Profili keşfet',gChk4:'Hazır!',
+  gS0text:'👋 Merhaba! Seni burada görmek harika. Ben senin kişisel Support Pool rehberini. Bugün ihtiyacın olan her şeyi sana göstereceğim. Bir kahveden az sürer, söz. Ya da iki, yavaş okuyorsan. Yine de beklerim. ☕',
+  gS0btn1:'Hadi başlayalım! 🚀',gS0btn2:'Nasıl yapılacağını biliyorum 💪',
+  gS1text:'📹 İlk maceran: bir TikTok videosu paylaşmak! TikTok\'a git, bir video seç — senin veya bir arkadaşının — ve bağlantıyı kopyala. Sonra buraya geri gel ve düğmeye bas. Acele etme! İstersen bir kahve iç. Buradayım, bekliyorum. ☕',
+  gS1btn1:'Linkum var! → Video paylaş 📋',gS1btn2:'Önce bir bakayım 👀',
+  gS2text:'❤️ Şimdi sistemin kalbi geliyor. Aşağı kaydırarak "Açık Videolar"ı bul ve herhangi bir videoda "Destek & Aç"a dokun. Yorum otomatik kopyalanır — TikTok\'ta yapıştır, bu kadar! Diğer üyeler de senin için aynısını yapar.',
+  gS2btn:'Açık bir video göster →',gS2wait:'📲 Neredeyse bitti! Şimdi TikTok\'a gidiyorsun. Yorumu yapıştır, geri dön — seni bekliyorum!',
+  gS3text:'👤 Neredeyse bitti! Profiline hızlıca bakalım. Sıralamanı, istatistiklerini ve kaç destek verip aldığını göreceksin. Alttaki navigasyonda "Profil"e dokun!',
+  gS3btn:'Profile Git →',
+  gS4text:'🎓 Her şeyi öğrendin! Video paylaşmaktan destek vermeye, profili keşfetmeye kadar. Artık resmi olarak Support Pool ailesinin bir parçasısın. Seninle biraz gurur duyuyorum. Gerçekten. Diğer üyeler seni bekliyor — haydi! 🎉',
+  gS4btn:'Kendi başıma! 🚀',
   tksOpen: '▶  TikTok Videosunu Şimdi Aç',
   tksSub: 'Yorum kopyalandı — TikTok\'a yapıştır',
   tksTitle: '📹 TikTok Videosunu Aç',
@@ -1992,6 +2092,18 @@ ar: {
   tksBackTitle: 'تم فتح TikTok!',
   tksBackSub: 'الصق التعليق — ثم انقر هنا',
   tksBack: '✅ تم – العودة إلى التطبيق',
+  gTitle:'دليل Support Pool',gStepLbl:'الخطوة {n} من {total}',gFloatLbl:'الدليل',
+  gChk0:'مرحباً',gChk1:'نشر أول فيديو',gChk2:'أول دعم',gChk3:'استكشف الملف الشخصي',gChk4:'جاهز!',
+  gS0text:'👋 مرحباً! يسعدني وجودك هنا. أنا مرشدك الشخصي في Support Pool. سأريك كل ما تحتاجه اليوم. أعدك، لن يستغرق أكثر من فنجان قهوة. أو اثنين، إذا كنت تقرأ ببطء. سأنتظرك في كلتا الحالتين. ☕',
+  gS0btn1:'هيا نبدأ! 🚀',gS0btn2:'أنا أعرف طريقي بالفعل 💪',
+  gS1text:'📹 مغامرتك الأولى: نشر فيديو TikTok! انتقل إلى TikTok، اختر فيديو — لك أو لصديق — وانسخ الرابط. ثم عد إلى هنا واضغط على الزر. لا تتسرع! يمكنك احتساء القهوة في الطريق. سأنتظرك هنا. ☕',
+  gS1btn1:'لدي رابط! ← نشر فيديو 📋',gS1btn2:'أريد الاستكشاف أولاً 👀',
+  gS2text:'❤️ الآن جوهر النظام. انتقل للأسفل إلى "الفيديوهات المفتوحة" واضغط على "دعم وافتح" في أي فيديو. يتم نسخ التعليق تلقائياً — فقط الصقه في TikTok. بهذه البساطة! الأعضاء الآخرون يفعلون نفس الشيء من أجلك.',
+  gS2btn:'أرني فيديو مفتوح ←',gS2wait:'📲 اقتربنا! ستذهب إلى TikTok الآن. الصق التعليق، ثم عد — سأنتظرك هنا!',
+  gS3text:'👤 اقتربنا من النهاية! دعنا نلقي نظرة على ملفك الشخصي. ستجد ترتيبك وإحصائياتك وعدد الدعم الذي قدمته وتلقيته. اضغط على "الملف الشخصي" في التنقل السفلي!',
+  gS3btn:'انتقل إلى الملف الشخصي ←',
+  gS4text:'🎓 لقد تعلمت كل شيء! من نشر الفيديوهات إلى دعم الآخرين واستكشاف ملفك الشخصي. أنت الآن رسمياً جزء من عائلة Support Pool. أنا فخور بك قليلاً. حقاً. الأعضاء الآخرون يتطلعون إليك — هيا! 🎉',
+  gS4btn:'بمفردي! 🚀',
   tksOpen: '▶  افتح فيديو TikTok الآن',
   tksSub: 'تم نسخ التعليق — الصقه في TikTok',
   tksTitle: '📹 فتح فيديو TikTok',
@@ -2060,6 +2172,18 @@ zh: {
   tksBackTitle: 'TikTok已打开！',
   tksBackSub: '粘贴评论 — 然后点击这里',
   tksBack: '✅ 完成 – 返回应用',
+  gTitle:'Support Pool 指南',gStepLbl:'第 {n} / {total} 步',gFloatLbl:'指南',
+  gChk0:'欢迎',gChk1:'发布第一个视频',gChk2:'给予第一个支持',gChk3:'探索个人资料',gChk4:'准备好了！',
+  gS0text:'👋 嘿！很高兴你在这里。我是你的Support Pool个人向导。今天我会给你展示一切你需要知道的。承诺，比喝一杯咖啡的时间还短。或者两杯，如果你读得慢。无论如何我都会等你。☕',
+  gS0btn1:'出发！🚀',gS0btn2:'我已经知道怎么做了 💪',
+  gS1text:'📹 你的第一个冒险：发布一个TikTok视频！去TikTok，选择一个视频——你的或朋友的——复制链接。然后回来点击下面的按钮。不用着急！你可以顺便喝杯咖啡。我在这里等你。☕',
+  gS1btn1:'我有链接！→ 发布视频 📋',gS1btn2:'先看看 👀',
+  gS2text:'❤️ 现在是系统的核心部分。向下滚动到"开放视频"，点击任何视频上的"支持并打开"。评论会自动复制——粘贴到TikTok就完成了！其他成员也会对你这样做。',
+  gS2btn:'给我看一个开放的视频 →',gS2wait:'📲 快完成了！你现在要去TikTok了。粘贴评论，然后回来——我在这里等你！',
+  gS3text:'👤 快完成了！让我们快速看看你的个人资料。你会看到你的排名、统计数据以及你给予和收到的支持数量。点击底部导航中的"资料"！',
+  gS3btn:'前往个人资料 →',
+  gS4text:'🎓 你已经学会了一切！从发布视频到支持他人再到探索个人资料。你现在正式成为Support Pool大家庭的一员。我为你感到有点骄傲。真的。其他成员期待你的加入——出发！🎉',
+  gS4btn:'独自飞翔！🚀',
   tksOpen: '▶  立即打开TikTok视频',
   tksSub: '评论已复制 — 粘贴到TikTok',
   tksTitle: '📹 打开TikTok视频',
@@ -2128,6 +2252,18 @@ ja: {
   tksBackTitle: 'TikTokが開きました！',
   tksBackSub: 'コメントを貼り付け — そしてここをタップ',
   tksBack: '✅ 完了 – アプリに戻る',
+  gTitle:'Support Poolガイド',gStepLbl:'ステップ {n} / {total}',gFloatLbl:'ガイド',
+  gChk0:'ようこそ',gChk1:'初めての動画投稿',gChk2:'初めてのサポート',gChk3:'プロフィールを探索',gChk4:'準備完了！',
+  gS0text:'👋 やあ！ここに来てくれてよかった。私はあなたのPersonal Support Poolガイドです。今日必要なことをすべてお教えします。約束します、コーヒー一杯より短い時間で終わります。ゆっくり読むなら二杯かも。どちらにせよ待っています。☕',
+  gS0btn1:'さあ始めましょう！🚀',gS0btn2:'自分でわかります 💪',
+  gS1text:'📹 最初の冒険：TikTok動画を投稿！TikTokに行き、動画を選んで — あなたか友達のもの — リンクをコピーしてください。そしてここに戻ってボタンをタップ。急がなくていいですよ！途中でコーヒーを飲んでもいいです。ここで待っています。☕',
+  gS1btn1:'リンクがあります！→ 動画を投稿 📋',gS1btn2:'まず見てみる 👀',
+  gS2text:'❤️ システムの心臓部です。「オープン動画」にスクロールして、どれかの動画の「サポート＆オープン」をタップ。コメントが自動的にコピーされます — TikTokに貼り付けるだけ！他のメンバーもあなたのためにそうしてくれます。',
+  gS2btn:'オープン動画を見せて →',gS2wait:'📲 もうすぐです！これからTikTokに行きます。コメントを貼り付けて戻ってきてください — ここで待っています！',
+  gS3text:'👤 もうすぐ完了！プロフィールを見てみましょう。ランク、統計、与えたサポートと受け取ったサポートの数がわかります。下のナビゲーションの「プロフィール」をタップ！',
+  gS3btn:'プロフィールへ →',
+  gS4text:'🎓 すべて学びました！動画の投稿から他のメンバーのサポート、プロフィールの探索まで。これであなたは正式にSupport Poolファミリーの一員です。少し誇りに思います。本当に。他のメンバーもあなたを待っています — さあ行きましょう！🎉',
+  gS4btn:'一人で飛び立つ！🚀',
   tksOpen: '▶  TikTok動画を今すぐ開く',
   tksSub: 'コメントをコピーしました — TikTokに貼り付け',
   tksTitle: '📹 TikTok動画を開く',
@@ -2196,6 +2332,18 @@ pl: {
   tksBackTitle: 'TikTok otwarty!',
   tksBackSub: 'Wklej komentarz — a potem kliknij tutaj',
   tksBack: '✅ Gotowe – Wróć do Aplikacji',
+  gTitle:'Przewodnik Support Pool',gStepLbl:'Krok {n} z {total}',gFloatLbl:'Przewodnik',
+  gChk0:'Witaj',gChk1:'Pierwszy film',gChk2:'Pierwsze wsparcie',gChk3:'Odkryj profil',gChk4:'Gotowy!',
+  gS0text:'👋 Hej! Miło, że tu jesteś. Jestem Twoim osobistym przewodnikiem po Support Pool. Dziś pokażę Ci wszystko, czego potrzebujesz. Obiecuję — to mniej niż jedna kawa. Albo dwie, jeśli czytasz wolno. I tak poczekam. ☕',
+  gS0btn1:'Zaczynamy! 🚀',gS0btn2:'Już wiem, co robię 💪',
+  gS1text:'📹 Pierwsza przygoda: opublikuj film TikTok! Idź na TikTok, wybierz film — swój lub przyjaciela — i skopiuj link. Potem wróć tutaj i naciśnij przycisk. Bez pośpiechu! Możesz po drodze wypić kawę. Będę tutaj czekał. ☕',
+  gS1btn1:'Mam link! → Opublikuj film 📋',gS1btn2:'Najpierw rozejrzę się 👀',
+  gS2text:'❤️ Teraz serce systemu. Przewiń do "Otwarte Filmy" i stuknij "Wesprzyj i Otwórz" przy dowolnym filmie. Komentarz zostanie automatycznie skopiowany — wklej go na TikToku. Tak proste! Inni członkowie robią to samo dla Ciebie.',
+  gS2btn:'Pokaż mi otwarty film →',gS2wait:'📲 Prawie gotowe! Zaraz pójdziesz na TikToka. Wklej komentarz i wróć — czekam tutaj!',
+  gS3text:'👤 Prawie koniec! Szybko rzućmy okiem na Twój profil. Zobaczysz swój ranking, statystyki i ile wsparcia dałeś i otrzymałeś. Stuknij "Profil" w dolnej nawigacji!',
+  gS3btn:'Przejdź do Profilu →',
+  gS4text:'🎓 Nauczyłeś się wszystkiego! Od publikowania filmów po wspieranie innych aż po przeglądanie profilu. Jesteś teraz oficjalnie częścią rodziny Support Pool. Jestem z Ciebie trochę dumny. Naprawdę. Inni członkowie czekają na Ciebie — do dzieła! 🎉',
+  gS4btn:'Na własne skrzydła! 🚀',
   tksOpen: '▶  Otwórz Film TikTok Teraz',
   tksSub: 'Skomentuj skopiowany — wklej na TikTok',
   tksTitle: '📹 Otwórz Film TikTok',
@@ -2602,7 +2750,7 @@ function goScreen(id) {
   var ni = ge('ni-'+id);
   if (ni) ni.classList.add('active');
   if (id === 'home') renderHome();
-  if (id === 'profile') renderProfile();
+  if (id === 'profile') { renderProfile(); guideAdvance('profile-visited'); }
   if (id === 'admin') renderAdmin();
 }
 function openModal(id) { var el = ge(id); if (el) el.classList.add('active'); }
@@ -2740,6 +2888,7 @@ function enterApp() {
     showOnboard();
   } else {
     goScreen('home');
+    setTimeout(function(){ initGuide(); }, 400);
   }
   if (ONLINE) pushFB();
   setTimeout(checkPendingOnBoot, 1500);
@@ -3056,6 +3205,7 @@ function submitPost() {
   toast(t('okPost'), 'success');
   addNotif(CU, '📹', 'Video gepostet – '+(isFirst?5:R1_NEED)+' Supports in 12h benötigt');
   save();
+  guideAdvance('video-posted');
   // Show success modal with member count
   showPostSuccess();
 }
@@ -3085,6 +3235,7 @@ function handleSupport(vid) {
   _pendingSupportComment = comment;
   celebrate();
   showCommentPreview(comment);
+  guideAdvance('support-clicked');
   openTkSheet(v.url);
 }
 
@@ -3720,6 +3871,7 @@ function obDone() {
   if (CU && DB.members[CU]) DB.members[CU].onboarded = true;
   save();
   goScreen('home');
+  setTimeout(function(){ initGuide(); }, 1000);
   // Offer tour to new users
   setTimeout(function() {
     var l = L[LANG]||L.de;
@@ -3906,6 +4058,7 @@ function openTkLink() {
     recordDailyGoal();
     save();
     _pendingSupportVid = null;
+    guideAdvance('support-done');
   }
   if (_tkUrl) window.open(_tkUrl, '_blank');
   // Transition to "back to app" state instead of closing
@@ -4379,9 +4532,117 @@ function closeTour() {
 
 
 
+/* ── INTERACTIVE GUIDE ── */
+var GUIDE_STEP=-1,GUIDE_SUB=0,GUIDE_MIN=false;
 
-
-
+function initGuide(){
+  if(!CU)return;
+  var saved=localStorage.getItem('SP_GUIDE_'+CU);
+  if(saved==='done'){hideGuide();return;}
+  var u=DB.members[CU];
+  if(saved===null&&u){
+    var hasVids=(u.myVideos||[]).length>0;
+    var hasGiven=u.stats&&(u.stats.given||0)>0;
+    if(hasVids&&hasGiven){localStorage.setItem('SP_GUIDE_'+CU,'done');hideGuide();return;}
+  }
+  GUIDE_STEP=saved!==null?parseInt(saved,10):0;
+  if(isNaN(GUIDE_STEP)||GUIDE_STEP<0)GUIDE_STEP=0;
+  if(u){
+    if(GUIDE_STEP===1&&(u.myVideos||[]).length>0)GUIDE_STEP=2;
+    if(GUIDE_STEP===2&&u.stats&&(u.stats.given||0)>0)GUIDE_STEP=3;
+  }
+  GUIDE_SUB=0;GUIDE_MIN=false;
+  var wrap=ge('guide-wrap');if(wrap)wrap.style.display='block';
+  var panel=ge('guide-panel');if(panel)panel.classList.remove('gmin');
+  var fb=ge('guide-float');if(fb)fb.style.display='none';
+  renderGuide();
+}
+function hideGuide(){
+  var w=ge('guide-wrap'),f=ge('guide-float');
+  if(w)w.style.display='none';if(f)f.style.display='none';
+}
+function toggleGuideMin(){
+  GUIDE_MIN=!GUIDE_MIN;
+  var p=ge('guide-panel'),m=ge('gp-min-btn'),f=ge('guide-float');
+  if(GUIDE_MIN){if(p)p.classList.add('gmin');if(f)f.style.display='flex';if(m)m.textContent='+';}
+  else{if(p)p.classList.remove('gmin');if(f)f.style.display='none';if(m)m.textContent='−';}
+}
+function restoreGuide(){
+  GUIDE_MIN=false;
+  var p=ge('guide-panel'),m=ge('gp-min-btn'),f=ge('guide-float');
+  if(p)p.classList.remove('gmin');if(f)f.style.display='none';if(m)m.textContent='−';
+}
+function skipGuide(){
+  if(CU)localStorage.setItem('SP_GUIDE_'+CU,'done');
+  hideGuide();
+}
+function guideTo(step){
+  GUIDE_STEP=step;GUIDE_SUB=0;
+  if(CU)localStorage.setItem('SP_GUIDE_'+CU,step);
+  if(GUIDE_MIN){GUIDE_MIN=false;var p=ge('guide-panel');if(p)p.classList.remove('gmin');var f=ge('guide-float');if(f)f.style.display='none';}
+  var w=ge('guide-wrap');if(w)w.style.display='block';
+  renderGuide();
+}
+function guideAdvance(event){
+  if(GUIDE_STEP<0)return;
+  if(event==='video-posted'&&GUIDE_STEP===1){guideTo(2);}
+  else if(event==='support-clicked'&&GUIDE_STEP===2&&GUIDE_SUB===0){GUIDE_SUB=1;if(CU)localStorage.setItem('SP_GUIDE_'+CU,GUIDE_STEP);renderGuide();}
+  else if(event==='support-done'&&GUIDE_STEP===2){guideTo(3);}
+  else if(event==='profile-visited'&&GUIDE_STEP===3){guideTo(4);}
+}
+function guideOpenPost(){openPostModal();}
+function guideScrollOpen(){
+  goScreen('home');
+  var ol=ge('open-list');
+  if(ol)setTimeout(function(){ol.scrollIntoView({behavior:'smooth',block:'start'});},150);
+  toggleGuideMin();
+}
+function guideGoProfile(){goScreen('profile');}
+function renderGuide(){
+  var w=ge('guide-wrap');
+  if(!w||GUIDE_STEP<0){if(w)w.style.display='none';return;}
+  w.style.display='block';
+  var l=L[LANG]||L.de;
+  var fl=ge('gfloat-lbl');if(fl)fl.textContent=l.gFloatLbl||'Guide';
+  var hT=ge('gp-title'),hS=ge('gp-sub');
+  if(hT)hT.textContent=l.gTitle||'Support Pool Guide';
+  var sn=Math.min(GUIDE_STEP+1,4);
+  if(hS)hS.textContent=(l.gStepLbl||'Schritt {n} von {total}').replace('{n}',sn).replace('{total}',4);
+  var chks=ge('gp-checks');
+  if(chks){
+    var lbls=[l.gChk0||'Willkommen',l.gChk1||'Erstes Video',l.gChk2||'Ersten Support geben',l.gChk3||'Profil entdecken',l.gChk4||'Fertig!'];
+    var ch='';
+    for(var i=0;i<lbls.length;i++){
+      var cls=i<GUIDE_STEP?'g-done':(i===GUIDE_STEP?'g-active':'');
+      var dot=i<GUIDE_STEP?'✓':String(i+1);
+      ch+='<li class="guide-chk '+cls+'"><div class="guide-dot">'+dot+'</div><div class="guide-chk-lbl">'+esc(lbls[i])+'</div></li>';
+    }
+    chks.innerHTML=ch;
+  }
+  var bub=ge('gp-bubble'),bts=ge('gp-btns');if(!bub||!bts)return;
+  var bt='',bh='';
+  if(GUIDE_STEP===0){
+    bt=l.gS0text||'👋 Hey! Schön, dass du da bist.';
+    bh='<button class="g-btn-main" onclick="guideTo(1)">'+esc(l.gS0btn1||'Los geht\'s! 🚀')+'</button>';
+    bh+='<button class="g-btn-sec" onclick="skipGuide()">'+esc(l.gS0btn2||'Ich kenn mich schon aus 💪')+'</button>';
+  }else if(GUIDE_STEP===1){
+    bt=l.gS1text||'📹 Geh auf TikTok und hol dir einen Link.';
+    bh='<button class="g-btn-main" onclick="guideOpenPost()">'+esc(l.gS1btn1||'Ich habe einen Link! → Video posten 📋')+'</button>';
+    bh+='<button class="g-btn-sec" onclick="toggleGuideMin()">'+esc(l.gS1btn2||'Erst mal umsehen 👀')+'</button>';
+  }else if(GUIDE_STEP===2){
+    if(GUIDE_SUB===0){
+      bt=l.gS2text||'❤️ Klick auf Supporten & öffnen!';
+      bh='<button class="g-btn-main" onclick="guideScrollOpen()">'+esc(l.gS2btn||'Zeig mir ein offenes Video →')+'</button>';
+    }else{bt=l.gS2wait||'📲 Fast geschafft! Kommentar einfügen und zurückkommen.';}
+  }else if(GUIDE_STEP===3){
+    bt=l.gS3text||'👤 Lass uns dein Profil anschauen.';
+    bh='<button class="g-btn-main" onclick="guideGoProfile()">'+esc(l.gS3btn||'Zum Profil →')+'</button>';
+  }else if(GUIDE_STEP===4){
+    bt=l.gS4text||'🎓 Du bist bereit!';
+    bh='<button class="g-btn-main" onclick="skipGuide()">'+esc(l.gS4btn||'Auf eigene Faust! 🚀')+'</button>';
+  }
+  bub.textContent=bt;bts.innerHTML=bh;
+}
 
 </script>
 
@@ -4408,5 +4669,24 @@ function closeTour() {
     </div>
   </div>
 </div>
+
+<!-- ── INTERACTIVE GUIDE ── -->
+<div id="guide-wrap">
+  <div class="guide-panel" id="guide-panel">
+    <div class="guide-hdr" onclick="toggleGuideMin()">
+      <span class="guide-char">🌊</span>
+      <div class="guide-hdr-txt">
+        <div class="guide-hdr-title" id="gp-title">Support Pool Guide</div>
+        <div class="guide-hdr-sub" id="gp-sub">Schritt 1 von 4</div>
+      </div>
+      <button class="guide-min-btn" id="gp-min-btn">−</button>
+    </div>
+    <ul class="guide-checks" id="gp-checks"></ul>
+    <div class="guide-bubble" id="gp-bubble"></div>
+    <div class="guide-btns" id="gp-btns"></div>
+  </div>
+</div>
+<button id="guide-float" onclick="restoreGuide()">🌊 <span id="gfloat-lbl">Guide</span></button>
+
 </body>
 </html>
