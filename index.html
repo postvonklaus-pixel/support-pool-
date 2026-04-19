@@ -4538,12 +4538,12 @@ var GUIDE_STEP=-1,GUIDE_SUB=0,GUIDE_MIN=false;
 function initGuide(){
   if(!CU)return;
   var saved=localStorage.getItem('SP_GUIDE_'+CU);
-  if(saved==='done'){hideGuide();return;}
+  if(saved==='done'){_showGuideFloat();return;}
   var u=DB.members[CU];
   if(saved===null&&u){
     var hasVids=(u.myVideos||[]).length>0;
     var hasGiven=u.stats&&(u.stats.given||0)>0;
-    if(hasVids&&hasGiven){localStorage.setItem('SP_GUIDE_'+CU,'done');hideGuide();return;}
+    if(hasVids&&hasGiven){localStorage.setItem('SP_GUIDE_'+CU,'done');_showGuideFloat();return;}
   }
   GUIDE_STEP=saved!==null?parseInt(saved,10):0;
   if(isNaN(GUIDE_STEP)||GUIDE_STEP<0)GUIDE_STEP=0;
@@ -4561,6 +4561,10 @@ function hideGuide(){
   var w=ge('guide-wrap'),f=ge('guide-float');
   if(w)w.style.display='none';if(f)f.style.display='none';
 }
+function _showGuideFloat(){
+  var w=ge('guide-wrap'),f=ge('guide-float');
+  if(w)w.style.display='none';if(f)f.style.display='flex';
+}
 function toggleGuideMin(){
   GUIDE_MIN=!GUIDE_MIN;
   var p=ge('guide-panel'),m=ge('gp-min-btn'),f=ge('guide-float');
@@ -4568,13 +4572,21 @@ function toggleGuideMin(){
   else{if(p)p.classList.remove('gmin');if(f)f.style.display='none';if(m)m.textContent='−';}
 }
 function restoreGuide(){
+  // If guide was finished, restart from welcome
+  var saved=CU?localStorage.getItem('SP_GUIDE_'+CU):null;
+  if(saved==='done'||GUIDE_STEP===4){
+    if(CU)localStorage.removeItem('SP_GUIDE_'+CU);
+    GUIDE_STEP=0;GUIDE_SUB=0;
+  }
   GUIDE_MIN=false;
   var p=ge('guide-panel'),m=ge('gp-min-btn'),f=ge('guide-float');
   if(p)p.classList.remove('gmin');if(f)f.style.display='none';if(m)m.textContent='−';
+  var w=ge('guide-wrap');if(w)w.style.display='block';
+  renderGuide();
 }
 function skipGuide(){
   if(CU)localStorage.setItem('SP_GUIDE_'+CU,'done');
-  hideGuide();
+  _showGuideFloat(); // always keep float button accessible
 }
 function guideTo(step){
   GUIDE_STEP=step;GUIDE_SUB=0;
@@ -4590,7 +4602,13 @@ function guideAdvance(event){
   else if(event==='support-done'&&GUIDE_STEP===2){guideTo(3);}
   else if(event==='profile-visited'&&GUIDE_STEP===3){guideTo(4);}
 }
-function guideOpenPost(){openPostModal();}
+function guideOpenPost(){
+  // Minimize guide first so the post modal input is fully accessible
+  GUIDE_MIN=true;
+  var p=ge('guide-panel'),m=ge('gp-min-btn'),f=ge('guide-float');
+  if(p)p.classList.add('gmin');if(f)f.style.display='flex';if(m)m.textContent='+';
+  openPostModal();
+}
 function guideScrollOpen(){
   goScreen('home');
   var ol=ge('open-list');
