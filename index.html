@@ -400,7 +400,7 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
 @keyframes toastIn{from{opacity:0;transform:translateY(-9px) scale(.95)}to{opacity:1;transform:translateY(0) scale(1)}}
 
 /* ── CELEBRATION ── */
-#cel{position:fixed;inset:0;z-index:800;pointer-events:none;display:none;align-items:center;justify-content:center}
+#cel{position:fixed;inset:0;z-index:10100;pointer-events:none;display:none;align-items:center;justify-content:center}
 #cel.active{display:flex}
 .cel-center{text-align:center;animation:celPop .4s cubic-bezier(.17,.67,.35,1.4)}
 .cel-emoji{font-size:60px;display:block;margin-bottom:9px}
@@ -558,6 +558,17 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
 /* ── WORLD CLOCK INTRO ANIMATION ── */
 @keyframes wcIntro{0%{opacity:0;transform:scale(0.8) translateY(6px)}60%{opacity:1;transform:scale(1.08) translateY(-1px)}100%{opacity:1;transform:scale(1) translateY(0)}}
 .wc-item.wc-intro{animation:wcIntro 0.45s ease forwards}
+
+/* ── FAQ ── */
+.faq-item{background:#fff;border:1.5px solid var(--bdr);border-radius:14px;margin-bottom:8px;overflow:hidden;transition:border-color .2s}
+.faq-item.open{border-color:var(--vb)}
+.faq-q{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;cursor:pointer;gap:10px;user-select:none}
+.faq-q-text{font-size:13px;font-weight:700;color:var(--text);flex:1;line-height:1.35}
+.faq-chevron{font-size:11px;color:var(--t3);transition:transform .25s ease,color .2s;flex-shrink:0}
+.faq-item.open .faq-chevron{transform:rotate(180deg);color:var(--v)}
+.faq-a{max-height:0;overflow:hidden;transition:max-height .32s ease}
+.faq-item.open .faq-a{max-height:400px}
+.faq-a-inner{padding:0 16px 14px;font-size:13px;color:var(--t2);line-height:1.62;border-top:1px solid var(--bdr)}
 
 /* ── INTERACTIVE GUIDE ── */
 #guide-wrap{position:fixed;bottom:0;left:0;right:0;z-index:8500;pointer-events:none;display:none}
@@ -1049,6 +1060,12 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
       <div id="notif-list" style="max-height:420px;overflow-y:auto;padding-right:4px">
         <div class="empty-state"><div class="empty-icon">🔔</div><div class="empty-text" id="t-no-notif">Keine Benachrichtigungen</div></div>
       </div>
+
+      <!-- FAQ -->
+      <div class="sec-hdr mt16">
+        <div class="sec-title" id="t-faq-title">❓ Häufige Fragen</div>
+      </div>
+      <div id="faq-list"></div>
 
       <!-- Logout -->
       <button class="logout-btn" onclick="doLogout()">
@@ -1624,6 +1641,13 @@ de: {
   gS3btn:'Zum Profil →',
   gS4text:'🎓 Du hast alles gelernt! Vom Video posten bis zum Supporten bis zum Profil. Du bist jetzt offiziell Teil der Support Pool Familie. Ich bin ein kleines bisschen stolz auf dich. Wirklich. Die anderen Mitglieder freuen sich auf dich — los geht\'s! 🎉',
   gS4btn:'Auf eigene Faust! 🚀',
+  faqTitle:'❓ Häufige Fragen',
+  faq1q:'Was ist der Support Pool?',faq1a:'Der Support Pool ist ein exklusives, geschlossenes TikTok-Netzwerk. Mitglieder posten ihre Videos und supporten sich gegenseitig mit Kommentaren — automatisch, fair und ohne Chaos.',
+  faq2q:'Was unterscheidet den Support Pool von TikTok-Gruppen?',faq2a:'In normalen Gruppen gehen Links unter, niemand weiß wer schon kommentiert hat und manche geben nie zurück. Hier wird der Kommentar auto-kopiert, das Guthaben-System sorgt für Fairness und du siehst jederzeit deinen Stand.',
+  faq3q:'Wie funktioniert das Guthaben-System?',faq3a:'Jeder Support den du gibst, erhöht dein Guthaben. Nur mit positivem Guthaben kannst du neue Videos posten. So ist garantiert, dass jeder gibt und bekommt — keine Trittbrettfahrer.',
+  faq4q:'Was passiert nach 12 Stunden mit meinem Video?',faq4a:'Nach 12 Stunden startet Runde 2: Dein Video bleibt aktiv und kann weitere 10 Supports erhalten — bis zu 20 insgesamt! Wenn die Zeit abläuft, wird das Video automatisch abgeschlossen.',
+  faq5q:'Wie füge ich den Support Pool zum Homescreen hinzu?',faq5a:'iOS (Safari): Teilen-Symbol tippen → „Zum Home-Bildschirm" → „Hinzufügen". Android (Chrome): Menü (⋮) → „Zum Startbildschirm" → „Hinzufügen". Die App läuft dann wie eine echte native App!',
+  faq6q:'Kann ich auch Videos von Freunden oder ältere Videos posten?',faq6a:'Ja! Du kannst jeden beliebigen TikTok-Link posten — eigene Videos, Videos von Freunden oder auch ältere Videos. Hauptsache, Kommentare können noch hinterlassen werden.',
   tksOpen: '▶  TikTok Video jetzt öffnen',
   tksSub: 'Kommentar kopiert — bei TikTok einfügen',
   tksTitle: '📹 TikTok Video öffnen',
@@ -1704,6 +1728,13 @@ en: {
   gS3btn:'Go to Profile →',
   gS4text:'🎓 You\'ve learned everything! From posting a video to supporting others to exploring your profile. You\'re now officially part of the Support Pool family. I\'m a little proud of you. Really. The other members are excited to have you — let\'s go! 🎉',
   gS4btn:'Flying solo! 🚀',
+  faqTitle:'❓ Frequently Asked Questions',
+  faq1q:'What is Support Pool?',faq1a:'Support Pool is an exclusive, closed TikTok support network. Members post their videos and support each other with comments — automatically, fairly, and without the usual chaos.',
+  faq2q:'What makes Support Pool different from TikTok groups?',faq2a:'In regular groups, links get buried, nobody knows who already commented, and some never give back. Here comments are auto-copied, the balance system ensures fairness, and you always know your standing.',
+  faq3q:'How does the balance system work?',faq3a:'Every support you give increases your balance. You can only post new videos with a positive balance. This guarantees everyone gives and receives — no free riders.',
+  faq4q:'What happens after 12 hours?',faq4a:'After 12 hours, Round 2 starts: your video stays active and can receive up to 10 more supports — 20 total! When time runs out, the video is automatically completed.',
+  faq5q:'How do I add Support Pool to my homescreen?',faq5a:'iOS (Safari): Tap the share icon → "Add to Home Screen" → "Add". Android (Chrome): Menu (⋮) → "Add to Home Screen" → "Add". The app then runs like a native app!',
+  faq6q:'Can I post older videos or videos from friends?',faq6a:"Yes! You can post any TikTok link — your own videos, friends' videos, or older videos. As long as comments can still be added, it works perfectly.",
   tksOpen: '▶  Open TikTok Video Now',
   tksSub: 'Comment copied — paste it on TikTok',
   tksTitle: '📹 Open TikTok Video',
@@ -1784,6 +1815,13 @@ id: {
   gS3btn:'Ke Profil →',
   gS4text:'🎓 Kamu sudah belajar segalanya! Dari posting video sampai mendukung orang lain hingga menjelajahi profil. Kamu sekarang resmi bagian dari keluarga Support Pool. Aku sedikit bangga padamu. Sungguh. Anggota lain senang kamu ada — ayo! 🎉',
   gS4btn:'Terbang sendiri! 🚀',
+  faqTitle:'❓ Pertanyaan Umum',
+  faq1q:'Apa itu Support Pool?',faq1a:'Support Pool adalah jaringan TikTok eksklusif yang tertutup. Anggota memposting video mereka dan saling mendukung dengan komentar — otomatis, adil, dan tanpa kekacauan.',
+  faq2q:'Apa bedanya Support Pool dengan grup TikTok biasa?',faq2a:'Di grup biasa, link tertimbun, tidak ada yang tahu siapa yang sudah berkomentar, dan sebagian tidak pernah membalas. Di sini komentar otomatis tersalin, sistem saldo memastikan keadilan.',
+  faq3q:'Bagaimana sistem saldo bekerja?',faq3a:'Setiap dukungan yang kamu berikan meningkatkan saldomu. Kamu hanya bisa memposting video baru dengan saldo positif. Ini menjamin semua orang memberi dan menerima.',
+  faq4q:'Apa yang terjadi setelah 12 jam?',faq4a:'Setelah 12 jam, Ronde 2 dimulai: videomu tetap aktif dan bisa menerima hingga 10 dukungan lagi — total 20! Ketika waktu habis, video otomatis selesai.',
+  faq5q:'Bagaimana cara menambahkan Support Pool ke layar utama?',faq5a:'iOS (Safari): Ketuk ikon bagikan → "Tambah ke Layar Utama" → "Tambah". Android (Chrome): Menu (⋮) → "Tambahkan ke layar utama" → "Tambah". Aplikasi berjalan seperti aplikasi native!',
+  faq6q:'Bisakah saya memposting video lama atau video teman?',faq6a:'Ya! Kamu bisa memposting link TikTok mana saja — video sendiri, video teman, atau video lama. Selama komentar masih bisa ditambahkan, semuanya berfungsi.',
   tksOpen: '▶  Buka Video TikTok Sekarang',
   tksSub: 'Komentar disalin — tempel di TikTok',
   tksTitle: '📹 Buka Video TikTok',
@@ -1864,6 +1902,13 @@ it: {
   gS3btn:'Vai al Profilo →',
   gS4text:'🎓 Hai imparato tutto! Dal postare video al supportare gli altri fino al profilo. Sei ora ufficialmente parte della famiglia Support Pool. Sono un po\' orgoglioso di te. Gli altri membri sono felici di averti — andiamo! 🎉',
   gS4btn:'In autonomia! 🚀',
+  faqTitle:'❓ Domande Frequenti',
+  faq1q:"Cos'è Support Pool?",faq1a:"Support Pool è una rete TikTok esclusiva e chiusa. I membri pubblicano i loro video e si supportano a vicenda con commenti — automaticamente, in modo equo e senza caos.",
+  faq2q:'Cosa distingue Support Pool dai gruppi TikTok?',faq2a:"Nei gruppi normali i link si perdono, nessuno sa chi ha già commentato e alcuni non danno mai nulla in cambio. Qui il commento viene copiato automaticamente e il sistema di credito garantisce l'equità.",
+  faq3q:'Come funziona il sistema di credito?',faq3a:'Ogni supporto che dai aumenta il tuo credito. Puoi pubblicare nuovi video solo con credito positivo. Questo garantisce che tutti diano e ricevano.',
+  faq4q:'Cosa succede dopo 12 ore?',faq4a:'Dopo 12 ore inizia il Turno 2: il tuo video rimane attivo e può ricevere altri 10 supporti — 20 in totale! Quando il tempo scade, il video viene completato automaticamente.',
+  faq5q:'Come aggiungo Support Pool alla schermata home?',faq5a:"iOS (Safari): Tocca l'icona di condivisione → \"Aggiungi a Home\" → \"Aggiungi\". Android (Chrome): Menu (⋮) → \"Aggiungi alla schermata Home\" → \"Aggiungi\". L'app funziona come un'app nativa!",
+  faq6q:'Posso pubblicare video vecchi o di amici?',faq6a:"Sì! Puoi pubblicare qualsiasi link TikTok — i tuoi video, video di amici o video più vecchi. Finché è possibile aggiungere commenti, funziona perfettamente.",
   tksOpen: '▶  Apri Video TikTok Ora',
   tksSub: 'Commento copiato — incollalo su TikTok',
   tksTitle: '📹 Apri Video TikTok',
@@ -1944,6 +1989,13 @@ es: {
   gS3btn:'Ir al Perfil →',
   gS4text:'🎓 ¡Ya lo aprendiste todo! Desde publicar un video hasta apoyar a otros y explorar tu perfil. Ahora eres oficialmente parte de la familia Support Pool. Estoy un poco orgulloso de ti. Los demás miembros están contentos de tenerte — ¡adelante! 🎉',
   gS4btn:'¡Por mi cuenta! 🚀',
+  faqTitle:'❓ Preguntas Frecuentes',
+  faq1q:'¿Qué es Support Pool?',faq1a:'Support Pool es una red TikTok exclusiva y cerrada. Los miembros publican sus videos y se apoyan mutuamente con comentarios — automáticamente, con equidad y sin caos.',
+  faq2q:'¿Qué diferencia a Support Pool de los grupos de TikTok?',faq2a:'En los grupos normales, los enlaces se pierden, nadie sabe quién ya comentó y algunos nunca devuelven el favor. Aquí el comentario se copia automáticamente y el sistema de crédito garantiza la equidad.',
+  faq3q:'¿Cómo funciona el sistema de crédito?',faq3a:'Cada apoyo que das aumenta tu crédito. Solo puedes publicar nuevos videos con crédito positivo. Esto garantiza que todos den y reciban.',
+  faq4q:'¿Qué pasa después de 12 horas?',faq4a:'Después de 12 horas comienza la Ronda 2: tu video sigue activo y puede recibir hasta 10 apoyos más — ¡20 en total! Cuando el tiempo acaba, el video se completa automáticamente.',
+  faq5q:'¿Cómo agrego Support Pool a la pantalla de inicio?',faq5a:'iOS (Safari): Toca el icono compartir → "Añadir a inicio" → "Añadir". Android (Chrome): Menú (⋮) → "Añadir a pantalla de inicio" → "Añadir". ¡La app funciona como una app nativa!',
+  faq6q:'¿Puedo publicar videos antiguos o de amigos?',faq6a:'¡Sí! Puedes publicar cualquier enlace de TikTok — tus propios videos, videos de amigos o videos más antiguos. Siempre que se puedan añadir comentarios, funciona perfectamente.',
   tksOpen: '▶  Abrir Video TikTok Ahora',
   tksSub: 'Comentario copiado — pégalo en TikTok',
   tksTitle: '📹 Abrir Video TikTok',
@@ -2024,6 +2076,13 @@ tr: {
   gS3btn:'Profile Git →',
   gS4text:'🎓 Her şeyi öğrendin! Video paylaşmaktan destek vermeye, profili keşfetmeye kadar. Artık resmi olarak Support Pool ailesinin bir parçasısın. Seninle biraz gurur duyuyorum. Gerçekten. Diğer üyeler seni bekliyor — haydi! 🎉',
   gS4btn:'Kendi başıma! 🚀',
+  faqTitle:'❓ Sıkça Sorulan Sorular',
+  faq1q:'Support Pool nedir?',faq1a:"Support Pool, özel ve kapalı bir TikTok destek ağıdır. Üyeler videolarını paylaşır ve birbirlerini yorumlarla destekler — otomatik, adil ve kargaşasız.",
+  faq2q:"Support Pool'u TikTok gruplarından ayıran nedir?",faq2a:"Normal gruplarda bağlantılar kaybolur, kim yorum yaptı kimse bilmez ve bazıları hiç geri vermez. Burada yorum otomatik kopyalanır ve bakiye sistemi adaleti garantiler.",
+  faq3q:'Bakiye sistemi nasıl çalışır?',faq3a:'Verdiğin her destek bakiyeni artırır. Yeni videolar yalnızca pozitif bakiyeyle paylaşılabilir. Bu, herkesin verip almasını garanti eder.',
+  faq4q:'12 saat sonra ne olur?',faq4a:"12 saat sonra 2. Tur başlar: videon aktif kalır ve 10 destek daha alabilir — toplamda 20! Süre dolduğunda video otomatik tamamlanır.",
+  faq5q:"Support Pool'u ana ekrana nasıl eklerim?",faq5a:'iOS (Safari): Paylaş simgesine dokun → "Ana Ekrana Ekle" → "Ekle". Android (Chrome): Menü (⋮) → "Ana ekrana ekle" → "Ekle". Uygulama yerel bir uygulama gibi çalışır!',
+  faq6q:"Arkadaşlarımın videolarını veya eski videoları paylaşabilir miyim?",faq6a:'Evet! Herhangi bir TikTok bağlantısı paylaşabilirsin — kendi videolarını, arkadaşların videolarını veya eski videoları. Yorum eklenebilir olduğu sürece çalışır.',
   tksOpen: '▶  TikTok Videosunu Şimdi Aç',
   tksSub: 'Yorum kopyalandı — TikTok\'a yapıştır',
   tksTitle: '📹 TikTok Videosunu Aç',
@@ -2104,6 +2163,13 @@ ar: {
   gS3btn:'انتقل إلى الملف الشخصي ←',
   gS4text:'🎓 لقد تعلمت كل شيء! من نشر الفيديوهات إلى دعم الآخرين واستكشاف ملفك الشخصي. أنت الآن رسمياً جزء من عائلة Support Pool. أنا فخور بك قليلاً. حقاً. الأعضاء الآخرون يتطلعون إليك — هيا! 🎉',
   gS4btn:'بمفردي! 🚀',
+  faqTitle:'❓ الأسئلة الشائعة',
+  faq1q:'ما هو Support Pool؟',faq1a:'Support Pool هي شبكة TikTok حصرية ومغلقة. يقوم الأعضاء بنشر مقاطع الفيديو ودعم بعضهم البعض بالتعليقات — تلقائياً وبشكل عادل وبدون فوضى.',
+  faq2q:'ما الذي يميز Support Pool عن مجموعات TikTok؟',faq2a:'في المجموعات العادية، تضيع الروابط، لا أحد يعرف من علّق بالفعل وبعضهم لا يردون أبداً. هنا يتم نسخ التعليق تلقائياً ونظام الرصيد يضمن العدالة.',
+  faq3q:'كيف يعمل نظام الرصيد؟',faq3a:'كل دعم تقدمه يزيد رصيدك. يمكنك نشر مقاطع فيديو جديدة فقط برصيد إيجابي. هذا يضمن أن الجميع يعطي ويأخذ.',
+  faq4q:'ماذا يحدث بعد 12 ساعة؟',faq4a:'بعد 12 ساعة تبدأ الجولة 2: يظل الفيديو نشطاً ويمكنه تلقي 10 دعم إضافي — 20 إجمالاً! عند انتهاء الوقت، يكتمل الفيديو تلقائياً.',
+  faq5q:'كيف أضيف Support Pool إلى الشاشة الرئيسية؟',faq5a:'iOS (Safari): اضغط أيقونة المشاركة ← "أضف إلى الشاشة الرئيسية" ← "أضف". Android (Chrome): القائمة (⋮) ← "إضافة إلى الشاشة الرئيسية" ← "إضافة". التطبيق يعمل كتطبيق أصلي!',
+  faq6q:'هل يمكنني نشر مقاطع فيديو قديمة أو لأصدقائي؟',faq6a:'نعم! يمكنك نشر أي رابط TikTok — مقاطع الفيديو الخاصة بك أو مقاطع الأصدقاء أو المقاطع القديمة. طالما يمكن إضافة التعليقات، فإنه يعمل بشكل مثالي.',
   tksOpen: '▶  افتح فيديو TikTok الآن',
   tksSub: 'تم نسخ التعليق — الصقه في TikTok',
   tksTitle: '📹 فتح فيديو TikTok',
@@ -2184,6 +2250,13 @@ zh: {
   gS3btn:'前往个人资料 →',
   gS4text:'🎓 你已经学会了一切！从发布视频到支持他人再到探索个人资料。你现在正式成为Support Pool大家庭的一员。我为你感到有点骄傲。真的。其他成员期待你的加入——出发！🎉',
   gS4btn:'独自飞翔！🚀',
+  faqTitle:'❓ 常见问题',
+  faq1q:'什么是Support Pool？',faq1a:'Support Pool是一个独家封闭的TikTok支持网络。成员发布他们的视频并互相用评论支持——自动、公平，没有混乱。',
+  faq2q:'Support Pool与TikTok群组有什么不同？',faq2a:'在普通群组中，链接会被埋没，没有人知道谁已经评论过，有些人从不回报。在这里，评论会自动复制，积分系统确保公平，你随时都能看到自己的状态。',
+  faq3q:'积分系统是如何工作的？',faq3a:'你给予的每个支持都会增加你的积分。只有积分为正才能发布新视频。这保证了每个人都给予和接受——没有搭便车者。',
+  faq4q:'12小时后会发生什么？',faq4a:'12小时后，第2轮开始：你的视频保持活跃，可以再获得10个支持——总共20个！时间到期时，视频自动完成。',
+  faq5q:'如何将Support Pool添加到主屏幕？',faq5a:'iOS（Safari）：点击分享图标→"添加到主屏幕"→"添加"。Android（Chrome）：菜单（⋮）→"添加到主屏幕"→"添加"。该应用程序像原生应用程序一样运行！',
+  faq6q:'我可以发布旧视频或朋友的视频吗？',faq6a:'可以！你可以发布任何TikTok链接——你自己的视频、朋友的视频或旧视频。只要还可以添加评论，就完全没问题。',
   tksOpen: '▶  立即打开TikTok视频',
   tksSub: '评论已复制 — 粘贴到TikTok',
   tksTitle: '📹 打开TikTok视频',
@@ -2264,6 +2337,13 @@ ja: {
   gS3btn:'プロフィールへ →',
   gS4text:'🎓 すべて学びました！動画の投稿から他のメンバーのサポート、プロフィールの探索まで。これであなたは正式にSupport Poolファミリーの一員です。少し誇りに思います。本当に。他のメンバーもあなたを待っています — さあ行きましょう！🎉',
   gS4btn:'一人で飛び立つ！🚀',
+  faqTitle:'❓ よくある質問',
+  faq1q:'Support Poolとは何ですか？',faq1a:'Support Poolは、独占的な閉鎖型TikTokサポートネットワークです。メンバーが動画を投稿し、コメントで互いをサポートします——自動的に、公平に、混乱なく。',
+  faq2q:'Support PoolはTikTokグループと何が違うの？',faq2a:'普通のグループではリンクが埋もれ、誰がコメントしたかわからず、一部は返さない。ここではコメントが自動コピーされ、残高システムが公平性を保証します。',
+  faq3q:'残高システムはどのように機能しますか？',faq3a:'行ったサポートごとに残高が増えます。新しい動画は残高がプラスの時のみ投稿できます。これにより、全員が与えて受け取ることが保証されます。',
+  faq4q:'12時間後はどうなりますか？',faq4a:'12時間後にラウンド2が始まります：動画は引き続きアクティブで、さらに10サポートを受けられます——合計20！時間切れになると、動画は自動的に完了します。',
+  faq5q:'Support Poolをホーム画面に追加するには？',faq5a:'iOS（Safari）：共有アイコンをタップ→「ホーム画面に追加」→「追加」。Android（Chrome）：メニュー（⋮）→「ホーム画面に追加」→「追加」。アプリはネイティブアプリのように動作します！',
+  faq6q:'古い動画や友人の動画を投稿できますか？',faq6a:'はい！任意のTikTokリンクを投稿できます——自分の動画、友人の動画、または古い動画。コメントがまだ追加できる限り、完璧に動作します。',
   tksOpen: '▶  TikTok動画を今すぐ開く',
   tksSub: 'コメントをコピーしました — TikTokに貼り付け',
   tksTitle: '📹 TikTok動画を開く',
@@ -2344,6 +2424,13 @@ pl: {
   gS3btn:'Przejdź do Profilu →',
   gS4text:'🎓 Nauczyłeś się wszystkiego! Od publikowania filmów po wspieranie innych aż po przeglądanie profilu. Jesteś teraz oficjalnie częścią rodziny Support Pool. Jestem z Ciebie trochę dumny. Naprawdę. Inni członkowie czekają na Ciebie — do dzieła! 🎉',
   gS4btn:'Na własne skrzydła! 🚀',
+  faqTitle:'❓ Często Zadawane Pytania',
+  faq1q:'Czym jest Support Pool?',faq1a:'Support Pool to ekskluzywna, zamknięta sieć wsparcia TikTok. Członkowie publikują swoje filmy i wspierają się nawzajem komentarzami — automatycznie, sprawiedliwie i bez chaosu.',
+  faq2q:'Co odróżnia Support Pool od grup TikTok?',faq2a:'W zwykłych grupach linki giną, nikt nie wie kto już skomentował i niektórzy nigdy nie oddają. Tu komentarz kopiuje się automatycznie, a system salda zapewnia sprawiedliwość.',
+  faq3q:'Jak działa system salda?',faq3a:'Każde wsparcie, które dajesz, zwiększa Twoje saldo. Możesz publikować nowe filmy tylko z dodatnim saldem. To gwarantuje, że wszyscy dają i otrzymują.',
+  faq4q:'Co się dzieje po 12 godzinach?',faq4a:'Po 12 godzinach zaczyna się Runda 2: Twój film pozostaje aktywny i może zdobyć do 10 kolejnych wsparć — łącznie 20! Gdy czas minie, film jest automatycznie zakończony.',
+  faq5q:'Jak dodać Support Pool do ekranu głównego?',faq5a:'iOS (Safari): Stuknij ikonę udostępniania → "Dodaj do ekranu głównego" → "Dodaj". Android (Chrome): Menu (⋮) → "Dodaj do ekranu głównego" → "Dodaj". Aplikacja działa jak natywna!',
+  faq6q:'Czy mogę publikować stare filmy lub filmy znajomych?',faq6a:'Tak! Możesz publikować dowolny link TikTok — własne filmy, filmy znajomych lub starsze filmy. Dopóki można dodawać komentarze, działa idealnie.',
   tksOpen: '▶  Otwórz Film TikTok Teraz',
   tksSub: 'Skomentuj skopiowany — wklej na TikTok',
   tksTitle: '📹 Otwórz Film TikTok',
@@ -3205,6 +3292,7 @@ function submitPost() {
   toast(t('okPost'), 'success');
   addNotif(CU, '📹', 'Video gepostet – '+(isFirst?5:R1_NEED)+' Supports in 12h benötigt');
   save();
+  haptic([15,10,40]);
   guideAdvance('video-posted');
   // Show success modal with member count
   showPostSuccess();
@@ -3244,6 +3332,8 @@ function celebrate() {
   var el = ge('cel');
   st('cel-msg', t('celText'));
   el.classList.add('active');
+  playCelebrationSound();
+  haptic([20,30,20]);
   var colors = ['#e8b84b','#ffd166','#fff','#10d98a','#5b9cff','#ff6eb4'];
   for (var i = 0; i < 32; i++) {
     var p = document.createElement('div');
@@ -3318,6 +3408,8 @@ function renderProfile() {
   st('p-given', u.stats.given||0); st('p-recv', u.stats.received||0); st('p-vids', (u.myVideos||[]).length);
   setContactMode(_contactMode || 'admin');
   renderNotifs();
+  renderFaq();
+  var l=L[LANG]||L.de; var ft=ge('t-faq-title'); if(ft) ft.textContent=l.faqTitle||'❓ Häufige Fragen';
 }
 
 function renderNotifs() {
@@ -4660,6 +4752,59 @@ function renderGuide(){
     bh='<button class="g-btn-main" onclick="skipGuide()">'+esc(l.gS4btn||'Auf eigene Faust! 🚀')+'</button>';
   }
   bub.textContent=bt;bts.innerHTML=bh;
+}
+
+/* ── FAQ ── */
+function toggleFaq(idx){
+  var items=document.querySelectorAll('.faq-item');
+  for(var i=0;i<items.length;i++){
+    if(i===idx) items[i].classList.toggle('open');
+    else items[i].classList.remove('open');
+  }
+  haptic(10);
+}
+function renderFaq(){
+  var c=ge('faq-list');if(!c)return;
+  var l=L[LANG]||L.de;
+  var qs=[
+    {q:l.faq1q||'',a:l.faq1a||''},
+    {q:l.faq2q||'',a:l.faq2a||''},
+    {q:l.faq3q||'',a:l.faq3a||''},
+    {q:l.faq4q||'',a:l.faq4a||''},
+    {q:l.faq5q||'',a:l.faq5a||''},
+    {q:l.faq6q||'',a:l.faq6a||''}
+  ];
+  var h='';
+  for(var i=0;i<qs.length;i++){
+    h+='<div class="faq-item" id="fi'+i+'">';
+    h+='<div class="faq-q" onclick="toggleFaq('+i+')"><span class="faq-q-text">'+esc(qs[i].q)+'</span><span class="faq-chevron">▼</span></div>';
+    h+='<div class="faq-a"><div class="faq-a-inner">'+esc(qs[i].a)+'</div></div>';
+    h+='</div>';
+  }
+  c.innerHTML=h;
+}
+
+/* ── CELEBRATION SOUND ── */
+function playCelebrationSound(){
+  try{
+    var ctx=new(window.AudioContext||window.webkitAudioContext)();
+    var notes=[523.25,659.25,783.99,1046.50];
+    notes.forEach(function(f,i){
+      var osc=ctx.createOscillator(),g=ctx.createGain();
+      osc.connect(g);g.connect(ctx.destination);
+      osc.type='sine';osc.frequency.value=f;
+      var t0=ctx.currentTime+i*0.13;
+      g.gain.setValueAtTime(0,t0);
+      g.gain.linearRampToValueAtTime(0.22,t0+0.03);
+      g.gain.exponentialRampToValueAtTime(0.001,t0+0.28);
+      osc.start(t0);osc.stop(t0+0.3);
+    });
+  }catch(e){}
+}
+
+/* ── HAPTIC FEEDBACK (Surprise!) ── */
+function haptic(pattern){
+  try{if(navigator.vibrate)navigator.vibrate(pattern||15);}catch(e){}
 }
 
 </script>
