@@ -3830,7 +3830,8 @@ function cleanInactive() {
       var m = DB.members[k];
       if (!m) return false;
       if (m.role==='admin') return true;
-      if (m.lastPost && (now-m.lastPost)>thr) { m.status='inactive'; n++; return false; }
+      var lastActivity = m.lastPost || m.joined || 0;
+      if (lastActivity && (now - lastActivity) > thr) { m.status='inactive'; n++; return false; }
       return true;
     });
   });
