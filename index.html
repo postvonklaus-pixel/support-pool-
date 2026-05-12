@@ -518,7 +518,7 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
 
 /* ── LIVE STATS (login) ── */
 .live-stats{display:flex;gap:0;justify-content:center;margin-top:14px;background:var(--bg2);border-radius:14px;overflow:hidden}
-.live-stat{flex:1;padding:12px 6px;text-align:center;border-right:1px solid var(--bdr)}
+.live-stat{flex:1;padding:12px 3px;text-align:center;border-right:1px solid var(--bdr)}
 .live-stat:last-child{border-right:none}
 .live-stat-num{font-family:'Space Grotesk',sans-serif;font-size:1.4rem;font-weight:700;color:var(--v);line-height:1}
 .live-stat-lbl{font-size:9px;color:var(--t2);margin-top:3px;letter-spacing:.06em;text-transform:uppercase}
@@ -833,6 +833,10 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
         <div class="live-stat">
           <div class="live-stat-num" id="ls-vid">0</div>
           <div class="live-stat-lbl" id="t-ls-vid">Videos</div>
+        </div>
+        <div class="live-stat">
+          <div class="live-stat-num" id="ls-live" style="color:#34c759">0</div>
+          <div class="live-stat-lbl" id="t-ls-live">🟢 Live</div>
         </div>
       </div>
     </div>
@@ -2627,7 +2631,7 @@ function setLang(k) {
 function applyLang() {
   var l = L[LANG] || L.de;
   // Login
-  st('t-tagline', l.tagline); st('t-ls-mem', l.lsMem); st('t-ls-grp', l.lsGrp); st('t-ls-sup', l.lsSup); st('t-ls-vid', l.lsVid||'Videos');
+  st('t-tagline', l.tagline); st('t-ls-mem', l.lsMem); st('t-ls-grp', l.lsGrp); st('t-ls-sup', l.lsSup); st('t-ls-vid', l.lsVid||'Videos'); st('t-ls-live', l.lsLive||'🟢 Live');
   st('t-login', l.login); st('t-free', l.free);
   sa('loginInput', 'placeholder', t('loginPH')||'TikTok @username');
   // Home
@@ -2846,7 +2850,8 @@ function renderLoginStats() {
   }
   var sup = DB.settings.totalSupports || 0;
   var vid = Object.keys(DB.videos).length;
-  st('ls-mem', mem); st('ls-grp', grp); st('ls-sup', sup); st('ls-vid', vid);
+  var live = Object.values(DB.videos).filter(function(v){ return v.status==='open'; }).length;
+  st('ls-mem', mem); st('ls-grp', grp); st('ls-sup', sup); st('ls-vid', vid); st('ls-live', live);
 }
 
 // ── LOGIN AUTOCOMPLETE ─────────────────────────────────────────────────
