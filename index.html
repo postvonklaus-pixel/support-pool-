@@ -184,7 +184,13 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
 
 /* ── POST BUTTON ── */
 #postBtn{animation:postPulse 3.5s ease-in-out infinite}
-@keyframes postPulse{0%,100%{box-shadow:0 4px 16px rgba(212,134,10,.32)}50%{box-shadow:0 6px 28px rgba(212,134,10,.58),0 0 40px rgba(212,134,10,.12)}}
+@keyframes postPulse{
+  0%,100%{box-shadow:inset 0 1.5px 0 rgba(255,255,255,.3),inset 0 -1px 0 rgba(0,0,0,.2),0 5px 0 #312e81,0 8px 24px rgba(79,70,229,.42)}
+  50%{box-shadow:inset 0 1.5px 0 rgba(255,255,255,.3),inset 0 -1px 0 rgba(0,0,0,.2),0 5px 0 #312e81,0 10px 36px rgba(99,102,241,.68),0 0 44px rgba(99,102,241,.18)}}
+/* After reveal: chain both reveal + pulse */
+#postBtn.btn-revealed{
+  animation:btnReveal .52s cubic-bezier(.34,1.4,.64,1) both,
+            postPulse 3.5s .54s ease-in-out infinite}
 #post-bal-warn{display:none;background:rgba(255,59,48,.06);border:1.5px solid rgba(255,59,48,.18);border-radius:14px;padding:14px;margin-bottom:10px;text-align:center}
 #post-bal-warn-text{font-size:18px;font-weight:800;color:var(--red)}
 #post-bal-warn-sub{font-size:12px;color:var(--t2);margin-top:5px;font-weight:600}
@@ -216,23 +222,47 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
 .prog-fill{height:100%;border-radius:3px;transition:width .5s ease}
 .sup-btn{
   width:100%;padding:14px 20px;border:none;border-radius:14px;
-  background:linear-gradient(155deg,#f7c04a 0%,#e09010 28%,#c47200 62%,#a05800 100%);
-  color:#fff;font-size:13px;font-weight:900;cursor:pointer;
+  background:linear-gradient(155deg,#22d3ee 0%,#06b6d4 30%,#0891b2 62%,#0e7490 100%);
+  color:#fff;font-size:14px;font-weight:900;cursor:pointer;
   font-family:'Space Grotesk',sans-serif;text-transform:uppercase;letter-spacing:.07em;
   position:relative;overflow:hidden;
   transition:transform .1s cubic-bezier(.34,1.56,.64,1),box-shadow .12s;
   box-shadow:
-    inset 0 1.5px 0 rgba(255,255,255,.28),
-    inset 0 -1px 0 rgba(0,0,0,.16),
-    0 4px 0 #7a4200,
-    0 7px 22px rgba(212,134,10,.48),
+    inset 0 1.5px 0 rgba(255,255,255,.30),
+    inset 0 -1px 0 rgba(0,0,0,.18),
+    0 4px 0 #164e63,
+    0 7px 22px rgba(6,182,212,.5),
     0 2px 6px rgba(0,0,0,.14);
-  text-shadow:0 1px 3px rgba(0,0,0,.24);
+  text-shadow:0 1px 3px rgba(0,0,0,.22);
   display:flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap}
-.sup-btn::before{content:'';position:absolute;inset:0;background:linear-gradient(100deg,transparent 0%,rgba(255,255,255,.2) 50%,transparent 100%);transform:translateX(-100%);animation:shimmerGold 3.5s 0.8s infinite;pointer-events:none}
-.sup-btn:active:not(:disabled){transform:translateY(3px);box-shadow:inset 0 1.5px 0 rgba(255,255,255,.28),inset 0 -1px 0 rgba(0,0,0,.16),0 1px 0 #7a4200,0 2px 10px rgba(212,134,10,.35)}
+.sup-btn::before{content:'';position:absolute;inset:0;background:linear-gradient(100deg,transparent 0%,rgba(255,255,255,.22) 50%,transparent 100%);transform:translateX(-100%);animation:shimmerGold 3.5s 0.8s infinite;pointer-events:none}
+.sup-btn:active:not(:disabled){transform:translateY(3px);box-shadow:inset 0 1.5px 0 rgba(255,255,255,.28),inset 0 -1px 0 rgba(0,0,0,.16),0 1px 0 #164e63,0 2px 10px rgba(6,182,212,.38)}
 .sup-btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
 .sup-btn-anim{}
+
+/* ── POST & SUPPORT BUTTON COLORS ── */
+#postBtn{
+  font-size:14px;
+  background:linear-gradient(155deg,#818cf8 0%,#6366f1 25%,#4f46e5 60%,#3730a3 100%);
+  box-shadow:
+    inset 0 1.5px 0 rgba(255,255,255,.30),
+    inset 0 -1px 0 rgba(0,0,0,.20),
+    0 5px 0 #312e81,
+    0 8px 28px rgba(79,70,229,.55),
+    0 2px 8px rgba(0,0,0,.16);
+  text-shadow:0 1px 3px rgba(0,0,0,.28)}
+#postBtn:active:not(:disabled){
+  transform:translateY(4px);
+  box-shadow:inset 0 1.5px 0 rgba(255,255,255,.28),inset 0 -1px 0 rgba(0,0,0,.2),
+    0 1px 0 #312e81,0 3px 14px rgba(79,70,229,.4)}
+#postBtn::before{animation:shimmerGold 4s 2s infinite}
+
+/* ── SCROLL REVEAL ANIMATION ── */
+@keyframes btnReveal{
+  from{opacity:0;transform:translateY(24px) scale(.93)}
+  to{opacity:1;transform:translateY(0) scale(1)}}
+.btn-revealed{animation:btnReveal .52s cubic-bezier(.34,1.4,.64,1) both}
+
 /* ── LEADERBOARD ── */
 .lb-card,.leaderboard-card{background:#fff;border:1.5px solid var(--bdr);border-radius:18px;padding:14px;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,.05)}
 .lb-title{font-family:'Space Grotesk',sans-serif;font-size:.85rem;font-weight:800;color:var(--text);margin-bottom:10px;display:flex;align-items:center;gap:7px;text-transform:uppercase;letter-spacing:.07em}
@@ -948,7 +978,7 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
       </div>
 
       <!-- Post Button -->
-      <button class="btn-prime mb12" id="postBtn" onclick="openPostModal()" style="font-size:15px;padding:16px">
+      <button class="btn-prime mb12" id="postBtn" onclick="openPostModal()" style="padding:16px">
         📹 <span id="t-post-btn">Video posten</span>
       </button>
 
@@ -3064,6 +3094,7 @@ function renderHome() {
   renderLeaderboard();
   renderDailyGoal(u);
   updateNotifBadge();
+  initBtnReveal();
   startCountdownTick();
   checkActivityReminder();
 }
@@ -4543,6 +4574,30 @@ function checkPendingOnBoot() {
     // Timer still running — start checking
     startSchedCheck();
   }
+}
+
+// ── SCROLL REVEAL ─────────────────────────────────────────────────────────
+var _revealObs = null;
+function initBtnReveal() {
+  if (!window.IntersectionObserver) return;
+  if (_revealObs) _revealObs.disconnect();
+  _revealObs = new IntersectionObserver(function(entries) {
+    entries.forEach(function(e) {
+      if (!e.isIntersecting) return;
+      var el = e.target;
+      el.classList.remove('btn-revealed');
+      // Force reflow so animation re-triggers even if class was already there
+      void el.offsetWidth;
+      el.classList.add('btn-revealed');
+      _revealObs.unobserve(el);
+    });
+  }, { threshold: 0.25 });
+  var pb = ge('postBtn');
+  if (pb) { pb.classList.remove('btn-revealed'); _revealObs.observe(pb); }
+  document.querySelectorAll('.sup-btn').forEach(function(b) {
+    b.classList.remove('btn-revealed');
+    _revealObs.observe(b);
+  });
 }
 
 function fmtMs(ms) {
