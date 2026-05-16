@@ -326,6 +326,12 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
 .setting-sub{font-size:11px;color:var(--t3);margin-top:2px}
 .bc-compose{background:linear-gradient(135deg,rgba(249,115,22,.1),rgba(124,58,237,.06));border:1px solid rgba(249,115,22,.22);border-radius:14px;padding:12px;margin-bottom:12px}
 .bc-compose-title{font-size:12px;font-weight:700;color:#fb923c;margin-bottom:7px;display:flex;align-items:center;gap:5px}
+#screen-admin .sp-input{background:#1a1c30!important;color:#f0f2ff!important;-webkit-text-fill-color:#f0f2ff!important;border-color:rgba(255,255,255,.18)!important;caret-color:#a78bfa!important}
+#screen-admin .sp-input::placeholder{color:#505878!important}
+#screen-admin .sp-input:focus{border-color:#a78bfa!important;box-shadow:0 0 0 3px rgba(167,139,250,.15)!important}
+.bc-timer{display:flex;gap:5px;margin-bottom:8px;flex-wrap:wrap}
+.bc-timer-btn{flex:1;min-width:0;padding:7px 4px;border-radius:10px;border:1.5px solid rgba(249,115,22,.3);background:rgba(249,115,22,.06);color:#fb923c;font-size:10px;font-weight:700;cursor:pointer;font-family:'Space Grotesk',sans-serif;text-transform:uppercase;letter-spacing:.04em;transition:all .15s;text-align:center}
+.bc-timer-btn.active{background:rgba(249,115,22,.22);border-color:#fb923c;box-shadow:0 2px 8px rgba(249,115,22,.2)}
 .fb-hint{background:rgba(96,165,250,.06);border:1px solid rgba(96,165,250,.15);border-radius:12px;padding:12px;font-size:12px;color:#93c5fd;line-height:1.5;margin-bottom:10px}
 .fb-hint strong{color:#60a5fa;display:block;margin-bottom:5px}
 
@@ -1095,6 +1101,13 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
         <div class="bc-compose">
           <div class="bc-compose-title">📢 Broadcast an alle senden</div>
           <textarea class="sp-input mb8" id="broadcastInput" rows="2" placeholder="Nachricht an alle Mitglieder..."></textarea>
+          <div style="font-size:10px;color:#fb923c;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px">⏱ Sichtbar für</div>
+          <div class="bc-timer" id="bc-timer">
+            <button class="bc-timer-btn" data-ms="10800000" onclick="bcSetTimer(this)">3 Std</button>
+            <button class="bc-timer-btn active" data-ms="21600000" onclick="bcSetTimer(this)">6 Std</button>
+            <button class="bc-timer-btn" data-ms="43200000" onclick="bcSetTimer(this)">12 Std</button>
+            <button class="bc-timer-btn" data-ms="86400000" onclick="bcSetTimer(this)">24 Std</button>
+          </div>
           <button class="btn-prime" onclick="sendBroadcast()" style="padding:11px;font-size:13px">📢 An alle senden</button>
         </div>
         <div id="adm-msg-list"></div>
@@ -1383,9 +1396,10 @@ function checkBC() {
   if (!DB.settings) return;
   var bc = DB.settings.broadcast || '';
   if (!bc) return;
-  // Auto-expire broadcast after 24 hours
+  // Auto-expire broadcast after configured duration (default 24h)
   var ts = DB.settings.broadcastTs || 0;
-  if (ts && (Date.now() - ts) >= 86400000) {
+  var dur = DB.settings.broadcastDuration || 86400000;
+  if (ts && (Date.now() - ts) >= dur) {
     DB.settings.broadcast = '';
     DB.settings.broadcastTs = 0;
     save();
@@ -1529,14 +1543,25 @@ function pickDmRes() {
 }
 
 // BROADCAST (Admin)
+var _bcDurationMs = 21600000; // default 6h
+
+function bcSetTimer(btn) {
+  _bcDurationMs = parseInt(btn.getAttribute('data-ms'), 10) || 21600000;
+  var btns = document.querySelectorAll('.bc-timer-btn');
+  for (var i = 0; i < btns.length; i++) btns[i].classList.remove('active');
+  btn.classList.add('active');
+}
+
 function sendBroadcast() {
   var msg = (ge('broadcastInput') && ge('broadcastInput').value || '').trim();
   if (!msg) return;
   if (!DB.settings) DB.settings = {};
   DB.settings.broadcast = msg;
   DB.settings.broadcastTs = Date.now();
+  DB.settings.broadcastDuration = _bcDurationMs;
   ge('broadcastInput').value = '';
-  toast('📢 '+(t('okSave')||'Gesendet'), 'success');
+  var hrs = Math.round(_bcDurationMs / 3600000);
+  toast('📢 Gesendet – sichtbar für ' + hrs + ' Std', 'success');
   save();
 }
 
@@ -2849,7 +2874,11 @@ function renderLoginStats() {
     DB.settings.totalSupports = Object.values(DB.videos).reduce(function(s,v){ return s+(v.r1Supporters||[]).length+(v.r2Supporters||[]).length; }, 0);
   }
   var sup = DB.settings.totalSupports || 0;
-  var vid = Object.keys(DB.videos).length;
+  // Persistent video counter — never decreases when videos are deleted
+  if (DB.settings.totalVideos === undefined) {
+    DB.settings.totalVideos = Object.keys(DB.videos).length;
+  }
+  var vid = DB.settings.totalVideos || 0;
   var live = Object.values(DB.videos).filter(function(v){ return v.status==='open'; }).length;
   st('ls-mem', mem); st('ls-grp', grp); st('ls-sup', sup); st('ls-vid', vid); st('ls-live', live);
 }
@@ -3023,7 +3052,7 @@ function renderHome() {
   var bel = ge('bal-num');
   bel.textContent = bal;
   bel.className = 'bal-num' + (bal>0?' pos':bal<0?' neg':'');
-  st('stat-given', g); st('stat-recv', r); st('stat-vids', (u.myVideos||[]).length);
+  st('stat-given', g); st('stat-recv', r); st('stat-vids', u.postsTotal||0);
   var tot = g+r, pct = tot>0?Math.round(g/tot*100):0;
   var circ = 175.9, off = circ - (circ*pct/100);
   ge('ring-fill').style.strokeDashoffset = off;
@@ -3291,6 +3320,8 @@ function submitPost() {
   u.myVideos.push(vid);
   u.lastPost = now;
   u.postsTotal = (u.postsTotal||0) + 1;
+  if (!DB.settings) DB.settings = {};
+  DB.settings.totalVideos = (DB.settings.totalVideos||0) + 1;
   closeModal('postModal');
   ge('postUrl').value = '';
   toast(t('okPost'), 'success');
@@ -3409,7 +3440,7 @@ function renderProfile() {
       return '<span style="color:var(--t2);font-size:12px">'+item+'</span>';
     }).join('<br>');
   }
-  st('p-given', u.stats.given||0); st('p-recv', u.stats.received||0); st('p-vids', (u.myVideos||[]).length);
+  st('p-given', u.stats.given||0); st('p-recv', u.stats.received||0); st('p-vids', u.postsTotal||0);
   setContactMode(_contactMode || 'admin');
   renderNotifs();
   renderFaq();
@@ -4486,6 +4517,8 @@ function autoPostScheduled() {
   };
   u.lastPost = now;
   u.postsTotal = (u.postsTotal||0) + 1;
+  if (!DB.settings) DB.settings = {};
+  DB.settings.totalVideos = (DB.settings.totalVideos||0) + 1;
   if (!u.myVideos) u.myVideos = [];
   u.myVideos.push(vid);
   // Clear pending
