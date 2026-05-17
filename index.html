@@ -4177,6 +4177,8 @@ function openTkSheet(url) {
   ge('tks-state-2').style.display = 'none';
   ge('tiktok-sheet').classList.add('open');
   document.body.style.overflow = 'hidden';
+  // Push history entry so the browser back button closes the sheet on desktop
+  try { history.pushState({spModal: 'tktok'}, ''); } catch(e) {}
 }
 function closeTkSheet() {
   _pendingSupportVid = null;
@@ -4221,8 +4223,23 @@ function openTkLink() {
     _pendingSupportVid = null;
     guideAdvance('support-done');
   }
-  if (_tkUrl) window.open(_tkUrl, '_blank');
-  // Transition to "back to app" state instead of closing
+
+  if (!_tkUrl) return;
+
+  // On mobile: navigate same-tab so pressing Back returns cleanly to the app.
+  // On desktop: new tab — sheet transitions to state-2 for manual "Zurück".
+  var isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) ||
+    (window.matchMedia && window.matchMedia('(pointer:coarse)').matches);
+
+  if (isMobile) {
+    // Mark that we're leaving for TikTok — app shows toast on return
+    try { localStorage.setItem('sp_tk_return', '1'); } catch(e) {}
+    window.location.href = _tkUrl;
+    return; // page navigates away — no need to update UI
+  }
+
+  // Desktop: open new tab, show "Zurück zur App" state
+  window.open(_tkUrl, '_blank');
   var l = L[LANG] || L.de;
   var s1 = ge('tks-state-1'), s2 = ge('tks-state-2');
   if (s1) s1.style.display = 'none';
@@ -4685,6 +4702,12 @@ function closeTour() {
   renderLoginStats();
   setSyncUI(navigator.onLine ? 'connecting' : 'offline');
   initFB();
+  // Back-button closes the TikTok sheet on desktop instead of navigating away
+  window.addEventListener('popstate', function() {
+    var sheet = ge('tiktok-sheet');
+    if (sheet && sheet.classList.contains('open')) { closeTkSheet(); }
+  });
+
   // 24h auto-login
   var _savedKey = loadSession();
   if (_savedKey && DB.members[_savedKey] && DB.members[_savedKey].status === 'active') {
@@ -4692,6 +4715,15 @@ function closeTour() {
     setTimeout(function() {
       if (DB.members[CU] && DB.members[CU].status === 'active') {
         enterApp();
+        // Returning from TikTok on mobile (same-tab navigation)
+        try {
+          if (localStorage.getItem('sp_tk_return') === '1') {
+            localStorage.removeItem('sp_tk_return');
+            setTimeout(function() {
+              toast('✅ Super! Dein Support wurde gespeichert. 🎉', 'success', 3000);
+            }, 900);
+          }
+        } catch(e) {}
       } else { clearSession(); }
     }, 500);
   }
