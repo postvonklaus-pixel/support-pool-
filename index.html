@@ -4232,10 +4232,16 @@ function openTkLink() {
     (window.matchMedia && window.matchMedia('(pointer:coarse)').matches);
 
   if (isMobile) {
-    // Mark that we're leaving for TikTok — app shows toast on return
+    // Mark return flag so the app shows a toast when the page reloads (Android same-tab)
     try { localStorage.setItem('sp_tk_return', '1'); } catch(e) {}
     window.location.href = _tkUrl;
-    return; // page navigates away — no need to update UI
+    // iOS opens TikTok as native app without navigating the browser tab.
+    // After a short delay, close the sheet so the user returns to a clean home screen.
+    setTimeout(function() {
+      var sheet = ge('tiktok-sheet');
+      if (sheet && sheet.classList.contains('open')) { closeTkSheet(); }
+    }, 700);
+    return;
   }
 
   // Desktop: open new tab, show "Zurück zur App" state
