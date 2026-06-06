@@ -2562,6 +2562,7 @@ var CU = null;
 var DB = {groups:{}, members:{}, videos:{}, messages:{}, settings:{admins:DEFAULT_ADMINS, tpl:DEFAULT_TPL, nextG:2}, _ts:0};
 var FB = null, FB_REF = null, FB_PUSH_TS = 0, FB_PENDING = false, FB_RECEIVED_ONCE = false;
 var PIN_BUF = '', PIN_ATT = 0, PIN_USER = '', PIN_DISP_NAME = '';
+var _lastMigratedGhost = null; // tracks ghost key removed during login migration
 var CP_BUF = '', CP_STEP = 'new', CP_FIRST = '';
 var PENDING_DEL = null, PENDING_REPLY = null;
 var ADMIN_TAB = 'ov';
@@ -2852,6 +2853,16 @@ function pushFB() {
         DB.groups  = r.groups || DB.groups;
         DB.members = Object.assign({}, r.members);
         if (snapMember && CU) DB.members[CU] = snapMember; // keep our own latest stats
+        // If ghost migration just ran, Firebase may have restored the deleted ghost key.
+        // Re-remove it so we don't push it back and create a duplicate.
+        if (_lastMigratedGhost && DB.members[_lastMigratedGhost]) {
+          Object.values(DB.groups).forEach(function(g) {
+            var gi = (g.members||[]).indexOf(_lastMigratedGhost);
+            if (gi >= 0) g.members.splice(gi, 1);
+          });
+          delete DB.members[_lastMigratedGhost];
+        }
+        _lastMigratedGhost = null;
         // Videos: overlay local version if it has MORE supporters
         // (handles the case where we just supported a video before sync)
         DB.videos = Object.assign({}, r.videos || {});
@@ -3029,45 +3040,29 @@ function completeLogin(key, disp) {
     var admins = DB.settings.admins || DEFAULT_ADMINS;
     var isAdmin = admins.indexOf(key) >= 0 || admins.indexOf(disp) >= 0 || (DB.members[key] && DB.members[key].role === 'admin');
 
-    // ── Detect & merge ghost duplicate (old case-variant key) ──────────────
+    // ── Detect ghost duplicate (old case-variant key) ──────────────────────
+    // Only migrate when the canonical key has NO existing profile — this prevents
+    // accidentally merging two genuinely different members who share the same
+    // normalised username (same name, different capitalisation).
     var ghostKey = _findGhostKey(key, disp);
     if (ghostKey && !DB.members[key]) {
-      // Old entry exists under wrong casing — migrate it to canonical lowercase key.
+      // The only existing entry is the old-format ghost: safe to migrate.
       var ghost = DB.members[ghostKey];
       DB.members[key] = Object.assign({}, ghost, {key: key, name: disp});
-      // Fix group membership: replace old key with canonical one everywhere
       Object.values(DB.groups).forEach(function(g) {
         var idx = (g.members||[]).indexOf(ghostKey);
         if (idx >= 0) { g.members.splice(idx, 1, key); }
-        // Also remove any accidental duplicate of canonical key
         while (g.members.indexOf(key) !== g.members.lastIndexOf(key)) {
           g.members.splice(g.members.lastIndexOf(key), 1);
         }
       });
       delete DB.members[ghostKey];
-    } else if (ghostKey && DB.members[key]) {
-      // Both old ghost AND canonical key exist — merge stats into canonical, remove ghost.
-      var g0 = DB.members[ghostKey], c0 = DB.members[key];
-      if (!c0.stats) c0.stats = {given:0, received:0};
-      if (!g0.stats) g0.stats = {given:0, received:0};
-      // Keep highest stats (avoid erasing real progress)
-      c0.stats.given    = Math.max(c0.stats.given||0,    g0.stats.given||0);
-      c0.stats.received = Math.max(c0.stats.received||0, g0.stats.received||0);
-      c0.postsTotal     = Math.max(c0.postsTotal||0,     g0.postsTotal||0);
-      // Merge video lists
-      var merged = (c0.myVideos||[]).concat(g0.myVideos||[]).filter(function(v,i,a){return a.indexOf(v)===i;});
-      c0.myVideos = merged;
-      // Clean up ghost from groups
-      Object.values(DB.groups).forEach(function(g) {
-        var idx = (g.members||[]).indexOf(ghostKey);
-        if (idx >= 0) g.members.splice(idx, 1);
-        while (g.members.indexOf(key) !== g.members.lastIndexOf(key)) {
-          g.members.splice(g.members.lastIndexOf(key), 1);
-        }
-      });
-      delete DB.members[ghostKey];
+      _lastMigratedGhost = ghostKey; // remember for pushFB race-condition cleanup
     }
-    // ──────────────────────────────────────────────────────────────────────
+    // If both ghost AND canonical already exist: do NOT merge — they may belong to
+    // two different real-world members who share a normalised username.  Leave both
+    // entries intact; the admin can rename one to disambiguate.
+    // ──────────────────────────────────────────────────────────────────────────────
 
     if (DB.members[key]) {
       var m = DB.members[key];
