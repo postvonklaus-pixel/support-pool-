@@ -3066,7 +3066,7 @@ function completeLogin(key, disp) {
 
     if (DB.members[key]) {
       var m = DB.members[key];
-      if (!m.name || m.name === key) m.name = disp;
+      m.name = disp; // always use what was typed — fixes historically corrupted display names
       if (m.status === 'inactive') {
         var g2 = findSlot();
         if (!g2) { toast('Keine Gruppe frei', 'error'); return; }
