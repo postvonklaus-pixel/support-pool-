@@ -3003,16 +3003,22 @@ function doLogin() {
   completeLogin(key, raw);
 }
 
-// Find any existing member key that normalises to the same canonical key.
-// Firebase is case-sensitive, so "Bella" and "bella" are two different paths.
-// This function detects those ghosts and returns the old (wrongly-cased) key.
-function _findGhostKey(canonicalKey) {
+// Find any existing member key that normalises to the same canonical key AND
+// whose stored name matches the displayName being logged in.
+// This prevents two genuinely different users whose usernames happen to collide
+// after normalisation from being merged into each other's account.
+function _findGhostKey(canonicalKey, displayName) {
+  var lowerDisp = (displayName || '').toLowerCase().trim();
   var keys = Object.keys(DB.members);
   for (var i = 0; i < keys.length; i++) {
     var k = keys[i];
     if (k === canonicalKey) continue;
     var norm = fbKey(fbDec(k).toLowerCase());
-    if (norm === canonicalKey) return k;
+    if (norm !== canonicalKey) continue;
+    // Key collision found — only treat it as the same person's ghost if the
+    // stored name also matches what the user is typing in right now.
+    var storedName = (DB.members[k].name || fbDec(k) || '').toLowerCase().trim();
+    if (storedName === lowerDisp) return k;
   }
   return null;
 }
@@ -3024,7 +3030,7 @@ function completeLogin(key, disp) {
     var isAdmin = admins.indexOf(key) >= 0 || admins.indexOf(disp) >= 0 || (DB.members[key] && DB.members[key].role === 'admin');
 
     // ── Detect & merge ghost duplicate (old case-variant key) ──────────────
-    var ghostKey = _findGhostKey(key);
+    var ghostKey = _findGhostKey(key, disp);
     if (ghostKey && !DB.members[key]) {
       // Old entry exists under wrong casing — migrate it to canonical lowercase key.
       var ghost = DB.members[ghostKey];
