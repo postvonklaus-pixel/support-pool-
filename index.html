@@ -3003,11 +3003,66 @@ function doLogin() {
   completeLogin(key, raw);
 }
 
+// Find any existing member key that normalises to the same canonical key.
+// Firebase is case-sensitive, so "Bella" and "bella" are two different paths.
+// This function detects those ghosts and returns the old (wrongly-cased) key.
+function _findGhostKey(canonicalKey) {
+  var keys = Object.keys(DB.members);
+  for (var i = 0; i < keys.length; i++) {
+    var k = keys[i];
+    if (k === canonicalKey) continue;
+    var norm = fbKey(fbDec(k).toLowerCase());
+    if (norm === canonicalKey) return k;
+  }
+  return null;
+}
+
 function completeLogin(key, disp) {
   if (!disp) disp = fbDec(key);
   function finish() {
     var admins = DB.settings.admins || DEFAULT_ADMINS;
     var isAdmin = admins.indexOf(key) >= 0 || admins.indexOf(disp) >= 0 || (DB.members[key] && DB.members[key].role === 'admin');
+
+    // ── Detect & merge ghost duplicate (old case-variant key) ──────────────
+    var ghostKey = _findGhostKey(key);
+    if (ghostKey && !DB.members[key]) {
+      // Old entry exists under wrong casing — migrate it to canonical lowercase key.
+      var ghost = DB.members[ghostKey];
+      DB.members[key] = Object.assign({}, ghost, {key: key, name: disp});
+      // Fix group membership: replace old key with canonical one everywhere
+      Object.values(DB.groups).forEach(function(g) {
+        var idx = (g.members||[]).indexOf(ghostKey);
+        if (idx >= 0) { g.members.splice(idx, 1, key); }
+        // Also remove any accidental duplicate of canonical key
+        while (g.members.indexOf(key) !== g.members.lastIndexOf(key)) {
+          g.members.splice(g.members.lastIndexOf(key), 1);
+        }
+      });
+      delete DB.members[ghostKey];
+    } else if (ghostKey && DB.members[key]) {
+      // Both old ghost AND canonical key exist — merge stats into canonical, remove ghost.
+      var g0 = DB.members[ghostKey], c0 = DB.members[key];
+      if (!c0.stats) c0.stats = {given:0, received:0};
+      if (!g0.stats) g0.stats = {given:0, received:0};
+      // Keep highest stats (avoid erasing real progress)
+      c0.stats.given    = Math.max(c0.stats.given||0,    g0.stats.given||0);
+      c0.stats.received = Math.max(c0.stats.received||0, g0.stats.received||0);
+      c0.postsTotal     = Math.max(c0.postsTotal||0,     g0.postsTotal||0);
+      // Merge video lists
+      var merged = (c0.myVideos||[]).concat(g0.myVideos||[]).filter(function(v,i,a){return a.indexOf(v)===i;});
+      c0.myVideos = merged;
+      // Clean up ghost from groups
+      Object.values(DB.groups).forEach(function(g) {
+        var idx = (g.members||[]).indexOf(ghostKey);
+        if (idx >= 0) g.members.splice(idx, 1);
+        while (g.members.indexOf(key) !== g.members.lastIndexOf(key)) {
+          g.members.splice(g.members.lastIndexOf(key), 1);
+        }
+      });
+      delete DB.members[ghostKey];
+    }
+    // ──────────────────────────────────────────────────────────────────────
+
     if (DB.members[key]) {
       var m = DB.members[key];
       if (!m.name || m.name === key) m.name = disp;
@@ -4143,10 +4198,25 @@ function startCountdownTick() {
 function renderLeaderboard() {
   var list = document.getElementById('lb-list');
   if (!list) return;
+  var seen = {}; // deduplicate by normalized name — prevents ghost duplicates showing
   var scores = [];
   Object.values(DB.members).forEach(function(m) {
     if (m.role === 'admin' || m.status !== 'active') return;
-    if ((m.stats.given||0) > 0) scores.push({name:m.name||m.key, given:m.stats.given||0, key:m.key||m.name});
+    if ((m.stats.given||0) <= 0) return;
+    var normName = (m.name||m.key||'').toLowerCase().trim();
+    if (seen[normName]) {
+      // Keep the entry with higher support count; discard the lower one
+      if ((m.stats.given||0) > seen[normName].given) {
+        var idx = scores.indexOf(seen[normName]);
+        if (idx >= 0) scores.splice(idx, 1);
+        seen[normName] = {name:m.name||m.key, given:m.stats.given||0, key:m.key||m.name};
+        scores.push(seen[normName]);
+      }
+    } else {
+      var entry = {name:m.name||m.key, given:m.stats.given||0, key:m.key||m.name};
+      seen[normName] = entry;
+      scores.push(entry);
+    }
   });
   scores.sort(function(a,b){return b.given-a.given;});
   if (!scores.length) { list.innerHTML = '<div style="text-align:center;color:var(--text3);font-size:12px;padding:8px">Noch keine Supporter</div>'; return; }
