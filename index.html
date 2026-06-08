@@ -3453,6 +3453,7 @@ function submitPost() {
   ge('postUrl').value = '';
   toast(t('okPost'), 'success');
   addNotif(CU, '📹', 'Video gepostet – '+(isFirst?5:R1_NEED)+' Supports in 12h benötigt');
+  cleanupOnPost();
   save();
   haptic([15,10,40]);
   guideAdvance('video-posted');
@@ -3697,9 +3698,33 @@ function updateNotifBadge() {
   if (b) { b.textContent = n; b.classList.toggle('active', n>0); }
 }
 
-function addNotif(to, icon, text) {
+function addNotif(to, icon, text, subtype) {
   var id = 'n'+Date.now()+'_'+(Math.random()*9999|0);
-  DB.messages[id] = {id:id, to:to, icon:icon, text:text, type:'notif', read:false, ts:Date.now()};
+  var msg = {id:id, to:to, icon:icon, text:text, type:'notif', read:false, ts:Date.now()};
+  if (subtype) msg.subtype = subtype;
+  DB.messages[id] = msg;
+}
+
+// Called whenever the current user posts a new video.
+// Removes only support notifications and the user's own expired video entries
+// from the database — counters (stats.given / stats.received / postsTotal) are untouched.
+function cleanupOnPost() {
+  if (!CU) return;
+  Object.keys(DB.messages || {}).forEach(function(id) {
+    var m = DB.messages[id];
+    if (m && m.to === CU && m.subtype === 'support') delete DB.messages[id];
+  });
+  var u = DB.members[CU];
+  Object.keys(DB.videos || {}).forEach(function(vid) {
+    var v = DB.videos[vid];
+    if (v && v.ownerKey === CU && v.status === 'expired') {
+      delete DB.videos[vid];
+      if (u && u.myVideos) {
+        var idx = u.myVideos.indexOf(vid);
+        if (idx >= 0) u.myVideos.splice(idx, 1);
+      }
+    }
+  });
 }
 
 function sendMsg() {
@@ -4319,7 +4344,7 @@ function openTkLink() {
     if (ownerS) {
       if (!ownerS.stats) ownerS.stats = {given:0, received:0};
       ownerS.stats.received = (ownerS.stats.received||0) + 1;
-      addNotif(vs.ownerKey, '❤️', '@'+(us.name||CU)+' '+(t('supportMsg')||'hat dein Video supportet'));
+      addNotif(vs.ownerKey, '❤️', '@'+(us.name||CU)+' '+(t('supportMsg')||'hat dein Video supportet'), 'support');
       sendPushNotif('SUPPORT POOL ✨', '@'+(us.name||CU)+' hat dein Video supportet!');
     }
     var needS = rndS===1 ? (vs.r1Need||R1_NEED) : R2_NEED;
@@ -4689,6 +4714,7 @@ function autoPostScheduled() {
   // Clear pending
   delete u.pendingUrl;
   delete u.pendingAt;
+  cleanupOnPost();
   save();
   var l = L[LANG] || L.de;
   toast('🎉 ' + (l.schedPosted || 'Dein vorgemerktes Video wurde gepostet!'), 'success', 4000);
