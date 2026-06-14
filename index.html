@@ -2563,6 +2563,7 @@ var DB = {groups:{}, members:{}, videos:{}, messages:{}, settings:{admins:DEFAUL
 var FB = null, FB_REF = null, FB_PUSH_TS = 0, FB_PENDING = false, FB_RECEIVED_ONCE = false;
 var PIN_BUF = '', PIN_ATT = 0, PIN_USER = '', PIN_DISP_NAME = '';
 var _lastMigratedGhost = null; // tracks ghost key removed during login migration
+var _pendingDeletedMsgIds = null; // tracks support-notif IDs deleted by cleanupOnPost until Firebase confirms the push
 var CP_BUF = '', CP_STEP = 'new', CP_FIRST = '';
 var PENDING_DEL = null, PENDING_REPLY = null;
 var ADMIN_TAB = 'ov';
@@ -2818,6 +2819,10 @@ function initFB() {
       DB.members = r.members || {};
       DB.videos = r.videos || {};
       DB.messages = r.messages || {};
+      // Re-apply any support-notif deletions that haven't been confirmed by Firebase yet
+      if (_pendingDeletedMsgIds) {
+        _pendingDeletedMsgIds.forEach(function(id) { delete DB.messages[id]; });
+      }
       DB._ts = r._ts || 0;
       CU = cu;
       if (r.settings) DB.settings = Object.assign({admins:DEFAULT_ADMINS,tpl:DEFAULT_TPL,nextG:2}, r.settings);
@@ -2878,6 +2883,10 @@ function pushFB() {
         });
         // Messages: union — local may have new DMs not yet on server
         DB.messages = Object.assign({}, r.messages || {}, snapMsgs);
+        // Re-apply support-notif deletions — union can restore them from r.messages
+        if (_pendingDeletedMsgIds) {
+          _pendingDeletedMsgIds.forEach(function(id) { delete DB.messages[id]; });
+        }
         if (r.settings) DB.settings = Object.assign({admins:DEFAULT_ADMINS,tpl:DEFAULT_TPL,nextG:2}, r.settings);
         DB._ts = r._ts || DB._ts;
         FB_RECEIVED_ONCE = true;
@@ -2901,7 +2910,7 @@ function _commitPush() {
   var pushTs = Date.now();
   FB_PUSH_TS = pushTs;
   FB_REF.set({groups:DB.groups, members:DB.members, videos:DB.videos, messages:DB.messages, settings:DB.settings, _ts:pushTs})
-    .then(function() { DB._ts = pushTs; saveLS(); setSyncUI('online'); })
+    .then(function() { DB._ts = pushTs; saveLS(); setSyncUI('online'); _pendingDeletedMsgIds = null; })
     .catch(function() { setSyncUI('offline'); FB_PENDING = true; });
 }
 
@@ -3710,10 +3719,17 @@ function addNotif(to, icon, text, subtype) {
 // from the database — counters (stats.given / stats.received / postsTotal) are untouched.
 function cleanupOnPost() {
   if (!CU) return;
+  // Collect deleted support-notif IDs so we can re-apply the deletion if
+  // Firebase's on('value') listener fires before our push completes.
+  _pendingDeletedMsgIds = [];
   Object.keys(DB.messages || {}).forEach(function(id) {
     var m = DB.messages[id];
-    if (m && m.to === CU && m.subtype === 'support') delete DB.messages[id];
+    if (m && m.to === CU && m.subtype === 'support') {
+      _pendingDeletedMsgIds.push(id);
+      delete DB.messages[id];
+    }
   });
+  if (_pendingDeletedMsgIds.length === 0) _pendingDeletedMsgIds = null;
   var u = DB.members[CU];
   Object.keys(DB.videos || {}).forEach(function(vid) {
     var v = DB.videos[vid];
