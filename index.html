@@ -3658,7 +3658,11 @@ function renderNotifs() {
       }
     } else {
       // System notification (support, broadcast, etc.)
-      html += '<div class="notif-text">'+esc(m.text||m.message||'')+'</div>';
+      // If msgKey is set, translate into the recipient's own language (not the sender's).
+      var notifText = m.msgKey
+        ? esc('@'+(m.from||'')) + ' ' + esc(t(m.msgKey))
+        : esc(m.text||m.message||'');
+      html += '<div class="notif-text">'+notifText+'</div>';
       if (m.reply && m.message) {
         html += '<div class="notif-orig">&#10067; '+esc(m.message)+'</div>';
         html += '<div class="notif-reply">&#128172; '+esc(m.reply)+'</div>';
@@ -3707,10 +3711,11 @@ function updateNotifBadge() {
   if (b) { b.textContent = n; b.classList.toggle('active', n>0); }
 }
 
-function addNotif(to, icon, text, subtype) {
+function addNotif(to, icon, text, subtype, data) {
   var id = 'n'+Date.now()+'_'+(Math.random()*9999|0);
   var msg = {id:id, to:to, icon:icon, text:text, type:'notif', read:false, ts:Date.now()};
   if (subtype) msg.subtype = subtype;
+  if (data) Object.assign(msg, data);
   DB.messages[id] = msg;
 }
 
@@ -4360,7 +4365,7 @@ function openTkLink() {
     if (ownerS) {
       if (!ownerS.stats) ownerS.stats = {given:0, received:0};
       ownerS.stats.received = (ownerS.stats.received||0) + 1;
-      addNotif(vs.ownerKey, '❤️', '@'+(us.name||CU)+' '+(t('supportMsg')||'hat dein Video supportet'), 'support');
+      addNotif(vs.ownerKey, '❤️', '', 'support', {msgKey:'supportMsg', from: us.name||fbDec(CU)});
       sendPushNotif('SUPPORT POOL ✨', '@'+(us.name||CU)+' hat dein Video supportet!');
     }
     var needS = rndS===1 ? (vs.r1Need||R1_NEED) : R2_NEED;
