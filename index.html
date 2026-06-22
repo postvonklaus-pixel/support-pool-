@@ -2563,7 +2563,6 @@ var DB = {groups:{}, members:{}, videos:{}, messages:{}, settings:{admins:DEFAUL
 var FB = null, FB_REF = null, FB_PUSH_TS = 0, FB_PENDING = false, FB_RECEIVED_ONCE = false;
 var PIN_BUF = '', PIN_ATT = 0, PIN_USER = '', PIN_DISP_NAME = '';
 var _lastMigratedGhost = null; // tracks ghost key removed during login migration
-var _pendingDeletedMsgIds = null; // tracks support-notif IDs deleted by cleanupOnPost until Firebase confirms the push
 var CP_BUF = '', CP_STEP = 'new', CP_FIRST = '';
 var PENDING_DEL = null, PENDING_REPLY = null;
 var ADMIN_TAB = 'ov';
@@ -2819,10 +2818,7 @@ function initFB() {
       DB.members = r.members || {};
       DB.videos = r.videos || {};
       DB.messages = r.messages || {};
-      // Re-apply any support-notif deletions that haven't been confirmed by Firebase yet
-      if (_pendingDeletedMsgIds) {
-        _pendingDeletedMsgIds.forEach(function(id) { delete DB.messages[id]; });
-      }
+      purgeStaleNotifs(); // re-purge in case Firebase brought back an already-cleared support notif
       DB._ts = r._ts || 0;
       CU = cu;
       if (r.settings) DB.settings = Object.assign({admins:DEFAULT_ADMINS,tpl:DEFAULT_TPL,nextG:2}, r.settings);
@@ -2883,10 +2879,7 @@ function pushFB() {
         });
         // Messages: union — local may have new DMs not yet on server
         DB.messages = Object.assign({}, r.messages || {}, snapMsgs);
-        // Re-apply support-notif deletions — union can restore them from r.messages
-        if (_pendingDeletedMsgIds) {
-          _pendingDeletedMsgIds.forEach(function(id) { delete DB.messages[id]; });
-        }
+        purgeStaleNotifs(); // re-purge in case the union brought back an already-cleared support notif
         if (r.settings) DB.settings = Object.assign({admins:DEFAULT_ADMINS,tpl:DEFAULT_TPL,nextG:2}, r.settings);
         DB._ts = r._ts || DB._ts;
         FB_RECEIVED_ONCE = true;
@@ -2910,7 +2903,7 @@ function _commitPush() {
   var pushTs = Date.now();
   FB_PUSH_TS = pushTs;
   FB_REF.set({groups:DB.groups, members:DB.members, videos:DB.videos, messages:DB.messages, settings:DB.settings, _ts:pushTs})
-    .then(function() { DB._ts = pushTs; saveLS(); setSyncUI('online'); _pendingDeletedMsgIds = null; })
+    .then(function() { DB._ts = pushTs; saveLS(); setSyncUI('online'); })
     .catch(function() { setSyncUI('offline'); FB_PENDING = true; });
 }
 
@@ -3103,6 +3096,7 @@ function completeLogin(key, disp) {
       if (r && r.members) {
         DB.groups = r.groups||DB.groups; DB.members = r.members||DB.members;
         DB.videos = r.videos||DB.videos; DB.messages = r.messages||DB.messages;
+        purgeStaleNotifs();
         DB._ts = r._ts||0;
         if (r.settings) DB.settings = Object.assign({admins:DEFAULT_ADMINS,tpl:DEFAULT_TPL,nextG:2}, r.settings);
       }
@@ -3542,6 +3536,22 @@ function checkExpired() {
   if (changed) save();
 }
 
+// Permanently removes support notifications older than the recipient's most recent
+// video post. Self-healing — re-run on every Firebase sync and on every notif render,
+// so a notif resurrected by a stale/concurrent write can never stay visible, the same
+// way checkExpired() re-derives video status idempotently instead of relying on a
+// single one-shot deletion. Returns true if anything was removed.
+function purgeStaleNotifs() {
+  var changed = false;
+  Object.keys(DB.messages || {}).forEach(function(id) {
+    var m = DB.messages[id];
+    if (!m || m.subtype !== 'support') return;
+    var owner = DB.members[m.to];
+    if (owner && (owner.lastPost||0) >= (m.ts||0)) { delete DB.messages[id]; changed = true; }
+  });
+  return changed;
+}
+
 // ── PROFILE ───────────────────────────────────────────────────────────────
 function renderProfile() {
   if (!CU || !DB.members[CU]) return;
@@ -3586,6 +3596,7 @@ function renderProfile() {
 
 function renderNotifs() {
   var list = ge('notif-list');
+  if (purgeStaleNotifs()) save();
   var notifs = Object.values(DB.messages||{}).filter(function(m){
     return m.to===CU && (m.type==='notif'||m.type==='dm'||m.reply);
   }).sort(function(a,b){ return (b.ts||b.timestamp||0)-(a.ts||a.timestamp||0); }).slice(0,30);
@@ -3724,17 +3735,10 @@ function addNotif(to, icon, text, subtype, data) {
 // from the database — counters (stats.given / stats.received / postsTotal) are untouched.
 function cleanupOnPost() {
   if (!CU) return;
-  // Collect deleted support-notif IDs so we can re-apply the deletion if
-  // Firebase's on('value') listener fires before our push completes.
-  _pendingDeletedMsgIds = [];
   Object.keys(DB.messages || {}).forEach(function(id) {
     var m = DB.messages[id];
-    if (m && m.to === CU && m.subtype === 'support') {
-      _pendingDeletedMsgIds.push(id);
-      delete DB.messages[id];
-    }
+    if (m && m.to === CU && m.subtype === 'support') delete DB.messages[id];
   });
-  if (_pendingDeletedMsgIds.length === 0) _pendingDeletedMsgIds = null;
   var u = DB.members[CU];
   Object.keys(DB.videos || {}).forEach(function(vid) {
     var v = DB.videos[vid];
@@ -4424,6 +4428,7 @@ function forceSyncNow() {
     DB.members = r.members || {};
     DB.videos = r.videos || {};
     DB.messages = r.messages || {};
+    purgeStaleNotifs();
     if (r.settings) DB.settings = Object.assign({admins:DEFAULT_ADMINS, tpl:DEFAULT_TPL, nextG:2}, r.settings);
     DB._ts = r._ts || 0;
     CU = cu;
@@ -4892,6 +4897,7 @@ function closeTour() {
     }, 500);
   }
   setInterval(checkExpired, 60000);
+  setInterval(function(){ if (purgeStaleNotifs()) save(); }, 60000);
   // Pull fresh data from Firebase on load
   setTimeout(forceSyncNow, 2000);
   setInterval(renderAll, 15000);
@@ -4905,6 +4911,7 @@ function closeTour() {
         if((r._ts||0)>0 && (r._ts||0)<=(DB._ts||0)) return;
         DB.groups=r.groups||{};DB.members=r.members||{};DB.videos=r.videos||{};
         DB.messages=r.messages||{};DB._ts=r._ts||0;
+        purgeStaleNotifs();
         saveLS();renderAll();
       });
     }
