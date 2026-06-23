@@ -1716,6 +1716,7 @@ de: {
   confirmTitle: '⚠️ Bestätigen',
   importTitle: '📥 Importieren',
   replyTitle: 'Antworten',
+  replyPlaceholder: 'Deine Antwort...',
   tksClose: '✕  Schließen',
   tksBackTitle: 'TikTok geöffnet!',
   tksBackSub: 'Kommentar einfügen — dann hier tippen',
@@ -1803,6 +1804,7 @@ en: {
   confirmTitle: '⚠️ Confirm',
   importTitle: '📥 Import',
   replyTitle: 'Reply',
+  replyPlaceholder: 'Your reply...',
   tksClose: '✕  Close',
   tksBackTitle: 'TikTok opened!',
   tksBackSub: 'Paste the comment — then tap here',
@@ -1890,6 +1892,7 @@ id: {
   confirmTitle: '⚠️ Konfirmasi',
   importTitle: '📥 Impor',
   replyTitle: 'Balas',
+  replyPlaceholder: 'Balasan Anda...',
   tksClose: '✕  Tutup',
   tksBackTitle: 'TikTok dibuka!',
   tksBackSub: 'Tempel komentar — lalu ketuk di sini',
@@ -1977,6 +1980,7 @@ it: {
   confirmTitle: '⚠️ Conferma',
   importTitle: '📥 Importa',
   replyTitle: 'Rispondi',
+  replyPlaceholder: 'La tua risposta...',
   tksClose: '✕  Chiudi',
   tksBackTitle: 'TikTok aperto!',
   tksBackSub: 'Incolla il commento — poi tocca qui',
@@ -2064,6 +2068,7 @@ es: {
   confirmTitle: '⚠️ Confirmar',
   importTitle: '📥 Importar',
   replyTitle: 'Responder',
+  replyPlaceholder: 'Tu respuesta...',
   tksClose: '✕  Cerrar',
   tksBackTitle: '¡TikTok abierto!',
   tksBackSub: 'Pega el comentario — luego toca aquí',
@@ -2151,6 +2156,7 @@ tr: {
   confirmTitle: '⚠️ Onayla',
   importTitle: '📥 İçe Aktar',
   replyTitle: 'Yanıtla',
+  replyPlaceholder: 'Cevabın...',
   tksClose: '✕  Kapat',
   tksBackTitle: 'TikTok açıldı!',
   tksBackSub: 'Yorumu yapıştır — sonra buraya dokun',
@@ -2238,6 +2244,7 @@ ar: {
   confirmTitle: '⚠️ تأكيد',
   importTitle: '📥 استيراد',
   replyTitle: 'رد',
+  replyPlaceholder: 'ردك...',
   tksClose: '✕  إغلاق',
   tksBackTitle: 'تم فتح TikTok!',
   tksBackSub: 'الصق التعليق — ثم انقر هنا',
@@ -2325,6 +2332,7 @@ zh: {
   confirmTitle: '⚠️ 确认',
   importTitle: '📥 导入',
   replyTitle: '回复',
+  replyPlaceholder: '你的回复...',
   tksClose: '✕  关闭',
   tksBackTitle: 'TikTok已打开！',
   tksBackSub: '粘贴评论 — 然后点击这里',
@@ -2412,6 +2420,7 @@ ja: {
   confirmTitle: '⚠️ 確認',
   importTitle: '📥 インポート',
   replyTitle: '返信',
+  replyPlaceholder: 'あなたの返信...',
   tksClose: '✕  閉じる',
   tksBackTitle: 'TikTokが開きました！',
   tksBackSub: 'コメントを貼り付け — そしてここをタップ',
@@ -2499,6 +2508,7 @@ pl: {
   confirmTitle: '⚠️ Potwierdź',
   importTitle: '📥 Importuj',
   replyTitle: 'Odpowiedz',
+  replyPlaceholder: 'Twoja odpowiedź...',
   tksClose: '✕  Zamknij',
   tksBackTitle: 'TikTok otwarty!',
   tksBackSub: 'Wklej komentarz — a potem kliknij tutaj',
@@ -2776,6 +2786,7 @@ function applyLang() {
   st('t-streak-title', l.streakTitle || '7-Tage Aktivität');
   setSyncUI(ONLINE ? 'online' : 'offline');
   st('reply-title', l.replyTitle || 'Antworten');
+  sa('replyInput', 'placeholder', l.replyPlaceholder || 'Deine Antwort...');
   st('t-import-title', l.importTitle || 'Importieren');
   st('t-confirm-title', l.confirmTitle || 'Bestätigen');
   var pcb = document.getElementById('pin-cancel'); if(pcb) pcb.textContent = l.cancel || 'Abbrechen';
