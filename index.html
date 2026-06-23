@@ -1745,6 +1745,7 @@ de: {
   tksTitle: '📹 TikTok Video öffnen',
   firstVideo: '🎁 Erstes Video – Los!',
   supportMsg: 'hat dein Video supportet',
+  postedMsg: 'Video gepostet – {n} Supports in 12h benötigt',
   loginPH: 'TikTok @Username',
   postNow: '✅ Video posten jetzt möglich',
   lbTitle: 'Top-Supporter der Woche',pinTitle:'Admin-Zugang',pinSub:'4-stelligen PIN eingeben',
@@ -1833,6 +1834,7 @@ en: {
   tksTitle: '📹 Open TikTok Video',
   firstVideo: '🎁 First Video – Go!',
   supportMsg: 'supported your video',
+  postedMsg: 'Video posted – {n} supports needed in 12h',
   loginPH: 'TikTok @username',
   postNow: '✅ Post video now possible',
   lbTitle: 'Top Supporters of the Week',pinTitle:'Admin Access',pinSub:'Enter 4-digit PIN',
@@ -1921,6 +1923,7 @@ id: {
   tksTitle: '📹 Buka Video TikTok',
   firstVideo: '🎁 Video Pertama – Ayo!',
   supportMsg: 'mendukung video Anda',
+  postedMsg: 'Video diposting – {n} dukungan dibutuhkan dalam 12 jam',
   loginPH: 'TikTok @username',
   postNow: '✅ Posting video sekarang',
   lbTitle: 'Pendukung Teratas Minggu Ini',pinTitle:'Akses Admin',pinSub:'Masukkan PIN 4 digit',
@@ -2009,6 +2012,7 @@ it: {
   tksTitle: '📹 Apri Video TikTok',
   firstVideo: '🎁 Primo Video – Via!',
   supportMsg: 'ha supportato il tuo video',
+  postedMsg: 'Video pubblicato – {n} supporti necessari in 12h',
   loginPH: 'TikTok @username',
   postNow: '✅ Pubblica video ora',
   lbTitle: 'Top Supporter della Settimana',pinTitle:'Accesso Admin',pinSub:'Inserisci PIN a 4 cifre',
@@ -2097,6 +2101,7 @@ es: {
   tksTitle: '📹 Abrir Video TikTok',
   firstVideo: '🎁 Primer Video – ¡Vamos!',
   supportMsg: 'apoyó tu video',
+  postedMsg: 'Video publicado – se necesitan {n} apoyos en 12h',
   loginPH: 'TikTok @usuario',
   postNow: '✅ Publicar video ahora',
   lbTitle: 'Mejores Apoyadores de la Semana',pinTitle:'Acceso Admin',pinSub:'Introduce PIN de 4 digitos',
@@ -2185,6 +2190,7 @@ tr: {
   tksTitle: '📹 TikTok Videosunu Aç',
   firstVideo: '🎁 İlk Video – Hadi!',
   supportMsg: 'videonuzu destekledi',
+  postedMsg: 'Video paylaşıldı – 12 saat içinde {n} destek gerekiyor',
   loginPH: 'TikTok @kullanıcı',
   postNow: '✅ Video paylaşımı şimdi mümkün',
   lbTitle: 'Haftanin En Iyi Destekculeri',pinTitle:'Admin Erisimi',pinSub:'4 haneli PIN gir',
@@ -2273,6 +2279,7 @@ ar: {
   tksTitle: '📹 فتح فيديو TikTok',
   firstVideo: '🎁 أول فيديو – هيا!',
   supportMsg: 'دعم فيديوك',
+  postedMsg: 'تم نشر الفيديو – مطلوب {n} دعم خلال 12 ساعة',
   loginPH: 'TikTok @المستخدم',
   postNow: '✅ نشر فيديو ممكن الآن',
   lbTitle: 'أفضل الداعمين هذا الأسبوع',pinTitle:'وصول المشرف',pinSub:'أدخل رمز PIN من 4 أرقام',
@@ -2361,6 +2368,7 @@ zh: {
   tksTitle: '📹 打开TikTok视频',
   firstVideo: '🎁 第一个视频 – 开始！',
   supportMsg: '支持了你的视频',
+  postedMsg: '视频已发布 – 12小时内需要{n}个支持',
   loginPH: 'TikTok @用户名',
   postNow: '✅ 现在可以发布视频',
   lbTitle: '本周顶级支持者',pinTitle:'管理员访问',pinSub:'输入4位PIN',
@@ -2449,6 +2457,7 @@ ja: {
   tksTitle: '📹 TikTok動画を開く',
   firstVideo: '🎁 最初の動画 – さあ！',
   supportMsg: 'があなたの動画をサポートしました',
+  postedMsg: '動画を投稿しました – 12時間以内に{n}件のサポートが必要です',
   loginPH: 'TikTok @ユーザー名',
   postNow: '✅ 動画投稿が可能になりました',
   lbTitle: '今週のトップサポーター',pinTitle:'管理者アクセス',pinSub:'4桁のPINを入力',
@@ -2537,6 +2546,7 @@ pl: {
   tksTitle: '📹 Otwórz Film TikTok',
   firstVideo: '🎁 Pierwszy Film – Zaczynamy!',
   supportMsg: 'wsparł Twoje wideo',
+  postedMsg: 'Wideo opublikowane – potrzeba {n} wsparć w ciągu 12h',
   loginPH: 'TikTok @użytkownik',
   postNow: '✅ Publikacja wideo możliwa',
   lbTitle: 'Najlepsi Wspierający w tym Tygodniu',pinTitle:'Dostep admina',pinSub:'Wprowadz 4-cyfrowy PIN',
@@ -3466,8 +3476,8 @@ function submitPost() {
   closeModal('postModal');
   ge('postUrl').value = '';
   toast(t('okPost'), 'success');
-  addNotif(CU, '📹', 'Video gepostet – '+(isFirst?5:R1_NEED)+' Supports in 12h benötigt');
   cleanupOnPost();
+  addNotif(CU, '📹', '', 'postConfirm', {msgKey:'postedMsg', needCount: isFirst?5:R1_NEED});
   save();
   haptic([15,10,40]);
   guideAdvance('video-posted');
@@ -3547,16 +3557,16 @@ function checkExpired() {
   if (changed) save();
 }
 
-// Permanently removes support notifications older than the recipient's most recent
-// video post. Self-healing — re-run on every Firebase sync and on every notif render,
-// so a notif resurrected by a stale/concurrent write can never stay visible, the same
-// way checkExpired() re-derives video status idempotently instead of relying on a
-// single one-shot deletion. Returns true if anything was removed.
+// Permanently removes support and post-confirmation notifications older than the
+// recipient's most recent video post. Self-healing — re-run on every Firebase sync
+// and on every notif render, so a notif resurrected by a stale/concurrent write can
+// never stay visible, the same way checkExpired() re-derives video status idempotently
+// instead of relying on a single one-shot deletion. Returns true if anything was removed.
 function purgeStaleNotifs() {
   var changed = false;
   Object.keys(DB.messages || {}).forEach(function(id) {
     var m = DB.messages[id];
-    if (!m || m.subtype !== 'support') return;
+    if (!m || (m.subtype !== 'support' && m.subtype !== 'postConfirm')) return;
     var owner = DB.members[m.to];
     if (owner && (owner.lastPost||0) >= (m.ts||0)) { delete DB.messages[id]; changed = true; }
   });
@@ -3681,9 +3691,14 @@ function renderNotifs() {
     } else {
       // System notification (support, broadcast, etc.)
       // If msgKey is set, translate into the recipient's own language (not the sender's).
-      var notifText = m.msgKey
-        ? esc('@'+(m.from||'')) + ' ' + esc(t(m.msgKey))
-        : esc(m.text||m.message||'');
+      var notifText;
+      if (m.msgKey) {
+        var tmpl = t(m.msgKey);
+        if (m.needCount !== undefined) tmpl = tmpl.replace('{n}', m.needCount);
+        notifText = m.from ? (esc('@'+m.from) + ' ' + esc(tmpl)) : esc(tmpl);
+      } else {
+        notifText = esc(m.text||m.message||'');
+      }
       html += '<div class="notif-text">'+notifText+'</div>';
       if (m.reply && m.message) {
         html += '<div class="notif-orig">&#10067; '+esc(m.message)+'</div>';
@@ -3742,13 +3757,14 @@ function addNotif(to, icon, text, subtype, data) {
 }
 
 // Called whenever the current user posts a new video.
-// Removes only support notifications and the user's own expired video entries
-// from the database — counters (stats.given / stats.received / postsTotal) are untouched.
+// Removes only support and post-confirmation notifications plus the user's own expired
+// video entries from the database — counters (stats.given / stats.received / postsTotal)
+// are untouched.
 function cleanupOnPost() {
   if (!CU) return;
   Object.keys(DB.messages || {}).forEach(function(id) {
     var m = DB.messages[id];
-    if (m && m.to === CU && m.subtype === 'support') delete DB.messages[id];
+    if (m && m.to === CU && (m.subtype === 'support' || m.subtype === 'postConfirm')) delete DB.messages[id];
   });
   var u = DB.members[CU];
   Object.keys(DB.videos || {}).forEach(function(vid) {
