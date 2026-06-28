@@ -198,6 +198,7 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
 #post-bal-warn{display:none;background:rgba(255,59,48,.06);border:1.5px solid rgba(255,59,48,.18);border-radius:14px;padding:14px;margin-bottom:10px;text-align:center}
 #post-bal-warn-text{font-size:18px;font-weight:800;color:var(--red)}
 #post-bal-warn-sub{font-size:12px;color:var(--t2);margin-top:5px;font-weight:600}
+#bal-cap-badge{display:none;background:rgba(212,134,10,.08);border:1.5px solid var(--vb);border-radius:14px;padding:10px 14px;margin-top:10px;text-align:center;font-size:12px;font-weight:700;color:var(--v);cursor:pointer}
 
 /* ── GUIDE CARD ── */
 .guide-card{background:#fff;border:1.5px solid rgba(0,122,255,.15);border-radius:18px;padding:16px;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
@@ -954,6 +955,7 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
           </div>
         </div>
         <div id="post-timer-wrap" style="margin-top:12px"></div>
+        <div id="bal-cap-badge" onclick="closeModal('balCapModal');openPostModal()">⚡ <span id="t-bal-cap-badge">Maximum erreicht – bitte Video posten</span></div>
       </div>
 
       <!-- Daily Goal -->
@@ -1211,6 +1213,18 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
     <div id="psm-body" style="font-size:14px;color:var(--text);margin-bottom:8px;line-height:1.6"></div>
     <div id="psm-sub" style="font-size:12px;color:var(--t2);margin-bottom:20px;line-height:1.5"></div>
     <button class="btn-prime" onclick="closeModal('postSuccessModal');scrollToMyVideos()" id="psm-ok">Ich habe verstanden!</button>
+  </div>
+</div>
+
+<!-- Balance Cap Reminder Modal -->
+<div class="modal-bg" id="balCapModal">
+  <div class="modal-box" style="text-align:center">
+    <div style="font-size:54px;margin-bottom:10px">🎬</div>
+    <div id="bcm-title" style="font-size:1.2rem;font-weight:800;color:var(--v);margin-bottom:10px;text-transform:uppercase;letter-spacing:.06em">Guthaben-Maximum erreicht!</div>
+    <div id="bcm-body" style="font-size:14px;color:var(--text);margin-bottom:8px;line-height:1.6"></div>
+    <div id="bcm-sub" style="font-size:12px;color:var(--t2);margin-bottom:20px;line-height:1.5"></div>
+    <button class="btn-prime" onclick="closeModal('balCapModal');openPostModal()" id="bcm-ok">Jetzt Video posten</button>
+    <button class="btn-ghost btn-sm" onclick="closeModal('balCapModal')" id="bcm-later" style="margin-top:8px">Später</button>
   </div>
 </div>
 
@@ -1666,7 +1680,7 @@ var FB_CFG = {
 
 // Keys
 var LS_KEY = 'sp6data', LANG_KEY = 'sp6lang', PIN_KEY = 'sp6pin';
-var R1_MS = 43200000, R2_MS = 86400000, R1_NEED = 10, R2_NEED = 10;
+var R1_MS = 43200000, R2_MS = 86400000, R1_NEED = 10, R2_NEED = 10, BAL_CAP = 20;
 var DEFAULT_TPL = '✨ support by {member} aus Gruppe {gruppe} fuer @{name} ✨';
 var DEFAULT_ADMINS = ['admin','support','master'];
 
@@ -1761,6 +1775,7 @@ de: {
   postSuccessBody:'Dein Video wurde an {n} Mitglieder gesendet.',
   postSuccessSub:'Supporte jetzt auch andere Mitglieder. Du findest sie unter Offene Videos.',
   postSuccessOk:'Ich habe verstanden!',
+  balCapTitle:'🚀 Guthaben-Maximum erreicht!',balCapBody:'Dein Guthaben hat das Maximum von {n} erreicht. Poste jetzt ein neues Video, damit andere Mitglieder ihr Minus durch Support bei dir ausgleichen können.',balCapSub:'Solange du nicht postest, bleibt dein Guthaben bei diesem Maximum stehen.',balCapOk:'🎬 Jetzt Video posten',balCapLater:'Später',balCapBadge:'Maximum erreicht – bitte Video posten',
   navTour:'Rundgang',delOk:'✅ Video gelöscht',
   welcome:'✨ Willkommen, ',welcomeNew:'🎉 Willkommen im Support Pool!',tourNextBtn:'Verstanden ✓',pushTitle:'Push-Benachrichtigungen',pushDesc:'Erhalte eine Meldung, wenn jemand dein Video supportet',pushActivate:'Aktivieren',pushActiveMsg:'Push-Benachrichtigungen aktiv',pushBlockedTitle:'Benachrichtigungen blockiert',pushBlockedSub:'In Browser-Einstellungen aktivieren',toAdminLabel:'📩 An Admin schreiben',toMemberLabel:'🔍 Mitglied suchen',msgPlaceholderAdmin:'Nachricht an Admin...',msgPlaceholderMem:'Nachricht an @{name}...',cancel:'Abbrechen',postSubmit:'Posten',dmChange:'Ändern',
   tourSteps:[
@@ -1850,6 +1865,7 @@ en: {
   postSuccessBody:'Your video was sent to {n} members.',
   postSuccessSub:'Now support other members too. You find them under Open Videos.',
   postSuccessOk:'Got it!',
+  balCapTitle:'🚀 Balance maximum reached!',balCapBody:'Your balance has reached the maximum of {n}. Post a new video now so other members can offset their deficit by supporting you.',balCapSub:'Your balance stays capped at this maximum until you post.',balCapOk:'🎬 Post a video now',balCapLater:'Later',balCapBadge:'Maximum reached – please post a video',
   navTour:'Tour',delOk:'✅ Video deleted',
   welcome:'✨ Welcome, ',welcomeNew:'🎉 Welcome to Support Pool!',tourNextBtn:'Got it ✓',pushTitle:'Push Notifications',pushDesc:'Get notified when someone supports your video',pushActivate:'Enable',pushActiveMsg:'Push notifications active',pushBlockedTitle:'Notifications blocked',pushBlockedSub:'Enable in browser settings',toAdminLabel:'📩 Write to Admin',toMemberLabel:'🔍 Find Member',msgPlaceholderAdmin:'Message to Admin...',msgPlaceholderMem:'Message to @{name}...',cancel:'Cancel',postSubmit:'Post',dmChange:'Change',
   tourSteps:[
@@ -1939,6 +1955,7 @@ id: {
   postSuccessBody:'Video kamu telah dikirim ke {n} anggota.',
   postSuccessSub:'Sekarang dukung juga video anggota lain. Temukan di Video Terbuka.',
   postSuccessOk:'Saya mengerti!',
+  balCapTitle:'🚀 Saldo maksimum tercapai!',balCapBody:'Saldo kamu telah mencapai maksimum {n}. Posting video baru sekarang agar anggota lain bisa mengimbangi kekurangan mereka dengan mendukungmu.',balCapSub:'Saldo kamu tetap di batas maksimum ini sampai kamu memposting.',balCapOk:'🎬 Posting video sekarang',balCapLater:'Nanti',balCapBadge:'Maksimum tercapai – silakan posting video',
   navTour:'Panduan',delOk:'✅ Video dihapus',
   welcome:'✨ Selamat datang, ',welcomeNew:'🎉 Selamat datang di Support Pool!',tourNextBtn:'Mengerti ✓',pushTitle:'Notifikasi Push',pushDesc:'Dapatkan pemberitahuan saat seseorang mendukung video Anda',pushActivate:'Aktifkan',pushActiveMsg:'Notifikasi push aktif',pushBlockedTitle:'Notifikasi diblokir',pushBlockedSub:'Aktifkan di pengaturan browser',toAdminLabel:'📩 Tulis ke Admin',toMemberLabel:'🔍 Cari Anggota',msgPlaceholderAdmin:'Pesan ke Admin...',msgPlaceholderMem:'Pesan ke @{name}...',cancel:'Batal',postSubmit:'Posting',dmChange:'Ganti',
   tourSteps:[
@@ -2028,6 +2045,7 @@ it: {
   postSuccessBody:'Il tuo video è stato inviato a {n} membri.',
   postSuccessSub:'Supporta anche i video degli altri. Li trovi in Video Aperti.',
   postSuccessOk:'Ho capito!',
+  balCapTitle:'🚀 Saldo massimo raggiunto!',balCapBody:'Il tuo saldo ha raggiunto il massimo di {n}. Pubblica subito un nuovo video così altri membri possono compensare il loro deficit supportandoti.',balCapSub:'Il tuo saldo resta bloccato a questo massimo finché non pubblichi.',balCapOk:'🎬 Pubblica un video ora',balCapLater:'Più tardi',balCapBadge:'Massimo raggiunto – pubblica un video',
   navTour:'Tour',delOk:'✅ Video eliminato',
   welcome:'✨ Benvenuto, ',welcomeNew:'🎉 Benvenuto nel Support Pool!',tourNextBtn:'Capito ✓',pushTitle:'Notifiche Push',pushDesc:'Ricevi una notifica quando qualcuno supporta il tuo video',pushActivate:'Attiva',pushActiveMsg:'Notifiche push attive',pushBlockedTitle:'Notifiche bloccate',pushBlockedSub:'Attiva nelle impostazioni del browser',toAdminLabel:'📩 Scrivi all Admin',toMemberLabel:'🔍 Cerca Membro',msgPlaceholderAdmin:'Messaggio all Admin...',msgPlaceholderMem:'Messaggio a @{name}...',cancel:'Annulla',postSubmit:'Pubblica',dmChange:'Cambia',
   tourSteps:[
@@ -2117,6 +2135,7 @@ es: {
   postSuccessBody:'Tu video fue enviado a {n} miembros.',
   postSuccessSub:'Ahora también apoya los videos de otros miembros. Los encuentras en Videos Abiertos.',
   postSuccessOk:'¡Lo entendí!',
+  balCapTitle:'🚀 ¡Saldo máximo alcanzado!',balCapBody:'Tu saldo ha alcanzado el máximo de {n}. Publica un nuevo video ahora para que otros miembros puedan compensar su déficit apoyándote.',balCapSub:'Tu saldo se mantiene en este máximo hasta que publiques.',balCapOk:'🎬 Publicar video ahora',balCapLater:'Más tarde',balCapBadge:'Máximo alcanzado – por favor publica un video',
   navTour:'Recorrido',delOk:'✅ Video eliminado',
   welcome:'✨ Bienvenido, ',welcomeNew:'🎉 ¡Bienvenido al Support Pool!',tourNextBtn:'Entendido ✓',pushTitle:'Notificaciones Push',pushDesc:'Recibe una notificación cuando alguien apoya tu video',pushActivate:'Activar',pushActiveMsg:'Notificaciones push activas',pushBlockedTitle:'Notificaciones bloqueadas',pushBlockedSub:'Activar en la configuración del navegador',toAdminLabel:'📩 Escribir al Admin',toMemberLabel:'🔍 Buscar Miembro',msgPlaceholderAdmin:'Mensaje al Admin...',msgPlaceholderMem:'Mensaje a @{name}...',cancel:'Cancelar',postSubmit:'Publicar',dmChange:'Cambiar',
   tourSteps:[
@@ -2206,6 +2225,7 @@ tr: {
   postSuccessBody:'Videon {n} üyeye gönderildi.',
   postSuccessSub:'Şimdi diğer üyelerin videolarını da destekle. Açık Videolar da bulabilirsin.',
   postSuccessOk:'Anladım!',
+  balCapTitle:'🚀 Bakiye maksimuma ulaştı!',balCapBody:'Bakiyen {n} maksimumuna ulaştı. Diğer üyelerin seni destekleyerek açıklarını kapatabilmesi için şimdi yeni bir video paylaş.',balCapSub:'Paylaşım yapmadığın sürece bakiyen bu maksimumda sabit kalır.',balCapOk:'🎬 Şimdi video paylaş',balCapLater:'Daha sonra',balCapBadge:'Maksimuma ulaşıldı – lütfen video paylaş',
   navTour:'Tur',delOk:'✅ Video silindi',
   welcome:'✨ Hoş geldin, ',welcomeNew:"🎉 Support Pool'a hoş geldin!",tourNextBtn:'Anladım ✓',pushTitle:'Push Bildirimleri',pushDesc:'Birisi videonuzu desteklediğinde bildirim alın',pushActivate:'Etkinleştir',pushActiveMsg:'Push bildirimleri etkin',pushBlockedTitle:'Bildirimler engellendi',pushBlockedSub:'Tarayıcı ayarlarından etkinleştirin',toAdminLabel:'📩 Admine Yaz',toMemberLabel:'🔍 Üye Ara',msgPlaceholderAdmin:'Admine mesaj...',msgPlaceholderMem:'@{name} kişisine mesaj...',cancel:'İptal',postSubmit:'Paylaş',dmChange:'Değiştir',
   tourSteps:[
@@ -2295,6 +2315,7 @@ ar: {
   postSuccessBody:'تم إرسال فيديوك إلى {n} أعضاء.',
   postSuccessSub:'ادعم الآن فيديوهات الأعضاء الآخرين. ستجدهم في الفيديوهات المفتوحة.',
   postSuccessOk:'فهمت!',
+  balCapTitle:'🚀 لقد بلغ رصيدك الحد الأقصى!',balCapBody:'بلغ رصيدك الحد الأقصى وهو {n}. انشر فيديو جديدًا الآن حتى يتمكن الأعضاء الآخرون من تعويض عجزهم بدعمك.',balCapSub:'سيبقى رصيدك عند هذا الحد الأقصى حتى تنشر فيديو.',balCapOk:'🎬 انشر فيديو الآن',balCapLater:'لاحقًا',balCapBadge:'تم الوصول إلى الحد الأقصى – يرجى نشر فيديو',
   navTour:'جولة',delOk:'✅ تم حذف الفيديو',
   welcome:'✨ مرحباً, ',welcomeNew:'🎉 مرحباً في Support Pool!',tourNextBtn:'فهمت ✓',pushTitle:'إشعارات الدفع',pushDesc:'احصل على إشعار عندما يدعم شخص ما فيديوك',pushActivate:'تفعيل',pushActiveMsg:'إشعارات الدفع نشطة',pushBlockedTitle:'الإشعارات محظورة',pushBlockedSub:'فعّلها في إعدادات المتصفح',toAdminLabel:'📩 اكتب للمشرف',toMemberLabel:'🔍 ابحث عن عضو',msgPlaceholderAdmin:'رسالة إلى المشرف...',msgPlaceholderMem:'رسالة إلى @{name}...',cancel:'إلغاء',postSubmit:'نشر',dmChange:'تغيير',
   tourSteps:[
@@ -2384,6 +2405,7 @@ zh: {
   postSuccessBody:'你的视频已发送给 {n} 名成员。',
   postSuccessSub:'现在也支持其他成员的视频。在开放视频中找到它们。',
   postSuccessOk:'我明白了！',
+  balCapTitle:'🚀 余额已达上限！',balCapBody:'你的余额已达到上限{n}。现在发布一个新视频，让其他成员可以通过支持你来弥补他们的差额。',balCapSub:'在你发布视频之前，余额将保持在这个上限。',balCapOk:'🎬 立即发布视频',balCapLater:'稍后',balCapBadge:'已达上限 – 请发布视频',
   navTour:'导览',delOk:'✅ 视频已删除',
   welcome:'✨ 欢迎, ',welcomeNew:'🎉 欢迎来到Support Pool!',tourNextBtn:'明白了 ✓',pushTitle:'推送通知',pushDesc:'当有人支持你的视频时获得通知',pushActivate:'启用',pushActiveMsg:'推送通知已启用',pushBlockedTitle:'通知已被屏蔽',pushBlockedSub:'请在浏览器设置中启用',toAdminLabel:'📩 写信给管理员',toMemberLabel:'🔍 搜索成员',msgPlaceholderAdmin:'给管理员的消息...',msgPlaceholderMem:'给 @{name} 的消息...',cancel:'取消',postSubmit:'发布',dmChange:'更改',
   tourSteps:[
@@ -2473,6 +2495,7 @@ ja: {
   postSuccessBody:'あなたの動画が{n}人のメンバーに送信されました。',
   postSuccessSub:'他のメンバーの動画もサポートしてください。オープン動画で見つけられます。',
   postSuccessOk:'わかりました！',
+  balCapTitle:'🚀 残高が上限に達しました！',balCapBody:'残高が上限の{n}に達しました。今すぐ新しい動画を投稿して、他のメンバーがあなたをサポートして不足分を解消できるようにしましょう。',balCapSub:'投稿するまで残高はこの上限のままになります。',balCapOk:'🎬 今すぐ動画を投稿',balCapLater:'後で',balCapBadge:'上限に達しました – 動画を投稿してください',
   navTour:'ツアー',delOk:'✅ 動画を削除しました',
   welcome:'✨ ようこそ、',welcomeNew:'🎉 Support Poolへようこそ!',tourNextBtn:'わかりました ✓',pushTitle:'プッシュ通知',pushDesc:'誰かがあなたの動画をサポートしたときに通知を受け取る',pushActivate:'有効にする',pushActiveMsg:'プッシュ通知が有効です',pushBlockedTitle:'通知がブロックされています',pushBlockedSub:'ブラウザの設定で有効にしてください',toAdminLabel:'📩 管理者に書く',toMemberLabel:'🔍 メンバーを検索',msgPlaceholderAdmin:'管理者へのメッセージ...',msgPlaceholderMem:'@{name} へのメッセージ...',cancel:'キャンセル',postSubmit:'投稿',dmChange:'変更',
   tourSteps:[
@@ -2562,6 +2585,7 @@ pl: {
   postSuccessBody:'Twoje wideo zostało wysłane do {n} członków.',
   postSuccessSub:'Teraz wspieraj też filmy innych członków. Znajdziesz je w Otwarte wideo.',
   postSuccessOk:'Rozumiem!',
+  balCapTitle:'🚀 Saldo osiągnęło maksimum!',balCapBody:'Twoje saldo osiągnęło maksimum {n}. Opublikuj teraz nowy film, aby inni członkowie mogli wyrównać swój deficyt, wspierając Cię.',balCapSub:'Twoje saldo pozostanie na tym maksimum, dopóki nie opublikujesz filmu.',balCapOk:'🎬 Opublikuj film teraz',balCapLater:'Później',balCapBadge:'Maksimum osiągnięte – opublikuj film',
   navTour:'Wycieczka',delOk:'✅ Wideo usunięte',
   welcome:'✨ Witaj, ',welcomeNew:'🎉 Witamy w Support Pool!',tourNextBtn:'Rozumiem ✓',pushTitle:'Powiadomienia Push',pushDesc:'Otrzymaj powiadomienie, gdy ktoś wesprze Twoje wideo',pushActivate:'Włącz',pushActiveMsg:'Powiadomienia push aktywne',pushBlockedTitle:'Powiadomienia zablokowane',pushBlockedSub:'Włącz w ustawieniach przeglądarki',toAdminLabel:'📩 Napisz do Admina',toMemberLabel:'🔍 Szukaj Członka',msgPlaceholderAdmin:'Wiadomość do Admina...',msgPlaceholderMem:'Wiadomość do @{name}...',cancel:'Anuluj',postSubmit:'Opublikuj',dmChange:'Zmień',
   tourSteps:[
@@ -2773,6 +2797,7 @@ function applyLang() {
   // Goal + Leaderboard
   st('t-goal-title', l.goalTitle||'Tagesziel'); st('t-goal-sub', l.goalSub||'Supports heute');
   st('t-lb-title', l.lbTitle||'Top-Supporter der Woche');
+  st('t-bal-cap-badge', l.balCapBadge||'Maximum erreicht – bitte Video posten');
   // Push banner
   st('t-push-title', l.pushTitle||'Push-Benachrichtigungen');
   st('t-push-desc', l.pushDesc||'Erhalte eine Meldung, wenn jemand dein Video supportet');
@@ -3158,6 +3183,7 @@ function enterApp() {
   } else {
     goScreen('home');
     setTimeout(function(){ initGuide(); }, 400);
+    setTimeout(checkBalCapReminder, 700);
   }
   if (ONLINE) pushFB();
   setTimeout(checkPendingOnBoot, 1500);
@@ -3199,10 +3225,12 @@ function renderHome() {
   if (!u.stats) { u.stats = {given:0, received:0}; }
   // Backfill joined timestamp for members created before this field existed
   if (!u.joined) { u.joined = Date.now(); save(); }
-  var g = u.stats.given||0, r = u.stats.received||0, bal = g - r;
+  var g = u.stats.given||0, r = u.stats.received||0, rawBal = g - r, bal = Math.min(rawBal, BAL_CAP);
   var bel = ge('bal-num');
   bel.textContent = bal;
   bel.className = 'bal-num' + (bal>0?' pos':bal<0?' neg':'');
+  var capBadge = ge('bal-cap-badge');
+  if (capBadge) capBadge.style.display = (rawBal >= BAL_CAP) ? 'block' : 'none';
   st('stat-given', g); st('stat-recv', r); st('stat-vids', u.postsTotal||0);
   var tot = g+r, pct = tot>0?Math.round(g/tot*100):0;
   var circ = 175.9, off = circ - (circ*pct/100);
@@ -4673,6 +4701,31 @@ function checkActivityReminder() {
     _reminderShown = true;
     toast('⏰ ' + (l.reminderText || openVids.length + ' Videos warten auf deinen Support!'), 'info', 5000);
   }, 3000);
+}
+
+// Members who only support and never post can accumulate an unlimited balance,
+// while members in deficit have nothing left to support. Re-derived on every
+// login from the live given/received counters (never a one-shot flag), so the
+// reminder keeps showing on each login until the member posts and brings their
+// balance back under the cap.
+var _balCapModalShown = false;
+function checkBalCapReminder() {
+  if (_balCapModalShown || !CU || !DB.members[CU]) return;
+  var u = DB.members[CU];
+  if (u.role === 'admin' || !u.stats) return;
+  var rawBal = (u.stats.given||0) - (u.stats.received||0);
+  if (rawBal < BAL_CAP) return;
+  _balCapModalShown = true;
+  showBalCapModal();
+}
+function showBalCapModal() {
+  var l = L[LANG] || L.de;
+  st('bcm-title', l.balCapTitle || '🚀 Guthaben-Maximum erreicht!');
+  st('bcm-body', (l.balCapBody || 'Dein Guthaben hat das Maximum von {n} erreicht. Poste jetzt ein neues Video, damit andere Mitglieder ihr Minus durch Support bei dir ausgleichen können.').replace('{n}', BAL_CAP));
+  st('bcm-sub', l.balCapSub || 'Solange du nicht postest, bleibt dein Guthaben bei diesem Maximum stehen.');
+  st('bcm-ok', l.balCapOk || '🎬 Jetzt Video posten');
+  st('bcm-later', l.balCapLater || 'Später');
+  openModal('balCapModal');
 }
 
 
