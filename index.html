@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
-<title>SUPPORT POOL</title>
+<title>NOVA SUPPORT POOL</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet"/>
@@ -98,10 +98,7 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
 .btn-sm{padding:7px 12px;font-size:11px}
 .btn-danger{background:rgba(255,59,48,.07);border:none;border-left:3px solid var(--red);color:var(--red);padding:7px 12px;border-radius:10px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Space Grotesk',sans-serif;transition:all .2s;text-transform:uppercase}
 .btn-danger:hover{background:rgba(255,59,48,.13)}
-#login-btn{width:100%;padding:15px;border-radius:14px;border:none;background:var(--v);color:#fff;font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:700;cursor:pointer;letter-spacing:.08em;text-transform:uppercase;box-shadow:0 6px 20px rgba(212,134,10,.35);transition:all .2s;margin-bottom:0}
-#login-btn:hover{background:var(--v2);transform:translateY(-1px)}
-#login-btn:active{transform:scale(.97)}
-#login-btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+#login-btn{margin-bottom:0}
 @keyframes shimmer{0%{left:-60%}100%{left:160%}}
 .login-free{text-align:center;font-size:10px;color:var(--t3);margin-top:10px;text-transform:uppercase;letter-spacing:.05em}
 
@@ -557,6 +554,45 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
 .login-title{font-family:'Space Grotesk',sans-serif;font-size:1.7rem;font-weight:700;letter-spacing:.1em;color:var(--text);margin-bottom:3px;text-transform:uppercase}
 .login-tagline{font-size:11px;color:var(--t2);margin-bottom:14px;letter-spacing:.05em;text-transform:uppercase}
 
+/* ── NOVA BRAND ── */
+.nova-brand{margin:8px 0 12px;text-align:center}
+.nova-line1{font-family:'Space Grotesk',sans-serif;font-size:2.6rem;font-weight:900;letter-spacing:.22em;color:var(--text);line-height:1;text-transform:uppercase}
+.nova-line2{font-family:'Space Grotesk',sans-serif;font-size:1.05rem;font-weight:800;letter-spacing:.14em;color:var(--text);line-height:1.2;text-transform:uppercase;margin-top:2px}
+.nova-tagline{font-size:10px;color:var(--t2);letter-spacing:.08em;text-transform:uppercase;margin-top:6px}
+.nova-o{color:var(--blue)!important}
+
+/* ── STEP LABELS ── */
+.step-label{display:flex;align-items:center;gap:7px;padding:6px 0 2px 2px}
+.step-circle{width:22px;height:22px;border-radius:50%;background:var(--v);color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.step-txt{font-size:11px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.05em}
+
+/* ── BALANCE TIMER INLINE ── */
+.bal-timer-inline{font-family:'Space Grotesk',sans-serif;font-size:12px;font-weight:700;color:var(--v);text-align:center;line-height:1.3;background:rgba(212,134,10,.07);border:1.5px solid var(--vb);border-radius:12px;padding:8px 10px;min-width:72px}
+
+/* ── ACTION CARDS ── */
+.action-cards{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.action-card{background:var(--card);border-radius:16px;padding:16px 14px;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;border:1.5px solid var(--bdr);transition:all .2s;position:relative;text-align:center}
+.action-card:active{transform:scale(.96)}
+.action-card:hover{border-color:var(--vb);background:rgba(212,134,10,.04)}
+.action-card-icon{font-size:28px;line-height:1}
+.action-card-label{font-size:11px;font-weight:800;color:var(--text);text-transform:uppercase;letter-spacing:.04em;line-height:1.3}
+.action-card-badge{position:absolute;top:10px;right:10px;background:var(--red);color:#fff;font-size:10px;font-weight:800;min-width:18px;height:18px;border-radius:9px;display:flex;align-items:center;justify-content:center;padding:0 4px}
+.action-card-badge.hidden{display:none}
+
+/* ── SUPPORT CARD ── */
+.sup-card-wrap{background:var(--card);border-radius:18px;border:1.5px solid var(--bdr);overflow:hidden;margin-bottom:16px}
+.sup-card-hdr{display:flex;align-items:center;justify-content:space-between;padding:12px 14px 8px;border-bottom:1px solid var(--bdr)}
+.sup-card-title{font-size:12px;font-weight:800;color:var(--text);text-transform:uppercase;letter-spacing:.05em}
+.sup-card-counter{font-size:11px;font-weight:700;color:var(--t2)}
+.sup-card-back{background:none;border:none;color:var(--t2);cursor:pointer;font-size:16px;padding:0;line-height:1}
+.sup-card{padding:14px}
+.sup-card-nav{display:grid;grid-template-columns:44px 1fr 44px;gap:8px;padding:12px 14px;border-top:1px solid var(--bdr)}
+.sup-nav-btn{background:var(--bg2);border:none;border-radius:12px;width:44px;height:44px;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.sup-nav-btn:active{transform:scale(.92)}
+.sup-nav-btn:disabled{opacity:.3;cursor:not-allowed}
+.sup-open-btn{background:linear-gradient(155deg,#f7c04a 0%,#e09010 28%,#c47200 62%,#a05800 100%);border:none;border-radius:12px;color:#fff;font-family:'Space Grotesk',sans-serif;font-size:12px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;transition:all .2s;padding:0 10px}
+.sup-open-btn:active{transform:scale(.96)}
+
 /* ── LIVE STATS (login) ── */
 .live-stats{display:flex;gap:0;justify-content:center;margin-top:14px;background:var(--bg2);border-radius:14px;overflow:hidden}
 .live-stat{flex:1;padding:12px 3px;text-align:center;border-right:1px solid var(--bdr)}
@@ -833,7 +869,7 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
 
   <!-- HEADER -->
   <div id="header" style="display:none">
-    <div class="brand-sm">SUPPORT POOL</div>
+    <div class="brand-sm">N<span style="color:var(--blue)">O</span>VA SUPP<span style="color:var(--blue)">O</span>RT P<span style="color:var(--blue)">OO</span>L</div>
     <div style="display:flex;align-items:center;gap:8px">
       <div class="sync-pill offline" id="sync-badge" onclick="if(typeof forceSyncNow!=='undefined')forceSyncNow()" style="cursor:pointer" title="Tippen zum Synchronisieren">
         <div class="sync-dot"></div>
@@ -856,8 +892,11 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
           <span class="logo-number">No.1</span>
         </div>
       </div>
-      <div class="login-title">SUPPORT POOL</div>
-      <div class="login-tagline" id="t-tagline">Das Premium TikTok Support-Netzwerk</div>
+      <div class="nova-brand">
+        <div class="nova-line1">N<span class="nova-o">O</span>VA</div>
+        <div class="nova-line2">SUPP<span class="nova-o">O</span>RT P<span class="nova-o">OO</span>L</div>
+        <div class="nova-tagline" id="t-tagline">DAS PREMIUM TIKTOK SUPPORT-NETZWERK</div>
+      </div>
       <div class="live-stats" id="live-stats">
         <div class="live-stat">
           <div class="live-stat-num" id="ls-mem">0</div>
@@ -883,6 +922,7 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
     </div>
 
     <!-- World Clocks -->
+    <div style="padding:0 20px"><div class="step-label"><div class="step-circle">①</div><div class="step-txt" id="t-step1">Sprache wählen</div></div></div>
     <div class="wc-scroll"><div class="wc-row" id="wc-row"></div></div>
 
     <!-- Login Panel -->
@@ -899,6 +939,7 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
       <!-- Language Row -->
       <div class="lang-row" id="lang-row"></div>
       <!-- Input -->
+      <div class="step-label" style="margin-bottom:6px"><div class="step-circle">②</div><div class="step-txt" id="t-step2">Username eingeben</div></div>
       <div style="position:relative">
         <input class="sp-input" id="loginInput" type="text" autocomplete="off"
                placeholder="TikTok Username"
@@ -907,7 +948,7 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
                onkeydown="handleLoginKey(event)"/>
         <div id="login-suggest"></div>
       </div>
-      <button id="login-btn" onclick="doLogin()">
+      <button class="btn-prime" id="login-btn" onclick="doLogin()">
         <span id="t-login">Einloggen</span>
       </button>
       <div style="text-align:center;font-size:11px;color:var(--t2)" id="t-free">100% kostenlos · Premium für alle Mitglieder</div>
@@ -925,7 +966,7 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
             <div class="bal-label" id="t-balance">GUTHABEN</div>
             <div class="bal-num" id="bal-num">0</div>
           </div>
-          <div class="bal-ring-wrap">
+          <div id="bal-ring-wrap" class="bal-ring-wrap">
             <svg class="ring-svg" width="72" height="72" viewBox="0 0 72 72">
               <defs>
                 <linearGradient id="rg" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -939,6 +980,7 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
             </svg>
             <div class="ring-pct" id="ring-pct">0%</div>
           </div>
+          <div id="bal-timer-inline" class="bal-timer-inline" style="display:none"></div>
         </div>
         <div class="bal-stats">
           <div class="bal-stat">
@@ -986,16 +1028,29 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
         <div id="lb-list"><div style="text-align:center;color:var(--t2);font-size:12px;padding:8px">Lade...</div></div>
       </div>
 
-      <!-- Post Button -->
-      <button class="btn-prime mb12" id="postBtn" onclick="openPostModal()" style="padding:16px">
-        📹 <span id="t-post-btn">Video posten</span>
-      </button>
+      <!-- Action Cards -->
+      <div class="action-cards" id="action-cards">
+        <div class="action-card" onclick="openPostModal()">
+          <div class="action-card-icon">📹</div>
+          <div class="action-card-label" id="t-ac-post">Video posten</div>
+        </div>
+        <div class="action-card" onclick="openSupCard()">
+          <div class="action-card-icon">🔄</div>
+          <div class="action-card-label" id="t-ac-sup">Videos supporten</div>
+          <div class="action-card-badge hidden" id="ac-sup-badge">0</div>
+        </div>
+      </div>
 
       <!-- Post Balance Warning -->
       <div id="post-bal-warn" style="display:none">
         <div id="post-bal-warn-text"></div>
         <div id="post-bal-warn-sub"></div>
       </div>
+
+      <!-- Post Button (legacy, kept for balance-warning flow) -->
+      <button class="btn-prime mb12" id="postBtn" onclick="openPostModal()" style="padding:16px;display:none">
+        📹 <span id="t-post-btn">Video posten</span>
+      </button>
 
       <!-- Guide Card -->
       <div class="guide-card" id="guide-card" style="display:none">
@@ -1014,13 +1069,27 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
         </div>
       </div>
 
-      <!-- Open Videos -->
+      <!-- Open Videos (Card View) -->
       <div class="sec-hdr">
         <div class="sec-title" id="t-open">🔄 Offene Videos</div>
         <div class="sec-count" id="open-count">0</div>
       </div>
       <div id="open-list">
         <div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text" id="t-no-open">Keine Videos zum Supporten</div></div>
+      </div>
+      <!-- Support Card Viewer (shown when user taps action card) -->
+      <div class="sup-card-wrap" id="sup-card-wrap" style="display:none">
+        <div class="sup-card-hdr">
+          <button class="sup-card-back" onclick="closeSupCard()">✕</button>
+          <div class="sup-card-title" id="t-sup-card-title">🔄 Videos supporten</div>
+          <div class="sup-card-counter" id="sup-card-counter">– / –</div>
+        </div>
+        <div id="sup-card-body" class="sup-card"></div>
+        <div class="sup-card-nav">
+          <button class="sup-nav-btn" id="sup-prev" onclick="stepSupCard(-1)">◀</button>
+          <button class="sup-open-btn" id="sup-open-btn" onclick="supCardSupport()">🔄 <span id="t-sup-btn">Supporten</span></button>
+          <button class="sup-nav-btn" id="sup-next" onclick="stepSupCard(1)">▶</button>
+        </div>
       </div>
 
       <!-- My Videos -->
@@ -1283,17 +1352,18 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
 
 // WORLD CLOCKS DATA
 var WC_ZONES = [
-  { lang:'de', flag:'🇩🇪', city:'Berlin',   tz:'Europe/Berlin'    },
-  { lang:'en', flag:'🇬🇧', city:'London',   tz:'Europe/London'    },
-  { lang:'id', flag:'🇮🇩', city:'Jakarta',  tz:'Asia/Jakarta'     },
-  { lang:'it', flag:'🇮🇹', city:'Rome',     tz:'Europe/Rome'      },
-  { lang:'es', flag:'🇪🇸', city:'Madrid',   tz:'Europe/Madrid'    },
-  { lang:'tr', flag:'🇹🇷', city:'Istanbul', tz:'Europe/Istanbul'  },
-  { lang:'ar', flag:'🇸🇦', city:'Riyadh',   tz:'Asia/Riyadh'      },
-  { lang:'zh', flag:'🇨🇳', city:'Shanghai', tz:'Asia/Shanghai'    },
-  { lang:'ja', flag:'🇯🇵', city:'Tokyo',    tz:'Asia/Tokyo'       },
-  { lang:'pl', flag:'🇵🇱', city:'Warsaw',   tz:'Europe/Warsaw'    },
-  { lang:'us', flag:'🇺🇸', city:'New York', tz:'America/New_York' }
+  { lang:'de', id:'de',    flag:'🇩🇪', city:'Berlin',      tz:'Europe/Berlin'    },
+  { lang:'en', id:'en-gb', flag:'🇬🇧', city:'London',      tz:'Europe/London'    },
+  { lang:'id', id:'id',    flag:'🇮🇩', city:'Jakarta',     tz:'Asia/Jakarta'     },
+  { lang:'it', id:'it',    flag:'🇮🇹', city:'Rome',        tz:'Europe/Rome'      },
+  { lang:'es', id:'es',    flag:'🇪🇸', city:'Madrid',      tz:'Europe/Madrid'    },
+  { lang:'tr', id:'tr',    flag:'🇹🇷', city:'Istanbul',    tz:'Europe/Istanbul'  },
+  { lang:'ar', id:'ar',    flag:'🇸🇦', city:'Riyadh',      tz:'Asia/Riyadh'      },
+  { lang:'zh', id:'zh',    flag:'🇨🇳', city:'Beijing',     tz:'Asia/Shanghai'    },
+  { lang:'ja', id:'ja',    flag:'🇯🇵', city:'Tokyo',       tz:'Asia/Tokyo'       },
+  { lang:'pl', id:'pl',    flag:'🇵🇱', city:'Warsaw',      tz:'Europe/Warsaw'    },
+  { lang:'en', id:'en-us', flag:'🇺🇸', city:'New York',   tz:'America/New_York' },
+  { lang:'en', id:'en-la', flag:'🇺🇸', city:'Los Angeles', tz:'America/Los_Angeles' }
 ];
 
 // SESSION CONSTANTS
@@ -1311,11 +1381,10 @@ function buildWcRow() {
   var html = '';
   for (var i = 0; i < WC_ZONES.length; i++) {
     var z = WC_ZONES[i];
-    var isA = (z.lang === LANG && z.lang !== 'us');
-    var click = z.lang !== 'us' ? " onclick=\"setLang('" + z.lang + "')\"" : '';
-    html += '<div class="wc-item' + (isA?' wc-active':'') + '"' + click + ' data-wlang="' + z.lang + '">';
+    var isA = (z.lang === LANG);
+    html += '<div class="wc-item' + (isA?' wc-active':'') + '" onclick="setLang(\'' + z.lang + '\')" data-wlang="' + z.lang + '" data-wid="' + z.id + '">';
     html += '<div class="wc-flag">' + z.flag + '</div>';
-    html += '<div class="wc-time" id="wct-' + z.lang + '">--:--</div>';
+    html += '<div class="wc-time" id="wct-' + z.id + '">--:--</div>';
     html += '<div class="wc-city">' + z.city + '</div>';
     html += '</div>';
   }
@@ -1392,7 +1461,7 @@ function updateWcTimes() {
   var now = new Date();
   for (var i = 0; i < WC_ZONES.length; i++) {
     var z = WC_ZONES[i];
-    var el = ge('wct-' + z.lang);
+    var el = ge('wct-' + z.id);
     if (!el) continue;
     try {
       el.textContent = now.toLocaleTimeString('de-DE', {timeZone: z.tz, hour: '2-digit', minute: '2-digit'});
@@ -1405,6 +1474,7 @@ function updateWcActive() {
   for (var i = 0; i < items.length; i++) {
     items[i].classList.toggle('wc-active', items[i].getAttribute('data-wlang') === LANG);
   }
+  wcSlideToActive(false);
 }
 
 function startWcTick() {
@@ -1777,6 +1847,7 @@ de: {
   postSuccessOk:'Ich habe verstanden!',
   balCapTitle:'🚀 Guthaben-Maximum erreicht!',balCapBody:'Dein Guthaben hat das Maximum von {n} erreicht. Poste jetzt ein neues Video, damit andere Mitglieder ihr Minus durch Support bei dir ausgleichen können.',balCapSub:'Solange du nicht postest, bleibt dein Guthaben bei diesem Maximum stehen.',balCapOk:'🎬 Jetzt Video posten',balCapLater:'Später',balCapBadge:'Maximum erreicht – bitte Video posten',
   navTour:'Rundgang',delOk:'✅ Video gelöscht',
+  step1:'Sprache wählen',step2:'Username eingeben',acPost:'Video posten',acSup:'Videos supporten',supBtnShort:'Supporten',
   welcome:'✨ Willkommen, ',welcomeNew:'🎉 Willkommen im Support Pool!',tourNextBtn:'Verstanden ✓',pushTitle:'Push-Benachrichtigungen',pushDesc:'Erhalte eine Meldung, wenn jemand dein Video supportet',pushActivate:'Aktivieren',pushActiveMsg:'Push-Benachrichtigungen aktiv',pushBlockedTitle:'Benachrichtigungen blockiert',pushBlockedSub:'In Browser-Einstellungen aktivieren',toAdminLabel:'📩 An Admin schreiben',toMemberLabel:'🔍 Mitglied suchen',msgPlaceholderAdmin:'Nachricht an Admin...',msgPlaceholderMem:'Nachricht an @{name}...',cancel:'Abbrechen',postSubmit:'Posten',dmChange:'Ändern',
   tourSteps:[
     {icon:'👋',title:'Willkommen!',body:'Lass uns die App gemeinsam entdecken. Jeder Schritt erklärt dir, was du wo findest.'},
@@ -1867,6 +1938,7 @@ en: {
   postSuccessOk:'Got it!',
   balCapTitle:'🚀 Balance maximum reached!',balCapBody:'Your balance has reached the maximum of {n}. Post a new video now so other members can offset their deficit by supporting you.',balCapSub:'Your balance stays capped at this maximum until you post.',balCapOk:'🎬 Post a video now',balCapLater:'Later',balCapBadge:'Maximum reached – please post a video',
   navTour:'Tour',delOk:'✅ Video deleted',
+  step1:'Choose language',step2:'Enter username',acPost:'Post Video',acSup:'Support Videos',supBtnShort:'Support',
   welcome:'✨ Welcome, ',welcomeNew:'🎉 Welcome to Support Pool!',tourNextBtn:'Got it ✓',pushTitle:'Push Notifications',pushDesc:'Get notified when someone supports your video',pushActivate:'Enable',pushActiveMsg:'Push notifications active',pushBlockedTitle:'Notifications blocked',pushBlockedSub:'Enable in browser settings',toAdminLabel:'📩 Write to Admin',toMemberLabel:'🔍 Find Member',msgPlaceholderAdmin:'Message to Admin...',msgPlaceholderMem:'Message to @{name}...',cancel:'Cancel',postSubmit:'Post',dmChange:'Change',
   tourSteps:[
     {icon:'👋',title:'Welcome!',body:'Let us explore the app together. Each step explains what you find where.'},
@@ -1957,6 +2029,7 @@ id: {
   postSuccessOk:'Saya mengerti!',
   balCapTitle:'🚀 Saldo maksimum tercapai!',balCapBody:'Saldo kamu telah mencapai maksimum {n}. Posting video baru sekarang agar anggota lain bisa mengimbangi kekurangan mereka dengan mendukungmu.',balCapSub:'Saldo kamu tetap di batas maksimum ini sampai kamu memposting.',balCapOk:'🎬 Posting video sekarang',balCapLater:'Nanti',balCapBadge:'Maksimum tercapai – silakan posting video',
   navTour:'Panduan',delOk:'✅ Video dihapus',
+  step1:'Pilih bahasa',step2:'Masukkan username',acPost:'Posting Video',acSup:'Dukung Video',supBtnShort:'Dukung',
   welcome:'✨ Selamat datang, ',welcomeNew:'🎉 Selamat datang di Support Pool!',tourNextBtn:'Mengerti ✓',pushTitle:'Notifikasi Push',pushDesc:'Dapatkan pemberitahuan saat seseorang mendukung video Anda',pushActivate:'Aktifkan',pushActiveMsg:'Notifikasi push aktif',pushBlockedTitle:'Notifikasi diblokir',pushBlockedSub:'Aktifkan di pengaturan browser',toAdminLabel:'📩 Tulis ke Admin',toMemberLabel:'🔍 Cari Anggota',msgPlaceholderAdmin:'Pesan ke Admin...',msgPlaceholderMem:'Pesan ke @{name}...',cancel:'Batal',postSubmit:'Posting',dmChange:'Ganti',
   tourSteps:[
     {icon:'👋',title:'Selamat datang!',body:'Mari jelajahi aplikasi bersama. Setiap langkah menjelaskan apa yang ada di mana.'},
@@ -2047,6 +2120,7 @@ it: {
   postSuccessOk:'Ho capito!',
   balCapTitle:'🚀 Saldo massimo raggiunto!',balCapBody:'Il tuo saldo ha raggiunto il massimo di {n}. Pubblica subito un nuovo video così altri membri possono compensare il loro deficit supportandoti.',balCapSub:'Il tuo saldo resta bloccato a questo massimo finché non pubblichi.',balCapOk:'🎬 Pubblica un video ora',balCapLater:'Più tardi',balCapBadge:'Massimo raggiunto – pubblica un video',
   navTour:'Tour',delOk:'✅ Video eliminato',
+  step1:'Scegli lingua',step2:'Inserisci username',acPost:'Pubblica Video',acSup:'Supporta Video',supBtnShort:'Supporta',
   welcome:'✨ Benvenuto, ',welcomeNew:'🎉 Benvenuto nel Support Pool!',tourNextBtn:'Capito ✓',pushTitle:'Notifiche Push',pushDesc:'Ricevi una notifica quando qualcuno supporta il tuo video',pushActivate:'Attiva',pushActiveMsg:'Notifiche push attive',pushBlockedTitle:'Notifiche bloccate',pushBlockedSub:'Attiva nelle impostazioni del browser',toAdminLabel:'📩 Scrivi all Admin',toMemberLabel:'🔍 Cerca Membro',msgPlaceholderAdmin:'Messaggio all Admin...',msgPlaceholderMem:'Messaggio a @{name}...',cancel:'Annulla',postSubmit:'Pubblica',dmChange:'Cambia',
   tourSteps:[
     {icon:'👋',title:'Benvenuto!',body:'Esploriamo insieme l app. Ogni passaggio spiega cosa trovi dove.'},
@@ -2137,6 +2211,7 @@ es: {
   postSuccessOk:'¡Lo entendí!',
   balCapTitle:'🚀 ¡Saldo máximo alcanzado!',balCapBody:'Tu saldo ha alcanzado el máximo de {n}. Publica un nuevo video ahora para que otros miembros puedan compensar su déficit apoyándote.',balCapSub:'Tu saldo se mantiene en este máximo hasta que publiques.',balCapOk:'🎬 Publicar video ahora',balCapLater:'Más tarde',balCapBadge:'Máximo alcanzado – por favor publica un video',
   navTour:'Recorrido',delOk:'✅ Video eliminado',
+  step1:'Elegir idioma',step2:'Ingresar usuario',acPost:'Publicar Video',acSup:'Apoyar Videos',supBtnShort:'Apoyar',
   welcome:'✨ Bienvenido, ',welcomeNew:'🎉 ¡Bienvenido al Support Pool!',tourNextBtn:'Entendido ✓',pushTitle:'Notificaciones Push',pushDesc:'Recibe una notificación cuando alguien apoya tu video',pushActivate:'Activar',pushActiveMsg:'Notificaciones push activas',pushBlockedTitle:'Notificaciones bloqueadas',pushBlockedSub:'Activar en la configuración del navegador',toAdminLabel:'📩 Escribir al Admin',toMemberLabel:'🔍 Buscar Miembro',msgPlaceholderAdmin:'Mensaje al Admin...',msgPlaceholderMem:'Mensaje a @{name}...',cancel:'Cancelar',postSubmit:'Publicar',dmChange:'Cambiar',
   tourSteps:[
     {icon:'👋',title:'¡Bienvenido!',body:'Exploremos juntos la app. Cada paso explica qué encuentras dónde.'},
@@ -2227,6 +2302,7 @@ tr: {
   postSuccessOk:'Anladım!',
   balCapTitle:'🚀 Bakiye maksimuma ulaştı!',balCapBody:'Bakiyen {n} maksimumuna ulaştı. Diğer üyelerin seni destekleyerek açıklarını kapatabilmesi için şimdi yeni bir video paylaş.',balCapSub:'Paylaşım yapmadığın sürece bakiyen bu maksimumda sabit kalır.',balCapOk:'🎬 Şimdi video paylaş',balCapLater:'Daha sonra',balCapBadge:'Maksimuma ulaşıldı – lütfen video paylaş',
   navTour:'Tur',delOk:'✅ Video silindi',
+  step1:'Dil seç',step2:'Kullanıcı adı gir',acPost:'Video Paylaş',acSup:'Video Destekle',supBtnShort:'Destekle',
   welcome:'✨ Hoş geldin, ',welcomeNew:"🎉 Support Pool'a hoş geldin!",tourNextBtn:'Anladım ✓',pushTitle:'Push Bildirimleri',pushDesc:'Birisi videonuzu desteklediğinde bildirim alın',pushActivate:'Etkinleştir',pushActiveMsg:'Push bildirimleri etkin',pushBlockedTitle:'Bildirimler engellendi',pushBlockedSub:'Tarayıcı ayarlarından etkinleştirin',toAdminLabel:'📩 Admine Yaz',toMemberLabel:'🔍 Üye Ara',msgPlaceholderAdmin:'Admine mesaj...',msgPlaceholderMem:'@{name} kişisine mesaj...',cancel:'İptal',postSubmit:'Paylaş',dmChange:'Değiştir',
   tourSteps:[
     {icon:'👋',title:'Hoş geldin!',body:'Uygulamayı birlikte keşfedelim. Her adım neyin nerede olduğunu açıklar.'},
@@ -2317,6 +2393,7 @@ ar: {
   postSuccessOk:'فهمت!',
   balCapTitle:'🚀 لقد بلغ رصيدك الحد الأقصى!',balCapBody:'بلغ رصيدك الحد الأقصى وهو {n}. انشر فيديو جديدًا الآن حتى يتمكن الأعضاء الآخرون من تعويض عجزهم بدعمك.',balCapSub:'سيبقى رصيدك عند هذا الحد الأقصى حتى تنشر فيديو.',balCapOk:'🎬 انشر فيديو الآن',balCapLater:'لاحقًا',balCapBadge:'تم الوصول إلى الحد الأقصى – يرجى نشر فيديو',
   navTour:'جولة',delOk:'✅ تم حذف الفيديو',
+  step1:'اختر اللغة',step2:'أدخل اسم المستخدم',acPost:'نشر فيديو',acSup:'دعم الفيديوهات',supBtnShort:'دعم',
   welcome:'✨ مرحباً, ',welcomeNew:'🎉 مرحباً في Support Pool!',tourNextBtn:'فهمت ✓',pushTitle:'إشعارات الدفع',pushDesc:'احصل على إشعار عندما يدعم شخص ما فيديوك',pushActivate:'تفعيل',pushActiveMsg:'إشعارات الدفع نشطة',pushBlockedTitle:'الإشعارات محظورة',pushBlockedSub:'فعّلها في إعدادات المتصفح',toAdminLabel:'📩 اكتب للمشرف',toMemberLabel:'🔍 ابحث عن عضو',msgPlaceholderAdmin:'رسالة إلى المشرف...',msgPlaceholderMem:'رسالة إلى @{name}...',cancel:'إلغاء',postSubmit:'نشر',dmChange:'تغيير',
   tourSteps:[
     {icon:'👋',title:'مرحباً!',body:'دعنا نستكشف التطبيق معاً. كل خطوة تشرح ما ستجده أين.'},
@@ -2407,6 +2484,7 @@ zh: {
   postSuccessOk:'我明白了！',
   balCapTitle:'🚀 余额已达上限！',balCapBody:'你的余额已达到上限{n}。现在发布一个新视频，让其他成员可以通过支持你来弥补他们的差额。',balCapSub:'在你发布视频之前，余额将保持在这个上限。',balCapOk:'🎬 立即发布视频',balCapLater:'稍后',balCapBadge:'已达上限 – 请发布视频',
   navTour:'导览',delOk:'✅ 视频已删除',
+  step1:'选择语言',step2:'输入用户名',acPost:'发布视频',acSup:'支持视频',supBtnShort:'支持',
   welcome:'✨ 欢迎, ',welcomeNew:'🎉 欢迎来到Support Pool!',tourNextBtn:'明白了 ✓',pushTitle:'推送通知',pushDesc:'当有人支持你的视频时获得通知',pushActivate:'启用',pushActiveMsg:'推送通知已启用',pushBlockedTitle:'通知已被屏蔽',pushBlockedSub:'请在浏览器设置中启用',toAdminLabel:'📩 写信给管理员',toMemberLabel:'🔍 搜索成员',msgPlaceholderAdmin:'给管理员的消息...',msgPlaceholderMem:'给 @{name} 的消息...',cancel:'取消',postSubmit:'发布',dmChange:'更改',
   tourSteps:[
     {icon:'👋',title:'欢迎！',body:'让我们一起探索这个应用。每一步都解释你在哪里找到什么。'},
@@ -2497,6 +2575,7 @@ ja: {
   postSuccessOk:'わかりました！',
   balCapTitle:'🚀 残高が上限に達しました！',balCapBody:'残高が上限の{n}に達しました。今すぐ新しい動画を投稿して、他のメンバーがあなたをサポートして不足分を解消できるようにしましょう。',balCapSub:'投稿するまで残高はこの上限のままになります。',balCapOk:'🎬 今すぐ動画を投稿',balCapLater:'後で',balCapBadge:'上限に達しました – 動画を投稿してください',
   navTour:'ツアー',delOk:'✅ 動画を削除しました',
+  step1:'言語を選ぶ',step2:'ユーザー名を入力',acPost:'動画を投稿',acSup:'動画をサポート',supBtnShort:'サポート',
   welcome:'✨ ようこそ、',welcomeNew:'🎉 Support Poolへようこそ!',tourNextBtn:'わかりました ✓',pushTitle:'プッシュ通知',pushDesc:'誰かがあなたの動画をサポートしたときに通知を受け取る',pushActivate:'有効にする',pushActiveMsg:'プッシュ通知が有効です',pushBlockedTitle:'通知がブロックされています',pushBlockedSub:'ブラウザの設定で有効にしてください',toAdminLabel:'📩 管理者に書く',toMemberLabel:'🔍 メンバーを検索',msgPlaceholderAdmin:'管理者へのメッセージ...',msgPlaceholderMem:'@{name} へのメッセージ...',cancel:'キャンセル',postSubmit:'投稿',dmChange:'変更',
   tourSteps:[
     {icon:'👋',title:'ようこそ！',body:'一緒にアプリを探索しましょう。各ステップでどこに何があるかを説明します。'},
@@ -2587,6 +2666,7 @@ pl: {
   postSuccessOk:'Rozumiem!',
   balCapTitle:'🚀 Saldo osiągnęło maksimum!',balCapBody:'Twoje saldo osiągnęło maksimum {n}. Opublikuj teraz nowy film, aby inni członkowie mogli wyrównać swój deficyt, wspierając Cię.',balCapSub:'Twoje saldo pozostanie na tym maksimum, dopóki nie opublikujesz filmu.',balCapOk:'🎬 Opublikuj film teraz',balCapLater:'Później',balCapBadge:'Maksimum osiągnięte – opublikuj film',
   navTour:'Wycieczka',delOk:'✅ Wideo usunięte',
+  step1:'Wybierz język',step2:'Wpisz nazwę użytkownika',acPost:'Opublikuj wideo',acSup:'Wspieraj wideo',supBtnShort:'Wspieraj',
   welcome:'✨ Witaj, ',welcomeNew:'🎉 Witamy w Support Pool!',tourNextBtn:'Rozumiem ✓',pushTitle:'Powiadomienia Push',pushDesc:'Otrzymaj powiadomienie, gdy ktoś wesprze Twoje wideo',pushActivate:'Włącz',pushActiveMsg:'Powiadomienia push aktywne',pushBlockedTitle:'Powiadomienia zablokowane',pushBlockedSub:'Włącz w ustawieniach przeglądarki',toAdminLabel:'📩 Napisz do Admina',toMemberLabel:'🔍 Szukaj Członka',msgPlaceholderAdmin:'Wiadomość do Admina...',msgPlaceholderMem:'Wiadomość do @{name}...',cancel:'Anuluj',postSubmit:'Opublikuj',dmChange:'Zmień',
   tourSteps:[
     {icon:'👋',title:'Witamy!',body:'Odkryjmy razem aplikację. Każdy krok wyjaśnia co gdzie znajdziesz.'},
@@ -2723,21 +2803,22 @@ var LANG_FLAGS = {de:'🇩🇪',en:'🇬🇧',id:'🇮🇩',it:'🇮🇹',es:'�
 function buildLangRow() {
   var row = ge('lang-row');
   if (!row) return;
-  var keys = Object.keys(L);
-  var flags = {de:'🇩🇪',en:'🇬🇧',id:'🇮🇩',it:'🇮🇹',es:'🇪🇸',tr:'🇹🇷',ar:'🇸🇦',zh:'🇨🇳',ja:'🇯🇵',pl:'🇵🇱'};
   var html = '';
+  var PER_ROW = 6;
   for (var ri = 0; ri < 2; ri++) {
     html += '<div style="display:flex;gap:5px;justify-content:center;margin-bottom:'+(ri===0?'5':'0')+'px">';
-    for (var ki = ri*5; ki < Math.min((ri+1)*5, keys.length); ki++) {
-      var k = keys[ki], active = k === LANG;
-      html += '<button class="lc'+(active?' on':'')+'" data-lang="'+k+'" style="'
-        + 'padding:5px;border-radius:11px;font-size:20px;min-width:38px;min-height:38px;'
+    var start = ri * PER_ROW, end = Math.min(start + PER_ROW, WC_ZONES.length);
+    for (var ki = start; ki < end; ki++) {
+      var z = WC_ZONES[ki];
+      var active = z.lang === LANG;
+      html += '<button class="lc'+(active?' on':'')+'" data-lang="'+z.lang+'" style="'
+        + 'padding:5px;border-radius:11px;font-size:20px;min-width:34px;min-height:34px;'
         + 'display:flex;align-items:center;justify-content:center;cursor:pointer;'
         + 'background:'+(active?'rgba(232,184,75,0.2)':'transparent')+';'
         + 'border:'+(active?'1.5px solid rgba(232,184,75,0.65)':'1px solid rgba(255,255,255,0.07)')+';'
         + 'transition:all 0.2s;'
         + (active?'box-shadow:0 0 12px rgba(232,184,75,0.3);transform:scale(1.1);':'')
-        + '">'+(flags[k]||k.toUpperCase())+'</button>';
+        + '">'+z.flag+'</button>';
     }
     html += '</div>';
   }
@@ -2773,11 +2854,14 @@ function applyLang() {
   // Login
   st('t-tagline', l.tagline); st('t-ls-mem', l.lsMem); st('t-ls-grp', l.lsGrp); st('t-ls-sup', l.lsSup); st('t-ls-vid', l.lsVid||'Videos'); st('t-ls-live', l.lsLive||'🟢 Live');
   st('t-login', l.login); st('t-free', l.free);
+  st('t-step1', l.step1||'Sprache wählen'); st('t-step2', l.step2||'Username eingeben');
   sa('loginInput', 'placeholder', t('loginPH')||'TikTok @username');
   // Home
   st('t-balance', l.balance); st('t-given', l.given); st('t-recv', l.recv); st('t-vids', l.vids);
   st('t-post-btn', l.postBtn); st('t-open', l.open); st('t-my', l.my);
   st('t-no-open', l.noOpen); st('t-no-my', l.noMy);
+  st('t-ac-post', l.acPost||l.postBtn); st('t-ac-sup', l.acSup||l.open);
+  st('t-sup-card-title', l.acSup||l.open); st('t-sup-btn', l.supBtnShort||'Supporten');
   st('t-guide-title', l.guideTitle); st('t-g1', l.g1); st('t-g2', l.g2); st('t-g3', l.g3);
   // Profile
   st('t-contact', l.contact||'💬 Kontakt'); st('t-send-msg', l.sendMsg);
@@ -3250,37 +3334,50 @@ function renderHome() {
 
 function renderTimer(u) {
   var wrap = ge('post-timer-wrap');
+  var timerInline = ge('bal-timer-inline');
+  var ringWrap = ge('bal-ring-wrap');
   if (!u.stats) u.stats = {given:0, received:0};
   var now = Date.now(), tot = u.postsTotal||0, g = u.stats.given||0, r2 = u.stats.received||0, bal = g-r2;
+  function showInlineTimer(html) {
+    if (timerInline) { timerInline.innerHTML = html; timerInline.style.display = ''; }
+    if (ringWrap) ringWrap.style.display = 'none';
+  }
+  function hideInlineTimer() {
+    if (timerInline) timerInline.style.display = 'none';
+    if (ringWrap) ringWrap.style.display = '';
+  }
   if (u.lastPost && (now-u.lastPost) < R1_MS) {
     var rem = R1_MS-(now-u.lastPost);
     var th = Math.floor(rem/3600000);
     var tm = Math.floor((rem%3600000)/60000);
     var ts = Math.floor((rem%60000)/1000);
     var pad = function(n){return n<10?'0'+n:String(n);};
-    wrap.innerHTML = '<div class="timer-strip ts-wait" id="post-countdown" data-until="'+(now+rem)+'">⏳ '+pad(th)+'h '+pad(tm)+'m '+pad(ts)+'s</div>';
+    if (wrap) wrap.innerHTML = '';
+    showInlineTimer('⏳<br>'+pad(th)+'h '+pad(tm)+'m<br>'+pad(ts)+'s');
+    // Also keep countdown element for startPostCountdown()
+    if (wrap) wrap.innerHTML = '<div style="display:none" id="post-countdown" data-until="'+(now+rem)+'"></div>';
     startPostCountdown();
     return;
   }
-  if (tot===0) { wrap.innerHTML = '<button class="timer-strip ts-ok" onclick="openPostModal()" style="cursor:pointer;width:100%;border:none;font-family:inherit">'+(t('firstVideo')||'🎁 Erstes Video – Los!')+' →</button>'; return; }
-  if (tot===1 && g<3) { wrap.innerHTML = '<div class="timer-strip ts-soon">🔄 '+(3-g)+' '+t('needed')+'</div>'; return; }
+  hideInlineTimer();
+  if (tot===0) { if (wrap) wrap.innerHTML = '<button class="timer-strip ts-ok" onclick="openPostModal()" style="cursor:pointer;width:100%;border:none;font-family:inherit">'+(t('firstVideo')||'🎁 Erstes Video – Los!')+' →</button>'; return; }
+  if (tot===1 && g<3) { if (wrap) wrap.innerHTML = '<div class="timer-strip ts-soon">🔄 '+(3-g)+' '+t('needed')+'</div>'; return; }
   if (tot>=2 && bal<0) {
-    wrap.innerHTML = '';
+    if (wrap) wrap.innerHTML = '';
     var pbw = document.getElementById('post-bal-warn');
     var pbwt = document.getElementById('post-bal-warn-text');
     var pbws = document.getElementById('post-bal-warn-sub');
-    var pbb = document.getElementById('postBtn');
     if (pbw) pbw.style.display = 'block';
-    if (pbb) pbb.style.display = 'none';
     if (pbwt) pbwt.textContent = Math.abs(bal) + ' ' + t('needed');
     if (pbws) pbws.textContent = t('errBal'); return; }
   // Hide balance warning when OK
   var pbw2 = document.getElementById('post-bal-warn');
-  var pbb2 = document.getElementById('postBtn');
   if (pbw2) pbw2.style.display = 'none';
-  if (pbb2) pbb2.style.display = '';
-    wrap.innerHTML = '<button class="timer-strip ts-ok" onclick="openPostModal()" style="cursor:pointer;width:100%;border:none;font-family:inherit">'+(t('postNow')||'✅ '+t('postBtn')+' jetzt möglich')+' →</button>';
+  if (wrap) wrap.innerHTML = '<button class="timer-strip ts-ok" onclick="openPostModal()" style="cursor:pointer;width:100%;border:none;font-family:inherit">'+(t('postNow')||'✅ '+t('postBtn')+' jetzt möglich')+' →</button>';
 }
+
+var _supCardOpen = [];
+var _supCardIdx = 0;
 
 function renderOpenList() {
   if (!CU) return;
@@ -3298,7 +3395,21 @@ function renderOpenList() {
     return true;
   }).sort(function(a,b){ return (a.expiresR1||0)-(b.expiresR1||0); });
 
+  _supCardOpen = open;
   st('open-count', open.length);
+  // Update action card badge
+  var badge = ge('ac-sup-badge');
+  if (badge) {
+    if (open.length > 0) { badge.textContent = open.length; badge.classList.remove('hidden'); }
+    else { badge.classList.add('hidden'); }
+  }
+  // If card view is open, refresh current card
+  var scw = ge('sup-card-wrap');
+  if (scw && scw.style.display !== 'none') {
+    if (_supCardIdx >= open.length) _supCardIdx = Math.max(0, open.length - 1);
+    renderSupportCard(_supCardIdx);
+  }
+
   if (!open.length) {
     list.innerHTML = '<div class="empty"><div class="empty-ic">📭</div><div class="empty-txt">'+t('noOpen')+'</div></div>';
     return;
@@ -3344,6 +3455,92 @@ function renderOpenList() {
     var btn = e.target.closest('[data-vid]');
     if (btn) handleSupport(btn.getAttribute('data-vid'));
   };
+}
+
+// ── SUPPORT CARD SYSTEM ────────────────────────────────────────────────────
+function openSupCard() {
+  if (!_supCardOpen.length) return;
+  _supCardIdx = 0;
+  var scw = ge('sup-card-wrap');
+  if (scw) { scw.style.display = ''; scw.scrollIntoView({behavior:'smooth', block:'start'}); }
+  renderSupportCard(_supCardIdx);
+}
+
+function closeSupCard() {
+  var scw = ge('sup-card-wrap');
+  if (scw) scw.style.display = 'none';
+}
+
+function renderSupportCard(idx) {
+  var body = ge('sup-card-body');
+  var counter = ge('sup-card-counter');
+  var prevBtn = ge('sup-prev');
+  var nextBtn = ge('sup-next');
+  var openBtn = ge('sup-open-btn');
+  if (!body) return;
+  var open = _supCardOpen;
+  if (!open.length) {
+    body.innerHTML = '<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">'+t('noOpen')+'</div></div>';
+    if (counter) counter.textContent = '0 / 0';
+    if (prevBtn) prevBtn.disabled = true;
+    if (nextBtn) nextBtn.disabled = true;
+    if (openBtn) openBtn.disabled = true;
+    return;
+  }
+  idx = Math.max(0, Math.min(idx, open.length - 1));
+  _supCardIdx = idx;
+  var v = open[idx];
+  if (counter) counter.textContent = (idx + 1) + ' / ' + open.length;
+  if (prevBtn) prevBtn.disabled = (idx === 0);
+  if (nextBtn) nextBtn.disabled = (idx === open.length - 1);
+  if (openBtn) openBtn.disabled = false;
+  var rnd = v.round || 1;
+  var sups = rnd === 1 ? (v.r1Supporters || []) : (v.r2Supporters || []);
+  var need = rnd === 1 ? (v.r1Need || R1_NEED) : R2_NEED;
+  var pct = Math.min(100, Math.round(sups.length / need * 100));
+  var expiry = rnd === 1 ? (v.expiresR1 || 0) : (v.expiresR2 || 0);
+  var left = Math.max(0, expiry - Date.now());
+  var h = Math.floor(left / 3600000), m = Math.floor((left % 3600000) / 60000);
+  var urgent = left < 3600000, warn = left < 21600000;
+  var ownerName = v.owner || fbDec(v.ownerKey || '?');
+  var pad2 = function(n) { return n < 10 ? '0' + n : String(n); };
+  var ts2 = Math.floor((left % 60000) / 1000);
+  var timeCls = 'vc-time' + (urgent ? ' urgent' : warn ? ' warn' : '');
+  var rbcls = rnd === 2 ? 'r2' : 'r1';
+  var fc = rnd === 2 ? 'var(--blue)' : 'linear-gradient(90deg,var(--gold3),var(--gold2))';
+  var ownerMem = DB.members[v.ownerKey];
+  var avEmoji = ownerMem ? getAvatar(ownerMem) : (ownerName[0] || '?').toUpperCase();
+  var html = '<div class="vc-top">';
+  html += '<div class="vc-av" style="font-size:20px">' + avEmoji + '</div>';
+  html += '<div class="vc-info"><div class="vc-name">@' + esc(ownerName) + (ownerMem ? ' <span style="font-size:10px">' + trophySmall(ownerMem) + '</span>' : '') + '</div>';
+  html += '<div class="' + timeCls + '" data-expires="' + expiry + '">⏰ ' + pad2(h) + 'h ' + pad2(m) + 'm ' + pad2(ts2) + 's</div></div>';
+  html += '<div class="rbadge ' + rbcls + '">' + t('r' + rnd) + '</div>';
+  html += '</div>';
+  html += '<div class="prog-row" style="margin-top:10px"><div class="prog-bar"><div class="prog-fill" style="width:' + pct + '%;background:' + fc + '"></div></div>';
+  html += '<div class="prog-num">' + sups.length + '/' + need + '</div></div>';
+  body.innerHTML = html;
+}
+
+function stepSupCard(dir) {
+  var next = _supCardIdx + dir;
+  if (next < 0 || next >= _supCardOpen.length) return;
+  renderSupportCard(next);
+}
+
+function supCardSupport() {
+  var open = _supCardOpen;
+  if (!open.length) return;
+  var v = open[_supCardIdx];
+  if (!v) return;
+  handleSupport(v.id);
+  // After support, advance to next card automatically
+  setTimeout(function() {
+    if (_supCardIdx < _supCardOpen.length - 1) {
+      renderSupportCard(_supCardIdx + 1);
+    } else if (_supCardOpen.length > 0) {
+      renderSupportCard(0);
+    }
+  }, 400);
 }
 
 function renderMyList(u) {
@@ -4396,7 +4593,10 @@ function startPostCountdown() {
     var th = Math.floor(rem/3600000);
     var tm = Math.floor((rem%3600000)/60000);
     var ts = Math.floor((rem%60000)/1000);
-    el.innerHTML = '⏳ ' + pad(th) + 'h ' + pad(tm) + 'm ' + pad(ts) + 's';
+    var inline = document.getElementById('bal-timer-inline');
+    if (inline && inline.style.display !== 'none') {
+      inline.innerHTML = '⏳<br>'+pad(th)+'h '+pad(tm)+'m<br>'+pad(ts)+'s';
+    }
   }, 1000);
 }
 
