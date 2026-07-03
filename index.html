@@ -98,7 +98,22 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
 .btn-sm{padding:7px 12px;font-size:11px}
 .btn-danger{background:rgba(255,59,48,.07);border:none;border-left:3px solid var(--red);color:var(--red);padding:7px 12px;border-radius:10px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Space Grotesk',sans-serif;transition:all .2s;text-transform:uppercase}
 .btn-danger:hover{background:rgba(255,59,48,.13)}
-#login-btn{margin-bottom:0}
+#login-btn{margin-bottom:0;padding:12px!important;font-size:13px!important}
+
+/* ── LANGUAGE DROPDOWN ── */
+.lang-drop{position:relative;margin-bottom:14px}
+.lang-drop-btn{width:100%;display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--bg2);border:1.5px solid var(--bdr2);border-radius:14px;cursor:pointer;font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:700;color:var(--text);transition:all .2s;text-align:left;gap:8px}
+.lang-drop-btn.open{border-color:var(--v);background:#fff;box-shadow:0 0 0 3px rgba(212,134,10,.1)}
+.lang-drop-cur{flex:1;font-size:13px;font-weight:700}
+.lang-drop-arrow{font-size:10px;color:var(--t2);transition:transform .2s;flex-shrink:0}
+.lang-drop-btn.open .lang-drop-arrow{transform:rotate(180deg);color:var(--v)}
+.lang-drop-list{position:absolute;top:calc(100% + 5px);left:0;right:0;background:#fff;border:1.5px solid var(--bdr2);border-radius:14px;box-shadow:0 8px 28px rgba(0,0,0,.14);z-index:300;overflow:hidden;animation:dropIn .18s ease}
+@keyframes dropIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+.lang-drop-item{display:flex;align-items:center;justify-content:space-between;padding:11px 16px;cursor:pointer;font-size:13px;font-weight:600;color:var(--text);border-bottom:1px solid var(--bdr);transition:background .12s}
+.lang-drop-item:last-child{border-bottom:none}
+.lang-drop-item:hover{background:rgba(212,134,10,.06)}
+.lang-drop-item.active{color:var(--v);font-weight:800;background:rgba(212,134,10,.05)}
+.lang-drop-check{font-size:11px;color:var(--v)}
 @keyframes shimmer{0%{left:-60%}100%{left:160%}}
 .login-free{text-align:center;font-size:10px;color:var(--t3);margin-top:10px;text-transform:uppercase;letter-spacing:.05em}
 
@@ -921,10 +936,6 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
       </div>
     </div>
 
-    <!-- World Clocks -->
-    <div style="padding:0 20px"><div class="step-label"><div class="step-circle">①</div><div class="step-txt" id="t-step1">Sprache wählen</div></div></div>
-    <div class="wc-scroll"><div class="wc-row" id="wc-row"></div></div>
-
     <!-- Login Panel -->
     <div class="login-panel">
       <!-- Broadcast Banner -->
@@ -936,10 +947,17 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
           <button class="bc-close" onclick="dismissBC()">✕</button>
         </div>
       </div>
-      <!-- Language Row -->
-      <div class="lang-row" id="lang-row"></div>
+      <!-- Language Dropdown -->
+      <div class="lang-drop" id="lang-drop">
+        <button class="lang-drop-btn" id="lang-drop-btn" onclick="toggleLangDrop()">
+          <span class="lang-drop-cur" id="lang-drop-cur">Deutsch</span>
+          <span class="lang-drop-arrow">▾</span>
+        </button>
+        <div class="lang-drop-list" id="lang-drop-list" style="display:none"></div>
+      </div>
+      <!-- Hidden wc-row kept for JS compatibility -->
+      <div style="display:none"><div id="wc-row"></div><div id="lang-row"></div></div>
       <!-- Input -->
-      <div class="step-label" style="margin-bottom:6px"><div class="step-circle">②</div><div class="step-txt" id="t-step2">Username eingeben</div></div>
       <div style="position:relative">
         <input class="sp-input" id="loginInput" type="text" autocomplete="off"
                placeholder="TikTok Username"
@@ -2799,6 +2817,54 @@ function toast(msg, type, dur) {
 
 // ── LANGUAGE ────────────────────────────────────────────────────────
 var LANG_FLAGS = {de:'🇩🇪',en:'🇬🇧',id:'🇮🇩',it:'🇮🇹',es:'🇪🇸',tr:'🇹🇷',ar:'🇸🇦',zh:'🇨🇳',ja:'🇯🇵',pl:'🇵🇱'};
+var LANG_NATIVE = {
+  de:'Deutsch',en:'English',id:'Bahasa Indonesia',it:'Italiano',es:'Español',
+  tr:'Türkçe',ar:'العربية',zh:'中文',ja:'日本語',pl:'Polski'
+};
+var LANG_LOCAL = {
+  de:'Deutsch',en:'English (UK / US)',id:'Indonesian',it:'Italian',es:'Spanish',
+  tr:'Turkish',ar:'Arabic',zh:'Chinese',ja:'Japanese',pl:'Polish'
+};
+var _langDropOpen = false;
+
+function buildLangDrop() {
+  var cur = ge('lang-drop-cur');
+  var list = ge('lang-drop-list');
+  if (cur) cur.textContent = LANG_NATIVE[LANG] || LANG;
+  if (!list) return;
+  var keys = Object.keys(L);
+  var html = '';
+  for (var i = 0; i < keys.length; i++) {
+    var k = keys[i], active = k === LANG;
+    html += '<div class="lang-drop-item' + (active ? ' active' : '') + '" data-lang="' + k + '">';
+    html += '<span>' + (LANG_NATIVE[k] || k) + '</span>';
+    if (active) html += '<span class="lang-drop-check">✓</span>';
+    html += '</div>';
+  }
+  list.innerHTML = html;
+  list.onclick = function(e) {
+    var item = e.target.closest('[data-lang]');
+    if (item) { setLang(item.getAttribute('data-lang')); closeLangDrop(); }
+  };
+}
+
+function toggleLangDrop() {
+  _langDropOpen = !_langDropOpen;
+  var btn = ge('lang-drop-btn');
+  var list = ge('lang-drop-list');
+  if (!btn || !list) return;
+  btn.classList.toggle('open', _langDropOpen);
+  if (_langDropOpen) { buildLangDrop(); list.style.display = ''; }
+  else list.style.display = 'none';
+}
+
+function closeLangDrop() {
+  _langDropOpen = false;
+  var btn = ge('lang-drop-btn');
+  var list = ge('lang-drop-list');
+  if (btn) btn.classList.remove('open');
+  if (list) list.style.display = 'none';
+}
 
 function buildLangRow() {
   var row = ge('lang-row');
@@ -2831,22 +2897,9 @@ function buildLangRow() {
 
 function setLang(k) {
   LANG = k;
-  updateWcActive();
   try { localStorage.setItem(LANG_KEY, k); } catch(e) {}
-  buildLangRow();
+  buildLangDrop();
   applyLang();
-  // Animate all flags with a staggered bounce, then scroll selected into view
-  var items = document.querySelectorAll('.wc-item');
-  for (var i = 0; i < items.length; i++) {
-    (function(item, idx) {
-      setTimeout(function() {
-        item.classList.add('wc-intro');
-        setTimeout(function() { item.classList.remove('wc-intro'); }, 480);
-      }, idx * 40);
-    })(items[i], i);
-  }
-  // Slide the active tile into the 2nd visible slot
-  setTimeout(function() { wcSlideToActive(true); }, items.length * 40 + 80);
 }
 
 function applyLang() {
@@ -2854,7 +2907,7 @@ function applyLang() {
   // Login
   st('t-tagline', l.tagline); st('t-ls-mem', l.lsMem); st('t-ls-grp', l.lsGrp); st('t-ls-sup', l.lsSup); st('t-ls-vid', l.lsVid||'Videos'); st('t-ls-live', l.lsLive||'🟢 Live');
   st('t-login', l.login); st('t-free', l.free);
-  st('t-step1', l.step1||'Sprache wählen'); st('t-step2', l.step2||'Username eingeben');
+  var cur = ge('lang-drop-cur'); if (cur) cur.textContent = LANG_NATIVE[LANG] || LANG;
   sa('loginInput', 'placeholder', t('loginPH')||'TikTok @username');
   // Home
   st('t-balance', l.balance); st('t-given', l.given); st('t-recv', l.recv); st('t-vids', l.vids);
@@ -5164,11 +5217,10 @@ function closeTour() {
 (function boot() {
   try { LANG = localStorage.getItem(LANG_KEY) || 'de'; } catch(e) {}
   loadLS();
-  buildLangRow();
-  buildWcRow();
-  startWcTick();
-  setTimeout(animateWorldClock, 600);
-  window.addEventListener('resize', function() { if (ge('wc-row')) _doClipWcRow(); });
+  buildLangDrop();
+  document.addEventListener('click', function(e) {
+    if (_langDropOpen && !e.target.closest('#lang-drop')) closeLangDrop();
+  });
   checkBC();
   applyLang();
   renderLoginStats();
