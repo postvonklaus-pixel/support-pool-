@@ -98,22 +98,34 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
 .btn-sm{padding:7px 12px;font-size:11px}
 .btn-danger{background:rgba(255,59,48,.07);border:none;border-left:3px solid var(--red);color:var(--red);padding:7px 12px;border-radius:10px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Space Grotesk',sans-serif;transition:all .2s;text-transform:uppercase}
 .btn-danger:hover{background:rgba(255,59,48,.13)}
-#login-btn{margin-bottom:0;padding:12px!important;font-size:13px!important}
+/* ── LANGUAGE CARD (Settings-Style) ── */
+.lang-card{background:#fff;border-radius:16px;border:1px solid var(--bdr);box-shadow:0 2px 10px rgba(0,0,0,.06);margin-bottom:14px;overflow:visible}
+.lang-card-hdr{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;cursor:pointer;user-select:none}
+.lang-card-hdr-left{display:flex;flex-direction:column;gap:4px;flex:1;min-width:0}
+.lang-card-title{font-size:12px;font-weight:800;color:var(--blue);text-transform:uppercase;letter-spacing:.05em}
+.lang-card-sub{display:flex;align-items:center;gap:8px}
+.lang-card-flag{font-size:22px;line-height:1;flex-shrink:0}
+.lang-card-name{font-size:13px;font-weight:700;color:var(--text)}
+.lang-card-time{font-size:11px;color:var(--t2)}
+.lang-card-chevron{font-size:18px;color:var(--t2);transition:transform .22s;flex-shrink:0;margin-left:10px}
+.lang-card-chevron.open{transform:rotate(180deg);color:var(--v)}
+.lang-drop-list{background:var(--bg);border-top:1px solid var(--bdr);border-radius:0 0 16px 16px;overflow:hidden;animation:dropIn .18s ease}
+@keyframes dropIn{from{opacity:0}to{opacity:1}}
+.lang-drop-item{display:flex;align-items:center;gap:12px;padding:12px 16px;cursor:pointer;border-bottom:1px solid var(--bdr);transition:background .12s}
+.lang-drop-item:last-child{border-bottom:none;border-radius:0 0 16px 16px}
+.lang-drop-item:hover,.lang-drop-item:active{background:rgba(212,134,10,.06)}
+.lang-drop-item.active{background:rgba(0,122,255,.05)}
+.lang-drop-flag{font-size:24px;line-height:1;flex-shrink:0}
+.lang-drop-name{flex:1;font-size:13px;font-weight:700;color:var(--text)}
+.lang-drop-item.active .lang-drop-name{color:var(--blue)}
+.lang-drop-citytime{text-align:right;font-size:11px;color:var(--t2);line-height:1.5;flex-shrink:0}
+.lang-drop-check{font-size:14px;color:var(--blue);font-weight:900;margin-left:6px;flex-shrink:0}
 
-/* ── LANGUAGE DROPDOWN ── */
-.lang-drop{position:relative;margin-bottom:14px}
-.lang-drop-btn{width:100%;display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--bg2);border:1.5px solid var(--bdr2);border-radius:14px;cursor:pointer;font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:700;color:var(--text);transition:all .2s;text-align:left;gap:8px}
-.lang-drop-btn.open{border-color:var(--v);background:#fff;box-shadow:0 0 0 3px rgba(212,134,10,.1)}
-.lang-drop-cur{flex:1;font-size:13px;font-weight:700}
-.lang-drop-arrow{font-size:10px;color:var(--t2);transition:transform .2s;flex-shrink:0}
-.lang-drop-btn.open .lang-drop-arrow{transform:rotate(180deg);color:var(--v)}
-.lang-drop-list{position:absolute;top:calc(100% + 5px);left:0;right:0;background:#fff;border:1.5px solid var(--bdr2);border-radius:14px;box-shadow:0 8px 28px rgba(0,0,0,.14);z-index:300;overflow:hidden;animation:dropIn .18s ease}
-@keyframes dropIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
-.lang-drop-item{display:flex;align-items:center;justify-content:space-between;padding:11px 16px;cursor:pointer;font-size:13px;font-weight:600;color:var(--text);border-bottom:1px solid var(--bdr);transition:background .12s}
-.lang-drop-item:last-child{border-bottom:none}
-.lang-drop-item:hover{background:rgba(212,134,10,.06)}
-.lang-drop-item.active{color:var(--v);font-weight:800;background:rgba(212,134,10,.05)}
-.lang-drop-check{font-size:11px;color:var(--v)}
+/* ── LOGIN INPUT + INLINE BUTTON ── */
+.login-input-row{position:relative;margin-bottom:12px}
+.login-input-row .sp-input{padding-right:62px;margin-bottom:0}
+#login-btn{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:48px;height:40px;border-radius:10px;border:none;background:var(--v);color:#fff;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;box-shadow:0 3px 10px rgba(212,134,10,.35)}
+#login-btn:active{background:var(--v2);transform:translateY(-50%) scale(.92)}
 @keyframes shimmer{0%{left:-60%}100%{left:160%}}
 .login-free{text-align:center;font-size:10px;color:var(--t3);margin-top:10px;text-transform:uppercase;letter-spacing:.05em}
 
@@ -947,28 +959,33 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
           <button class="bc-close" onclick="dismissBC()">✕</button>
         </div>
       </div>
-      <!-- Language Dropdown -->
-      <div class="lang-drop" id="lang-drop">
-        <button class="lang-drop-btn" id="lang-drop-btn" onclick="toggleLangDrop()">
-          <span class="lang-drop-cur" id="lang-drop-cur">Deutsch</span>
-          <span class="lang-drop-arrow">▾</span>
-        </button>
+      <!-- Language Card (Settings-Style) -->
+      <div class="lang-card" id="lang-drop">
+        <div class="lang-card-hdr" onclick="toggleLangDrop()">
+          <div class="lang-card-hdr-left">
+            <div class="lang-card-title" id="t-lang-card-title">Sprache wählen</div>
+            <div class="lang-card-sub">
+              <span class="lang-card-flag" id="lang-drop-flag">🇩🇪</span>
+              <span class="lang-card-name" id="lang-drop-cur">Deutsch</span>
+              <span class="lang-card-time" id="lang-drop-hdr-time"></span>
+            </div>
+          </div>
+          <span class="lang-card-chevron" id="lang-card-chevron">⌄</span>
+        </div>
         <div class="lang-drop-list" id="lang-drop-list" style="display:none"></div>
       </div>
       <!-- Hidden wc-row kept for JS compatibility -->
       <div style="display:none"><div id="wc-row"></div><div id="lang-row"></div></div>
-      <!-- Input -->
-      <div style="position:relative">
+      <!-- Input + inline Login Button -->
+      <div class="login-input-row">
         <input class="sp-input" id="loginInput" type="text" autocomplete="off"
                placeholder="TikTok Username"
                oninput="onLoginInput()"
                onblur="setTimeout(function(){var s=ge('login-suggest');if(s)s.style.display='none';},160)"
                onkeydown="handleLoginKey(event)"/>
         <div id="login-suggest"></div>
+        <button id="login-btn" onclick="doLogin()">→</button>
       </div>
-      <button class="btn-prime" id="login-btn" onclick="doLogin()">
-        <span id="t-login">Einloggen</span>
-      </button>
       <div style="text-align:center;font-size:11px;color:var(--t2)" id="t-free">100% kostenlos · Premium für alle Mitglieder</div>
     </div>
   </div>
@@ -2827,17 +2844,39 @@ var LANG_LOCAL = {
 };
 var _langDropOpen = false;
 
+function _getLangPrimaryZone(langKey) {
+  for (var i = 0; i < WC_ZONES.length; i++) {
+    if (WC_ZONES[i].lang === langKey && WC_ZONES[i].id !== 'en-la') return WC_ZONES[i];
+  }
+  return null;
+}
+
+function _zoneTime(z) {
+  try { return new Date().toLocaleTimeString('de-DE', {timeZone:z.tz, hour:'2-digit', minute:'2-digit'}); }
+  catch(e) { return ''; }
+}
+
 function buildLangDrop() {
   var cur = ge('lang-drop-cur');
-  var list = ge('lang-drop-list');
+  var flag = ge('lang-drop-flag');
+  var hdrTime = ge('lang-drop-hdr-time');
+  var z0 = _getLangPrimaryZone(LANG);
   if (cur) cur.textContent = LANG_NATIVE[LANG] || LANG;
+  if (flag) flag.textContent = z0 ? z0.flag : '';
+  if (hdrTime && z0) hdrTime.textContent = z0.city + ' · ' + _zoneTime(z0);
+
+  var list = ge('lang-drop-list');
   if (!list) return;
-  var keys = Object.keys(L);
+  var now = new Date();
   var html = '';
-  for (var i = 0; i < keys.length; i++) {
-    var k = keys[i], active = k === LANG;
-    html += '<div class="lang-drop-item' + (active ? ' active' : '') + '" data-lang="' + k + '">';
-    html += '<span>' + (LANG_NATIVE[k] || k) + '</span>';
+  for (var i = 0; i < WC_ZONES.length; i++) {
+    var z = WC_ZONES[i];
+    var active = z.lang === LANG;
+    var t = _zoneTime(z);
+    html += '<div class="lang-drop-item' + (active ? ' active' : '') + '" data-lang="' + z.lang + '">';
+    html += '<span class="lang-drop-flag">' + z.flag + '</span>';
+    html += '<span class="lang-drop-name">' + (LANG_NATIVE[z.lang] || z.lang) + '</span>';
+    html += '<span class="lang-drop-citytime">' + z.city + (t ? '<br>' + t : '') + '</span>';
     if (active) html += '<span class="lang-drop-check">✓</span>';
     html += '</div>';
   }
@@ -2850,19 +2889,19 @@ function buildLangDrop() {
 
 function toggleLangDrop() {
   _langDropOpen = !_langDropOpen;
-  var btn = ge('lang-drop-btn');
+  var chev = ge('lang-card-chevron');
   var list = ge('lang-drop-list');
-  if (!btn || !list) return;
-  btn.classList.toggle('open', _langDropOpen);
+  if (chev) chev.classList.toggle('open', _langDropOpen);
+  if (!list) return;
   if (_langDropOpen) { buildLangDrop(); list.style.display = ''; }
   else list.style.display = 'none';
 }
 
 function closeLangDrop() {
   _langDropOpen = false;
-  var btn = ge('lang-drop-btn');
+  var chev = ge('lang-card-chevron');
   var list = ge('lang-drop-list');
-  if (btn) btn.classList.remove('open');
+  if (chev) chev.classList.remove('open');
   if (list) list.style.display = 'none';
 }
 
@@ -2907,7 +2946,8 @@ function applyLang() {
   // Login
   st('t-tagline', l.tagline); st('t-ls-mem', l.lsMem); st('t-ls-grp', l.lsGrp); st('t-ls-sup', l.lsSup); st('t-ls-vid', l.lsVid||'Videos'); st('t-ls-live', l.lsLive||'🟢 Live');
   st('t-login', l.login); st('t-free', l.free);
-  var cur = ge('lang-drop-cur'); if (cur) cur.textContent = LANG_NATIVE[LANG] || LANG;
+  st('t-lang-card-title', l.step1||'Sprache wählen');
+  buildLangDrop();
   sa('loginInput', 'placeholder', t('loginPH')||'TikTok @username');
   // Home
   st('t-balance', l.balance); st('t-given', l.given); st('t-recv', l.recv); st('t-vids', l.vids);
