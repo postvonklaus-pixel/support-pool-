@@ -959,6 +959,8 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
           <button class="bc-close" onclick="dismissBC()">✕</button>
         </div>
       </div>
+      <!-- Step ① -->
+      <div class="step-label" style="margin-bottom:8px"><div class="step-circle">①</div><div class="step-txt" id="t-step1">Sprache wählen</div></div>
       <!-- Language Card (Settings-Style) -->
       <div class="lang-card" id="lang-drop">
         <div class="lang-card-hdr" onclick="toggleLangDrop()">
@@ -976,6 +978,8 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
       </div>
       <!-- Hidden wc-row kept for JS compatibility -->
       <div style="display:none"><div id="wc-row"></div><div id="lang-row"></div></div>
+      <!-- Step ② -->
+      <div class="step-label" style="margin:10px 0 8px"><div class="step-circle">②</div><div class="step-txt" id="t-step2">TikTok Username eingeben</div></div>
       <!-- Input + inline Login Button -->
       <div class="login-input-row">
         <input class="sp-input" id="loginInput" type="text" autocomplete="off"
@@ -1104,15 +1108,10 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
         </div>
       </div>
 
-      <!-- Open Videos (Card View) -->
-      <div class="sec-hdr">
-        <div class="sec-title" id="t-open">🔄 Offene Videos</div>
-        <div class="sec-count" id="open-count">0</div>
-      </div>
-      <div id="open-list">
-        <div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text" id="t-no-open">Keine Videos zum Supporten</div></div>
-      </div>
-      <!-- Support Card Viewer (shown when user taps action card) -->
+      <!-- hidden open-list for JS compat -->
+      <div id="open-list" style="display:none"></div>
+      <span id="open-count" style="display:none">0</span>
+      <!-- Support Card Viewer — always visible when videos available -->
       <div class="sup-card-wrap" id="sup-card-wrap" style="display:none">
         <div class="sup-card-hdr">
           <button class="sup-card-back" onclick="closeSupCard()">✕</button>
@@ -1862,7 +1861,7 @@ de: {
   tksOpen: '▶  TikTok Video jetzt öffnen',
   tksSub: 'Kommentar kopiert — bei TikTok einfügen',
   tksTitle: '📹 TikTok Video öffnen',
-  firstVideo: '🎁 Erstes Video – Los!',
+  firstVideo: '🎁 Erstes Video – Los!',firstVideoShort:'Erstes<br>Video',postNowShort:'Jetzt<br>posten',
   supportMsg: 'hat dein Video supportet',
   postedMsg: 'Video gepostet – {n} Supports in 12h benötigt',
   loginPH: 'TikTok @Username',
@@ -1953,7 +1952,7 @@ en: {
   tksOpen: '▶  Open TikTok Video Now',
   tksSub: 'Comment copied — paste it on TikTok',
   tksTitle: '📹 Open TikTok Video',
-  firstVideo: '🎁 First Video – Go!',
+  firstVideo: '🎁 First Video – Go!',firstVideoShort:'First<br>Video',postNowShort:'Post<br>now',
   supportMsg: 'supported your video',
   postedMsg: 'Video posted – {n} supports needed in 12h',
   loginPH: 'TikTok @username',
@@ -2946,6 +2945,8 @@ function applyLang() {
   // Login
   st('t-tagline', l.tagline); st('t-ls-mem', l.lsMem); st('t-ls-grp', l.lsGrp); st('t-ls-sup', l.lsSup); st('t-ls-vid', l.lsVid||'Videos'); st('t-ls-live', l.lsLive||'🟢 Live');
   st('t-login', l.login); st('t-free', l.free);
+  st('t-step1', l.step1||'Sprache wählen');
+  st('t-step2', l.step2||'TikTok Username eingeben');
   st('t-lang-card-title', l.step1||'Sprache wählen');
   buildLangDrop();
   sa('loginInput', 'placeholder', t('loginPH')||'TikTok @username');
@@ -3431,42 +3432,55 @@ function renderTimer(u) {
   var ringWrap = ge('bal-ring-wrap');
   if (!u.stats) u.stats = {given:0, received:0};
   var now = Date.now(), tot = u.postsTotal||0, g = u.stats.given||0, r2 = u.stats.received||0, bal = g-r2;
-  function showInlineTimer(html) {
-    if (timerInline) { timerInline.innerHTML = html; timerInline.style.display = ''; }
+  var pad = function(n){return n<10?'0'+n:String(n);};
+
+  function showInline(html, onclick) {
+    if (!timerInline) return;
+    timerInline.innerHTML = html;
+    timerInline.style.display = '';
+    timerInline.style.cursor = onclick ? 'pointer' : '';
+    timerInline.onclick = onclick || null;
     if (ringWrap) ringWrap.style.display = 'none';
   }
-  function hideInlineTimer() {
-    if (timerInline) timerInline.style.display = 'none';
+  function showRing() {
+    if (timerInline) { timerInline.style.display = 'none'; timerInline.onclick = null; }
     if (ringWrap) ringWrap.style.display = '';
   }
-  if (u.lastPost && (now-u.lastPost) < R1_MS) {
-    var rem = R1_MS-(now-u.lastPost);
-    var th = Math.floor(rem/3600000);
-    var tm = Math.floor((rem%3600000)/60000);
-    var ts = Math.floor((rem%60000)/1000);
-    var pad = function(n){return n<10?'0'+n:String(n);};
-    if (wrap) wrap.innerHTML = '';
-    showInlineTimer('⏳<br>'+pad(th)+'h '+pad(tm)+'m<br>'+pad(ts)+'s');
-    // Also keep countdown element for startPostCountdown()
-    if (wrap) wrap.innerHTML = '<div style="display:none" id="post-countdown" data-until="'+(now+rem)+'"></div>';
+  if (wrap) wrap.innerHTML = '';
+
+  // Active countdown
+  if (u.lastPost && (now - u.lastPost) < R1_MS) {
+    var rem = R1_MS - (now - u.lastPost);
+    var th = Math.floor(rem/3600000), tm = Math.floor((rem%3600000)/60000), ts = Math.floor((rem%60000)/1000);
+    showInline('⏳<br>' + pad(th) + 'h ' + pad(tm) + 'm<br>' + pad(ts) + 's');
+    if (wrap) wrap.innerHTML = '<div style="display:none" id="post-countdown" data-until="' + (now+rem) + '"></div>';
     startPostCountdown();
     return;
   }
-  hideInlineTimer();
-  if (tot===0) { if (wrap) wrap.innerHTML = '<button class="timer-strip ts-ok" onclick="openPostModal()" style="cursor:pointer;width:100%;border:none;font-family:inherit">'+(t('firstVideo')||'🎁 Erstes Video – Los!')+' →</button>'; return; }
-  if (tot===1 && g<3) { if (wrap) wrap.innerHTML = '<div class="timer-strip ts-soon">🔄 '+(3-g)+' '+t('needed')+'</div>'; return; }
-  if (tot>=2 && bal<0) {
-    if (wrap) wrap.innerHTML = '';
-    var pbw = document.getElementById('post-bal-warn');
-    var pbwt = document.getElementById('post-bal-warn-text');
-    var pbws = document.getElementById('post-bal-warn-sub');
+
+  // Balance deficit — show warning below card, ring stays
+  if (tot >= 2 && bal < 0) {
+    showRing();
+    var pbw = ge('post-bal-warn'), pbwt = ge('post-bal-warn-text'), pbws = ge('post-bal-warn-sub');
     if (pbw) pbw.style.display = 'block';
     if (pbwt) pbwt.textContent = Math.abs(bal) + ' ' + t('needed');
-    if (pbws) pbws.textContent = t('errBal'); return; }
-  // Hide balance warning when OK
-  var pbw2 = document.getElementById('post-bal-warn');
-  if (pbw2) pbw2.style.display = 'none';
-  if (wrap) wrap.innerHTML = '<button class="timer-strip ts-ok" onclick="openPostModal()" style="cursor:pointer;width:100%;border:none;font-family:inherit">'+(t('postNow')||'✅ '+t('postBtn')+' jetzt möglich')+' →</button>';
+    if (pbws) pbws.textContent = t('errBal');
+    return;
+  }
+  var pbw2 = ge('post-bal-warn'); if (pbw2) pbw2.style.display = 'none';
+
+  // First video ever
+  if (tot === 0) {
+    showInline('🎁<br><span style="font-size:10px">' + (t('firstVideoShort') || 'Erstes<br>Video') + '</span>', openPostModal);
+    return;
+  }
+  // Round 1 warm-up
+  if (tot === 1 && g < 3) {
+    showInline('🔄<br><span style="font-size:10px">' + (3-g) + ' ' + t('needed') + '</span>');
+    return;
+  }
+  // Post available
+  showInline('✅<br><span style="font-size:10px">' + (t('postNowShort') || 'Jetzt<br>posten') + '</span>', openPostModal);
 }
 
 var _supCardOpen = [];
@@ -3496,15 +3510,20 @@ function renderOpenList() {
     if (open.length > 0) { badge.textContent = open.length; badge.classList.remove('hidden'); }
     else { badge.classList.add('hidden'); }
   }
-  // If card view is open, refresh current card
+  // Auto-show card viewer if videos available; hide if none
   var scw = ge('sup-card-wrap');
-  if (scw && scw.style.display !== 'none') {
-    if (_supCardIdx >= open.length) _supCardIdx = Math.max(0, open.length - 1);
-    renderSupportCard(_supCardIdx);
+  if (scw) {
+    if (open.length > 0) {
+      scw.style.display = '';
+      if (_supCardIdx >= open.length) _supCardIdx = 0;
+      renderSupportCard(_supCardIdx);
+    } else {
+      scw.style.display = 'none';
+    }
   }
 
   if (!open.length) {
-    list.innerHTML = '<div class="empty"><div class="empty-ic">📭</div><div class="empty-txt">'+t('noOpen')+'</div></div>';
+    if (list) list.innerHTML = '';
     return;
   }
   var html = '';
@@ -3552,11 +3571,10 @@ function renderOpenList() {
 
 // ── SUPPORT CARD SYSTEM ────────────────────────────────────────────────────
 function openSupCard() {
-  if (!_supCardOpen.length) return;
-  _supCardIdx = 0;
   var scw = ge('sup-card-wrap');
-  if (scw) { scw.style.display = ''; scw.scrollIntoView({behavior:'smooth', block:'start'}); }
-  renderSupportCard(_supCardIdx);
+  if (scw && scw.style.display !== 'none') {
+    scw.scrollIntoView({behavior:'smooth', block:'start'});
+  }
 }
 
 function closeSupCard() {
