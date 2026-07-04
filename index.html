@@ -936,7 +936,7 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
     <div style="font-size:11px;color:var(--t2);margin-bottom:12px">Tippe auf eine Vorlage, um sie zu übernehmen.</div>
     <div class="tpl-lib-grid" id="tpl-lib-grid"></div>
     <div class="modal-footer" style="margin-top:14px">
-      <button class="btn-ghost btn-sm" onclick="closeModal('tplLibModal')">Schließen</button>
+      <button class="btn-ghost btn-sm" id="t-tpl-lib-close" onclick="closeModal('tplLibModal')">Schließen</button>
     </div>
   </div>
 </div>
@@ -962,7 +962,7 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
       <p>Die App übernimmt keine Haftung für Inhalte externer Links (TikTok-Videos). Für TikTok gelten die Datenschutzrichtlinien von TikTok Inc.</p>
     </div>
     <div class="modal-footer" style="margin-top:14px">
-      <button class="btn-ghost btn-sm" onclick="closeModal('privacyModal')">Schließen</button>
+      <button class="btn-ghost btn-sm" id="t-privacy-close" onclick="closeModal('privacyModal')">Schließen</button>
     </div>
   </div>
 </div>
@@ -993,7 +993,7 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn-ghost btn-sm" onclick="closeModal('homescreenModal')">Schließen</button>
+      <button class="btn-ghost btn-sm" id="t-hs-close" onclick="closeModal('homescreenModal')">Schließen</button>
     </div>
   </div>
 </div>
@@ -2125,7 +2125,7 @@ de: {
   postSuccessSub:'Supporte jetzt auch andere Mitglieder. Du findest sie unter Offene Videos.',
   postSuccessOk:'Ich habe verstanden!',
   balCapTitle:'🚀 Guthaben-Maximum erreicht!',balCapBody:'Dein Guthaben hat das Maximum von {n} erreicht. Poste jetzt ein neues Video, damit andere Mitglieder ihr Minus durch Support bei dir ausgleichen können.',balCapSub:'Solange du nicht postest, bleibt dein Guthaben bei diesem Maximum stehen.',balCapOk:'🎬 Jetzt Video posten',balCapLater:'Später',balCapBadge:'Maximum erreicht – bitte Video posten',
-  navTour:'Rundgang',navSettings:'Einstellungen',delOk:'✅ Video gelöscht',
+  navTour:'Rundgang',navSettings:'Einstellungen',close:'Schließen',delOk:'✅ Video gelöscht',
   firstVideoShort:'Erstes<br>Video',postNowShort:'Jetzt<br>posten',
   setSecLang:'Sprache / Language',setSecSecurity:'Sicherheit',setSecNotif:'Benachrichtigungen',setSecApp:'App',
   setPinLabel:'🔑 PIN-Schutz',setPinSub:'Anmeldung mit 4-stelligem PIN absichern',setPinChange:'PIN ändern',
@@ -2221,7 +2221,7 @@ en: {
   postSuccessSub:'Now support other members too. You find them under Open Videos.',
   postSuccessOk:'Got it!',
   balCapTitle:'🚀 Balance maximum reached!',balCapBody:'Your balance has reached the maximum of {n}. Post a new video now so other members can offset their deficit by supporting you.',balCapSub:'Your balance stays capped at this maximum until you post.',balCapOk:'🎬 Post a video now',balCapLater:'Later',balCapBadge:'Maximum reached – please post a video',
-  navTour:'Tour',navSettings:'Settings',delOk:'✅ Video deleted',
+  navTour:'Tour',navSettings:'Settings',close:'Close',delOk:'✅ Video deleted',
   firstVideoShort:'First<br>Video',postNowShort:'Post<br>now',
   setSecLang:'Language',setSecSecurity:'Security',setSecNotif:'Notifications',setSecApp:'App',
   setPinLabel:'🔑 PIN Lock',setPinSub:'Secure login with a personal 4-digit PIN',setPinChange:'Change PIN',
@@ -2317,7 +2317,7 @@ id: {
   postSuccessSub:'Sekarang dukung juga video anggota lain. Temukan di Video Terbuka.',
   postSuccessOk:'Saya mengerti!',
   balCapTitle:'🚀 Saldo maksimum tercapai!',balCapBody:'Saldo kamu telah mencapai maksimum {n}. Posting video baru sekarang agar anggota lain bisa mengimbangi kekurangan mereka dengan mendukungmu.',balCapSub:'Saldo kamu tetap di batas maksimum ini sampai kamu memposting.',balCapOk:'🎬 Posting video sekarang',balCapLater:'Nanti',balCapBadge:'Maksimum tercapai – silakan posting video',
-  navTour:'Panduan',navSettings:'Pengaturan',delOk:'✅ Video dihapus',
+  navTour:'Panduan',navSettings:'Pengaturan',close:'Tutup',delOk:'✅ Video dihapus',
   firstVideoShort:'Video<br>Pertama',postNowShort:'Posting<br>Sekarang',
   setSecLang:'Bahasa',setSecSecurity:'Keamanan',setSecNotif:'Notifikasi',setSecApp:'Aplikasi',
   setPinLabel:'🔑 Kunci PIN',setPinSub:'Amankan login dengan PIN 4 digit pribadi',setPinChange:'Ubah PIN',
@@ -2413,7 +2413,7 @@ it: {
   postSuccessSub:'Supporta anche i video degli altri. Li trovi in Video Aperti.',
   postSuccessOk:'Ho capito!',
   balCapTitle:'🚀 Saldo massimo raggiunto!',balCapBody:'Il tuo saldo ha raggiunto il massimo di {n}. Pubblica subito un nuovo video così altri membri possono compensare il loro deficit supportandoti.',balCapSub:'Il tuo saldo resta bloccato a questo massimo finché non pubblichi.',balCapOk:'🎬 Pubblica un video ora',balCapLater:'Più tardi',balCapBadge:'Massimo raggiunto – pubblica un video',
-  navTour:'Tour',navSettings:'Impostazioni',delOk:'✅ Video eliminato',
+  navTour:'Tour',navSettings:'Impostazioni',close:'Chiudi',delOk:'✅ Video eliminato',
   firstVideoShort:'Primo<br>Video',postNowShort:'Pubblica<br>ora',
   setSecLang:'Lingua',setSecSecurity:'Sicurezza',setSecNotif:'Notifiche',setSecApp:'App',
   setPinLabel:'🔑 Blocco PIN',setPinSub:'Proteggi accesso con PIN a 4 cifre personale',setPinChange:'Cambia PIN',
@@ -2509,7 +2509,7 @@ es: {
   postSuccessSub:'Ahora también apoya los videos de otros miembros. Los encuentras en Videos Abiertos.',
   postSuccessOk:'¡Lo entendí!',
   balCapTitle:'🚀 ¡Saldo máximo alcanzado!',balCapBody:'Tu saldo ha alcanzado el máximo de {n}. Publica un nuevo video ahora para que otros miembros puedan compensar su déficit apoyándote.',balCapSub:'Tu saldo se mantiene en este máximo hasta que publiques.',balCapOk:'🎬 Publicar video ahora',balCapLater:'Más tarde',balCapBadge:'Máximo alcanzado – por favor publica un video',
-  navTour:'Recorrido',navSettings:'Ajustes',delOk:'✅ Video eliminado',
+  navTour:'Recorrido',navSettings:'Ajustes',close:'Cerrar',delOk:'✅ Video eliminado',
   firstVideoShort:'Primer<br>Video',postNowShort:'Publicar<br>ahora',
   setSecLang:'Idioma',setSecSecurity:'Seguridad',setSecNotif:'Notificaciones',setSecApp:'Aplicación',
   setPinLabel:'🔑 Bloqueo PIN',setPinSub:'Asegura el inicio con PIN de 4 dígitos personal',setPinChange:'Cambiar PIN',
@@ -2605,7 +2605,7 @@ tr: {
   postSuccessSub:'Şimdi diğer üyelerin videolarını da destekle. Açık Videolar da bulabilirsin.',
   postSuccessOk:'Anladım!',
   balCapTitle:'🚀 Bakiye maksimuma ulaştı!',balCapBody:'Bakiyen {n} maksimumuna ulaştı. Diğer üyelerin seni destekleyerek açıklarını kapatabilmesi için şimdi yeni bir video paylaş.',balCapSub:'Paylaşım yapmadığın sürece bakiyen bu maksimumda sabit kalır.',balCapOk:'🎬 Şimdi video paylaş',balCapLater:'Daha sonra',balCapBadge:'Maksimuma ulaşıldı – lütfen video paylaş',
-  navTour:'Tur',navSettings:'Ayarlar',delOk:'✅ Video silindi',
+  navTour:'Tur',navSettings:'Ayarlar',close:'Kapat',delOk:'✅ Video silindi',
   firstVideoShort:'İlk<br>Video',postNowShort:'Şimdi<br>paylaş',
   setSecLang:'Dil',setSecSecurity:'Güvenlik',setSecNotif:'Bildirimler',setSecApp:'Uygulama',
   setPinLabel:'🔑 PIN Kilidi',setPinSub:'Girişi kişisel 4 haneli PIN ile güvenli hale getir',setPinChange:'PIN Değiştir',
@@ -2701,7 +2701,7 @@ ar: {
   postSuccessSub:'ادعم الآن فيديوهات الأعضاء الآخرين. ستجدهم في الفيديوهات المفتوحة.',
   postSuccessOk:'فهمت!',
   balCapTitle:'🚀 لقد بلغ رصيدك الحد الأقصى!',balCapBody:'بلغ رصيدك الحد الأقصى وهو {n}. انشر فيديو جديدًا الآن حتى يتمكن الأعضاء الآخرون من تعويض عجزهم بدعمك.',balCapSub:'سيبقى رصيدك عند هذا الحد الأقصى حتى تنشر فيديو.',balCapOk:'🎬 انشر فيديو الآن',balCapLater:'لاحقًا',balCapBadge:'تم الوصول إلى الحد الأقصى – يرجى نشر فيديو',
-  navTour:'جولة',navSettings:'الإعدادات',delOk:'✅ تم حذف الفيديو',
+  navTour:'جولة',navSettings:'الإعدادات',close:'إغلاق',delOk:'✅ تم حذف الفيديو',
   firstVideoShort:'أول<br>فيديو',postNowShort:'انشر<br>الآن',
   setSecLang:'اللغة',setSecSecurity:'الأمان',setSecNotif:'الإشعارات',setSecApp:'التطبيق',
   setPinLabel:'🔑 قفل PIN',setPinSub:'تأمين الدخول برمز PIN شخصي من 4 أرقام',setPinChange:'تغيير PIN',
@@ -2797,7 +2797,7 @@ zh: {
   postSuccessSub:'现在也支持其他成员的视频。在开放视频中找到它们。',
   postSuccessOk:'我明白了！',
   balCapTitle:'🚀 余额已达上限！',balCapBody:'你的余额已达到上限{n}。现在发布一个新视频，让其他成员可以通过支持你来弥补他们的差额。',balCapSub:'在你发布视频之前，余额将保持在这个上限。',balCapOk:'🎬 立即发布视频',balCapLater:'稍后',balCapBadge:'已达上限 – 请发布视频',
-  navTour:'导览',navSettings:'设置',delOk:'✅ 视频已删除',
+  navTour:'导览',navSettings:'设置',close:'关闭',delOk:'✅ 视频已删除',
   firstVideoShort:'第一个<br>视频',postNowShort:'立即<br>发布',
   setSecLang:'语言',setSecSecurity:'安全',setSecNotif:'通知',setSecApp:'应用',
   setPinLabel:'🔑 PIN保护',setPinSub:'用个人4位PIN保护登录',setPinChange:'更改PIN',
@@ -2893,7 +2893,7 @@ ja: {
   postSuccessSub:'他のメンバーの動画もサポートしてください。オープン動画で見つけられます。',
   postSuccessOk:'わかりました！',
   balCapTitle:'🚀 残高が上限に達しました！',balCapBody:'残高が上限の{n}に達しました。今すぐ新しい動画を投稿して、他のメンバーがあなたをサポートして不足分を解消できるようにしましょう。',balCapSub:'投稿するまで残高はこの上限のままになります。',balCapOk:'🎬 今すぐ動画を投稿',balCapLater:'後で',balCapBadge:'上限に達しました – 動画を投稿してください',
-  navTour:'ツアー',navSettings:'設定',delOk:'✅ 動画を削除しました',
+  navTour:'ツアー',navSettings:'設定',close:'閉じる',delOk:'✅ 動画を削除しました',
   firstVideoShort:'最初の<br>動画',postNowShort:'今すぐ<br>投稿',
   setSecLang:'言語',setSecSecurity:'セキュリティ',setSecNotif:'通知',setSecApp:'アプリ',
   setPinLabel:'🔑 PINロック',setPinSub:'個人の4桁PINでログインを保護',setPinChange:'PIN変更',
@@ -2989,7 +2989,7 @@ pl: {
   postSuccessSub:'Teraz wspieraj też filmy innych członków. Znajdziesz je w Otwarte wideo.',
   postSuccessOk:'Rozumiem!',
   balCapTitle:'🚀 Saldo osiągnęło maksimum!',balCapBody:'Twoje saldo osiągnęło maksimum {n}. Opublikuj teraz nowy film, aby inni członkowie mogli wyrównać swój deficyt, wspierając Cię.',balCapSub:'Twoje saldo pozostanie na tym maksimum, dopóki nie opublikujesz filmu.',balCapOk:'🎬 Opublikuj film teraz',balCapLater:'Później',balCapBadge:'Maksimum osiągnięte – opublikuj film',
-  navTour:'Wycieczka',navSettings:'Ustawienia',delOk:'✅ Wideo usunięte',
+  navTour:'Wycieczka',navSettings:'Ustawienia',close:'Zamknij',delOk:'✅ Wideo usunięte',
   firstVideoShort:'Pierwszy<br>Film',postNowShort:'Opublikuj<br>teraz',
   setSecLang:'Język',setSecSecurity:'Bezpieczeństwo',setSecNotif:'Powiadomienia',setSecApp:'Aplikacja',
   setPinLabel:'🔑 Blokada PIN',setPinSub:'Zabezpiecz logowanie osobistym 4-cyfrowym PIN',setPinChange:'Zmień PIN',
@@ -3268,6 +3268,9 @@ function applyLang() {
   st('t-nav-home', l.navHome); st('t-nav-profile', l.navProfile); st('t-nav-admin', l.navAdmin);
   st('t-nav-tour', l.navTour||'Rundgang');
   st('t-nav-settings', l.navSettings||'Einstellungen');
+  st('t-privacy-close', l.close||'Schließen');
+  st('t-tpl-lib-close', l.close||'Schließen');
+  st('t-hs-close',      l.close||'Schließen');
   // Goal + Leaderboard
   st('t-goal-title', l.goalTitle||'Tagesziel'); st('t-goal-sub', l.goalSub||'Supports heute');
   st('t-lb-title', l.lbTitle||'Top-Supporter der Woche');
