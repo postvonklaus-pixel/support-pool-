@@ -960,7 +960,7 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
         </div>
       </div>
       <!-- Step ① -->
-      <div class="step-label" style="margin-bottom:8px"><div class="step-circle">①</div><div class="step-txt" id="t-step1">Sprache wählen</div></div>
+      <div class="step-label" style="margin-bottom:8px"><div class="step-circle">①</div></div>
       <!-- Language Card (Settings-Style) -->
       <div class="lang-card" id="lang-drop">
         <div class="lang-card-hdr" onclick="toggleLangDrop()">
@@ -979,7 +979,7 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
       <!-- Hidden wc-row kept for JS compatibility -->
       <div style="display:none"><div id="wc-row"></div><div id="lang-row"></div></div>
       <!-- Step ② -->
-      <div class="step-label" style="margin:10px 0 8px"><div class="step-circle">②</div><div class="step-txt" id="t-step2">TikTok Username eingeben</div></div>
+      <div class="step-label" style="margin:10px 0 8px"><div class="step-circle">②</div></div>
       <!-- Input + inline Login Button -->
       <div class="login-input-row">
         <input class="sp-input" id="loginInput" type="text" autocomplete="off"
@@ -1039,6 +1039,48 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
         <div id="bal-cap-badge" onclick="closeModal('balCapModal');openPostModal()">⚡ <span id="t-bal-cap-badge">Maximum erreicht – bitte Video posten</span></div>
       </div>
 
+      <!-- Action Cards -->
+      <div class="action-cards" id="action-cards">
+        <div class="action-card" onclick="openPostModal()">
+          <div class="action-card-icon">📹</div>
+          <div class="action-card-label" id="t-ac-post">Video posten</div>
+        </div>
+        <div class="action-card" onclick="openSupCard()">
+          <div class="action-card-icon">🔄</div>
+          <div class="action-card-label" id="t-ac-sup">Videos supporten</div>
+          <div class="action-card-badge hidden" id="ac-sup-badge">0</div>
+        </div>
+      </div>
+
+      <!-- hidden open-list for JS compat -->
+      <div id="open-list" style="display:none"></div>
+      <span id="open-count" style="display:none">0</span>
+      <!-- Support Card Viewer — always visible when videos available -->
+      <div class="sup-card-wrap" id="sup-card-wrap" style="display:none">
+        <div class="sup-card-hdr">
+          <button class="sup-card-back" onclick="closeSupCard()">✕</button>
+          <div class="sup-card-title" id="t-sup-card-title">🔄 Videos supporten</div>
+          <div class="sup-card-counter" id="sup-card-counter">– / –</div>
+        </div>
+        <div id="sup-card-body" class="sup-card"></div>
+        <div class="sup-card-nav">
+          <button class="sup-nav-btn" id="sup-prev" onclick="stepSupCard(-1)">◀</button>
+          <button class="sup-open-btn" id="sup-open-btn" onclick="supCardSupport()">🔄 <span id="t-sup-btn">Supporten</span></button>
+          <button class="sup-nav-btn" id="sup-next" onclick="stepSupCard(1)">▶</button>
+        </div>
+      </div>
+
+      <!-- Post Balance Warning -->
+      <div id="post-bal-warn" style="display:none">
+        <div id="post-bal-warn-text"></div>
+        <div id="post-bal-warn-sub"></div>
+      </div>
+
+      <!-- Post Button (legacy, kept for balance-warning flow) -->
+      <button class="btn-prime mb12" id="postBtn" onclick="openPostModal()" style="padding:16px;display:none">
+        📹 <span id="t-post-btn">Video posten</span>
+      </button>
+
       <!-- Daily Goal -->
       <div class="goal-wrap" id="goal-wrap">
         <div class="goal-ring-wrap">
@@ -1067,30 +1109,6 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
         <div id="lb-list"><div style="text-align:center;color:var(--t2);font-size:12px;padding:8px">Lade...</div></div>
       </div>
 
-      <!-- Action Cards -->
-      <div class="action-cards" id="action-cards">
-        <div class="action-card" onclick="openPostModal()">
-          <div class="action-card-icon">📹</div>
-          <div class="action-card-label" id="t-ac-post">Video posten</div>
-        </div>
-        <div class="action-card" onclick="openSupCard()">
-          <div class="action-card-icon">🔄</div>
-          <div class="action-card-label" id="t-ac-sup">Videos supporten</div>
-          <div class="action-card-badge hidden" id="ac-sup-badge">0</div>
-        </div>
-      </div>
-
-      <!-- Post Balance Warning -->
-      <div id="post-bal-warn" style="display:none">
-        <div id="post-bal-warn-text"></div>
-        <div id="post-bal-warn-sub"></div>
-      </div>
-
-      <!-- Post Button (legacy, kept for balance-warning flow) -->
-      <button class="btn-prime mb12" id="postBtn" onclick="openPostModal()" style="padding:16px;display:none">
-        📹 <span id="t-post-btn">Video posten</span>
-      </button>
-
       <!-- Guide Card -->
       <div class="guide-card" id="guide-card" style="display:none">
         <div style="font-size:13px;font-weight:700;color:var(--blue);margin-bottom:10px" id="t-guide-title">📋 Was jetzt?</div>
@@ -1105,24 +1123,6 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
         <div class="guide-step">
           <div class="guide-num">3</div>
           <div class="guide-text" id="t-g3">Nach 12h: Dein Video läuft in Runde 2 – weitere 10 Supports möglich!</div>
-        </div>
-      </div>
-
-      <!-- hidden open-list for JS compat -->
-      <div id="open-list" style="display:none"></div>
-      <span id="open-count" style="display:none">0</span>
-      <!-- Support Card Viewer — always visible when videos available -->
-      <div class="sup-card-wrap" id="sup-card-wrap" style="display:none">
-        <div class="sup-card-hdr">
-          <button class="sup-card-back" onclick="closeSupCard()">✕</button>
-          <div class="sup-card-title" id="t-sup-card-title">🔄 Videos supporten</div>
-          <div class="sup-card-counter" id="sup-card-counter">– / –</div>
-        </div>
-        <div id="sup-card-body" class="sup-card"></div>
-        <div class="sup-card-nav">
-          <button class="sup-nav-btn" id="sup-prev" onclick="stepSupCard(-1)">◀</button>
-          <button class="sup-open-btn" id="sup-open-btn" onclick="supCardSupport()">🔄 <span id="t-sup-btn">Supporten</span></button>
-          <button class="sup-nav-btn" id="sup-next" onclick="stepSupCard(1)">▶</button>
         </div>
       </div>
 
