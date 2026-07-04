@@ -964,6 +964,37 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
   </div>
 </div>
 
+<!-- Homescreen Modal -->
+<div class="modal-bg" id="homescreenModal">
+  <div class="modal-box">
+    <div class="modal-title">📱 Zum Homescreen</div>
+    <div style="margin-bottom:14px">
+      <div style="background:rgba(0,122,255,.07);border-radius:14px;padding:14px;margin-bottom:10px;border:1.5px solid rgba(0,122,255,.15)">
+        <div style="font-size:12px;font-weight:800;color:var(--blue);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px">🍎 iPhone / iPad (Safari)</div>
+        <div style="font-size:12px;color:var(--text);line-height:1.7">
+          1. Seite in <strong>Safari</strong> öffnen<br>
+          2. Teilen-Symbol <strong>□↑</strong> antippen<br>
+          3. → <strong>„Zum Home-Bildschirm"</strong><br>
+          4. → <strong>„Hinzufügen"</strong> bestätigen
+        </div>
+      </div>
+      <div style="background:rgba(52,199,89,.07);border-radius:14px;padding:14px;border:1.5px solid rgba(52,199,89,.2)">
+        <div style="font-size:12px;font-weight:800;color:var(--green);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px">🤖 Android (Chrome)</div>
+        <div style="font-size:12px;color:var(--text);line-height:1.7">
+          1. Seite in <strong>Chrome</strong> öffnen<br>
+          2. Menü <strong>⋮</strong> antippen<br>
+          3. → <strong>„App installieren"</strong> oder<br>
+          &nbsp;&nbsp;&nbsp;„<strong>Zum Startbildschirm</strong>"<br>
+          4. → <strong>„Hinzufügen"</strong> bestätigen
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost btn-sm" onclick="closeModal('homescreenModal')">Schließen</button>
+    </div>
+  </div>
+</div>
+
 <!-- Reply Modal -->
 <div class="modal-bg" id="replyModal">
   <div class="modal-box">
@@ -1343,11 +1374,11 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
 
       <!-- Language -->
       <div class="settings-section">
-        <div class="settings-section-title">Sprache / Language</div>
+        <div class="settings-section-title" id="set-sec-lang">Sprache / Language</div>
         <div class="lang-card" id="set-lang-card">
           <div class="lang-card-hdr" onclick="toggleSetLangDrop()">
             <div class="lang-card-hdr-left">
-              <div class="lang-card-title">Sprache wählen</div>
+              <div class="lang-card-title" id="set-lang-title">Sprache wählen</div>
               <div class="lang-card-sub">
                 <span class="lang-card-flag" id="set-lang-flag">🇩🇪</span>
                 <span class="lang-card-name" id="set-lang-cur">Deutsch</span>
@@ -1362,31 +1393,31 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
 
       <!-- Security -->
       <div class="settings-section">
-        <div class="settings-section-title">Sicherheit</div>
+        <div class="settings-section-title" id="set-sec-security">Sicherheit</div>
         <div class="settings-card">
           <div class="settings-row">
             <div class="settings-row-left">
-              <div class="settings-row-label">🔑 PIN-Schutz</div>
-              <div class="settings-row-sub">Anmeldung mit persönlichem 4-stelligen PIN absichern</div>
+              <div class="settings-row-label" id="set-pin-label">🔑 PIN-Schutz</div>
+              <div class="settings-row-sub" id="set-pin-sub">Anmeldung mit persönlichem 4-stelligen PIN absichern</div>
             </div>
             <button class="settings-toggle" id="pin-toggle" onclick="toggleMemberPin()"></button>
           </div>
           <div class="settings-row" id="set-change-pin-row" style="display:none">
             <div class="settings-row-left">
-              <div class="settings-row-label">PIN ändern</div>
+              <div class="settings-row-label" id="set-pin-change-label">PIN ändern</div>
             </div>
-            <button class="btn-ghost btn-sm" onclick="openChangeMemberPin()">Ändern</button>
+            <button class="btn-ghost btn-sm" id="set-pin-change-btn" onclick="openChangeMemberPin()">Ändern</button>
           </div>
         </div>
       </div>
 
       <!-- Notifications -->
       <div class="settings-section">
-        <div class="settings-section-title">Benachrichtigungen</div>
+        <div class="settings-section-title" id="set-sec-notif">Benachrichtigungen</div>
         <div class="settings-card">
           <div class="settings-row" style="border-bottom:none">
             <div class="settings-row-left">
-              <div class="settings-row-label">🔔 Push-Nachrichten</div>
+              <div class="settings-row-label" id="set-push-label">🔔 Push-Nachrichten</div>
               <div class="settings-row-sub" id="set-push-sub">Benachrichtigung bei neuen Supports</div>
             </div>
             <button class="settings-toggle" id="set-push-toggle" onclick="toggleSettingsPush()"></button>
@@ -1396,20 +1427,20 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
 
       <!-- App -->
       <div class="settings-section">
-        <div class="settings-section-title">App</div>
+        <div class="settings-section-title" id="set-sec-app">App</div>
         <div class="settings-card">
-          <div class="settings-row">
+          <div class="settings-row" onclick="showHomescreenModal()" style="cursor:pointer">
             <div class="settings-row-left">
-              <div class="settings-row-label">📱 Zum Homescreen hinzufügen</div>
-              <div class="settings-row-sub">iOS: Teilen → Zum Home-Bildschirm · Android: Menü → Startbildschirm</div>
+              <div class="settings-row-label" id="set-hs-label">📱 Zum Homescreen hinzufügen</div>
+              <div class="settings-row-sub" id="set-hs-sub">Anleitung für iOS und Android</div>
             </div>
             <span class="settings-row-arrow">›</span>
           </div>
           <div class="settings-row">
             <div class="settings-row-left">
-              <div class="settings-row-label">🔒 Datenschutz</div>
+              <div class="settings-row-label" id="set-privacy-label">🔒 Datenschutz</div>
             </div>
-            <button class="btn-ghost btn-sm" onclick="openModal('privacyModal')">Anzeigen</button>
+            <button class="btn-ghost btn-sm" id="set-privacy-btn" onclick="openModal('privacyModal')">Anzeigen</button>
           </div>
           <div class="settings-row" style="border-bottom:none">
             <div class="settings-row-left">
@@ -2091,7 +2122,12 @@ de: {
   postSuccessSub:'Supporte jetzt auch andere Mitglieder. Du findest sie unter Offene Videos.',
   postSuccessOk:'Ich habe verstanden!',
   balCapTitle:'🚀 Guthaben-Maximum erreicht!',balCapBody:'Dein Guthaben hat das Maximum von {n} erreicht. Poste jetzt ein neues Video, damit andere Mitglieder ihr Minus durch Support bei dir ausgleichen können.',balCapSub:'Solange du nicht postest, bleibt dein Guthaben bei diesem Maximum stehen.',balCapOk:'🎬 Jetzt Video posten',balCapLater:'Später',balCapBadge:'Maximum erreicht – bitte Video posten',
-  navTour:'Rundgang',delOk:'✅ Video gelöscht',
+  navTour:'Rundgang',navSettings:'Einstellungen',delOk:'✅ Video gelöscht',
+  firstVideoShort:'Erstes<br>Video',postNowShort:'Jetzt<br>posten',
+  setSecLang:'Sprache / Language',setSecSecurity:'Sicherheit',setSecNotif:'Benachrichtigungen',setSecApp:'App',
+  setPinLabel:'🔑 PIN-Schutz',setPinSub:'Anmeldung mit 4-stelligem PIN absichern',setPinChange:'PIN ändern',
+  setHsLabel:'📱 Zum Homescreen hinzufügen',setHsSub:'Anleitung für iOS und Android',
+  setPrivacy:'🔒 Datenschutz',show:'Anzeigen',
   step1:'Sprache wählen',step2:'Username eingeben',acPost:'Video posten',acSup:'Videos supporten',supBtnShort:'Supporten',
   welcome:'✨ Willkommen, ',welcomeNew:'🎉 Willkommen im Support Pool!',tourNextBtn:'Verstanden ✓',pushTitle:'Push-Benachrichtigungen',pushDesc:'Erhalte eine Meldung, wenn jemand dein Video supportet',pushActivate:'Aktivieren',pushActiveMsg:'Push-Benachrichtigungen aktiv',pushBlockedTitle:'Benachrichtigungen blockiert',pushBlockedSub:'In Browser-Einstellungen aktivieren',toAdminLabel:'📩 An Admin schreiben',toMemberLabel:'🔍 Mitglied suchen',msgPlaceholderAdmin:'Nachricht an Admin...',msgPlaceholderMem:'Nachricht an @{name}...',cancel:'Abbrechen',postSubmit:'Posten',dmChange:'Ändern',
   tourSteps:[
@@ -2182,7 +2218,12 @@ en: {
   postSuccessSub:'Now support other members too. You find them under Open Videos.',
   postSuccessOk:'Got it!',
   balCapTitle:'🚀 Balance maximum reached!',balCapBody:'Your balance has reached the maximum of {n}. Post a new video now so other members can offset their deficit by supporting you.',balCapSub:'Your balance stays capped at this maximum until you post.',balCapOk:'🎬 Post a video now',balCapLater:'Later',balCapBadge:'Maximum reached – please post a video',
-  navTour:'Tour',delOk:'✅ Video deleted',
+  navTour:'Tour',navSettings:'Settings',delOk:'✅ Video deleted',
+  firstVideoShort:'First<br>Video',postNowShort:'Post<br>now',
+  setSecLang:'Language',setSecSecurity:'Security',setSecNotif:'Notifications',setSecApp:'App',
+  setPinLabel:'🔑 PIN Lock',setPinSub:'Secure login with a personal 4-digit PIN',setPinChange:'Change PIN',
+  setHsLabel:'📱 Add to Home Screen',setHsSub:'Step-by-step guide for iOS & Android',
+  setPrivacy:'🔒 Privacy Policy',show:'View',
   step1:'Choose language',step2:'Enter username',acPost:'Post Video',acSup:'Support Videos',supBtnShort:'Support',
   welcome:'✨ Welcome, ',welcomeNew:'🎉 Welcome to Support Pool!',tourNextBtn:'Got it ✓',pushTitle:'Push Notifications',pushDesc:'Get notified when someone supports your video',pushActivate:'Enable',pushActiveMsg:'Push notifications active',pushBlockedTitle:'Notifications blocked',pushBlockedSub:'Enable in browser settings',toAdminLabel:'📩 Write to Admin',toMemberLabel:'🔍 Find Member',msgPlaceholderAdmin:'Message to Admin...',msgPlaceholderMem:'Message to @{name}...',cancel:'Cancel',postSubmit:'Post',dmChange:'Change',
   tourSteps:[
@@ -2273,7 +2314,12 @@ id: {
   postSuccessSub:'Sekarang dukung juga video anggota lain. Temukan di Video Terbuka.',
   postSuccessOk:'Saya mengerti!',
   balCapTitle:'🚀 Saldo maksimum tercapai!',balCapBody:'Saldo kamu telah mencapai maksimum {n}. Posting video baru sekarang agar anggota lain bisa mengimbangi kekurangan mereka dengan mendukungmu.',balCapSub:'Saldo kamu tetap di batas maksimum ini sampai kamu memposting.',balCapOk:'🎬 Posting video sekarang',balCapLater:'Nanti',balCapBadge:'Maksimum tercapai – silakan posting video',
-  navTour:'Panduan',delOk:'✅ Video dihapus',
+  navTour:'Panduan',navSettings:'Pengaturan',delOk:'✅ Video dihapus',
+  firstVideoShort:'Video<br>Pertama',postNowShort:'Posting<br>Sekarang',
+  setSecLang:'Bahasa',setSecSecurity:'Keamanan',setSecNotif:'Notifikasi',setSecApp:'Aplikasi',
+  setPinLabel:'🔑 Kunci PIN',setPinSub:'Amankan login dengan PIN 4 digit pribadi',setPinChange:'Ubah PIN',
+  setHsLabel:'📱 Tambah ke Layar Utama',setHsSub:'Panduan untuk iOS dan Android',
+  setPrivacy:'🔒 Privasi',show:'Lihat',
   step1:'Pilih bahasa',step2:'Masukkan username',acPost:'Posting Video',acSup:'Dukung Video',supBtnShort:'Dukung',
   welcome:'✨ Selamat datang, ',welcomeNew:'🎉 Selamat datang di Support Pool!',tourNextBtn:'Mengerti ✓',pushTitle:'Notifikasi Push',pushDesc:'Dapatkan pemberitahuan saat seseorang mendukung video Anda',pushActivate:'Aktifkan',pushActiveMsg:'Notifikasi push aktif',pushBlockedTitle:'Notifikasi diblokir',pushBlockedSub:'Aktifkan di pengaturan browser',toAdminLabel:'📩 Tulis ke Admin',toMemberLabel:'🔍 Cari Anggota',msgPlaceholderAdmin:'Pesan ke Admin...',msgPlaceholderMem:'Pesan ke @{name}...',cancel:'Batal',postSubmit:'Posting',dmChange:'Ganti',
   tourSteps:[
@@ -2364,7 +2410,12 @@ it: {
   postSuccessSub:'Supporta anche i video degli altri. Li trovi in Video Aperti.',
   postSuccessOk:'Ho capito!',
   balCapTitle:'🚀 Saldo massimo raggiunto!',balCapBody:'Il tuo saldo ha raggiunto il massimo di {n}. Pubblica subito un nuovo video così altri membri possono compensare il loro deficit supportandoti.',balCapSub:'Il tuo saldo resta bloccato a questo massimo finché non pubblichi.',balCapOk:'🎬 Pubblica un video ora',balCapLater:'Più tardi',balCapBadge:'Massimo raggiunto – pubblica un video',
-  navTour:'Tour',delOk:'✅ Video eliminato',
+  navTour:'Tour',navSettings:'Impostazioni',delOk:'✅ Video eliminato',
+  firstVideoShort:'Primo<br>Video',postNowShort:'Pubblica<br>ora',
+  setSecLang:'Lingua',setSecSecurity:'Sicurezza',setSecNotif:'Notifiche',setSecApp:'App',
+  setPinLabel:'🔑 Blocco PIN',setPinSub:'Proteggi accesso con PIN a 4 cifre personale',setPinChange:'Cambia PIN',
+  setHsLabel:'📱 Aggiungi alla schermata iniziale',setHsSub:'Guida per iOS e Android',
+  setPrivacy:'🔒 Privacy',show:'Mostra',
   step1:'Scegli lingua',step2:'Inserisci username',acPost:'Pubblica Video',acSup:'Supporta Video',supBtnShort:'Supporta',
   welcome:'✨ Benvenuto, ',welcomeNew:'🎉 Benvenuto nel Support Pool!',tourNextBtn:'Capito ✓',pushTitle:'Notifiche Push',pushDesc:'Ricevi una notifica quando qualcuno supporta il tuo video',pushActivate:'Attiva',pushActiveMsg:'Notifiche push attive',pushBlockedTitle:'Notifiche bloccate',pushBlockedSub:'Attiva nelle impostazioni del browser',toAdminLabel:'📩 Scrivi all Admin',toMemberLabel:'🔍 Cerca Membro',msgPlaceholderAdmin:'Messaggio all Admin...',msgPlaceholderMem:'Messaggio a @{name}...',cancel:'Annulla',postSubmit:'Pubblica',dmChange:'Cambia',
   tourSteps:[
@@ -2455,7 +2506,12 @@ es: {
   postSuccessSub:'Ahora también apoya los videos de otros miembros. Los encuentras en Videos Abiertos.',
   postSuccessOk:'¡Lo entendí!',
   balCapTitle:'🚀 ¡Saldo máximo alcanzado!',balCapBody:'Tu saldo ha alcanzado el máximo de {n}. Publica un nuevo video ahora para que otros miembros puedan compensar su déficit apoyándote.',balCapSub:'Tu saldo se mantiene en este máximo hasta que publiques.',balCapOk:'🎬 Publicar video ahora',balCapLater:'Más tarde',balCapBadge:'Máximo alcanzado – por favor publica un video',
-  navTour:'Recorrido',delOk:'✅ Video eliminado',
+  navTour:'Recorrido',navSettings:'Ajustes',delOk:'✅ Video eliminado',
+  firstVideoShort:'Primer<br>Video',postNowShort:'Publicar<br>ahora',
+  setSecLang:'Idioma',setSecSecurity:'Seguridad',setSecNotif:'Notificaciones',setSecApp:'Aplicación',
+  setPinLabel:'🔑 Bloqueo PIN',setPinSub:'Asegura el inicio con PIN de 4 dígitos personal',setPinChange:'Cambiar PIN',
+  setHsLabel:'📱 Añadir a Inicio',setHsSub:'Guía para iOS y Android',
+  setPrivacy:'🔒 Privacidad',show:'Ver',
   step1:'Elegir idioma',step2:'Ingresar usuario',acPost:'Publicar Video',acSup:'Apoyar Videos',supBtnShort:'Apoyar',
   welcome:'✨ Bienvenido, ',welcomeNew:'🎉 ¡Bienvenido al Support Pool!',tourNextBtn:'Entendido ✓',pushTitle:'Notificaciones Push',pushDesc:'Recibe una notificación cuando alguien apoya tu video',pushActivate:'Activar',pushActiveMsg:'Notificaciones push activas',pushBlockedTitle:'Notificaciones bloqueadas',pushBlockedSub:'Activar en la configuración del navegador',toAdminLabel:'📩 Escribir al Admin',toMemberLabel:'🔍 Buscar Miembro',msgPlaceholderAdmin:'Mensaje al Admin...',msgPlaceholderMem:'Mensaje a @{name}...',cancel:'Cancelar',postSubmit:'Publicar',dmChange:'Cambiar',
   tourSteps:[
@@ -2546,7 +2602,12 @@ tr: {
   postSuccessSub:'Şimdi diğer üyelerin videolarını da destekle. Açık Videolar da bulabilirsin.',
   postSuccessOk:'Anladım!',
   balCapTitle:'🚀 Bakiye maksimuma ulaştı!',balCapBody:'Bakiyen {n} maksimumuna ulaştı. Diğer üyelerin seni destekleyerek açıklarını kapatabilmesi için şimdi yeni bir video paylaş.',balCapSub:'Paylaşım yapmadığın sürece bakiyen bu maksimumda sabit kalır.',balCapOk:'🎬 Şimdi video paylaş',balCapLater:'Daha sonra',balCapBadge:'Maksimuma ulaşıldı – lütfen video paylaş',
-  navTour:'Tur',delOk:'✅ Video silindi',
+  navTour:'Tur',navSettings:'Ayarlar',delOk:'✅ Video silindi',
+  firstVideoShort:'İlk<br>Video',postNowShort:'Şimdi<br>paylaş',
+  setSecLang:'Dil',setSecSecurity:'Güvenlik',setSecNotif:'Bildirimler',setSecApp:'Uygulama',
+  setPinLabel:'🔑 PIN Kilidi',setPinSub:'Girişi kişisel 4 haneli PIN ile güvenli hale getir',setPinChange:'PIN Değiştir',
+  setHsLabel:'📱 Ana Ekrana Ekle',setHsSub:'iOS ve Android için kılavuz',
+  setPrivacy:'🔒 Gizlilik',show:'Göster',
   step1:'Dil seç',step2:'Kullanıcı adı gir',acPost:'Video Paylaş',acSup:'Video Destekle',supBtnShort:'Destekle',
   welcome:'✨ Hoş geldin, ',welcomeNew:"🎉 Support Pool'a hoş geldin!",tourNextBtn:'Anladım ✓',pushTitle:'Push Bildirimleri',pushDesc:'Birisi videonuzu desteklediğinde bildirim alın',pushActivate:'Etkinleştir',pushActiveMsg:'Push bildirimleri etkin',pushBlockedTitle:'Bildirimler engellendi',pushBlockedSub:'Tarayıcı ayarlarından etkinleştirin',toAdminLabel:'📩 Admine Yaz',toMemberLabel:'🔍 Üye Ara',msgPlaceholderAdmin:'Admine mesaj...',msgPlaceholderMem:'@{name} kişisine mesaj...',cancel:'İptal',postSubmit:'Paylaş',dmChange:'Değiştir',
   tourSteps:[
@@ -2637,7 +2698,12 @@ ar: {
   postSuccessSub:'ادعم الآن فيديوهات الأعضاء الآخرين. ستجدهم في الفيديوهات المفتوحة.',
   postSuccessOk:'فهمت!',
   balCapTitle:'🚀 لقد بلغ رصيدك الحد الأقصى!',balCapBody:'بلغ رصيدك الحد الأقصى وهو {n}. انشر فيديو جديدًا الآن حتى يتمكن الأعضاء الآخرون من تعويض عجزهم بدعمك.',balCapSub:'سيبقى رصيدك عند هذا الحد الأقصى حتى تنشر فيديو.',balCapOk:'🎬 انشر فيديو الآن',balCapLater:'لاحقًا',balCapBadge:'تم الوصول إلى الحد الأقصى – يرجى نشر فيديو',
-  navTour:'جولة',delOk:'✅ تم حذف الفيديو',
+  navTour:'جولة',navSettings:'الإعدادات',delOk:'✅ تم حذف الفيديو',
+  firstVideoShort:'أول<br>فيديو',postNowShort:'انشر<br>الآن',
+  setSecLang:'اللغة',setSecSecurity:'الأمان',setSecNotif:'الإشعارات',setSecApp:'التطبيق',
+  setPinLabel:'🔑 قفل PIN',setPinSub:'تأمين الدخول برمز PIN شخصي من 4 أرقام',setPinChange:'تغيير PIN',
+  setHsLabel:'📱 إضافة للشاشة الرئيسية',setHsSub:'دليل لـ iOS وAndroid',
+  setPrivacy:'🔒 الخصوصية',show:'عرض',
   step1:'اختر اللغة',step2:'أدخل اسم المستخدم',acPost:'نشر فيديو',acSup:'دعم الفيديوهات',supBtnShort:'دعم',
   welcome:'✨ مرحباً, ',welcomeNew:'🎉 مرحباً في Support Pool!',tourNextBtn:'فهمت ✓',pushTitle:'إشعارات الدفع',pushDesc:'احصل على إشعار عندما يدعم شخص ما فيديوك',pushActivate:'تفعيل',pushActiveMsg:'إشعارات الدفع نشطة',pushBlockedTitle:'الإشعارات محظورة',pushBlockedSub:'فعّلها في إعدادات المتصفح',toAdminLabel:'📩 اكتب للمشرف',toMemberLabel:'🔍 ابحث عن عضو',msgPlaceholderAdmin:'رسالة إلى المشرف...',msgPlaceholderMem:'رسالة إلى @{name}...',cancel:'إلغاء',postSubmit:'نشر',dmChange:'تغيير',
   tourSteps:[
@@ -2728,7 +2794,12 @@ zh: {
   postSuccessSub:'现在也支持其他成员的视频。在开放视频中找到它们。',
   postSuccessOk:'我明白了！',
   balCapTitle:'🚀 余额已达上限！',balCapBody:'你的余额已达到上限{n}。现在发布一个新视频，让其他成员可以通过支持你来弥补他们的差额。',balCapSub:'在你发布视频之前，余额将保持在这个上限。',balCapOk:'🎬 立即发布视频',balCapLater:'稍后',balCapBadge:'已达上限 – 请发布视频',
-  navTour:'导览',delOk:'✅ 视频已删除',
+  navTour:'导览',navSettings:'设置',delOk:'✅ 视频已删除',
+  firstVideoShort:'第一个<br>视频',postNowShort:'立即<br>发布',
+  setSecLang:'语言',setSecSecurity:'安全',setSecNotif:'通知',setSecApp:'应用',
+  setPinLabel:'🔑 PIN保护',setPinSub:'用个人4位PIN保护登录',setPinChange:'更改PIN',
+  setHsLabel:'📱 添加到主屏幕',setHsSub:'iOS和Android使用指南',
+  setPrivacy:'🔒 隐私政策',show:'查看',
   step1:'选择语言',step2:'输入用户名',acPost:'发布视频',acSup:'支持视频',supBtnShort:'支持',
   welcome:'✨ 欢迎, ',welcomeNew:'🎉 欢迎来到Support Pool!',tourNextBtn:'明白了 ✓',pushTitle:'推送通知',pushDesc:'当有人支持你的视频时获得通知',pushActivate:'启用',pushActiveMsg:'推送通知已启用',pushBlockedTitle:'通知已被屏蔽',pushBlockedSub:'请在浏览器设置中启用',toAdminLabel:'📩 写信给管理员',toMemberLabel:'🔍 搜索成员',msgPlaceholderAdmin:'给管理员的消息...',msgPlaceholderMem:'给 @{name} 的消息...',cancel:'取消',postSubmit:'发布',dmChange:'更改',
   tourSteps:[
@@ -2819,7 +2890,12 @@ ja: {
   postSuccessSub:'他のメンバーの動画もサポートしてください。オープン動画で見つけられます。',
   postSuccessOk:'わかりました！',
   balCapTitle:'🚀 残高が上限に達しました！',balCapBody:'残高が上限の{n}に達しました。今すぐ新しい動画を投稿して、他のメンバーがあなたをサポートして不足分を解消できるようにしましょう。',balCapSub:'投稿するまで残高はこの上限のままになります。',balCapOk:'🎬 今すぐ動画を投稿',balCapLater:'後で',balCapBadge:'上限に達しました – 動画を投稿してください',
-  navTour:'ツアー',delOk:'✅ 動画を削除しました',
+  navTour:'ツアー',navSettings:'設定',delOk:'✅ 動画を削除しました',
+  firstVideoShort:'最初の<br>動画',postNowShort:'今すぐ<br>投稿',
+  setSecLang:'言語',setSecSecurity:'セキュリティ',setSecNotif:'通知',setSecApp:'アプリ',
+  setPinLabel:'🔑 PINロック',setPinSub:'個人の4桁PINでログインを保護',setPinChange:'PIN変更',
+  setHsLabel:'📱 ホーム画面に追加',setHsSub:'iOSとAndroid向けガイド',
+  setPrivacy:'🔒 プライバシー',show:'表示',
   step1:'言語を選ぶ',step2:'ユーザー名を入力',acPost:'動画を投稿',acSup:'動画をサポート',supBtnShort:'サポート',
   welcome:'✨ ようこそ、',welcomeNew:'🎉 Support Poolへようこそ!',tourNextBtn:'わかりました ✓',pushTitle:'プッシュ通知',pushDesc:'誰かがあなたの動画をサポートしたときに通知を受け取る',pushActivate:'有効にする',pushActiveMsg:'プッシュ通知が有効です',pushBlockedTitle:'通知がブロックされています',pushBlockedSub:'ブラウザの設定で有効にしてください',toAdminLabel:'📩 管理者に書く',toMemberLabel:'🔍 メンバーを検索',msgPlaceholderAdmin:'管理者へのメッセージ...',msgPlaceholderMem:'@{name} へのメッセージ...',cancel:'キャンセル',postSubmit:'投稿',dmChange:'変更',
   tourSteps:[
@@ -2910,7 +2986,12 @@ pl: {
   postSuccessSub:'Teraz wspieraj też filmy innych członków. Znajdziesz je w Otwarte wideo.',
   postSuccessOk:'Rozumiem!',
   balCapTitle:'🚀 Saldo osiągnęło maksimum!',balCapBody:'Twoje saldo osiągnęło maksimum {n}. Opublikuj teraz nowy film, aby inni członkowie mogli wyrównać swój deficyt, wspierając Cię.',balCapSub:'Twoje saldo pozostanie na tym maksimum, dopóki nie opublikujesz filmu.',balCapOk:'🎬 Opublikuj film teraz',balCapLater:'Później',balCapBadge:'Maksimum osiągnięte – opublikuj film',
-  navTour:'Wycieczka',delOk:'✅ Wideo usunięte',
+  navTour:'Wycieczka',navSettings:'Ustawienia',delOk:'✅ Wideo usunięte',
+  firstVideoShort:'Pierwszy<br>Film',postNowShort:'Opublikuj<br>teraz',
+  setSecLang:'Język',setSecSecurity:'Bezpieczeństwo',setSecNotif:'Powiadomienia',setSecApp:'Aplikacja',
+  setPinLabel:'🔑 Blokada PIN',setPinSub:'Zabezpiecz logowanie osobistym 4-cyfrowym PIN',setPinChange:'Zmień PIN',
+  setHsLabel:'📱 Dodaj do ekranu głównego',setHsSub:'Przewodnik dla iOS i Android',
+  setPrivacy:'🔒 Prywatność',show:'Pokaż',
   step1:'Wybierz język',step2:'Wpisz nazwę użytkownika',acPost:'Opublikuj wideo',acSup:'Wspieraj wideo',supBtnShort:'Wspieraj',
   welcome:'✨ Witaj, ',welcomeNew:'🎉 Witamy w Support Pool!',tourNextBtn:'Rozumiem ✓',pushTitle:'Powiadomienia Push',pushDesc:'Otrzymaj powiadomienie, gdy ktoś wesprze Twoje wideo',pushActivate:'Włącz',pushActiveMsg:'Powiadomienia push aktywne',pushBlockedTitle:'Powiadomienia zablokowane',pushBlockedSub:'Włącz w ustawieniach przeglądarki',toAdminLabel:'📩 Napisz do Admina',toMemberLabel:'🔍 Szukaj Członka',msgPlaceholderAdmin:'Wiadomość do Admina...',msgPlaceholderMem:'Wiadomość do @{name}...',cancel:'Anuluj',postSubmit:'Opublikuj',dmChange:'Zmień',
   tourSteps:[
@@ -3183,6 +3264,7 @@ function applyLang() {
   // Nav
   st('t-nav-home', l.navHome); st('t-nav-profile', l.navProfile); st('t-nav-admin', l.navAdmin);
   st('t-nav-tour', l.navTour||'Rundgang');
+  st('t-nav-settings', l.navSettings||'Einstellungen');
   // Goal + Leaderboard
   st('t-goal-title', l.goalTitle||'Tagesziel'); st('t-goal-sub', l.goalSub||'Supports heute');
   st('t-lb-title', l.lbTitle||'Top-Supporter der Woche');
@@ -3463,8 +3545,9 @@ function memPinKey(v) {
     if (_memPinDigits.length < 4) return;
     var stored = _memPinTarget && DB.members[_memPinTarget.key] && DB.members[_memPinTarget.key].memberPin;
     if (hp(_memPinDigits) === stored) {
+      var _k = _memPinTarget.key, _d = _memPinTarget.disp;
       closeMemPinPad();
-      completeLogin(_memPinTarget.key, _memPinTarget.disp);
+      completeLogin(_k, _d);
     } else {
       if (err) err.textContent = '❌ Falscher PIN';
       _memPinDigits = '';
@@ -3481,8 +3564,8 @@ function memPinKey(v) {
   if (_memPinDigits.length === 4) setTimeout(function(){ memPinKey('ok'); }, 120);
 }
 function memPinForgot() {
-  closeMemPinPad();
   var who = _memPinTarget ? ('@' + (_memPinTarget.disp || fbDec(_memPinTarget.key))) : '(unbekannt)';
+  closeMemPinPad();
   var msg = 'Hallo Admin, ich habe meinen PIN vergessen. Bitte setze ihn für ' + who + ' zurück. Danke!';
   if (navigator.share) {
     navigator.share({text: msg}).catch(function(){});
@@ -3497,10 +3580,28 @@ function memPinForgot() {
 function renderSettings() {
   if (!CU || !DB.members[CU]) return;
   var u = DB.members[CU];
+  var l = L[LANG] || L.de;
   var av = ge('set-avatar'), un = ge('set-username'), rk = ge('set-rank');
   if (av) av.textContent = getAvatar(u);
   if (un) un.textContent = u.name || fbDec(CU);
-  if (rk) rk.textContent = (t('ranks')||[])[rankIdx(u)] || '–';
+  if (rk) rk.textContent = (l.ranks||[])[rankIdx(u)] || '–';
+  // Translated labels
+  st('set-sec-lang',   l.setSecLang   || 'Sprache / Language');
+  st('set-lang-title', l.step1        || 'Sprache wählen');
+  st('set-sec-security', l.setSecSecurity || 'Sicherheit');
+  st('set-pin-label',  l.setPinLabel  || '🔑 PIN-Schutz');
+  st('set-pin-sub',    l.setPinSub    || 'Anmeldung mit 4-stelligem PIN absichern');
+  st('set-pin-change-label', l.setPinChange || 'PIN ändern');
+  st('set-pin-change-btn',   l.setPinChange || 'Ändern');
+  st('set-sec-notif',  l.notifs       || '🔔 Benachrichtigungen');
+  st('set-push-label', l.pushTitle    || '🔔 Push-Nachrichten');
+  st('set-push-sub',   l.pushDesc     || 'Benachrichtigung bei neuen Supports');
+  st('set-sec-app',    l.setSecApp    || 'App');
+  st('set-hs-label',   l.setHsLabel   || '📱 Zum Homescreen hinzufügen');
+  st('set-hs-sub',     l.setHsSub     || 'Anleitung für iOS und Android');
+  st('set-privacy-label', l.setPrivacy || '🔒 Datenschutz');
+  st('set-privacy-btn',   l.show      || 'Anzeigen');
+  st('t-logout-set',   l.logout       || 'Abmelden');
   // PIN toggle state
   var tog = ge('pin-toggle'), row = ge('set-change-pin-row');
   var hasPIN = !!(u.memberPin);
@@ -3555,6 +3656,8 @@ function closeSetLangDrop() {
   if (chev) chev.classList.remove('open');
   updateSetLangHeader();
 }
+
+function showHomescreenModal() { openModal('homescreenModal'); }
 
 function toggleSettingsPush() {
   enablePush();
