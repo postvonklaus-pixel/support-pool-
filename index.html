@@ -667,6 +667,47 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
 .faq-item.open .faq-a{max-height:400px}
 .faq-a-inner{padding:0 16px 14px;font-size:13px;color:var(--t2);line-height:1.62;border-top:1px solid var(--bdr)}
 
+/* ── SETTINGS SCREEN ── */
+.settings-section{margin-bottom:10px}
+.settings-section-title{font-size:10px;font-weight:800;color:var(--t3);text-transform:uppercase;letter-spacing:.07em;padding:4px 4px 8px}
+.settings-card{background:#fff;border:1.5px solid var(--bdr);border-radius:16px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.settings-row{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--bdr)}
+.settings-row:last-child{border-bottom:none}
+.settings-row-left{flex:1;min-width:0;margin-right:12px}
+.settings-row-label{font-size:13px;font-weight:700;color:var(--text)}
+.settings-row-sub{font-size:11px;color:var(--t2);margin-top:2px;line-height:1.4}
+.settings-toggle{width:44px;height:26px;border-radius:13px;border:none;background:var(--bg2);position:relative;cursor:pointer;transition:background .2s;flex-shrink:0;padding:0}
+.settings-toggle.on{background:var(--green)}
+.settings-toggle::after{content:'';position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.settings-toggle.on::after{transform:translateX(18px)}
+.settings-account-hero{background:linear-gradient(135deg,var(--v) 0%,#a05800 100%);border-radius:18px;padding:18px 16px;margin-bottom:10px;display:flex;align-items:center;gap:14px;box-shadow:0 4px 16px rgba(212,134,10,.25)}
+.settings-avatar{width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;border:2px solid rgba(255,255,255,.3)}
+.settings-username{font-size:1rem;font-weight:800;color:#fff;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.settings-rank-text{font-size:10px;color:rgba(255,255,255,.8);text-transform:uppercase;letter-spacing:.04em}
+.settings-row-arrow{font-size:13px;color:var(--t3);flex-shrink:0}
+/* ── PROFILE STAT CARDS ── */
+.prof-stat-card{border-radius:14px;padding:13px 8px;text-align:center;border:1.5px solid transparent}
+.prof-stat-card.given{background:rgba(52,199,89,.08);border-color:rgba(52,199,89,.2)}
+.prof-stat-card.given .prof-stat-n{color:var(--green)}
+.prof-stat-card.recv{background:rgba(0,122,255,.07);border-color:rgba(0,122,255,.18)}
+.prof-stat-card.recv .prof-stat-n{color:var(--blue)}
+.prof-stat-card.vids{background:rgba(212,134,10,.07);border-color:var(--vb)}
+.prof-stat-card.vids .prof-stat-n{color:var(--v)}
+/* ── TEMPLATE LIBRARY ── */
+.tpl-lib-grid{display:flex;flex-direction:column;gap:7px;max-height:350px;overflow-y:auto;padding-right:2px}
+.tpl-lib-item{background:var(--bg2);border:1.5px solid var(--bdr);border-radius:12px;padding:11px 13px;cursor:pointer;transition:all .18s;font-size:12px;color:var(--text);line-height:1.5}
+.tpl-lib-item:active{border-color:var(--vb);background:var(--vd)}
+.tpl-lib-item.selected{border-color:var(--v);background:rgba(212,134,10,.06)}
+.tpl-lib-num{font-size:9px;font-weight:800;color:var(--t3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px}
+/* ── PRIVACY POLICY ── */
+.privacy-box{max-height:380px;overflow-y:auto;font-size:12px;color:var(--t2);line-height:1.7;padding-right:4px}
+.privacy-box h3{font-size:12px;font-weight:800;color:var(--text);margin:12px 0 4px;text-transform:uppercase;letter-spacing:.04em}
+.privacy-box p{margin-bottom:8px}
+/* ── MEMBER PIN OVERLAY ── */
+#memberPinPad{background:rgba(0,0,0,.55);backdrop-filter:blur(8px)}
+.mem-pin-who{font-size:15px;font-weight:800;color:var(--text);margin-bottom:2px;text-align:center;text-transform:uppercase;letter-spacing:.04em}
+.mem-pin-forgot{text-align:center;margin-top:10px;font-size:11px;color:var(--blue);cursor:pointer;font-weight:700;text-transform:uppercase;letter-spacing:.04em;padding:5px;background:none;border:none;font-family:inherit;width:100%}
+
 /* ── INTERACTIVE GUIDE ── */
 #guide-wrap{position:fixed;bottom:0;left:0;right:0;z-index:8500;pointer-events:none;display:none}
 .guide-panel{background:#fff;border-radius:24px 24px 0 0;box-shadow:0 -6px 40px rgba(0,0,0,.16);padding:18px 20px max(28px,env(safe-area-inset-bottom));max-height:78vh;overflow-y:auto;pointer-events:all;transform:translateY(0);transition:transform .38s cubic-bezier(.4,0,.2,1)}
@@ -745,6 +786,36 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
       <div class="ob-dots"><div class="ob-dot"></div><div class="ob-dot"></div><div class="ob-dot active"></div></div>
       <button class="btn-prime" onclick="obDone()" id="ob-btn2">Los geht's! 🎉</button>
     </div>
+  </div>
+</div>
+
+<!-- Member PIN Pad -->
+<div class="pin-overlay" id="memberPinPad">
+  <div class="pin-box">
+    <span class="pin-icon">🔑</span>
+    <div class="mem-pin-who" id="mem-pin-who">@username</div>
+    <div class="pin-sub" id="mem-pin-sub">4-stelligen PIN eingeben</div>
+    <div class="pin-dots-row">
+      <div class="pdot" id="mpd0"></div><div class="pdot" id="mpd1"></div>
+      <div class="pdot" id="mpd2"></div><div class="pdot" id="mpd3"></div>
+    </div>
+    <div class="pin-err" id="mem-pin-err"></div>
+    <div class="pin-grid">
+      <button class="pkey" onclick="memPinKey('1')">1</button>
+      <button class="pkey" onclick="memPinKey('2')">2</button>
+      <button class="pkey" onclick="memPinKey('3')">3</button>
+      <button class="pkey" onclick="memPinKey('4')">4</button>
+      <button class="pkey" onclick="memPinKey('5')">5</button>
+      <button class="pkey" onclick="memPinKey('6')">6</button>
+      <button class="pkey" onclick="memPinKey('7')">7</button>
+      <button class="pkey" onclick="memPinKey('8')">8</button>
+      <button class="pkey" onclick="memPinKey('9')">9</button>
+      <button class="pkey del" onclick="memPinKey('del')">⌫</button>
+      <button class="pkey" onclick="memPinKey('0')">0</button>
+      <button class="pkey" onclick="memPinKey('ok')">✓</button>
+    </div>
+    <button class="mem-pin-forgot" onclick="memPinForgot()">PIN vergessen?</button>
+    <button class="pin-cancel-lnk" style="display:block" onclick="closeMemPinPad()">Abbrechen</button>
   </div>
 </div>
 
@@ -851,6 +922,44 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
     <div class="modal-footer">
       <button class="btn-prime" onclick="saveTpl()" id="t-tpl-save">Speichern</button>
       <button class="btn-ghost btn-sm" onclick="closeModal('tplModal')">Abbrechen</button>
+    </div>
+  </div>
+</div>
+
+<!-- Template Library Modal -->
+<div class="modal-bg" id="tplLibModal">
+  <div class="modal-box">
+    <div class="modal-title">📚 <span>Vorlagen-Bibliothek</span></div>
+    <div style="font-size:11px;color:var(--t2);margin-bottom:12px">Tippe auf eine Vorlage, um sie zu übernehmen.</div>
+    <div class="tpl-lib-grid" id="tpl-lib-grid"></div>
+    <div class="modal-footer" style="margin-top:14px">
+      <button class="btn-ghost btn-sm" onclick="closeModal('tplLibModal')">Schließen</button>
+    </div>
+  </div>
+</div>
+
+<!-- Privacy Policy Modal -->
+<div class="modal-bg" id="privacyModal">
+  <div class="modal-box">
+    <div class="modal-title">🔒 Datenschutz</div>
+    <div class="privacy-box">
+      <h3>1. Verantwortlicher</h3>
+      <p>NOVA Support Pool ist ein geschlossenes, mitgliedergesteuertes Netzwerk. Betreiber ist der Administrator des jeweiligen Support Pools.</p>
+      <h3>2. Welche Daten werden gespeichert?</h3>
+      <p>Es werden ausschließlich folgende Daten gespeichert: TikTok-Benutzername, Beitrittsdatum, Support-Statistiken (gegeben / erhalten), gepostete Video-URLs sowie Nachrichten zwischen Mitgliedern.</p>
+      <h3>3. Wo werden Daten gespeichert?</h3>
+      <p>Alle Daten werden in Firebase Realtime Database (Google) gespeichert. Es erfolgt keine Weitergabe an Dritte. Firebase unterliegt der EU-DSGVO durch den Google Cloud DPA.</p>
+      <h3>4. Cookies & lokaler Speicher</h3>
+      <p>Die App speichert Spracheinstellung und PIN-Hash im localStorage deines Browsers. Es werden keine Tracking-Cookies verwendet.</p>
+      <h3>5. Deine Rechte</h3>
+      <p>Du hast das Recht auf Auskunft, Berichtigung und Löschung deiner Daten. Wende dich dafür an den Administrator über die Kontaktfunktion in der App.</p>
+      <h3>6. Push-Benachrichtigungen</h3>
+      <p>Push-Benachrichtigungen werden nur aktiviert, wenn du es selbst bestätigst. Sie können jederzeit in den Browser-Einstellungen deaktiviert werden.</p>
+      <h3>7. Haftungsausschluss</h3>
+      <p>Die App übernimmt keine Haftung für Inhalte externer Links (TikTok-Videos). Für TikTok gelten die Datenschutzrichtlinien von TikTok Inc.</p>
+    </div>
+    <div class="modal-footer" style="margin-top:14px">
+      <button class="btn-ghost btn-sm" onclick="closeModal('privacyModal')">Schließen</button>
     </div>
   </div>
 </div>
@@ -1154,9 +1263,9 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
           <div class="streak-count" id="streak-count"></div>
         </div>
         <div class="prof-stats">
-          <div class="prof-stat"><div class="prof-stat-n" id="p-given">0</div><div class="prof-stat-l" id="t-p-given">Gegeben</div></div>
-          <div class="prof-stat"><div class="prof-stat-n" id="p-recv">0</div><div class="prof-stat-l" id="t-p-recv">Erhalten</div></div>
-          <div class="prof-stat"><div class="prof-stat-n" id="p-vids">0</div><div class="prof-stat-l" id="t-p-vids">Videos</div></div>
+          <div class="prof-stat prof-stat-card given"><div class="prof-stat-n" id="p-given">0</div><div class="prof-stat-l" id="t-p-given">Gegeben</div></div>
+          <div class="prof-stat prof-stat-card recv"><div class="prof-stat-n" id="p-recv">0</div><div class="prof-stat-l" id="t-p-recv">Erhalten</div></div>
+          <div class="prof-stat prof-stat-card vids"><div class="prof-stat-n" id="p-vids">0</div><div class="prof-stat-l" id="t-p-vids">Videos</div></div>
         </div>
       </div>
 
@@ -1219,6 +1328,105 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
     </div>
   </div>
 
+  <!-- SETTINGS SCREEN -->
+  <div class="screen" id="screen-settings">
+    <div class="content">
+
+      <!-- Account Hero -->
+      <div class="settings-account-hero">
+        <div class="settings-avatar" id="set-avatar">😊</div>
+        <div style="flex:1;min-width:0">
+          <div class="settings-username" id="set-username">–</div>
+          <div class="settings-rank-text" id="set-rank">–</div>
+        </div>
+      </div>
+
+      <!-- Language -->
+      <div class="settings-section">
+        <div class="settings-section-title">Sprache / Language</div>
+        <div class="lang-card" id="set-lang-card">
+          <div class="lang-card-hdr" onclick="toggleSetLangDrop()">
+            <div class="lang-card-hdr-left">
+              <div class="lang-card-title">Sprache wählen</div>
+              <div class="lang-card-sub">
+                <span class="lang-card-flag" id="set-lang-flag">🇩🇪</span>
+                <span class="lang-card-name" id="set-lang-cur">Deutsch</span>
+                <span class="lang-card-time" id="set-lang-time"></span>
+              </div>
+            </div>
+            <span class="lang-card-chevron" id="set-lang-chevron">⌄</span>
+          </div>
+          <div class="lang-drop-list" id="set-lang-list" style="display:none"></div>
+        </div>
+      </div>
+
+      <!-- Security -->
+      <div class="settings-section">
+        <div class="settings-section-title">Sicherheit</div>
+        <div class="settings-card">
+          <div class="settings-row">
+            <div class="settings-row-left">
+              <div class="settings-row-label">🔑 PIN-Schutz</div>
+              <div class="settings-row-sub">Anmeldung mit persönlichem 4-stelligen PIN absichern</div>
+            </div>
+            <button class="settings-toggle" id="pin-toggle" onclick="toggleMemberPin()"></button>
+          </div>
+          <div class="settings-row" id="set-change-pin-row" style="display:none">
+            <div class="settings-row-left">
+              <div class="settings-row-label">PIN ändern</div>
+            </div>
+            <button class="btn-ghost btn-sm" onclick="openChangeMemberPin()">Ändern</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Notifications -->
+      <div class="settings-section">
+        <div class="settings-section-title">Benachrichtigungen</div>
+        <div class="settings-card">
+          <div class="settings-row" style="border-bottom:none">
+            <div class="settings-row-left">
+              <div class="settings-row-label">🔔 Push-Nachrichten</div>
+              <div class="settings-row-sub" id="set-push-sub">Benachrichtigung bei neuen Supports</div>
+            </div>
+            <button class="settings-toggle" id="set-push-toggle" onclick="toggleSettingsPush()"></button>
+          </div>
+        </div>
+      </div>
+
+      <!-- App -->
+      <div class="settings-section">
+        <div class="settings-section-title">App</div>
+        <div class="settings-card">
+          <div class="settings-row">
+            <div class="settings-row-left">
+              <div class="settings-row-label">📱 Zum Homescreen hinzufügen</div>
+              <div class="settings-row-sub">iOS: Teilen → Zum Home-Bildschirm · Android: Menü → Startbildschirm</div>
+            </div>
+            <span class="settings-row-arrow">›</span>
+          </div>
+          <div class="settings-row">
+            <div class="settings-row-left">
+              <div class="settings-row-label">🔒 Datenschutz</div>
+            </div>
+            <button class="btn-ghost btn-sm" onclick="openModal('privacyModal')">Anzeigen</button>
+          </div>
+          <div class="settings-row" style="border-bottom:none">
+            <div class="settings-row-left">
+              <div class="settings-row-label" style="color:var(--t2);font-size:12px">NOVA Support Pool · v2.0</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Logout -->
+      <button class="logout-btn" onclick="doLogout()">
+        🚪 <span id="t-logout-set">Abmelden</span>
+      </button>
+
+    </div>
+  </div>
+
   <!-- ADMIN SCREEN -->
   <div class="screen" id="screen-admin">
     <div class="content">
@@ -1257,8 +1465,11 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
       <div id="adm-set" style="display:none">
         <div class="card">
           <div class="setting-row">
-            <div><div class="setting-lbl" id="t-set-tpl">Kommentar-Template</div></div>
-            <button class="btn-ghost btn-sm" onclick="openTplModal()">✏️ <span id="t-edit">Bearbeiten</span></button>
+            <div><div class="setting-lbl" id="t-set-tpl">Kommentar-Template</div><div class="setting-sub">Aktuelle Vorlage bearbeiten</div></div>
+            <div style="display:flex;gap:5px">
+              <button class="btn-ghost btn-sm" onclick="openTplLibrary()">📚</button>
+              <button class="btn-ghost btn-sm" onclick="openTplModal()">✏️</button>
+            </div>
           </div>
           <div class="setting-row">
             <div><div class="setting-lbl">Gruppen-Nummerierung</div><div class="setting-sub">Gruppen von 1 neu nummerieren</div></div>
@@ -1272,7 +1483,7 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
           </div>
           <div class="setting-row">
             <div><div class="setting-lbl" id="t-set-pin">Admin PIN</div></div>
-            <button class="btn-ghost btn-sm" onclick="openCpPad()">🔐 <span id="t-chg-pin">Ändern</span></button>
+            <button class="btn-ghost btn-sm" onclick="_openAdminCpPad()">🔐 <span id="t-chg-pin">Ändern</span></button>
           </div>
           <div class="setting-row" style="border-bottom:none">
             <div><div class="setting-lbl" id="t-set-backup">Backup</div></div>
@@ -1301,9 +1512,9 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
       <span class="nav-icon">👑</span>
       <span id="t-nav-admin">Admin</span>
     </button>
-    <button class="ni" id="ni-tour" onclick="startTour()">
-      <span class="nav-icon">🧭</span>
-      <span id="t-nav-tour">Rundgang</span>
+    <button class="ni" id="ni-settings" data-sc="settings" onclick="goScreen('settings')">
+      <span class="nav-icon">⚙️</span>
+      <span id="t-nav-settings">Einstellungen</span>
     </button>
   </div>
 
@@ -3168,6 +3379,7 @@ function goScreen(id) {
   if (id === 'home') renderHome();
   if (id === 'profile') { renderProfile(); guideAdvance('profile-visited'); }
   if (id === 'admin') renderAdmin();
+  if (id === 'settings') renderSettings();
 }
 function openModal(id) { var el = ge(id); if (el) el.classList.add('active'); }
 function closeModal(id) { var el = ge(id); if (el) el.classList.remove('active'); }
@@ -3229,6 +3441,163 @@ function handleLoginKey(e) {
   if (e.key === 'Escape') { var s = ge('login-suggest'); if (s) s.style.display = 'none'; }
 }
 
+// ── MEMBER PIN SYSTEM ─────────────────────────────────────────────────
+var _memPinTarget = null, _memPinDigits = '';
+function openMemPinPad(key, disp) {
+  _memPinTarget = {key: key, disp: disp};
+  _memPinDigits = '';
+  ge('mem-pin-who').textContent = '@' + (disp || fbDec(key));
+  for (var i = 0; i < 4; i++) { var d = ge('mpd'+i); if (d) { d.classList.remove('filled'); d.style.background=''; } }
+  ge('mem-pin-err').textContent = '';
+  var pad = ge('memberPinPad'); if (pad) { pad.style.display = 'flex'; pad.classList.add('active'); }
+}
+function closeMemPinPad() {
+  _memPinTarget = null; _memPinDigits = '';
+  var pad = ge('memberPinPad'); if (pad) { pad.style.display = ''; pad.classList.remove('active'); }
+}
+function memPinKey(v) {
+  var err = ge('mem-pin-err'); if (err) err.textContent = '';
+  if (v === 'del') {
+    _memPinDigits = _memPinDigits.slice(0, -1);
+  } else if (v === 'ok') {
+    if (_memPinDigits.length < 4) return;
+    var stored = _memPinTarget && DB.members[_memPinTarget.key] && DB.members[_memPinTarget.key].memberPin;
+    if (hp(_memPinDigits) === stored) {
+      closeMemPinPad();
+      completeLogin(_memPinTarget.key, _memPinTarget.disp);
+    } else {
+      if (err) err.textContent = '❌ Falscher PIN';
+      _memPinDigits = '';
+      for (var i = 0; i < 4; i++) { var d = ge('mpd'+i); if (d) d.classList.remove('filled'); }
+    }
+    return;
+  } else if (_memPinDigits.length < 4) {
+    _memPinDigits += v;
+  }
+  for (var j = 0; j < 4; j++) {
+    var dot = ge('mpd'+j);
+    if (dot) { if (j < _memPinDigits.length) dot.classList.add('filled'); else dot.classList.remove('filled'); }
+  }
+  if (_memPinDigits.length === 4) setTimeout(function(){ memPinKey('ok'); }, 120);
+}
+function memPinForgot() {
+  closeMemPinPad();
+  var who = _memPinTarget ? ('@' + (_memPinTarget.disp || fbDec(_memPinTarget.key))) : '(unbekannt)';
+  var msg = 'Hallo Admin, ich habe meinen PIN vergessen. Bitte setze ihn für ' + who + ' zurück. Danke!';
+  if (navigator.share) {
+    navigator.share({text: msg}).catch(function(){});
+  } else {
+    navigator.clipboard.writeText(msg).then(function(){ toast('📋 Nachricht kopiert — an Admin senden', 'ok'); }).catch(function(){
+      toast('PIN vergessen — bitte Admin kontaktieren', 'error');
+    });
+  }
+}
+
+// ── SETTINGS SCREEN ───────────────────────────────────────────────────
+function renderSettings() {
+  if (!CU || !DB.members[CU]) return;
+  var u = DB.members[CU];
+  var av = ge('set-avatar'), un = ge('set-username'), rk = ge('set-rank');
+  if (av) av.textContent = getAvatar(u);
+  if (un) un.textContent = u.name || fbDec(CU);
+  if (rk) rk.textContent = (t('ranks')||[])[rankIdx(u)] || '–';
+  // PIN toggle state
+  var tog = ge('pin-toggle'), row = ge('set-change-pin-row');
+  var hasPIN = !!(u.memberPin);
+  if (tog) { if (hasPIN) tog.classList.add('on'); else tog.classList.remove('on'); }
+  if (row) row.style.display = hasPIN ? '' : 'none';
+  // Push toggle
+  var ptog = ge('set-push-toggle');
+  if (ptog) {
+    var perm = typeof Notification !== 'undefined' ? Notification.permission : 'default';
+    if (perm === 'granted') ptog.classList.add('on'); else ptog.classList.remove('on');
+  }
+  // Language card
+  buildSetLangDrop();
+  updateSetLangHeader();
+}
+
+function buildSetLangDrop() {
+  var list = ge('set-lang-list'); if (!list) return;
+  var cur = LANG;
+  var html = '';
+  for (var i = 0; i < WC_ZONES.length; i++) {
+    var z = WC_ZONES[i];
+    var native = LANG_NATIVE[z.lang] || z.lang;
+    var isActive = (z.id === cur || (z.lang === cur && z.id !== 'en-la' && z.id !== 'en-us') ||
+                   (cur === 'en' && z.id === 'en-gb') || (cur === 'en-us' && z.id === 'en-us') || (cur === 'en-la' && z.id === 'en-la'));
+    html += '<div class="lang-drop-item' + (isActive?' active':'') + '" onclick="setLang(\'' + z.lang + '\');closeSetLangDrop()">'
+          + '<span class="lang-drop-flag">' + z.flag + '</span>'
+          + '<span class="lang-drop-name">' + native + '</span>'
+          + '<span class="lang-drop-citytime">' + z.city + '<br>' + _zoneTime(z) + '</span>'
+          + (isActive ? '<span class="lang-drop-check">✓</span>' : '')
+          + '</div>';
+  }
+  list.innerHTML = html;
+}
+function updateSetLangHeader() {
+  var z = _getLangPrimaryZone(LANG) || WC_ZONES[0];
+  var fl = ge('set-lang-flag'), cu = ge('set-lang-cur'), ti = ge('set-lang-time');
+  if (fl) fl.textContent = z.flag;
+  if (cu) cu.textContent = LANG_NATIVE[z.lang] || z.lang;
+  if (ti) ti.textContent = _zoneTime(z);
+}
+function toggleSetLangDrop() {
+  var list = ge('set-lang-list'), chev = ge('set-lang-chevron');
+  if (!list) return;
+  var open = list.style.display !== 'none';
+  if (!open) { buildSetLangDrop(); list.style.display = ''; if (chev) chev.classList.add('open'); }
+  else { list.style.display = 'none'; if (chev) chev.classList.remove('open'); }
+}
+function closeSetLangDrop() {
+  var list = ge('set-lang-list'), chev = ge('set-lang-chevron');
+  if (list) list.style.display = 'none';
+  if (chev) chev.classList.remove('open');
+  updateSetLangHeader();
+}
+
+function toggleSettingsPush() {
+  enablePush();
+  setTimeout(function(){
+    var ptog = ge('set-push-toggle');
+    if (ptog) {
+      var perm = typeof Notification !== 'undefined' ? Notification.permission : 'default';
+      if (perm === 'granted') ptog.classList.add('on'); else ptog.classList.remove('on');
+    }
+  }, 500);
+}
+
+function toggleMemberPin() {
+  if (!CU || !DB.members[CU]) return;
+  var u = DB.members[CU];
+  if (u.memberPin) {
+    // Disable: confirm via current PIN first
+    openChangeMemberPinFlow('disable');
+  } else {
+    // Enable: set new PIN
+    openChangeMemberPinFlow('set');
+  }
+}
+
+var _pinChangeFlow = null;
+function openChangeMemberPin() { openChangeMemberPinFlow('change'); }
+function openChangeMemberPinFlow(mode) {
+  _pinChangeFlow = mode;
+  var cp = ge('cpPad'); if (!cp) return;
+  var title = ge('cp-title'), sub = ge('cp-sub');
+  if (mode === 'disable') {
+    if (title) title.textContent = 'PIN deaktivieren';
+    if (sub) sub.textContent = 'Aktuellen PIN eingeben zum Deaktivieren';
+  } else if (mode === 'set') {
+    if (title) title.textContent = 'PIN festlegen';
+    if (sub) sub.textContent = 'Neuen 4-stelligen PIN wählen';
+  } else {
+    if (title) title.textContent = 'PIN ändern';
+    if (sub) sub.textContent = 'Neuen 4-stelligen PIN wählen';
+  }
+  openCpPad();
+}
+
 // ── LOGIN ──────────────────────────────────────────────────────────────
 function doLogin() {
   var raw = (ge('loginInput').value || '').trim().toLowerCase();
@@ -3238,6 +3607,11 @@ function doLogin() {
   var admins = DB.settings.admins || DEFAULT_ADMINS;
   var isAdmin = admins.indexOf(key) >= 0 || admins.indexOf(raw) >= 0 || (DB.members[key] && DB.members[key].role === 'admin');
   if (isAdmin) { openPinPad(key, raw); return; }
+  // Check member PIN
+  if (DB.members[key] && DB.members[key].memberPin) {
+    openMemPinPad(key, raw);
+    return;
+  }
   completeLogin(key, raw);
 }
 
@@ -4438,6 +4812,49 @@ function cleanInactive() {
 }
 
 // ── TEMPLATE ──────────────────────────────────────────────────────────────────
+// ── TEMPLATE LIBRARY ─────────────────────────────────────────────────
+var TPL_LIBRARY = [
+  '✨ support by {member} aus Gruppe {gruppe} fuer @{name} ✨',
+  '💫 {member} aus Gruppe {gruppe} supportet @{name} 💫',
+  '🔥 Support von {member} | Gruppe {gruppe} | @{name} 🔥',
+  '❤️ {member} (Gruppe {gruppe}) unterstützt @{name} ❤️',
+  '⭐ Von {member} • Gruppe {gruppe} • für @{name} ⭐',
+  '🚀 Support by {member} · Gruppe {gruppe} · @{name} 🚀',
+  '🎯 {member} supportet @{name} | Gruppe {gruppe} 🎯',
+  '💎 Unterstützung von {member} aus Gruppe {gruppe} für @{name} 💎',
+  '🌟 {member} | Gruppe {gruppe} | Support für @{name} 🌟',
+  '🎵 Support by {member} (Gruppe {gruppe}) für @{name} 🎵',
+  '📹 {member} aus Gruppe {gruppe} unterstützt @{name} 📹',
+  '🏆 Support von {member} | Gruppe {gruppe} | @{name} 🏆',
+  '💪 {member} Gruppe {gruppe} supportet @{name} 💪',
+  '✅ Support: {member} · Gruppe {gruppe} · @{name} ✅',
+  '🎉 {member} (Gruppe {gruppe}) für @{name} – gegenseitig stark! 🎉',
+  '👑 {member} | Gruppe {gruppe} | supportet @{name} 👑',
+  '💬 Support by {member} aus Gruppe {gruppe} – @{name} 💬',
+  '🌈 {member} Gruppe {gruppe} – ich suppporte @{name} 🌈',
+  '🔔 {member} (Gruppe {gruppe}) hat @{name} supportet 🔔',
+  '💥 {member} aus Gruppe {gruppe} unterstützt @{name} – Nova Support Pool 💥'
+];
+function openTplLibrary() {
+  var grid = ge('tpl-lib-grid'); if (!grid) return;
+  var cur = DB.settings.tpl || DEFAULT_TPL;
+  var html = '';
+  for (var i = 0; i < TPL_LIBRARY.length; i++) {
+    var isCur = (TPL_LIBRARY[i] === cur);
+    html += '<div class="tpl-lib-item' + (isCur?' selected':'') + '" onclick="pickTplLib(' + i + ')">'
+          + '<div class="tpl-lib-num">Vorlage ' + (i+1) + (isCur ? ' ✓ Aktiv' : '') + '</div>'
+          + esc(TPL_LIBRARY[i]) + '</div>';
+  }
+  grid.innerHTML = html;
+  openModal('tplLibModal');
+}
+function pickTplLib(i) {
+  DB.settings.tpl = TPL_LIBRARY[i];
+  save();
+  toast('✅ Vorlage ' + (i+1) + ' aktiviert', 'ok');
+  closeModal('tplLibModal');
+}
+
 function openTplModal() { ge('tplInput').value = DB.settings.tpl||DEFAULT_TPL; updateTplPrev(); openModal('tplModal'); }
 function insTpl(ph) {
   var el = ge('tplInput'), s = el.selectionStart, e2 = el.selectionEnd;
@@ -4528,7 +4945,8 @@ document.addEventListener('keydown', function(e) {
 });
 
 // Change PIN
-function openCpPad(){CP_BUF='';CP_STEP='new';CP_FIRST='';st('cp-err','');st('cp-title','Neuen PIN festlegen');st('cp-sub','Neuen PIN eingeben');updateCpDots();ge('cpPad').classList.add('active');}
+function openCpPad(){CP_BUF='';CP_STEP='new';CP_FIRST='';st('cp-err','');if(!_pinChangeFlow){st('cp-title','Neuen PIN festlegen');st('cp-sub','Neuen PIN eingeben');}updateCpDots();ge('cpPad').classList.add('active');}
+function _openAdminCpPad(){_pinChangeFlow=null;openCpPad();}
 function closeCpPad(){ge('cpPad').classList.remove('active');}
 function updateCpDots(){for(var i=0;i<4;i++){var d=ge('cpd'+i);if(d)d.classList.toggle('filled',i<CP_BUF.length);}}
 function cpKey(v) {
@@ -4540,6 +4958,29 @@ function cpKey(v) {
 }
 function cpConfirm() {
   if (CP_BUF.length<4){st('cp-err','4 Ziffern');return;}
+  // Member PIN flows
+  if (_pinChangeFlow === 'disable') {
+    var u = CU && DB.members[CU];
+    if (!u) { closeCpPad(); return; }
+    if (hp(CP_BUF) === u.memberPin) {
+      delete u.memberPin;
+      save(); closeCpPad(); _pinChangeFlow = null;
+      toast('🔓 PIN-Schutz deaktiviert', 'ok'); renderSettings();
+    } else { CP_BUF=''; updateCpDots(); st('cp-err','❌ Falscher PIN'); }
+    return;
+  }
+  if (_pinChangeFlow === 'set' || _pinChangeFlow === 'change') {
+    if (CP_STEP==='new'){CP_FIRST=CP_BUF;CP_BUF='';CP_STEP='confirm';updateCpDots();st('cp-title','PIN bestätigen');st('cp-sub','Nochmals eingeben');}
+    else {
+      if (CP_BUF===CP_FIRST){
+        if (CU && DB.members[CU]) { DB.members[CU].memberPin = hp(CP_BUF); save(); }
+        closeCpPad(); _pinChangeFlow = null;
+        toast('✅ PIN gesetzt', 'ok'); renderSettings();
+      } else {CP_BUF='';CP_FIRST='';CP_STEP='new';updateCpDots();st('cp-err','❌ Nicht übereinstimmend');}
+    }
+    return;
+  }
+  // Admin PIN flow (default)
   if (CP_STEP==='new'){CP_FIRST=CP_BUF;CP_BUF='';CP_STEP='confirm';updateCpDots();st('cp-title','PIN bestätigen');st('cp-sub','Nochmals eingeben');}
   else {
     if (CP_BUF===CP_FIRST){setPin(hp(CP_BUF));closeCpPad();toast('✅ PIN geändert','success');}
