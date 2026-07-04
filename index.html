@@ -944,23 +944,8 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
 <!-- Privacy Policy Modal -->
 <div class="modal-bg" id="privacyModal">
   <div class="modal-box">
-    <div class="modal-title">🔒 Datenschutz</div>
-    <div class="privacy-box">
-      <h3>1. Verantwortlicher</h3>
-      <p>NOVA Support Pool ist ein geschlossenes, mitgliedergesteuertes Netzwerk. Betreiber ist der Administrator des jeweiligen Support Pools.</p>
-      <h3>2. Welche Daten werden gespeichert?</h3>
-      <p>Es werden ausschließlich folgende Daten gespeichert: TikTok-Benutzername, Beitrittsdatum, Support-Statistiken (gegeben / erhalten), gepostete Video-URLs sowie Nachrichten zwischen Mitgliedern.</p>
-      <h3>3. Wo werden Daten gespeichert?</h3>
-      <p>Alle Daten werden in Firebase Realtime Database (Google) gespeichert. Es erfolgt keine Weitergabe an Dritte. Firebase unterliegt der EU-DSGVO durch den Google Cloud DPA.</p>
-      <h3>4. Cookies & lokaler Speicher</h3>
-      <p>Die App speichert Spracheinstellung und PIN-Hash im localStorage deines Browsers. Es werden keine Tracking-Cookies verwendet.</p>
-      <h3>5. Deine Rechte</h3>
-      <p>Du hast das Recht auf Auskunft, Berichtigung und Löschung deiner Daten. Wende dich dafür an den Administrator über die Kontaktfunktion in der App.</p>
-      <h3>6. Push-Benachrichtigungen</h3>
-      <p>Push-Benachrichtigungen werden nur aktiviert, wenn du es selbst bestätigst. Sie können jederzeit in den Browser-Einstellungen deaktiviert werden.</p>
-      <h3>7. Haftungsausschluss</h3>
-      <p>Die App übernimmt keine Haftung für Inhalte externer Links (TikTok-Videos). Für TikTok gelten die Datenschutzrichtlinien von TikTok Inc.</p>
-    </div>
+    <div class="modal-title" id="priv-modal-title">🔒 Datenschutz</div>
+    <div class="privacy-box" id="priv-modal-body"></div>
     <div class="modal-footer" style="margin-top:14px">
       <button class="btn-ghost btn-sm" id="t-privacy-close" onclick="closeModal('privacyModal')">Schließen</button>
     </div>
@@ -1443,7 +1428,7 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
             <div class="settings-row-left">
               <div class="settings-row-label" id="set-privacy-label">🔒 Datenschutz</div>
             </div>
-            <button class="btn-ghost btn-sm" id="set-privacy-btn" onclick="openModal('privacyModal')">Anzeigen</button>
+            <button class="btn-ghost btn-sm" id="set-privacy-btn" onclick="openPrivacyModal()">Anzeigen</button>
           </div>
           <div class="settings-row" style="border-bottom:none">
             <div class="settings-row-left">
@@ -3664,6 +3649,112 @@ function closeSetLangDrop() {
 }
 
 function showHomescreenModal() { openModal('homescreenModal'); }
+
+var PRIVACY_CONTENT = {
+  de:{title:'🔒 Datenschutz',s:[
+    ['1. Verantwortlicher','NOVA Support Pool ist ein geschlossenes, mitgliedergesteuertes Netzwerk. Betreiber ist der Administrator des jeweiligen Support Pools.'],
+    ['2. Welche Daten werden gespeichert?','Es werden ausschließlich folgende Daten gespeichert: TikTok-Benutzername, Beitrittsdatum, Support-Statistiken (gegeben / erhalten), gepostete Video-URLs sowie Nachrichten zwischen Mitgliedern.'],
+    ['3. Wo werden Daten gespeichert?','Alle Daten werden in Firebase Realtime Database (Google) gespeichert. Es erfolgt keine Weitergabe an Dritte. Firebase unterliegt der EU-DSGVO durch den Google Cloud DPA.'],
+    ['4. Cookies & lokaler Speicher','Die App speichert Spracheinstellung und PIN-Hash im localStorage deines Browsers. Es werden keine Tracking-Cookies verwendet.'],
+    ['5. Deine Rechte','Du hast das Recht auf Auskunft, Berichtigung und Löschung deiner Daten. Wende dich an den Administrator über die Kontaktfunktion in der App.'],
+    ['6. Push-Benachrichtigungen','Push-Benachrichtigungen werden nur aktiviert, wenn du es selbst bestätigst. Sie können jederzeit in den Browser-Einstellungen deaktiviert werden.'],
+    ['7. Haftungsausschluss','Die App übernimmt keine Haftung für Inhalte externer Links (TikTok-Videos). Für TikTok gelten die Datenschutzrichtlinien von TikTok Inc.']
+  ]},
+  en:{title:'🔒 Privacy Policy',s:[
+    ['1. Controller','NOVA Support Pool is a closed, member-operated network. The operator is the administrator of the respective Support Pool.'],
+    ['2. Data Stored','Only the following data is stored: TikTok username, join date, support statistics (given / received), posted video URLs, and messages between members.'],
+    ['3. Where Data is Stored','All data is stored in Firebase Realtime Database (Google). No data is shared with third parties. Firebase complies with EU GDPR through the Google Cloud DPA.'],
+    ['4. Cookies & Local Storage','The app saves language settings and PIN hash in your browser\'s localStorage. No tracking cookies are used.'],
+    ['5. Your Rights','You have the right to access, correct, and delete your data. Contact the administrator via the contact function in the app.'],
+    ['6. Push Notifications','Push notifications are only enabled if you confirm them. They can be disabled at any time in your browser settings.'],
+    ['7. Disclaimer','The app is not liable for content of external links (TikTok videos). TikTok Inc.\'s privacy policy applies to TikTok.']
+  ]},
+  it:{title:'🔒 Privacy',s:[
+    ['1. Responsabile','NOVA Support Pool è una rete chiusa e gestita dai membri. Il responsabile è l\'amministratore del rispettivo Support Pool.'],
+    ['2. Dati conservati','Vengono conservati solo i seguenti dati: nome utente TikTok, data di iscrizione, statistiche di supporto (dati/ricevuti), URL video pubblicati e messaggi tra i membri.'],
+    ['3. Dove sono conservati','Tutti i dati sono archiviati in Firebase Realtime Database (Google). Nessun dato viene condiviso con terzi. Firebase è conforme al GDPR UE tramite il Google Cloud DPA.'],
+    ['4. Cookie e memoria locale','L\'app salva le impostazioni della lingua e l\'hash del PIN nel localStorage del browser. Non vengono utilizzati cookie di tracciamento.'],
+    ['5. I tuoi diritti','Hai il diritto di accedere, correggere ed eliminare i tuoi dati. Contatta l\'amministratore tramite la funzione di contatto nell\'app.'],
+    ['6. Notifiche push','Le notifiche push vengono attivate solo se le confermi. Possono essere disattivate nelle impostazioni del browser.'],
+    ['7. Esclusione di responsabilità','L\'app non è responsabile per il contenuto di link esterni (video TikTok). Si applica l\'informativa sulla privacy di TikTok Inc.']
+  ]},
+  es:{title:'🔒 Privacidad',s:[
+    ['1. Responsable','NOVA Support Pool es una red cerrada y gestionada por miembros. El responsable es el administrador del Support Pool correspondiente.'],
+    ['2. Datos almacenados','Solo se almacenan los siguientes datos: nombre de usuario de TikTok, fecha de ingreso, estadísticas de apoyo (dados/recibidos), URLs de videos publicados y mensajes entre miembros.'],
+    ['3. Dónde se almacenan','Todos los datos se almacenan en Firebase Realtime Database (Google). No se comparten datos con terceros. Firebase cumple con el RGPD de la UE a través del Google Cloud DPA.'],
+    ['4. Cookies y almacenamiento local','La app guarda la configuración de idioma y el hash del PIN en el localStorage del navegador. No se utilizan cookies de rastreo.'],
+    ['5. Tus derechos','Tienes derecho a acceder, corregir y eliminar tus datos. Contacta al administrador a través de la función de contacto en la app.'],
+    ['6. Notificaciones push','Las notificaciones push solo se activan si las confirmas. Pueden desactivarse en cualquier momento en la configuración del navegador.'],
+    ['7. Aviso legal','La app no se responsabiliza del contenido de enlaces externos (videos de TikTok). Se aplica la política de privacidad de TikTok Inc.']
+  ]},
+  id:{title:'🔒 Privasi',s:[
+    ['1. Pengelola','NOVA Support Pool adalah jaringan tertutup yang dikelola anggota. Pengelola adalah administrator Support Pool masing-masing.'],
+    ['2. Data yang disimpan','Hanya data berikut yang disimpan: nama pengguna TikTok, tanggal bergabung, statistik dukungan (diberikan/diterima), URL video yang diposting, dan pesan antar anggota.'],
+    ['3. Penyimpanan data','Semua data disimpan di Firebase Realtime Database (Google). Tidak ada data yang dibagikan ke pihak ketiga. Firebase mematuhi GDPR UE melalui Google Cloud DPA.'],
+    ['4. Cookie & penyimpanan lokal','Aplikasi menyimpan pengaturan bahasa dan hash PIN di localStorage browser. Tidak ada cookie pelacakan yang digunakan.'],
+    ['5. Hak kamu','Kamu berhak mengakses, mengoreksi, dan menghapus datamu. Hubungi administrator melalui fungsi kontak di aplikasi.'],
+    ['6. Notifikasi push','Notifikasi push hanya diaktifkan jika kamu mengonfirmasinya. Dapat dinonaktifkan kapan saja di pengaturan browser.'],
+    ['7. Penafian','Aplikasi tidak bertanggung jawab atas konten tautan eksternal (video TikTok). Kebijakan privasi TikTok Inc. berlaku untuk TikTok.']
+  ]},
+  tr:{title:'🔒 Gizlilik',s:[
+    ['1. Sorumlu','NOVA Support Pool, kapalı ve üye tarafından yönetilen bir ağdır. Sorumlu kişi, ilgili Support Pool\'un yöneticisidir.'],
+    ['2. Saklanan veriler','Yalnızca şu veriler saklanır: TikTok kullanıcı adı, katılım tarihi, destek istatistikleri (verilen/alınan), yayınlanan video URL\'leri ve üyeler arasındaki mesajlar.'],
+    ['3. Veriler nerede saklanır','Tüm veriler Firebase Realtime Database\'de (Google) saklanır. Üçüncü taraflarla veri paylaşılmaz. Firebase, Google Cloud DPA aracılığıyla AB GDPR\'ye uygundur.'],
+    ['4. Çerezler & yerel depolama','Uygulama, dil ayarlarını ve PIN hash\'ini tarayıcınızın localStorage\'ında saklar. İzleme çerezi kullanılmaz.'],
+    ['5. Haklarınız','Verilerinize erişme, düzeltme ve silme hakkına sahipsiniz. Uygulamadaki iletişim işlevi aracılığıyla yöneticiyle iletişime geçin.'],
+    ['6. Push bildirimleri','Push bildirimleri yalnızca onaylamanız durumunda etkinleştirilir. Tarayıcı ayarlarından istediğiniz zaman devre dışı bırakılabilir.'],
+    ['7. Sorumluluk reddi','Uygulama, harici bağlantıların (TikTok videoları) içeriğinden sorumlu değildir. TikTok için TikTok Inc. gizlilik politikası geçerlidir.']
+  ]},
+  ar:{title:'🔒 الخصوصية',s:[
+    ['1. المسؤول','NOVA Support Pool شبكة مغلقة يديرها الأعضاء. المشغل هو مدير المجموعة المعنية.'],
+    ['2. البيانات المحفوظة','يتم حفظ البيانات التالية فقط: اسم مستخدم TikTok، تاريخ الانضمام، إحصائيات الدعم (المُعطى/المُستلم)، روابط الفيديوهات المنشورة والرسائل بين الأعضاء.'],
+    ['3. مكان تخزين البيانات','تُخزَّن جميع البيانات في Firebase Realtime Database (Google). لا تتم مشاركة البيانات مع أطراف ثالثة.'],
+    ['4. ملفات تعريف الارتباط والتخزين المحلي','يحفظ التطبيق إعدادات اللغة وهاش PIN في localStorage المتصفح. لا تُستخدم ملفات تعريف الارتباط للتتبع.'],
+    ['5. حقوقك','لديك الحق في الوصول إلى بياناتك وتصحيحها وحذفها. تواصل مع المسؤول عبر وظيفة الاتصال في التطبيق.'],
+    ['6. الإشعارات الفورية','تُفعَّل الإشعارات الفورية فقط عند تأكيدك. يمكن تعطيلها في أي وقت من إعدادات المتصفح.'],
+    ['7. إخلاء المسؤولية','لا يتحمل التطبيق المسؤولية عن محتوى الروابط الخارجية (فيديوهات TikTok). تسري سياسة خصوصية TikTok Inc.']
+  ]},
+  zh:{title:'🔒 隐私政策',s:[
+    ['1. 负责方','NOVA Support Pool是一个封闭的会员自治网络。运营者为相应Support Pool的管理员。'],
+    ['2. 存储的数据','仅存储以下数据：TikTok用户名、加入日期、支持统计（已给/已收）、发布的视频链接以及成员间的消息。'],
+    ['3. 数据存储位置','所有数据存储在Firebase实时数据库（Google）中。数据不与第三方共享。Firebase通过Google Cloud DPA符合欧盟GDPR。'],
+    ['4. Cookie与本地存储','应用在浏览器localStorage中保存语言设置和PIN哈希值。不使用跟踪Cookie。'],
+    ['5. 您的权利','您有权访问、更正和删除您的数据。请通过应用内的联系功能联系管理员。'],
+    ['6. 推送通知','推送通知仅在您确认后才会启用。可随时在浏览器设置中禁用。'],
+    ['7. 免责声明','应用不对外部链接（TikTok视频）内容承担责任。TikTok适用TikTok Inc.隐私政策。']
+  ]},
+  ja:{title:'🔒 プライバシーポリシー',s:[
+    ['1. 運営者','NOVA Support Poolは閉鎖的なメンバー自治ネットワークです。運営者は各Support Poolの管理者です。'],
+    ['2. 保存されるデータ','保存されるデータは以下のみです：TikTokユーザー名、参加日、サポート統計（提供/受取）、投稿動画URL、メンバー間のメッセージ。'],
+    ['3. データの保存場所','すべてのデータはFirebase Realtime Database（Google）に保存されます。第三者へのデータ提供はありません。FirebaseはGoogle Cloud DPAを通じてEU GDPRに準拠しています。'],
+    ['4. CookieとローカルStorage','アプリは言語設定とPINハッシュをブラウザのlocalStorageに保存します。トラッキングCookieは使用しません。'],
+    ['5. あなたの権利','データへのアクセス、修正、削除の権利があります。アプリ内のお問い合わせ機能から管理者に連絡してください。'],
+    ['6. プッシュ通知','プッシュ通知はお客様が確認した場合にのみ有効になります。ブラウザ設定でいつでも無効にできます。'],
+    ['7. 免責事項','アプリは外部リンク（TikTok動画）のコンテンツについて責任を負いません。TikTokにはTikTok Inc.のプライバシーポリシーが適用されます。']
+  ]},
+  pl:{title:'🔒 Prywatność',s:[
+    ['1. Administrator','NOVA Support Pool to zamknięta sieć zarządzana przez członków. Operatorem jest administrator danego Support Pool.'],
+    ['2. Przechowywane dane','Przechowywane są wyłącznie następujące dane: nazwa użytkownika TikTok, data dołączenia, statystyki wsparcia (udzielone/otrzymane), opublikowane URL filmów oraz wiadomości między członkami.'],
+    ['3. Miejsce przechowywania danych','Wszystkie dane są przechowywane w Firebase Realtime Database (Google). Dane nie są udostępniane stronom trzecim. Firebase jest zgodny z RODO UE przez Google Cloud DPA.'],
+    ['4. Pliki cookie i pamięć lokalna','Aplikacja zapisuje ustawienia języka i hash PIN w localStorage przeglądarki. Nie używamy plików cookie śledzenia.'],
+    ['5. Twoje prawa','Masz prawo do dostępu, poprawienia i usunięcia swoich danych. Skontaktuj się z administratorem za pomocą funkcji kontaktowej w aplikacji.'],
+    ['6. Powiadomienia push','Powiadomienia push są włączane tylko po Twoim potwierdzeniu. Można je wyłączyć w ustawieniach przeglądarki.'],
+    ['7. Zastrzeżenie','Aplikacja nie ponosi odpowiedzialności za treść zewnętrznych linków (filmy TikTok). Do TikTok stosuje się polityka prywatności TikTok Inc.']
+  ]}
+};
+function openPrivacyModal() {
+  var p = PRIVACY_CONTENT[LANG] || PRIVACY_CONTENT.en;
+  var title = ge('priv-modal-title'), body = ge('priv-modal-body');
+  if (title) title.textContent = p.title;
+  if (body) {
+    var html = '';
+    for (var i = 0; i < p.s.length; i++) {
+      html += '<h3>' + esc(p.s[i][0]) + '</h3><p>' + esc(p.s[i][1]) + '</p>';
+    }
+    body.innerHTML = html;
+  }
+  openModal('privacyModal');
+}
 
 function toggleSettingsPush() {
   enablePush();
