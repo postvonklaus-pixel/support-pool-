@@ -118,6 +118,8 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
 .lang-card-chevron.open{transform:rotate(180deg);color:var(--v)}
 .lang-drop-list{background:var(--bg);border-top:1px solid var(--bdr);border-radius:0 0 16px 16px;overflow:hidden;animation:dropIn .18s ease}
 @keyframes dropIn{from{opacity:0}to{opacity:1}}
+.adm-mem-row:hover{border-color:rgba(232,184,75,0.4)!important}
+@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 .lang-drop-item{display:flex;align-items:center;gap:12px;padding:12px 16px;cursor:pointer;border-bottom:1px solid var(--bdr);transition:background .12s}
 .lang-drop-item:last-child{border-bottom:none;border-radius:0 0 16px 16px}
 .lang-drop-item:hover,.lang-drop-item:active{background:rgba(212,134,10,.06)}
@@ -826,6 +828,13 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
   </div>
 </div>
 
+<!-- Admin Back Bar: shown when admin views a member without PIN -->
+<div id="admin-back-bar" style="display:none;position:fixed;top:0;left:0;right:0;z-index:860;background:rgba(212,134,10,0.95);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);padding:10px 16px;align-items:center;gap:10px;box-shadow:0 2px 14px rgba(212,134,10,.4)">
+  <button onclick="adminBackFromMember()" style="display:flex;align-items:center;gap:5px;background:rgba(0,0,0,.25);color:#fff;border:none;border-radius:20px;padding:5px 14px;font-size:13px;font-weight:800;cursor:pointer;white-space:nowrap">← <span id="t-admin-back">Admin</span></button>
+  <div style="flex:1;font-size:12px;color:rgba(255,255,255,.85);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" id="admin-back-name"></div>
+  <div style="font-size:11px;color:rgba(255,255,255,.6);white-space:nowrap" id="t-admin-viewing">👁 Mitglied-Ansicht</div>
+</div>
+
 <!-- PIN Pad -->
 <div class="pin-overlay" id="pinPad">
   <div class="pin-box">
@@ -959,31 +968,45 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
 <!-- Homescreen Modal -->
 <div class="modal-bg" id="homescreenModal">
   <div class="modal-box">
-    <div class="modal-title">📱 Zum Homescreen</div>
-    <div style="margin-bottom:14px">
-      <div style="background:rgba(0,122,255,.07);border-radius:14px;padding:14px;margin-bottom:10px;border:1.5px solid rgba(0,122,255,.15)">
-        <div style="font-size:12px;font-weight:800;color:var(--blue);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px">🍎 iPhone / iPad (Safari)</div>
-        <div style="font-size:12px;color:var(--text);line-height:1.7">
-          1. Seite in <strong>Safari</strong> öffnen<br>
-          2. Teilen-Symbol <strong>□↑</strong> antippen<br>
-          3. → <strong>„Zum Home-Bildschirm"</strong><br>
-          4. → <strong>„Hinzufügen"</strong> bestätigen
-        </div>
-      </div>
-      <div style="background:rgba(52,199,89,.07);border-radius:14px;padding:14px;border:1.5px solid rgba(52,199,89,.2)">
-        <div style="font-size:12px;font-weight:800;color:var(--green);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px">🤖 Android (Chrome)</div>
-        <div style="font-size:12px;color:var(--text);line-height:1.7">
-          1. Seite in <strong>Chrome</strong> öffnen<br>
-          2. Menü <strong>⋮</strong> antippen<br>
-          3. → <strong>„App installieren"</strong> oder<br>
-          &nbsp;&nbsp;&nbsp;„<strong>Zum Startbildschirm</strong>"<br>
-          4. → <strong>„Hinzufügen"</strong> bestätigen
-        </div>
-      </div>
-    </div>
+    <div class="modal-title" id="hs-modal-title">📱 Zum Homescreen</div>
+    <div id="hs-modal-body" style="margin-bottom:14px"></div>
     <div class="modal-footer">
       <button class="btn-ghost btn-sm" id="t-hs-close" onclick="closeModal('homescreenModal')">Schließen</button>
     </div>
+  </div>
+</div>
+
+<!-- PIN Forgot Modal -->
+<div class="modal-bg" id="pinForgotModal">
+  <div class="modal-box">
+    <div class="modal-title" id="pin-forgot-modal-title">🔑 PIN vergessen</div>
+    <div style="margin-bottom:14px">
+      <div style="font-size:12px;color:var(--t2);margin-bottom:10px;line-height:1.5" id="pin-forgot-modal-info">Die Nachricht wird gesichert. Dein PIN wird automatisch zurückgesetzt.</div>
+      <div id="pin-forgot-msg-preview" style="background:rgba(212,134,10,.07);border:1.5px solid rgba(212,134,10,.22);border-radius:14px;padding:14px;font-size:13px;color:var(--text);line-height:1.65;word-break:break-word"></div>
+    </div>
+    <div class="modal-footer" style="gap:8px;flex-wrap:wrap">
+      <button class="btn-ghost btn-sm" onclick="closeModal('pinForgotModal')" id="pin-forgot-cancel">Abbrechen</button>
+      <button class="btn-prime" style="flex:1;font-size:13px" onclick="doAutoResetPin()" id="pin-forgot-send">📤 Absenden &amp; PIN zurücksetzen</button>
+    </div>
+  </div>
+</div>
+
+<!-- PIN Reset Wait Modal -->
+<div class="modal-bg" id="pinResetWaitModal">
+  <div class="modal-box" style="text-align:center;padding:28px 24px">
+    <div style="font-size:44px;margin-bottom:14px;animation:spin 1.5s linear infinite;display:inline-block">⏳</div>
+    <div class="modal-title" id="pin-reset-wait-title" style="margin-bottom:8px">Bitte warte…</div>
+    <div style="font-size:14px;color:var(--t2);line-height:1.5" id="pin-reset-wait-body">Ich setze deinen PIN zurück. Bleib am Gerät.</div>
+  </div>
+</div>
+
+<!-- PIN Reset Done Modal -->
+<div class="modal-bg" id="pinResetDoneModal">
+  <div class="modal-box" style="text-align:center;padding:28px 24px">
+    <div style="font-size:44px;margin-bottom:14px">✅</div>
+    <div class="modal-title" id="pin-reset-done-title" style="margin-bottom:8px">PIN zurückgesetzt!</div>
+    <div style="font-size:14px;color:var(--t2);margin-bottom:20px;line-height:1.5" id="pin-reset-done-body">Du kannst dich jetzt ohne PIN einloggen.</div>
+    <button class="btn-prime" style="width:100%" onclick="goPinResetLogin()" id="pin-reset-login-btn">Zum Login →</button>
   </div>
 </div>
 
@@ -2121,6 +2144,10 @@ de: {
   setPrivacy:'🔒 Datenschutz',show:'Anzeigen',
   step1:'Sprache wählen',step2:'Username eingeben',acPost:'Video posten',acSup:'Videos supporten',supBtnShort:'Supporten',
   welcome:'✨ Willkommen, ',welcomeNew:'🎉 Willkommen im Support Pool!',tourNextBtn:'Verstanden ✓',pushTitle:'Push-Benachrichtigungen',pushDesc:'Erhalte eine Meldung, wenn jemand dein Video supportet',pushActivate:'Aktivieren',pushActiveMsg:'Push-Benachrichtigungen aktiv',pushBlockedTitle:'Benachrichtigungen blockiert',pushBlockedSub:'In Browser-Einstellungen aktivieren',toAdminLabel:'📩 An Admin schreiben',toMemberLabel:'🔍 Mitglied suchen',msgPlaceholderAdmin:'Nachricht an Admin...',msgPlaceholderMem:'Nachricht an @{name}...',cancel:'Abbrechen',postSubmit:'Posten',dmChange:'Ändern',
+  hsTitle:'📱 Zum Homescreen',hsIosTitle:'iPhone / iPad (Safari)',hsIosSteps:['Seite in <strong>Safari</strong> öffnen','Teilen-Symbol <strong>□↑</strong> antippen','→ <strong>„Zum Home-Bildschirm“</strong>','→ <strong>„Hinzufügen“</strong> bestätigen'],hsAndTitle:'Android (Chrome)',hsAndSteps:['Seite in <strong>Chrome</strong> öffnen','Menü <strong>⋮</strong> antippen','→ <strong>„App installieren“</strong> oder <strong>„Zum Startbildschirm“</strong>','→ <strong>„Hinzufügen“</strong> bestätigen'],
+  pinForgotTitle:'🔑 PIN vergessen',pinForgotInfo:'Die Nachricht wird gesichert. Dein PIN wird automatisch zurückgesetzt.',pinForgotSend:'📤 Absenden & PIN zurücksetzen',pinForgotMsg:'Hallo Admin, ich habe meinen PIN vergessen. Bitte setze ihn für {who} zurück. Danke!',pinEnter:'4-stelligen PIN eingeben',pinForgot:'PIN vergessen?',
+  pinResetWaitTitle:'Bitte warte…',pinResetWaitBody:'Ich setze deinen PIN zurück. Bleib am Gerät.',pinResetDoneTitle:'PIN zurückgesetzt!',pinResetDoneBody:'Du kannst dich jetzt ohne PIN einloggen. In den Einstellungen kannst du danach einen neuen PIN setzen.',pinResetLoginBtn:'Zum Login →',
+  admBack:'Admin',admViewing:'👁 Mitglied-Ansicht',
   tourSteps:[
     {icon:'👋',title:'Willkommen!',body:'Lass uns die App gemeinsam entdecken. Jeder Schritt erklärt dir, was du wo findest.'},
     {icon:'🏠',title:'Home – Dein Guthaben',body:'Hier siehst du dein Support-Guthaben. Gibst du Supports, steigt dein Guthaben – nur mit positivem Guthaben kannst du neue Videos posten.'},
@@ -2217,6 +2244,10 @@ en: {
   setPrivacy:'🔒 Privacy Policy',show:'View',
   step1:'Choose language',step2:'Enter username',acPost:'Post Video',acSup:'Support Videos',supBtnShort:'Support',
   welcome:'✨ Welcome, ',welcomeNew:'🎉 Welcome to Support Pool!',tourNextBtn:'Got it ✓',pushTitle:'Push Notifications',pushDesc:'Get notified when someone supports your video',pushActivate:'Enable',pushActiveMsg:'Push notifications active',pushBlockedTitle:'Notifications blocked',pushBlockedSub:'Enable in browser settings',toAdminLabel:'📩 Write to Admin',toMemberLabel:'🔍 Find Member',msgPlaceholderAdmin:'Message to Admin...',msgPlaceholderMem:'Message to @{name}...',cancel:'Cancel',postSubmit:'Post',dmChange:'Change',
+  hsTitle:'📱 Add to Home Screen',hsIosTitle:'iPhone / iPad (Safari)',hsIosSteps:['Open page in <strong>Safari</strong>','Tap the Share button <strong>□↑</strong>','→ <strong>"Add to Home Screen"</strong>','→ Confirm <strong>"Add"</strong>'],hsAndTitle:'Android (Chrome)',hsAndSteps:['Open page in <strong>Chrome</strong>','Tap menu <strong>⋮</strong>','→ <strong>"Install App"</strong> or <strong>"Add to Home Screen"</strong>','→ Confirm <strong>"Add"</strong>'],
+  pinForgotTitle:'🔑 Forgot PIN',pinForgotInfo:'The message will be saved. Your PIN will be reset automatically.',pinForgotSend:'📤 Send & Reset PIN',pinForgotMsg:'Hello Admin, I forgot my PIN. Please reset it for {who}. Thank you!',pinEnter:'Enter 4-digit PIN',pinForgot:'Forgot PIN?',
+  pinResetWaitTitle:'Please wait…',pinResetWaitBody:'I am resetting your PIN. Stay on this page.',pinResetDoneTitle:'PIN Reset!',pinResetDoneBody:'You can now log in without a PIN. You can set a new PIN in Settings afterwards.',pinResetLoginBtn:'Go to Login →',
+  admBack:'Admin',admViewing:'👁 Member View',
   tourSteps:[
     {icon:'👋',title:'Welcome!',body:'Let us explore the app together. Each step explains what you find where.'},
     {icon:'🏠',title:'Home – Your Balance',body:'Here you see your support balance. Give supports to increase it.'},
@@ -2313,6 +2344,10 @@ id: {
   setPrivacy:'🔒 Privasi',show:'Lihat',
   step1:'Pilih bahasa',step2:'Masukkan username',acPost:'Posting Video',acSup:'Dukung Video',supBtnShort:'Dukung',
   welcome:'✨ Selamat datang, ',welcomeNew:'🎉 Selamat datang di Support Pool!',tourNextBtn:'Mengerti ✓',pushTitle:'Notifikasi Push',pushDesc:'Dapatkan pemberitahuan saat seseorang mendukung video Anda',pushActivate:'Aktifkan',pushActiveMsg:'Notifikasi push aktif',pushBlockedTitle:'Notifikasi diblokir',pushBlockedSub:'Aktifkan di pengaturan browser',toAdminLabel:'📩 Tulis ke Admin',toMemberLabel:'🔍 Cari Anggota',msgPlaceholderAdmin:'Pesan ke Admin...',msgPlaceholderMem:'Pesan ke @{name}...',cancel:'Batal',postSubmit:'Posting',dmChange:'Ganti',
+  hsTitle:'📱 Tambah ke Layar Utama',hsIosTitle:'iPhone / iPad (Safari)',hsIosSteps:['Buka halaman di <strong>Safari</strong>','Ketuk tombol Bagikan <strong>□↑</strong>','→ <strong>"Tambahkan ke Layar Utama"</strong>','→ Konfirmasi <strong>"Tambah"</strong>'],hsAndTitle:'Android (Chrome)',hsAndSteps:['Buka halaman di <strong>Chrome</strong>','Ketuk menu <strong>⋮</strong>','→ <strong>"Instal Aplikasi"</strong> atau <strong>"Tambah ke Layar Utama"</strong>','→ Konfirmasi <strong>"Tambah"</strong>'],
+  pinForgotTitle:'🔑 Lupa PIN',pinForgotInfo:'Pesan akan disimpan. PIN kamu akan direset secara otomatis.',pinForgotSend:'📤 Kirim & Reset PIN',pinForgotMsg:'Halo Admin, saya lupa PIN saya. Tolong reset untuk {who}. Terima kasih!',pinEnter:'Masukkan PIN 4 digit',pinForgot:'Lupa PIN?',
+  pinResetWaitTitle:'Harap tunggu…',pinResetWaitBody:'Saya sedang mereset PIN kamu. Tetap di halaman ini.',pinResetDoneTitle:'PIN Direset!',pinResetDoneBody:'Kamu sekarang bisa login tanpa PIN. Kamu bisa mengatur PIN baru di Pengaturan.',pinResetLoginBtn:'Ke Login →',
+  admBack:'Admin',admViewing:'👁 Tampilan Anggota',
   tourSteps:[
     {icon:'👋',title:'Selamat datang!',body:'Mari jelajahi aplikasi bersama. Setiap langkah menjelaskan apa yang ada di mana.'},
     {icon:'🏠',title:'Beranda – Saldo',body:'Di sini kamu melihat saldo dukungan. Beri dukungan untuk meningkatkannya.'},
@@ -2409,6 +2444,10 @@ it: {
   setPrivacy:'🔒 Privacy',show:'Mostra',
   step1:'Scegli lingua',step2:'Inserisci username',acPost:'Pubblica Video',acSup:'Supporta Video',supBtnShort:'Supporta',
   welcome:'✨ Benvenuto, ',welcomeNew:'🎉 Benvenuto nel Support Pool!',tourNextBtn:'Capito ✓',pushTitle:'Notifiche Push',pushDesc:'Ricevi una notifica quando qualcuno supporta il tuo video',pushActivate:'Attiva',pushActiveMsg:'Notifiche push attive',pushBlockedTitle:'Notifiche bloccate',pushBlockedSub:'Attiva nelle impostazioni del browser',toAdminLabel:'📩 Scrivi all Admin',toMemberLabel:'🔍 Cerca Membro',msgPlaceholderAdmin:'Messaggio all Admin...',msgPlaceholderMem:'Messaggio a @{name}...',cancel:'Annulla',postSubmit:'Pubblica',dmChange:'Cambia',
+  hsTitle:'📱 Aggiungi alla schermata',hsIosTitle:'iPhone / iPad (Safari)',hsIosSteps:['Apri la pagina in <strong>Safari</strong>','Tocca Condividi <strong>□↑</strong>','→ <strong>"Aggiungi a Home"</strong>','→ Conferma <strong>"Aggiungi"</strong>'],hsAndTitle:'Android (Chrome)',hsAndSteps:['Apri la pagina in <strong>Chrome</strong>','Tocca il menu <strong>⋮</strong>','→ <strong>"Installa app"</strong> o <strong>"Aggiungi alla schermata"</strong>','→ Conferma <strong>"Aggiungi"</strong>'],
+  pinForgotTitle:'🔑 PIN dimenticato',pinForgotInfo:'Il messaggio verrà salvato. Il tuo PIN verrà reimpostato automaticamente.',pinForgotSend:'📤 Invia e reimposta PIN',pinForgotMsg:'Ciao Admin, ho dimenticato il mio PIN. Ti prego di reimpostarlo per {who}. Grazie!',pinEnter:'Inserisci PIN a 4 cifre',pinForgot:'PIN dimenticato?',
+  pinResetWaitTitle:'Aspetta…',pinResetWaitBody:'Sto reimpostando il tuo PIN. Rimani su questa pagina.',pinResetDoneTitle:'PIN reimpostato!',pinResetDoneBody:'Ora puoi accedere senza PIN. Puoi impostare un nuovo PIN nelle Impostazioni.',pinResetLoginBtn:'Vai al login →',
+  admBack:'Admin',admViewing:'👁 Vista Membro',
   tourSteps:[
     {icon:'👋',title:'Benvenuto!',body:'Esploriamo insieme l app. Ogni passaggio spiega cosa trovi dove.'},
     {icon:'🏠',title:'Home – Il tuo Saldo',body:'Qui vedi il tuo saldo di supporto. Dai supporti per aumentarlo.'},
@@ -2505,6 +2544,10 @@ es: {
   setPrivacy:'🔒 Privacidad',show:'Ver',
   step1:'Elegir idioma',step2:'Ingresar usuario',acPost:'Publicar Video',acSup:'Apoyar Videos',supBtnShort:'Apoyar',
   welcome:'✨ Bienvenido, ',welcomeNew:'🎉 ¡Bienvenido al Support Pool!',tourNextBtn:'Entendido ✓',pushTitle:'Notificaciones Push',pushDesc:'Recibe una notificación cuando alguien apoya tu video',pushActivate:'Activar',pushActiveMsg:'Notificaciones push activas',pushBlockedTitle:'Notificaciones bloqueadas',pushBlockedSub:'Activar en la configuración del navegador',toAdminLabel:'📩 Escribir al Admin',toMemberLabel:'🔍 Buscar Miembro',msgPlaceholderAdmin:'Mensaje al Admin...',msgPlaceholderMem:'Mensaje a @{name}...',cancel:'Cancelar',postSubmit:'Publicar',dmChange:'Cambiar',
+  hsTitle:'📱 Añadir a Inicio',hsIosTitle:'iPhone / iPad (Safari)',hsIosSteps:['Abre la página en <strong>Safari</strong>','Toca Compartir <strong>□↑</strong>','→ <strong>"En pantalla de inicio"</strong>','→ Confirma <strong>"Agregar"</strong>'],hsAndTitle:'Android (Chrome)',hsAndSteps:['Abre la página en <strong>Chrome</strong>','Toca el menú <strong>⋮</strong>','→ <strong>"Instalar app"</strong> o <strong>"Añadir a inicio"</strong>','→ Confirma <strong>"Agregar"</strong>'],
+  pinForgotTitle:'🔑 PIN olvidado',pinForgotInfo:'El mensaje se guardará. Tu PIN se restablecerá automáticamente.',pinForgotSend:'📤 Enviar y restablecer PIN',pinForgotMsg:'Hola Admin, olvidé mi PIN. Por favor restablécelo para {who}. ¡Gracias!',pinEnter:'Introduce PIN de 4 dígitos',pinForgot:'¿Olvidé el PIN?',
+  pinResetWaitTitle:'Por favor espera…',pinResetWaitBody:'Estoy restableciendo tu PIN. Quédate en esta página.',pinResetDoneTitle:'¡PIN restablecido!',pinResetDoneBody:'Ahora puedes iniciar sesión sin PIN. Puedes establecer un nuevo PIN en Configuración.',pinResetLoginBtn:'Ir al login →',
+  admBack:'Admin',admViewing:'👁 Vista Miembro',
   tourSteps:[
     {icon:'👋',title:'¡Bienvenido!',body:'Exploremos juntos la app. Cada paso explica qué encuentras dónde.'},
     {icon:'🏠',title:'Inicio – Tu Saldo',body:'Aquí ves tu saldo de apoyo. Da apoyos para aumentarlo.'},
@@ -2601,6 +2644,10 @@ tr: {
   setPrivacy:'🔒 Gizlilik',show:'Göster',
   step1:'Dil seç',step2:'Kullanıcı adı gir',acPost:'Video Paylaş',acSup:'Video Destekle',supBtnShort:'Destekle',
   welcome:'✨ Hoş geldin, ',welcomeNew:"🎉 Support Pool'a hoş geldin!",tourNextBtn:'Anladım ✓',pushTitle:'Push Bildirimleri',pushDesc:'Birisi videonuzu desteklediğinde bildirim alın',pushActivate:'Etkinleştir',pushActiveMsg:'Push bildirimleri etkin',pushBlockedTitle:'Bildirimler engellendi',pushBlockedSub:'Tarayıcı ayarlarından etkinleştirin',toAdminLabel:'📩 Admine Yaz',toMemberLabel:'🔍 Üye Ara',msgPlaceholderAdmin:'Admine mesaj...',msgPlaceholderMem:'@{name} kişisine mesaj...',cancel:'İptal',postSubmit:'Paylaş',dmChange:'Değiştir',
+  hsTitle:'📱 Ana Ekrana Ekle',hsIosTitle:'iPhone / iPad (Safari)',hsIosSteps:["Sayfayı <strong>Safari</strong>'de açın","Paylaş düğmesine <strong>□↑</strong> dokunun",'→ <strong>"Ana Ekrana Ekle"</strong>','→ <strong>"Ekle"</strong> ile onaylayın'],hsAndTitle:'Android (Chrome)',hsAndSteps:["Sayfayı <strong>Chrome</strong>'da açın",'Menüye <strong>⋮</strong> dokunun','→ <strong>"Uygulamayı yükle"</strong> veya <strong>"Ana ekrana ekle"</strong>','→ <strong>"Ekle"</strong> ile onaylayın'],
+  pinForgotTitle:'🔑 PIN Unutuldu',pinForgotInfo:"Mesaj kaydedilecek. PIN'iniz otomatik olarak sıfırlanacak.",pinForgotSend:"📤 Gönder ve PIN'i Sıfırla",pinForgotMsg:"Merhaba Admin, PIN'imi unuttum. Lütfen {who} için sıfırlayın. Teşekkürler!",pinEnter:'4 haneli PIN girin',pinForgot:'PIN mi unuttunuz?',
+  pinResetWaitTitle:'Lütfen bekleyin…',pinResetWaitBody:"PIN'inizi sıfırlıyorum. Bu sayfada kalın.",pinResetDoneTitle:'PIN Sıfırlandı!',pinResetDoneBody:"Artık PIN olmadan giriş yapabilirsiniz. Ayarlar'dan yeni bir PIN belirleyebilirsiniz.",pinResetLoginBtn:'Girişe Git →',
+  admBack:'Admin',admViewing:'👁 Üye Görünümü',
   tourSteps:[
     {icon:'👋',title:'Hoş geldin!',body:'Uygulamayı birlikte keşfedelim. Her adım neyin nerede olduğunu açıklar.'},
     {icon:'🏠',title:'Ana Sayfa – Bakiyen',body:'Burada destek bakiyeni görürsün. Destek ver, bakiyeni artır.'},
@@ -2697,6 +2744,10 @@ ar: {
   setPrivacy:'🔒 الخصوصية',show:'عرض',
   step1:'اختر اللغة',step2:'أدخل اسم المستخدم',acPost:'نشر فيديو',acSup:'دعم الفيديوهات',supBtnShort:'دعم',
   welcome:'✨ مرحباً, ',welcomeNew:'🎉 مرحباً في Support Pool!',tourNextBtn:'فهمت ✓',pushTitle:'إشعارات الدفع',pushDesc:'احصل على إشعار عندما يدعم شخص ما فيديوك',pushActivate:'تفعيل',pushActiveMsg:'إشعارات الدفع نشطة',pushBlockedTitle:'الإشعارات محظورة',pushBlockedSub:'فعّلها في إعدادات المتصفح',toAdminLabel:'📩 اكتب للمشرف',toMemberLabel:'🔍 ابحث عن عضو',msgPlaceholderAdmin:'رسالة إلى المشرف...',msgPlaceholderMem:'رسالة إلى @{name}...',cancel:'إلغاء',postSubmit:'نشر',dmChange:'تغيير',
+  hsTitle:'📱 إضافة للشاشة الرئيسية',hsIosTitle:'iPhone / iPad (Safari)',hsIosSteps:['افتح الصفحة في <strong>Safari</strong>','اضغط على زر المشاركة <strong>□↑</strong>','→ <strong>«إضافة إلى الشاشة الرئيسية»</strong>','→ أكّد <strong>«إضافة»</strong>'],hsAndTitle:'Android (Chrome)',hsAndSteps:['افتح الصفحة في <strong>Chrome</strong>','اضغط على القائمة <strong>⋮</strong>','→ <strong>«تثبيت التطبيق»</strong> أو <strong>«إضافة للشاشة»</strong>','→ أكّد <strong>«إضافة»</strong>'],
+  pinForgotTitle:'🔑 نسيت PIN',pinForgotInfo:'سيتم حفظ الرسالة. سيتم إعادة تعيين PIN تلقائياً.',pinForgotSend:'📤 إرسال وإعادة تعيين PIN',pinForgotMsg:'مرحباً أدمن، نسيت رقم PIN الخاص بي. يرجى إعادة تعيينه لـ {who}. شكراً!',pinEnter:'أدخل PIN من 4 أرقام',pinForgot:'نسيت PIN؟',
+  pinResetWaitTitle:'يرجى الانتظار…',pinResetWaitBody:'أقوم بإعادة تعيين PIN. ابقَ في هذه الصفحة.',pinResetDoneTitle:'تمت إعادة تعيين PIN!',pinResetDoneBody:'يمكنك الآن تسجيل الدخول بدون PIN. يمكنك تعيين PIN جديد من الإعدادات.',pinResetLoginBtn:'إلى تسجيل الدخول →',
+  admBack:'Admin',admViewing:'👁 عرض العضو',
   tourSteps:[
     {icon:'👋',title:'مرحباً!',body:'دعنا نستكشف التطبيق معاً. كل خطوة تشرح ما ستجده أين.'},
     {icon:'🏠',title:'الرئيسية – رصيدك',body:'هنا ترى رصيد الدعم الخاص بك. أعطِ الدعم لزيادته.'},
@@ -2793,6 +2844,10 @@ zh: {
   setPrivacy:'🔒 隐私政策',show:'查看',
   step1:'选择语言',step2:'输入用户名',acPost:'发布视频',acSup:'支持视频',supBtnShort:'支持',
   welcome:'✨ 欢迎, ',welcomeNew:'🎉 欢迎来到Support Pool!',tourNextBtn:'明白了 ✓',pushTitle:'推送通知',pushDesc:'当有人支持你的视频时获得通知',pushActivate:'启用',pushActiveMsg:'推送通知已启用',pushBlockedTitle:'通知已被屏蔽',pushBlockedSub:'请在浏览器设置中启用',toAdminLabel:'📩 写信给管理员',toMemberLabel:'🔍 搜索成员',msgPlaceholderAdmin:'给管理员的消息...',msgPlaceholderMem:'给 @{name} 的消息...',cancel:'取消',postSubmit:'发布',dmChange:'更改',
+  hsTitle:'📱 添加到主屏幕',hsIosTitle:'iPhone / iPad (Safari)',hsIosSteps:['在 <strong>Safari</strong> 中打开页面','点击分享按钮 <strong>□↑</strong>','→ <strong>「添加到主屏幕」</strong>','→ 确认 <strong>「添加」</strong>'],hsAndTitle:'Android (Chrome)',hsAndSteps:['在 <strong>Chrome</strong> 中打开页面','点击菜单 <strong>⋮</strong>','→ <strong>「安装应用」</strong>或<strong>「添加到主屏幕」</strong>','→ 确认 <strong>「添加」</strong>'],
+  pinForgotTitle:'🔑 忘记PIN',pinForgotInfo:'消息将被保存，您的PIN将自动重置。',pinForgotSend:'📤 发送并重置PIN',pinForgotMsg:'你好管理员，我忘记了我的PIN。请为 {who} 重置。谢谢！',pinEnter:'输入4位PIN',pinForgot:'忘记PIN？',
+  pinResetWaitTitle:'请稍候…',pinResetWaitBody:'正在重置您的PIN，请留在此页面。',pinResetDoneTitle:'PIN已重置！',pinResetDoneBody:'您现在可以无需PIN登录。之后可在设置中设置新PIN。',pinResetLoginBtn:'前往登录 →',
+  admBack:'Admin',admViewing:'👁 会员视图',
   tourSteps:[
     {icon:'👋',title:'欢迎！',body:'让我们一起探索这个应用。每一步都解释你在哪里找到什么。'},
     {icon:'🏠',title:'主页 – 你的余额',body:'在这里你看到你的支持余额。给予支持来增加它。'},
@@ -2889,6 +2944,10 @@ ja: {
   setPrivacy:'🔒 プライバシー',show:'表示',
   step1:'言語を選ぶ',step2:'ユーザー名を入力',acPost:'動画を投稿',acSup:'動画をサポート',supBtnShort:'サポート',
   welcome:'✨ ようこそ、',welcomeNew:'🎉 Support Poolへようこそ!',tourNextBtn:'わかりました ✓',pushTitle:'プッシュ通知',pushDesc:'誰かがあなたの動画をサポートしたときに通知を受け取る',pushActivate:'有効にする',pushActiveMsg:'プッシュ通知が有効です',pushBlockedTitle:'通知がブロックされています',pushBlockedSub:'ブラウザの設定で有効にしてください',toAdminLabel:'📩 管理者に書く',toMemberLabel:'🔍 メンバーを検索',msgPlaceholderAdmin:'管理者へのメッセージ...',msgPlaceholderMem:'@{name} へのメッセージ...',cancel:'キャンセル',postSubmit:'投稿',dmChange:'変更',
+  hsTitle:'📱 ホーム画面に追加',hsIosTitle:'iPhone / iPad (Safari)',hsIosSteps:['<strong>Safari</strong> でページを開く','共有ボタン <strong>□↑</strong> をタップ','→ <strong>「ホーム画面に追加」</strong>','→ <strong>「追加」</strong> で確認'],hsAndTitle:'Android (Chrome)',hsAndSteps:['<strong>Chrome</strong> でページを開く','メニュー <strong>⋮</strong> をタップ','→ <strong>「アプリをインストール」</strong>または<strong>「ホーム画面に追加」</strong>','→ <strong>「追加」</strong> で確認'],
+  pinForgotTitle:'🔑 PINを忘れた',pinForgotInfo:'メッセージが保存されます。PINは自動的にリセットされます。',pinForgotSend:'📤 送信してPINをリセット',pinForgotMsg:'こんにちは管理者、PINを忘れました。{who} のPINをリセットしてください。ありがとうございます！',pinEnter:'4桁のPINを入力',pinForgot:'PINを忘れた？',
+  pinResetWaitTitle:'お待ちください…',pinResetWaitBody:'PINをリセットしています。このページにいてください。',pinResetDoneTitle:'PINリセット完了！',pinResetDoneBody:'PINなしでログインできるようになりました。設定で新しいPINを設定できます。',pinResetLoginBtn:'ログインへ →',
+  admBack:'Admin',admViewing:'👁 メンバービュー',
   tourSteps:[
     {icon:'👋',title:'ようこそ！',body:'一緒にアプリを探索しましょう。各ステップでどこに何があるかを説明します。'},
     {icon:'🏠',title:'ホーム – あなたの残高',body:'ここでサポート残高を確認できます。サポートを増やして残高を上げましょう。'},
@@ -2985,6 +3044,10 @@ pl: {
   setPrivacy:'🔒 Prywatność',show:'Pokaż',
   step1:'Wybierz język',step2:'Wpisz nazwę użytkownika',acPost:'Opublikuj wideo',acSup:'Wspieraj wideo',supBtnShort:'Wspieraj',
   welcome:'✨ Witaj, ',welcomeNew:'🎉 Witamy w Support Pool!',tourNextBtn:'Rozumiem ✓',pushTitle:'Powiadomienia Push',pushDesc:'Otrzymaj powiadomienie, gdy ktoś wesprze Twoje wideo',pushActivate:'Włącz',pushActiveMsg:'Powiadomienia push aktywne',pushBlockedTitle:'Powiadomienia zablokowane',pushBlockedSub:'Włącz w ustawieniach przeglądarki',toAdminLabel:'📩 Napisz do Admina',toMemberLabel:'🔍 Szukaj Członka',msgPlaceholderAdmin:'Wiadomość do Admina...',msgPlaceholderMem:'Wiadomość do @{name}...',cancel:'Anuluj',postSubmit:'Opublikuj',dmChange:'Zmień',
+  hsTitle:'📱 Dodaj do ekranu głównego',hsIosTitle:'iPhone / iPad (Safari)',hsIosSteps:['Otwórz stronę w <strong>Safari</strong>','Dotknij przycisku Udostępnij <strong>□↑</strong>','→ <strong>"Dodaj do ekranu głównego"</strong>','→ Potwierdź <strong>"Dodaj"</strong>'],hsAndTitle:'Android (Chrome)',hsAndSteps:['Otwórz stronę w <strong>Chrome</strong>','Dotknij menu <strong>⋮</strong>','→ <strong>"Zainstaluj aplikację"</strong> lub <strong>"Dodaj do ekranu głównego"</strong>','→ Potwierdź <strong>"Dodaj"</strong>'],
+  pinForgotTitle:'🔑 Zapomniałem PINu',pinForgotInfo:'Wiadomość zostanie zapisana. Twój PIN zostanie automatycznie zresetowany.',pinForgotSend:'📤 Wyślij i zresetuj PIN',pinForgotMsg:'Cześć Admin, zapomniałem/am mojego PINu. Proszę zresetuj go dla {who}. Dziękuję!',pinEnter:'Wprowadź 4-cyfrowy PIN',pinForgot:'Zapomniałeś PINu?',
+  pinResetWaitTitle:'Proszę czekać…',pinResetWaitBody:'Resetuję Twój PIN. Zostań na tej stronie.',pinResetDoneTitle:'PIN zresetowany!',pinResetDoneBody:'Możesz teraz zalogować się bez PINu. Możesz ustawić nowy PIN w Ustawieniach.',pinResetLoginBtn:'Przejdź do logowania →',
+  admBack:'Admin',admViewing:'👁 Widok Członka',
   tourSteps:[
     {icon:'👋',title:'Witamy!',body:'Odkryjmy razem aplikację. Każdy krok wyjaśnia co gdzie znajdziesz.'},
     {icon:'🏠',title:'Strona główna – Twoje saldo',body:'Tutaj widzisz swoje saldo wsparcia. Dawaj wsparcie, aby je zwiększać.'},
@@ -3519,10 +3582,15 @@ function handleLoginKey(e) {
 
 // ── MEMBER PIN SYSTEM ─────────────────────────────────────────────────
 var _memPinTarget = null, _memPinDigits = '';
+var _forgotPinTarget = null, _adminOverrideKey = null;
 function openMemPinPad(key, disp) {
+  var l = L[LANG] || L.de;
   _memPinTarget = {key: key, disp: disp};
   _memPinDigits = '';
   ge('mem-pin-who').textContent = '@' + (disp || fbDec(key));
+  st('mem-pin-sub', l.pinEnter || '4-stelligen PIN eingeben');
+  st('mem-pin-forgot-btn', l.pinForgot || 'PIN vergessen?');
+  st('mem-pin-cancel-btn', l.cancel || 'Abbrechen');
   for (var i = 0; i < 4; i++) { var d = ge('mpd'+i); if (d) { d.classList.remove('filled'); d.style.background=''; } }
   ge('mem-pin-err').textContent = '';
   var pad = ge('memberPinPad'); if (pad) { pad.style.display = 'flex'; pad.classList.add('active'); }
@@ -3558,16 +3626,41 @@ function memPinKey(v) {
   if (_memPinDigits.length === 4) setTimeout(function(){ memPinKey('ok'); }, 120);
 }
 function memPinForgot() {
-  var who = _memPinTarget ? ('@' + (_memPinTarget.disp || fbDec(_memPinTarget.key))) : '(unbekannt)';
+  var l = L[LANG] || L.de;
+  _forgotPinTarget = _memPinTarget ? {key: _memPinTarget.key, disp: _memPinTarget.disp} : null;
+  var who = _forgotPinTarget ? ('@' + (_forgotPinTarget.disp || fbDec(_forgotPinTarget.key))) : '(unbekannt)';
   closeMemPinPad();
-  var msg = 'Hallo Admin, ich habe meinen PIN vergessen. Bitte setze ihn für ' + who + ' zurück. Danke!';
-  if (navigator.share) {
-    navigator.share({text: msg}).catch(function(){});
-  } else {
-    navigator.clipboard.writeText(msg).then(function(){ toast('📋 Nachricht kopiert — an Admin senden', 'ok'); }).catch(function(){
-      toast('PIN vergessen — bitte Admin kontaktieren', 'error');
-    });
-  }
+  var msgTpl = l.pinForgotMsg || 'Hallo Admin, ich habe meinen PIN vergessen. Bitte setze ihn für {who} zurück. Danke!';
+  var msg = msgTpl.replace('{who}', who);
+  st('pin-forgot-modal-title', l.pinForgotTitle || '🔑 PIN vergessen');
+  st('pin-forgot-modal-info', l.pinForgotInfo || 'Die Nachricht wird gesichert. Dein PIN wird automatisch zurückgesetzt.');
+  var prev = ge('pin-forgot-msg-preview'); if (prev) prev.textContent = msg;
+  st('pin-forgot-cancel', l.cancel || 'Abbrechen');
+  st('pin-forgot-send', l.pinForgotSend || '📤 Absenden & PIN zurücksetzen');
+  openModal('pinForgotModal');
+}
+
+function doAutoResetPin() {
+  if (!_forgotPinTarget) { closeModal('pinForgotModal'); return; }
+  var l = L[LANG] || L.de;
+  closeModal('pinForgotModal');
+  st('pin-reset-wait-title', l.pinResetWaitTitle || 'Bitte warte…');
+  st('pin-reset-wait-body', l.pinResetWaitBody || 'Ich setze deinen PIN zurück. Bleib am Gerät.');
+  openModal('pinResetWaitModal');
+  var key = _forgotPinTarget.key;
+  if (DB.members[key]) { delete DB.members[key].memberPin; save(); }
+  setTimeout(function() {
+    closeModal('pinResetWaitModal');
+    st('pin-reset-done-title', l.pinResetDoneTitle || 'PIN zurückgesetzt!');
+    st('pin-reset-done-body', l.pinResetDoneBody || 'Du kannst dich jetzt ohne PIN einloggen.');
+    st('pin-reset-login-btn', l.pinResetLoginBtn || 'Zum Login →');
+    openModal('pinResetDoneModal');
+  }, 2500);
+}
+
+function goPinResetLogin() {
+  closeModal('pinResetDoneModal');
+  _forgotPinTarget = null;
 }
 
 // ── SETTINGS SCREEN ───────────────────────────────────────────────────
@@ -3651,7 +3744,47 @@ function closeSetLangDrop() {
   updateSetLangHeader();
 }
 
-function showHomescreenModal() { openModal('homescreenModal'); }
+function showHomescreenModal() { renderHomescreenModal(); openModal('homescreenModal'); }
+
+function renderHomescreenModal() {
+  var l = L[LANG] || L.de;
+  st('hs-modal-title', l.hsTitle || '📱 Zum Homescreen');
+  st('t-hs-close', l.close || 'Schließen');
+  var body = ge('hs-modal-body'); if (!body) return;
+  var ios = l.hsIosSteps || ['Seite in <strong>Safari</strong> öffnen','Teilen-Symbol <strong>□↑</strong> antippen','→ <strong>„Zum Home-Bildschirm“</strong>','→ <strong>„Hinzufügen“</strong> bestätigen'];
+  var and_ = l.hsAndSteps || ['Seite in <strong>Chrome</strong> öffnen','Menü <strong>⋮</strong> antippen','→ <strong>„App installieren“</strong> oder <strong>„Zum Startbildschirm“</strong>','→ <strong>„Hinzufügen“</strong> bestätigen'];
+  var iosHtml = ios.map(function(s,i){ return (i+1)+'. '+s; }).join('<br>');
+  var andHtml = and_.map(function(s,i){ return (i+1)+'. '+s; }).join('<br>');
+  body.innerHTML =
+    '<div style="background:rgba(0,122,255,.07);border-radius:14px;padding:14px;margin-bottom:10px;border:1.5px solid rgba(0,122,255,.15)">'+
+    '<div style="font-size:12px;font-weight:800;color:var(--blue);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px">🍎 '+(l.hsIosTitle||'iPhone / iPad (Safari)')+'</div>'+
+    '<div style="font-size:12px;color:var(--text);line-height:1.8">'+iosHtml+'</div></div>'+
+    '<div style="background:rgba(52,199,89,.07);border-radius:14px;padding:14px;border:1.5px solid rgba(52,199,89,.2)">'+
+    '<div style="font-size:12px;font-weight:800;color:var(--green);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px">🤖 '+(l.hsAndTitle||'Android (Chrome)')+'</div>'+
+    '<div style="font-size:12px;color:var(--text);line-height:1.8">'+andHtml+'</div></div>';
+}
+
+function adminViewMember(key) {
+  var m = DB.members[key]; if (!m) return;
+  var l = L[LANG] || L.de;
+  _adminOverrideKey = CU;
+  CU = key;
+  var bar = ge('admin-back-bar');
+  if (bar) { bar.style.display = 'flex'; }
+  var nameEl = ge('admin-back-name'); if (nameEl) nameEl.textContent = '@' + (m.name || fbDec(key));
+  st('t-admin-back', l.admBack || 'Admin');
+  st('t-admin-viewing', l.admViewing || '👁 Mitglied-Ansicht');
+  document.body.style.paddingTop = '48px';
+  renderAll(); goScreen('home');
+}
+
+function adminBackFromMember() {
+  if (!_adminOverrideKey) return;
+  CU = _adminOverrideKey; _adminOverrideKey = null;
+  var bar = ge('admin-back-bar'); if (bar) bar.style.display = 'none';
+  document.body.style.paddingTop = '';
+  renderAll(); goScreen('admin');
+}
 
 var PRIVACY_CONTENT = {
   de:{title:'🔒 Datenschutz',s:[
@@ -4784,7 +4917,7 @@ function renderAdmOv() {
       var daysJoined = m.joined ? Math.max(0, Math.floor((Date.now()-m.joined)/86400000)) : null;
       var bal = (m.stats.given||0)-(m.stats.received||0);
       var bc = bal>0?'var(--green)':bal<0?'var(--red)':'var(--text3)';
-      html += '<div style="display:flex;align-items:center;gap:9px;background:linear-gradient(135deg,rgba(15,18,40,0.98),rgba(10,14,32,0.95));border:1px solid rgba(232,184,75,0.1);border-radius:14px;padding:10px 11px;margin-bottom:6px;transition:border-color 0.2s">';
+      html += '<div data-view-k="'+esc(mk)+'" class="adm-mem-row" style="display:flex;align-items:center;gap:9px;background:linear-gradient(135deg,rgba(15,18,40,0.98),rgba(10,14,32,0.95));border:1px solid rgba(232,184,75,0.1);border-radius:14px;padding:10px 11px;margin-bottom:6px;transition:border-color 0.2s;cursor:pointer">';
       html += '<div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#c49a2e,#ffd166);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;border:2px solid rgba(232,184,75,0.22)">'+getAvatar(m)+'</div>';
       html += '<div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(m.name||mk)+(m.role==='admin'?' &#128081;':'')+'</div>';
       html += '<div style="font-size:10px;color:var(--text3);margin-top:2px;display:flex;align-items:center;gap:5px">'+trophySmall(m);
@@ -4809,7 +4942,9 @@ function renderAdmOv() {
     var ab = e.target.closest('[data-adj-k]');
     if (ab) { openBalAdj(ab.getAttribute('data-adj-k')); return; }
     var rb = e.target.closest('[data-rm-g]');
-    if (rb) confirmRemove(rb.getAttribute('data-rm-g'), rb.getAttribute('data-rm-k'));
+    if (rb) { confirmRemove(rb.getAttribute('data-rm-g'), rb.getAttribute('data-rm-k')); return; }
+    var vb = e.target.closest('[data-view-k]');
+    if (vb) adminViewMember(vb.getAttribute('data-view-k'));
   };
 }
 
