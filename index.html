@@ -150,7 +150,7 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
 .brand-sm{font-family:'Space Grotesk',sans-serif;font-size:.9rem;font-weight:800;color:var(--text);letter-spacing:.12em;text-transform:uppercase}
 .user-pill{display:flex;align-items:center;gap:7px;background:var(--bg2);border-radius:50px;padding:5px 12px 5px 6px;cursor:pointer;transition:all .2s;max-width:150px;border:none}
 .user-pill:hover{background:var(--vd2)}
-.user-pill-avatar{width:24px;height:24px;border-radius:50%;background:var(--v);display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0}
+.user-pill-avatar{width:24px;height:24px;border-radius:50%;background:var(--blue);display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0}
 .user-pill-name{font-size:11px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-transform:uppercase;letter-spacing:.04em}
 .sync-pill{display:flex;align-items:center;gap:5px;padding:5px 10px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;cursor:pointer;transition:all .3s;border:1.5px solid var(--bdr2)}
 .sync-pill.online{background:rgba(52,199,89,.08);border-color:rgba(52,199,89,.25);color:var(--green)}
@@ -161,16 +161,16 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.2}}
 
 /* ── BOTTOM NAV ── */
-#bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:#fff;border-top:1px solid var(--bdr);display:none;z-index:200;padding-bottom:env(safe-area-inset-bottom)}
+#bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:#fff;border-top:1px solid var(--bdr);display:none;z-index:200;padding:0 6px env(safe-area-inset-bottom);gap:0}
 #bottom-nav.show{display:flex}
 /* Dark nav when admin screen active */
 #app:has(#screen-admin.active) #bottom-nav{background:#0d0e1e;border-top-color:rgba(255,255,255,.08)}
-.ni{flex:1;display:flex;flex-direction:column;align-items:center;padding:10px 4px 12px;gap:2px;cursor:pointer;transition:all .2s;border:none;background:none;position:relative;color:var(--t3);font-size:9px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;font-family:'Space Grotesk',sans-serif}
+.ni{flex:1;display:flex;flex-direction:column;align-items:center;padding:13px 6px 15px;gap:2px;cursor:pointer;transition:all .2s;border:none;background:none;position:relative;color:var(--t3);font-size:9px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;font-family:'Space Grotesk',sans-serif;border-radius:14px;margin:4px 2px}
 .ni-icon{font-size:22px;transition:all .2s;line-height:1}
 .nav-icon{font-size:20px;transition:transform .25s}
-.ni.active{color:var(--v)}
+.ni.active{color:var(--v);background:var(--bg2)}
 .ni.active .nav-icon,.ni.active .ni-icon{transform:scale(1.12)}
-.ni.active::after{content:'';display:block;width:20px;height:2.5px;background:var(--v);border-radius:2px;margin:-2px auto 0}
+#app:has(#screen-admin.active) .ni.active{background:rgba(255,255,255,.1)}
 .nav-notif-badge{position:absolute;top:7px;right:calc(50% - 16px);background:var(--red);color:#fff;font-size:9px;font-weight:700;border-radius:10px;padding:1px 5px;min-width:16px;text-align:center;display:none;border:1.5px solid #fff}
 .nav-notif-badge.active{display:block}
 .content{padding:14px 14px 90px;flex:1}
@@ -246,7 +246,7 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
 .vc:hover{border-color:var(--vb);box-shadow:0 4px 16px rgba(212,134,10,.12);transform:translateY(-1px)}
 .mvc{background:#fff;border:1.5px solid var(--bdr);border-radius:16px;padding:14px;margin-bottom:9px;box-shadow:0 1px 6px rgba(0,0,0,.06)}
 .vc-top{display:flex;align-items:center;gap:10px;margin-bottom:10px}
-.vc-av{width:40px;height:40px;border-radius:50%;flex-shrink:0;background:var(--v);display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 2px 8px rgba(212,134,10,.22)}
+.vc-av{width:40px;height:40px;border-radius:50%;flex-shrink:0;background:var(--blue);display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 2px 8px rgba(0,122,255,.2)}
 .vc-info{flex:1;min-width:0}
 .vc-name{font-size:12px;font-weight:700;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-transform:uppercase;letter-spacing:.04em;color:var(--text)}
 .vc-meta{font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:.05em}
@@ -319,7 +319,7 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
 
 /* ── PROFILE ── */
 .profile-hero{background:#fff;border:1.5px solid var(--bdr);border-radius:22px;padding:22px;margin-bottom:10px;text-align:center;box-shadow:0 2px 12px rgba(0,0,0,.06)}
-.prof-avatar{width:76px;height:76px;border-radius:50%;background:var(--v);display:flex;align-items:center;justify-content:center;font-size:30px;margin:0 auto 12px;box-shadow:0 4px 16px rgba(212,134,10,.25);border:3px solid rgba(212,134,10,.25)}
+.prof-avatar{width:76px;height:76px;border-radius:50%;background:var(--blue);display:flex;align-items:center;justify-content:center;font-size:30px;margin:0 auto 12px;box-shadow:0 4px 16px rgba(0,122,255,.25);border:3px solid rgba(0,122,255,.22)}
 .prof-name{font-family:'Space Grotesk',sans-serif;font-size:1.25rem;font-weight:700;margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em;color:var(--text)}
 .rank-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;margin-bottom:12px;text-transform:uppercase;letter-spacing:.04em}
 .rk0{background:rgba(52,199,89,.1);border:1.5px solid rgba(52,199,89,.25);color:var(--green)}
@@ -610,18 +610,18 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
 .action-card{border-radius:18px;display:flex;flex-direction:column;align-items:center;cursor:pointer;border:1.5px solid transparent;transition:all .22s;position:relative;text-align:center;overflow:hidden;min-height:148px;padding:0}
 .action-card:active{transform:scale(.95)}
 /* ── Post card (gold) ── */
-.ac-post{background:linear-gradient(145deg,#1a0e02,#2e1a06);border-color:rgba(212,134,10,.38)}
-.ac-post:hover{border-color:rgba(212,134,10,.72);background:linear-gradient(145deg,#221303,#3d2308)}
+.ac-post{background:rgba(212,134,10,0.04);border-color:rgba(212,134,10,.35)}
+.ac-post:hover{border-color:rgba(212,134,10,.65);background:rgba(212,134,10,0.08)}
 /* ── Support card (blue) ── */
-.ac-sup{background:linear-gradient(145deg,#020c1a,#051828);border-color:rgba(0,122,255,.32)}
-.ac-sup:hover{border-color:rgba(0,122,255,.68);background:linear-gradient(145deg,#030f22,#071e38)}
+.ac-sup{background:rgba(0,122,255,0.04);border-color:rgba(0,122,255,.28)}
+.ac-sup:hover{border-color:rgba(0,122,255,.62);background:rgba(0,122,255,0.07)}
 /* ── Card internals ── */
 .ac-art{flex:1;display:flex;align-items:center;justify-content:center;width:100%;padding:12px 10px 4px}
 .ac-art svg{width:100%;height:auto;display:block}
 .ac-label-row{width:100%;display:flex;align-items:center;justify-content:space-between;gap:6px;padding:5px 12px 11px}
 .action-card-label{font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.05em;line-height:1.25}
-.ac-post .action-card-label{color:#f5b731}
-.ac-sup .action-card-label{color:#6eb8ff}
+.ac-post .action-card-label{color:#c47909}
+.ac-sup .action-card-label{color:var(--blue)}
 .ac-pill{display:flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;flex-shrink:0;font-size:11px;font-weight:900;line-height:1}
 .ac-pill-gold{background:linear-gradient(135deg,#c97d08,#f0b02a);color:#fff}
 .ac-pill-blue{background:linear-gradient(135deg,#0055cc,#007aff);color:#fff}
@@ -1644,6 +1644,10 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
     <button class="ni" id="ni-settings" data-sc="settings" onclick="goScreen('settings')">
       <span class="nav-icon">⚙️</span>
       <span id="t-nav-settings">Einstellungen</span>
+    </button>
+    <button class="ni" id="ni-logout" onclick="doLogout()">
+      <span class="nav-icon">🚪</span>
+      <span id="t-nav-logout">Logout</span>
     </button>
   </div>
 
@@ -3450,7 +3454,7 @@ function applyLang() {
   st('t-at-ov', l.atOv); st('t-at-msg', l.atMsg); st('t-at-set', l.atSet);
   st('t-a-grp', l.aGrp); st('t-a-mem', l.aMem); st('t-a-vid', l.aVid);
   // Nav
-  st('t-nav-home', l.navHome); st('t-nav-profile', l.navProfile); st('t-nav-admin', l.navAdmin);
+  st('t-nav-home', l.navHome); st('t-nav-profile', l.navProfile); st('t-nav-admin', l.navAdmin); st('t-nav-logout', l.logout||'Logout');
   st('t-nav-tour', l.navTour||'Rundgang');
   st('t-nav-settings', l.navSettings||'Einstellungen');
   st('t-privacy-close', l.close||'Schließen');
@@ -4399,9 +4403,16 @@ function renderOpenList() {
     html += '<div class="'+timeCls+'" data-expires="'+expiry+'">⏰ '+timeStr+'</div></div>';
     html += '<div class="rbadge '+rbcls+'">'+t('r'+rnd)+'</div>';
     html += '</div>';
-    var fc = rnd===2 ? 'var(--blue)' : 'linear-gradient(90deg,var(--gold3),var(--gold2))';
-    html += '<div class="prog-row"><div class="prog-bar"><div class="prog-fill" style="width:'+pct+'%;background:'+fc+'"></div></div>';
-    html += '<div class="prog-num">'+sups.length+'/'+need+'</div></div>';
+    if (rnd === 2) {
+      var r1done = (v.r1Supporters||[]).length, r1need = v.r1Need||R1_NEED;
+      html += '<div class="prog-row" style="margin-bottom:3px"><div class="prog-bar"><div class="prog-fill" style="width:100%;background:linear-gradient(90deg,var(--gold3),var(--gold2));opacity:0.42"></div></div>';
+      html += '<div class="prog-num" style="color:var(--t3)">✓ '+r1done+'/'+r1need+'</div></div>';
+      html += '<div class="prog-row"><div class="prog-bar"><div class="prog-fill" style="width:'+pct+'%;background:var(--blue)"></div></div>';
+      html += '<div class="prog-num">'+sups.length+'/'+need+'</div></div>';
+    } else {
+      html += '<div class="prog-row"><div class="prog-bar"><div class="prog-fill" style="width:'+pct+'%;background:linear-gradient(90deg,var(--gold3),var(--gold2))"></div></div>';
+      html += '<div class="prog-num">'+sups.length+'/'+need+'</div></div>';
+    }
     // Use data-vid — NO inline JS with variable
     html += '<button class="sup-btn sup-btn-anim" data-vid="'+esc(v.id)+'">'+t('supBtn')+'</button>';
     html += '</div>';
@@ -4468,7 +4479,6 @@ function renderSupportCard(idx) {
   var ts2 = Math.floor((left % 60000) / 1000);
   var timeCls = 'vc-time' + (urgent ? ' urgent' : warn ? ' warn' : '');
   var rbcls = rnd === 2 ? 'r2' : 'r1';
-  var fc = rnd === 2 ? 'var(--blue)' : 'linear-gradient(90deg,var(--gold3),var(--gold2))';
   var ownerMem = DB.members[v.ownerKey];
   var avEmoji = ownerMem ? getAvatar(ownerMem) : (ownerName[0] || '?').toUpperCase();
   var html = '<div class="vc-top">';
@@ -4477,8 +4487,16 @@ function renderSupportCard(idx) {
   html += '<div class="' + timeCls + '" data-expires="' + expiry + '">⏰ ' + pad2(h) + 'h ' + pad2(m) + 'm ' + pad2(ts2) + 's</div></div>';
   html += '<div class="rbadge ' + rbcls + '">' + t('r' + rnd) + '</div>';
   html += '</div>';
-  html += '<div class="prog-row" style="margin-top:10px"><div class="prog-bar"><div class="prog-fill" style="width:' + pct + '%;background:' + fc + '"></div></div>';
-  html += '<div class="prog-num">' + sups.length + '/' + need + '</div></div>';
+  if (rnd === 2) {
+    var r1d = (v.r1Supporters||[]).length, r1n = v.r1Need||R1_NEED;
+    html += '<div class="prog-row" style="margin-top:10px;margin-bottom:3px"><div class="prog-bar"><div class="prog-fill" style="width:100%;background:linear-gradient(90deg,var(--gold3),var(--gold2));opacity:0.42"></div></div>';
+    html += '<div class="prog-num" style="color:var(--t3)">✓ '+r1d+'/'+r1n+'</div></div>';
+    html += '<div class="prog-row"><div class="prog-bar"><div class="prog-fill" style="width:'+pct+'%;background:var(--blue)"></div></div>';
+    html += '<div class="prog-num">' + sups.length + '/' + need + '</div></div>';
+  } else {
+    html += '<div class="prog-row" style="margin-top:10px"><div class="prog-bar"><div class="prog-fill" style="width:' + pct + '%;background:linear-gradient(90deg,var(--gold3),var(--gold2))"></div></div>';
+    html += '<div class="prog-num">' + sups.length + '/' + need + '</div></div>';
+  }
   body.innerHTML = html;
 }
 
