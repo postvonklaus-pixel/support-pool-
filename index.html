@@ -1577,6 +1577,13 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
             </div>
             <span class="settings-row-arrow">›</span>
           </div>
+          <div class="settings-row" onclick="startTour()" style="cursor:pointer">
+            <div class="settings-row-left">
+              <div class="settings-row-label">🧭 <span id="t-nav-tour">Rundgang</span></div>
+              <div class="settings-row-sub" id="set-tour-sub">App-Funktionen entdecken</div>
+            </div>
+            <span class="settings-row-arrow">›</span>
+          </div>
           <div class="settings-row">
             <div class="settings-row-left">
               <div class="settings-row-label" id="set-privacy-label">🔒 Datenschutz</div>
@@ -4246,6 +4253,7 @@ function renderSettings() {
   st('set-sec-app',    l.setSecApp    || 'App');
   st('set-hs-label',   l.setHsLabel   || '📱 Zum Homescreen hinzufügen');
   st('set-hs-sub',     l.setHsSub     || 'Anleitung für iOS und Android');
+  st('set-tour-sub',      l.setTourSub || 'App-Funktionen entdecken');
   st('set-privacy-label', l.setPrivacy || '🔒 Datenschutz');
   st('set-privacy-btn',   l.show      || 'Anzeigen');
   st('t-logout-set',   l.logout       || 'Abmelden');
