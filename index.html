@@ -1358,7 +1358,7 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
 
       <!-- Top Supporter Leaderboard -->
       <div class="leaderboard-card" id="lb-card">
-        <div class="lb-title">🏆 <span id="t-lb-title">Top-Supporter der Woche</span></div>
+        <div class="lb-title" style="justify-content:space-between"><span>🏆 <span id="t-lb-title">Top-Supporter der Woche</span></span><span id="lb-reset-info" style="font-size:9px;font-weight:600;color:var(--t3);text-transform:none;letter-spacing:0;white-space:nowrap"></span></div>
         <div id="lb-list"><div style="text-align:center;color:var(--t2);font-size:12px;padding:8px">Lade...</div></div>
       </div>
 
@@ -2342,7 +2342,7 @@ de: {
   postedMsg: 'Video gepostet – {n} Supports in 12h benötigt',
   loginPH: 'TikTok @Username',
   postNow: '✅ Video posten jetzt möglich',
-  lbTitle: 'Top-Supporter der Woche',pinTitle:'Admin-Zugang',pinSub:'4-stelligen PIN eingeben',
+  lbTitle: 'Top-Supporter der Woche',weeklySupLabel:'Supports diese Woche',weeklyNextReset:'Reset Freitag 00:00 WIB',pinTitle:'Admin-Zugang',pinSub:'4-stelligen PIN eingeben',
   obT0:'Willkommen!',obB0:'Du bist jetzt Teil des exklusivsten TikTok Support-Netzwerks. Hier wachsen wir gemeinsam.',
   obT1:'So funktioniert es',obT2:'Du bist bereit!',obB2:'Klicke auf Video posten und füge deine TikTok-URL ein!',
   obBtn0:'Weiter →',obBtn1:'Weiter →',obBtn2:'Los geht\'s! 🎉',
@@ -2473,7 +2473,7 @@ en: {
   postedMsg: 'Video posted – {n} supports needed in 12h',
   loginPH: 'TikTok @username',
   postNow: '✅ Post video now possible',
-  lbTitle: 'Top Supporters of the Week',pinTitle:'Admin Access',pinSub:'Enter 4-digit PIN',
+  lbTitle: 'Top Supporters of the Week',weeklySupLabel:'Supports this week',weeklyNextReset:'Reset Friday 00:00 WIB',pinTitle:'Admin Access',pinSub:'Enter 4-digit PIN',
   obT0:'Welcome!',obB0:'You are now part of the most exclusive TikTok support network.',
   obT1:'How it works',obT2:'You are ready!',obB2:'Click Post Video and paste your TikTok URL!',
   obBtn0:'Next →',obBtn1:'Next →',obBtn2:'Let\'s go! 🎉',
@@ -2604,7 +2604,7 @@ id: {
   postedMsg: 'Video diposting – {n} dukungan dibutuhkan dalam 12 jam',
   loginPH: 'TikTok @username',
   postNow: '✅ Posting video sekarang',
-  lbTitle: 'Pendukung Teratas Minggu Ini',pinTitle:'Akses Admin',pinSub:'Masukkan PIN 4 digit',
+  lbTitle: 'Pendukung Teratas Minggu Ini',weeklySupLabel:'Support minggu ini',weeklyNextReset:'Reset Jumat 00:00 WIB',pinTitle:'Akses Admin',pinSub:'Masukkan PIN 4 digit',
   obT0:'Selamat datang!',obB0:'Anda sekarang bagian dari jaringan dukungan TikTok terbaik.',
   obT1:'Cara kerjanya',obT2:'Anda siap!',obB2:'Klik Posting Video dan tempel URL TikTok Anda!',
   obBtn0:'Lanjut →',obBtn1:'Lanjut →',obBtn2:'Mulai! 🎉',
@@ -2735,7 +2735,7 @@ it: {
   postedMsg: 'Video pubblicato – {n} supporti necessari in 12h',
   loginPH: 'TikTok @username',
   postNow: '✅ Pubblica video ora',
-  lbTitle: 'Top Supporter della Settimana',pinTitle:'Accesso Admin',pinSub:'Inserisci PIN a 4 cifre',
+  lbTitle: 'Top Supporter della Settimana',weeklySupLabel:'Support questa settimana',weeklyNextReset:'Reset venerdì 00:00 WIB',pinTitle:'Accesso Admin',pinSub:'Inserisci PIN a 4 cifre',
   obT0:'Benvenuto!',obB0:'Sei ora parte della rete di supporto TikTok piu esclusiva.',
   obT1:'Come funziona',obT2:'Sei pronto!',obB2:'Clicca Pubblica Video e incolla il tuo URL TikTok!',
   obBtn0:'Avanti →',obBtn1:'Avanti →',obBtn2:'Iniziamo! 🎉',
@@ -2866,7 +2866,7 @@ es: {
   postedMsg: 'Video publicado – se necesitan {n} apoyos en 12h',
   loginPH: 'TikTok @usuario',
   postNow: '✅ Publicar video ahora',
-  lbTitle: 'Mejores Apoyadores de la Semana',pinTitle:'Acceso Admin',pinSub:'Introduce PIN de 4 digitos',
+  lbTitle: 'Mejores Apoyadores de la Semana',weeklySupLabel:'Supports esta semana',weeklyNextReset:'Reset viernes 00:00 WIB',pinTitle:'Acceso Admin',pinSub:'Introduce PIN de 4 digitos',
   obT0:'Bienvenido!',obB0:'Ahora eres parte de la red de apoyo TikTok mas exclusiva.',
   obT1:'Como funciona',obT2:'Estas listo!',obB2:'Haz clic en Publicar Video y pega tu URL de TikTok!',
   obBtn0:'Siguiente →',obBtn1:'Siguiente →',obBtn2:'Vamos! 🎉',
@@ -2997,7 +2997,7 @@ tr: {
   postedMsg: 'Video paylaşıldı – 12 saat içinde {n} destek gerekiyor',
   loginPH: 'TikTok @kullanıcı',
   postNow: '✅ Video paylaşımı şimdi mümkün',
-  lbTitle: 'Haftanin En Iyi Destekculeri',pinTitle:'Admin Erisimi',pinSub:'4 haneli PIN gir',
+  lbTitle: 'Haftanin En Iyi Destekculeri',weeklySupLabel:'Bu hafta support',weeklyNextReset:'Cuma 00:00 WIB sıfırlanır',pinTitle:'Admin Erisimi',pinSub:'4 haneli PIN gir',
   obT0:'Hos geldiniz!',obB0:'TikTok destek aginin en ozel uyelerinden biri oldunuz.',
   obT1:'Nasil calisir',obT2:'Hazirsiniz!',obB2:'Video Paylas a tiklayin ve TikTok URL nizi yapistirin!',
   obBtn0:'Ileri →',obBtn1:'Ileri →',obBtn2:'Hadi baslavalim! 🎉',
@@ -3128,7 +3128,7 @@ ar: {
   postedMsg: 'تم نشر الفيديو – مطلوب {n} دعم خلال 12 ساعة',
   loginPH: 'TikTok @المستخدم',
   postNow: '✅ نشر فيديو ممكن الآن',
-  lbTitle: 'أفضل الداعمين هذا الأسبوع',pinTitle:'وصول المشرف',pinSub:'أدخل رمز PIN من 4 أرقام',
+  lbTitle: 'أفضل الداعمين هذا الأسبوع',weeklySupLabel:'دعم هذا الأسبوع',weeklyNextReset:'إعادة الجمعة 00:00 WIB',pinTitle:'وصول المشرف',pinSub:'أدخل رمز PIN من 4 أرقام',
   obT0:'مرحبا!',obB0:'أصبحت الآن جزءا من شبكة دعم TikTok الأكثر حصرية.',
   obT1:'كيف يعمل',obT2:'أنت مستعد!',obB2:'انقر على نشر فيديو والصق رابط TikTok الخاص بك!',
   obBtn0:'التالي →',obBtn1:'التالي →',obBtn2:'هيا نبدأ! 🎉',
@@ -3259,7 +3259,7 @@ zh: {
   postedMsg: '视频已发布 – 12小时内需要{n}个支持',
   loginPH: 'TikTok @用户名',
   postNow: '✅ 现在可以发布视频',
-  lbTitle: '本周顶级支持者',pinTitle:'管理员访问',pinSub:'输入4位PIN',
+  lbTitle: '本周顶级支持者',weeklySupLabel:'本周支持次数',weeklyNextReset:'周五 00:00 WIB 重置',pinTitle:'管理员访问',pinSub:'输入4位PIN',
   obT0:'欢迎！',obB0:'您现在是最独家的TikTok支持网络的一部分。',
   obT1:'如何运作',obT2:'您准备好了！',obB2:'点击发布视频并粘贴您的TikTok链接！',
   obBtn0:'下一步 →',obBtn1:'下一步 →',obBtn2:'开始！🎉',
@@ -3390,7 +3390,7 @@ ja: {
   postedMsg: '動画を投稿しました – 12時間以内に{n}件のサポートが必要です',
   loginPH: 'TikTok @ユーザー名',
   postNow: '✅ 動画投稿が可能になりました',
-  lbTitle: '今週のトップサポーター',pinTitle:'管理者アクセス',pinSub:'4桁のPINを入力',
+  lbTitle: '今週のトップサポーター',weeklySupLabel:'今週のサポート数',weeklyNextReset:'金曜 00:00 WIB にリセット',pinTitle:'管理者アクセス',pinSub:'4桁のPINを入力',
   obT0:'ようこそ！',obB0:'最も独占的なTikTokサポートネットワークの一員になりました。',
   obT1:'仕組み',obT2:'準備完了！',obB2:'動画を投稿をクリックしてTikTok URLを貼り付けてください！',
   obBtn0:'次へ →',obBtn1:'次へ →',obBtn2:'始めよう！🎉',
@@ -3521,7 +3521,7 @@ pl: {
   postedMsg: 'Wideo opublikowane – potrzeba {n} wsparć w ciągu 12h',
   loginPH: 'TikTok @użytkownik',
   postNow: '✅ Publikacja wideo możliwa',
-  lbTitle: 'Najlepsi Wspierający w tym Tygodniu',pinTitle:'Dostep admina',pinSub:'Wprowadz 4-cyfrowy PIN',
+  lbTitle: 'Najlepsi Wspierający w tym Tygodniu',weeklySupLabel:'Supporty w tym tygodniu',weeklyNextReset:'Reset piątek 00:00 WIB',pinTitle:'Dostep admina',pinSub:'Wprowadz 4-cyfrowy PIN',
   obT0:'Witaj!',obB0:'Jestes teraz czescia najbardziej ekskluzywnej sieci wsparcia TikTok.',
   obT1:'Jak to dziala',obT2:'Jestes gotowy!',obB2:'Kliknij Opublikuj wideo i wklej swoj URL TikTok!',
   obBtn0:'Dalej →',obBtn1:'Dalej →',obBtn2:'Zaczynamy! 🎉',
@@ -3591,7 +3591,6 @@ function getAvatar(u) {
   return e[h % e.length];
 }
 function getTrophyScore(u) {
-  // Dynamic score: supports in last 30 days + bonus for recent post
   var now = Date.now();
   var thirtyDays = 30 * 86400000;
   var sevenDays = 7 * 86400000;
@@ -3599,12 +3598,14 @@ function getTrophyScore(u) {
   var lastPost = u.lastPost || 0;
   var recentPost = (now - lastPost) < sevenDays ? 1 : 0;
   var recentPost30 = (now - lastPost) < thirtyDays ? 1 : 0;
-  // Base: total supports (lifelong) + activity bonus
-  // We don't have per-day data so use total with activity weight
   var score = given;
-  if (recentPost) score = Math.round(score * 1.2);        // 20% boost if posted this week
-  else if (recentPost30) score = Math.round(score * 1.0); // normal if posted this month
-  else score = Math.round(score * 0.5);                    // 50% decay if inactive > 30 days
+  if (recentPost) score = Math.round(score * 1.2);
+  else if (recentPost30) score = Math.round(score * 1.0);
+  else score = Math.round(score * 0.5);
+  // Weekly activity bonus: high weeklyGiven = extra boost
+  var wg = u.weeklyGiven || 0;
+  if (wg >= 10) score = Math.round(score * 1.15);
+  else if (wg >= 5) score = Math.round(score * 1.07);
   return score;
 }
 function rankIdx(u) {
@@ -4780,6 +4781,7 @@ function enterApp() {
   checkExpired();
   saveSession(CU);
   checkBC();
+  checkWeeklyReset();
   if (!u.onboarded && u.role !== 'admin') {
     showOnboard();
   } else {
@@ -6159,6 +6161,41 @@ function startCountdownTick() {
 }
 
 // ── LEADERBOARD ───────────────────────────────────────────────────────────────
+// ── WEEKLY RANKING RESET (FRIDAY 00:00 WIB = UTC+7) ────────────────────────
+var WIB_OFFSET = 7 * 3600000; // UTC+7 in ms
+
+function getLastFridayWIB() {
+  // Returns timestamp of last Friday 00:00 WIB
+  var now = Date.now() + WIB_OFFSET; // shift to WIB
+  var d = new Date(now);
+  var dow = d.getUTCDay(); // 0=Sun,1=Mon,...,5=Fri,6=Sat
+  var daysSinceFri = (dow + 7 - 5) % 7; // days since last Friday
+  var fridayMidnightWIB = now - (daysSinceFri * 86400000) - (d.getUTCHours() * 3600000) - (d.getUTCMinutes() * 60000) - (d.getUTCSeconds() * 1000) - d.getUTCMilliseconds();
+  return fridayMidnightWIB - WIB_OFFSET; // back to UTC
+}
+
+function getNextFridayWIB() {
+  return getLastFridayWIB() + 7 * 86400000;
+}
+
+function checkWeeklyReset() {
+  if (!DB.settings) DB.settings = {};
+  var lastReset = DB.settings.weeklyResetTs || 0;
+  var lastFriday = getLastFridayWIB();
+  if (lastReset >= lastFriday) return; // already reset this week
+  // Reset weeklyGiven for all members
+  var changed = false;
+  Object.values(DB.members).forEach(function(m) {
+    if (m.role === 'admin') return;
+    if ((m.weeklyGiven||0) !== 0) {
+      m.weeklyGiven = 0;
+      changed = true;
+    }
+  });
+  DB.settings.weeklyResetTs = lastFriday;
+  if (changed) save();
+}
+
 // ── VERIFICATION CHECKMARK ───────────────────────────────────────────────────
 var VERIFIED_POSTS = 50;  // min. posts to qualify
 
@@ -6181,28 +6218,38 @@ function verifiedBadge(u) {
 function renderLeaderboard() {
   var list = document.getElementById('lb-list');
   if (!list) return;
-  var seen = {}; // deduplicate by normalized name — prevents ghost duplicates showing
+  var l = L[LANG] || L.de;
+  // Show countdown to next Friday WIB in header
+  var resetInfo = ge('lb-reset-info');
+  if (resetInfo) {
+    var nextFri = getNextFridayWIB();
+    var diff = nextFri - Date.now();
+    var dh = Math.floor(diff/3600000), dm = Math.floor((diff%3600000)/60000);
+    resetInfo.textContent = '⏱ ' + dh + 'h ' + dm + 'm — ' + (l.weeklyNextReset||'Reset Fr. WIB');
+  }
+  var seen = {};
   var scores = [];
   Object.values(DB.members).forEach(function(m) {
     if (m.role === 'admin' || m.status !== 'active') return;
-    if ((m.stats.given||0) <= 0) return;
+    var wg = m.weeklyGiven || 0;
+    if (wg <= 0) return;
     var normName = (m.name||m.key||'').toLowerCase().trim();
     if (seen[normName]) {
-      // Keep the entry with higher support count; discard the lower one
-      if ((m.stats.given||0) > seen[normName].given) {
+      if (wg > seen[normName].given) {
         var idx = scores.indexOf(seen[normName]);
         if (idx >= 0) scores.splice(idx, 1);
-        seen[normName] = {name:m.name||m.key, given:m.stats.given||0, key:m.key||m.name};
+        seen[normName] = {name:m.name||m.key, given:wg, key:m.key||m.name};
         scores.push(seen[normName]);
       }
     } else {
-      var entry = {name:m.name||m.key, given:m.stats.given||0, key:m.key||m.name};
+      var entry = {name:m.name||m.key, given:wg, key:m.key||m.name};
       seen[normName] = entry;
       scores.push(entry);
     }
   });
   scores.sort(function(a,b){return b.given-a.given;});
-  if (!scores.length) { list.innerHTML = '<div style="text-align:center;color:var(--text3);font-size:12px;padding:8px">Noch keine Supporter</div>'; return; }
+  var supLabel = l.weeklySupLabel || 'Supports diese Woche';
+  if (!scores.length) { list.innerHTML = '<div style="text-align:center;color:var(--t2);font-size:12px;padding:8px">Noch keine Supporter diese Woche</div>'; return; }
   var medals = ['&#127945;','&#127944;','&#127942;'];
   var mBg = ['linear-gradient(135deg,#ffd700,#f0a800)','linear-gradient(135deg,#c0c0c0,#909090)','linear-gradient(135deg,#cd7f32,#a05a20)'];
   var html = '';
@@ -6211,11 +6258,11 @@ function renderLeaderboard() {
     var e2 = top[i]; var isMe = CU && e2.key === CU;
     var bg = i < 3 ? mBg[i] : 'rgba(255,255,255,0.06)';
     var lbl = i < 3 ? medals[i] : String(i+1);
-    html += '<div style="display:flex;align-items:center;gap:9px;padding:7px 0;border-bottom:1px solid var(--border)"'+(i===top.length-1?' class="lb-last"':'')+'>';
+    html += '<div style="display:flex;align-items:center;gap:9px;padding:7px 0;border-bottom:1px solid var(--bdr)"'+(i===top.length-1?' class="lb-last"':'')+'>';
     html += '<div style="width:24px;height:24px;border-radius:50%;background:'+bg+';display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;flex-shrink:0">'+lbl+'</div>';
     html += '<div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600;color:var(--text)">'+esc(e2.name)+verifiedBadge(DB.members[e2.key])+(isMe?' &#11088;':'')+'<span style="font-size:10px"> '+(DB.members[e2.key]?trophySmall(DB.members[e2.key]):'')+' </span></div>';
-    html += '<div style="font-size:10px;color:var(--text3)">'+e2.given+' Supports</div></div>';
-    html += '<div style="font-size:1.1rem;font-weight:700;color:var(--gold2)">'+e2.given+'</div>';
+    html += '<div style="font-size:10px;color:var(--t2)">'+e2.given+' '+supLabel+'</div></div>';
+    html += '<div style="font-size:1.1rem;font-weight:700;color:var(--v)">'+e2.given+'</div>';
     html += '</div>';
   }
   list.innerHTML = html;
@@ -6298,6 +6345,7 @@ function openTkLink() {
     else { vs.r2Supporters=vs.r2Supporters||[]; if(vs.r2Supporters.indexOf(CU)<0) vs.r2Supporters.push(CU); }
     if (!us.stats) us.stats = {given:0, received:0};
     us.stats.given = (us.stats.given||0) + 1;
+    us.weeklyGiven = (us.weeklyGiven||0) + 1;
     if (!DB.settings) DB.settings = {};
     DB.settings.totalSupports = (DB.settings.totalSupports||0) + 1;
     var ownerS = DB.members[vs.ownerKey];
