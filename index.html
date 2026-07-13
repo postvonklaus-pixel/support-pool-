@@ -198,7 +198,7 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
 .empty-text{font-size:11px;line-height:1.5;text-transform:uppercase;letter-spacing:.04em}
 
 /* ── BALANCE HERO ── */
-.bal-card{background:#fff;border:1.5px solid var(--bdr);border-radius:22px;padding:18px;margin-bottom:10px;position:relative;box-shadow:0 2px 12px rgba(0,0,0,.06)}
+.bal-card{background:#fff;border:1.5px solid var(--bdr);border-top:3px solid var(--blue);border-radius:22px;padding:18px;margin-bottom:10px;position:relative;box-shadow:0 2px 12px rgba(0,0,0,.06)}
 .bal-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px}
 .bal-label{font-size:9px;color:var(--t2);font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:3px}
 .bal-num{font-family:'Space Grotesk',sans-serif;font-size:3rem;font-weight:700;line-height:1;color:var(--text)}
@@ -489,12 +489,12 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
 /* ── MODALS ── */
 .modal-bg{position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.35);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;padding:18px}
 .modal-bg.active{display:flex;animation:fadeUp .2s ease}
-.modal-box{background:#fff;border:1.5px solid var(--bdr);border-radius:22px;padding:22px;max-width:360px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,.12)}
-.modal-title{font-family:'Space Grotesk',sans-serif;font-size:1rem;font-weight:800;color:var(--text);margin-bottom:12px;text-align:center;text-transform:uppercase;letter-spacing:.07em}
+.modal-box{background:#fff;border:1.5px solid var(--bdr);border-top:3px solid var(--blue);border-radius:22px;padding:22px;max-width:360px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,.12)}
+.modal-title{font-family:'Space Grotesk',sans-serif;font-size:1rem;font-weight:800;color:var(--blue);margin-bottom:12px;text-align:center;text-transform:uppercase;letter-spacing:.07em}
 .modal-hint{font-size:11px;color:var(--t3);margin-bottom:11px;line-height:1.5;text-transform:uppercase;letter-spacing:.03em}
 .modal-footer{display:flex;gap:7px;margin-top:13px}
 /* Balance adjust modal – keep dark since it's admin-only */
-#balAdjModal .modal-box{background:#0e0f1e;border-color:rgba(124,58,237,.3);color:#f0f2ff}
+#balAdjModal .modal-box{background:#0e0f1e;border-color:rgba(124,58,237,.3);border-top:3px solid #7c3aed;color:#f0f2ff}
 #balAdjModal .modal-title{color:#a78bfa}
 #balAdjModal .modal-hint{color:#505878}
 #balAdjModal input[type=number]{background:rgba(14,15,30,.98)!important;color:#f0f2ff!important;-webkit-text-fill-color:#f0f2ff!important;border-color:rgba(124,58,237,.45)!important}
@@ -600,17 +600,18 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
 /* ── TOUR OVERLAY ── */
 #tour-overlay{position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(6px)}
 #tour-overlay.active{display:flex}
-.tour-box{background:#fff;border:1.5px solid var(--bdr);border-radius:24px;padding:28px 22px;max-width:360px;width:100%;text-align:center;box-shadow:0 12px 40px rgba(0,0,0,.12)}
-.tour-icon{font-size:52px;margin-bottom:10px;display:block}
-.tour-title{font-size:1.1rem;font-weight:800;color:var(--v);margin-bottom:10px;text-transform:uppercase;letter-spacing:.06em}
-.tour-body{font-size:13px;color:var(--t2);line-height:1.65;margin-bottom:18px}
-.tour-dots{display:flex;gap:7px;justify-content:center;margin-bottom:20px}
+.tour-box{background:#fff;border:1.5px solid var(--vb);border-top:3px solid var(--v);border-radius:24px;padding:28px 22px 22px;max-width:360px;width:100%;text-align:center;box-shadow:0 12px 40px rgba(212,134,10,.14),0 4px 16px rgba(0,0,0,.08)}
+.tour-icon{font-size:38px;width:68px;height:68px;line-height:68px;background:rgba(212,134,10,.1);border:2px solid var(--vb);border-radius:50%;margin:0 auto 14px;display:block}
+.tour-title{font-size:1.05rem;font-weight:800;color:var(--v);margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em}
+.tour-body{font-size:13px;color:var(--text);line-height:1.7;margin-bottom:16px}
+.tour-counter{font-size:10px;font-weight:700;color:var(--t3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:10px}
+.tour-dots{display:flex;gap:7px;justify-content:center;margin-bottom:18px}
 .tour-dot{width:8px;height:8px;border-radius:50%;background:var(--bg2);transition:all .25s}
-.tour-dot.active{background:var(--v);width:22px;border-radius:4px}
+.tour-dot.active{background:var(--v);width:24px;border-radius:4px;box-shadow:0 0 8px rgba(212,134,10,.35)}
 .tour-footer{display:flex;gap:8px}
 
 /* ── POST SUCCESS MODAL ── */
-#postSuccessModal .modal-box{text-align:center}
+#postSuccessModal .modal-box{text-align:center;border-top:3px solid var(--green)}
 
 /* ── RANK CURRENT ROW ── */
 .rank-current{background:rgba(212,134,10,.08);border:1.5px solid var(--vb);border-radius:10px;padding:7px 12px;color:var(--v)!important;font-weight:700!important;font-size:12px;display:inline-block;margin:2px 0;position:relative;padding-left:22px;text-transform:uppercase;letter-spacing:.04em}
@@ -689,13 +690,19 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
 #login-suggest{display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:#fff;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.13);overflow:hidden;z-index:100}
 #login-sug-overlay{display:none;position:fixed;top:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:#fff;border-radius:0 0 22px 22px;box-shadow:0 4px 28px rgba(0,0,0,.18);overflow:hidden;z-index:600;padding:12px 8px 8px;border-bottom:1.5px solid var(--bdr)}
 #login-sug-overlay-title{font-size:10px;font-weight:800;color:var(--t3);text-transform:uppercase;letter-spacing:.07em;padding:0 8px 8px}
-#balRedModal .modal-box{border-color:rgba(255,59,48,.35);border-width:2px}
+#balRedModal .modal-box{border-color:rgba(255,59,48,.35);border-top:3px solid var(--red)}
 #balRedModal .modal-title{color:var(--red)}
-#balGreenModal .modal-box{border-color:rgba(52,199,89,.35);border-width:2px}
+#balGreenModal .modal-box{border-color:rgba(52,199,89,.35);border-top:3px solid var(--green)}
 #balGreenModal .modal-title{color:var(--green)}
-#setOnbModal .modal-box{border-color:rgba(0,122,255,.22);border-width:2px}
-#inviteInfoModal .modal-box{border-color:rgba(212,134,10,.35);border-width:2px}
+#setOnbModal .modal-box{border-color:rgba(0,122,255,.22);border-top:3px solid var(--blue)}
+#inviteInfoModal .modal-box{border-color:rgba(212,134,10,.35);border-top:3px solid var(--v)}
 #inviteInfoModal .modal-title{color:var(--v)}
+#balCapModal .modal-box{border-top:3px solid var(--v)}
+#balCapModal .modal-title{color:var(--v)}
+#confirmModal .modal-box{border-top:3px solid var(--red)}
+#confirmModal .modal-title{color:var(--red)}
+#pinForgotModal .modal-box{border-top:3px solid #7c3aed}
+#pinForgotModal .modal-title{color:#7c3aed}
 .invite-copy-row{display:flex;gap:6px;align-items:stretch;margin-bottom:8px}
 .invite-copy-area{flex:1;background:var(--bg2);border-radius:10px;padding:10px 12px;font-size:12px;color:var(--text);line-height:1.5;white-space:pre-wrap;word-break:break-word;border:1.5px solid var(--bdr)}
 .invite-copy-btn{padding:0 12px;border-radius:10px;background:var(--blue);border:none;color:#fff;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0}
@@ -1838,6 +1845,7 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
     <div class="tour-icon" id="tour-icon">👋</div>
     <div class="tour-title" id="tour-title">Willkommen!</div>
     <div class="tour-body" id="tour-body">Lass uns die App gemeinsam entdecken.</div>
+    <div class="tour-counter" id="tour-counter">1 / 6</div>
     <div class="tour-dots" id="tour-dots"></div>
     <div class="tour-footer">
       <button class="btn-ghost btn-sm" id="tour-skip" onclick="closeTour()">✕</button>
@@ -7072,6 +7080,8 @@ function renderTourStep() {
   var iconEl = ge('tour-icon'); if(iconEl) iconEl.textContent = s.icon;
   var titleEl = ge('tour-title'); if(titleEl) titleEl.textContent = s.title;
   var bodyEl = ge('tour-body'); if(bodyEl) bodyEl.textContent = s.body;
+  var counterEl = ge('tour-counter');
+  if (counterEl) counterEl.textContent = (_tourStep + 1) + ' / ' + steps.length;
   // Dots
   var dotsEl = ge('tour-dots');
   if (dotsEl) {
