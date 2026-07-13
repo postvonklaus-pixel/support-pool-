@@ -609,6 +609,16 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
 .tour-dot{width:8px;height:8px;border-radius:50%;background:var(--bg2);transition:all .25s}
 .tour-dot.active{background:var(--v);width:24px;border-radius:4px;box-shadow:0 0 8px rgba(212,134,10,.35)}
 .tour-footer{display:flex;gap:8px}
+/* Tour-2 (Settings) — blue accent */
+#tour-overlay.tour-2 .tour-box{border-top-color:var(--blue);box-shadow:0 12px 40px rgba(0,122,255,.12),0 4px 16px rgba(0,0,0,.08)}
+#tour-overlay.tour-2 .tour-icon{background:rgba(0,122,255,.1);border-color:rgba(0,122,255,.3)}
+#tour-overlay.tour-2 .tour-title{color:var(--blue)}
+#tour-overlay.tour-2 .tour-dot.active{background:var(--blue);width:24px;border-radius:4px;box-shadow:0 0 8px rgba(0,122,255,.35)}
+/* Tour-3 (Pool) — teal/wave accent */
+#tour-overlay.tour-3 .tour-box{border-top-color:#0ea5e9;box-shadow:0 12px 40px rgba(14,165,233,.12),0 4px 16px rgba(0,0,0,.08)}
+#tour-overlay.tour-3 .tour-icon{background:rgba(14,165,233,.1);border-color:rgba(14,165,233,.3)}
+#tour-overlay.tour-3 .tour-title{color:#0ea5e9}
+#tour-overlay.tour-3 .tour-dot.active{background:#0ea5e9;width:24px;border-radius:4px;box-shadow:0 0 8px rgba(14,165,233,.35)}
 
 /* ── POST SUCCESS MODAL ── */
 #postSuccessModal .modal-box{text-align:center;border-top:3px solid var(--green)}
@@ -1577,7 +1587,7 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
             </div>
             <span class="settings-row-arrow">›</span>
           </div>
-          <div class="settings-row" onclick="startTour()" style="cursor:pointer">
+          <div class="settings-row" onclick="startTour(2)" style="cursor:pointer">
             <div class="settings-row-left">
               <div class="settings-row-label">🧭 <span id="t-nav-tour">Rundgang</span></div>
               <div class="settings-row-sub" id="set-tour-sub">App-Funktionen entdecken</div>
@@ -1785,6 +1795,10 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
     <button class="ni" id="ni-settings" data-sc="settings" onclick="goScreen('settings')">
       <span class="nav-icon">⚙️</span>
       <span id="t-nav-settings">Einstellungen</span>
+    </button>
+    <button class="ni" id="ni-wave" onclick="startTour(3)">
+      <span class="nav-icon">🌊</span>
+      <span id="t-nav-wave">Pool</span>
     </button>
     <button class="ni" id="ni-logout" onclick="doLogout()">
       <span class="nav-icon">🚪</span>
@@ -3866,7 +3880,7 @@ function applyLang() {
   st('t-a-grp', l.aGrp); st('t-a-mem', l.aMem); st('t-a-vid', l.aVid);
   // Nav
   st('t-nav-home', l.navHome); st('t-nav-profile', l.navProfile); st('t-nav-admin', l.navAdmin); st('t-nav-logout', l.logout||'Logout');
-  st('t-nav-tour', l.navTour||'Rundgang');
+  st('t-nav-tour', l.navTour||'Rundgang'); st('t-nav-wave', l.navWave||'Pool');
   st('t-nav-settings', l.navSettings||'Einstellungen');
   st('t-privacy-close', l.close||'Schließen');
   st('t-tpl-lib-close', l.close||'Schließen');
@@ -6295,14 +6309,7 @@ function obDone() {
   save();
   goScreen('home');
   setTimeout(function(){ initGuide(); }, 1000);
-  // Offer tour to new users
-  setTimeout(function() {
-    var l = L[LANG]||L.de;
-    var okTxt = l.postSuccessOk || 'Ich habe verstanden!';
-    // Show a toast invite for the tour
-    var msg = (l.tourSteps && l.tourSteps[0] && l.tourSteps[0].title) ? '🧭 '+(l.navTour||'Rundgang')+' verfügbar!' : '🧭 Rundgang verfügbar!';
-    toast(msg, 'info', 3500);
-  }, 800);
+  setTimeout(function() { startTour(1); }, 1200);
 }
 
 // ── ONLINE / OFFLINE ─────────────────────────────────────────────────────────
@@ -7061,10 +7068,26 @@ function delMyVid(vid) {
 
 
 // ── VIRTUAL TOUR ──────────────────────────────────────────────────────────
-var _tourStep = 0;
+var _tourStep = 0, _tourId = 1;
 
 function getTourSteps() {
   var l = L[LANG]||L.de;
+  if (_tourId === 2) return l.tourSteps2 || [
+    {icon:'⚙️',title:'Einstellungen',body:'Hier findest du alle persönlichen App-Einstellungen.'},
+    {icon:'🌐',title:'Sprache',body:'Wähle deine Sprache bequem mit dem Drum-Picker.'},
+    {icon:'🔑',title:'PIN-Schutz',body:'Schütze dein Konto mit einem persönlichen 4-stelligen PIN.'},
+    {icon:'🔔',title:'Benachrichtigungen',body:'Aktiviere Push-Meldungen, um neue Support-Aufgaben sofort zu sehen.'},
+    {icon:'📱',title:'Homescreen',body:'Installiere die App auf deinem Homescreen für schnellen Zugriff.'},
+    {icon:'✅',title:'Alles klar!',body:'Du kennst jetzt alle Einstellungen. Viel Erfolg! 🎉'}
+  ];
+  if (_tourId === 3) return l.tourSteps3 || [
+    {icon:'🌊',title:'Der Support Pool',body:'Verbindet TikTok-Creators weltweit – gib Support, bekomme Support zurück.'},
+    {icon:'💰',title:'Guthaben',body:'Für jeden Support, den du gibst, erhältst du Guthaben auf dein Konto.'},
+    {icon:'📹',title:'Video posten',body:'Poste deine TikTok-URL und andere Mitglieder supporten dich!'},
+    {icon:'🏆',title:'Ränge & Belohnungen',body:'Steige im Rang auf: vom Newcomer bis zum Pool-Profi!'},
+    {icon:'🤝',title:'Freunde einladen',body:'Lade Freunde ein und erhalte Bonus-Guthaben für jeden Neuzugang.'},
+    {icon:'🚀',title:'Bereit zum Tauchen?',body:'Der Pool wartet auf dich – tauche ein und wachse! 🌊'}
+  ];
   return l.tourSteps || [
     {icon:'👋',title:'Willkommen!',body:'Lass uns die App gemeinsam entdecken.'},
     {icon:'🏠',title:'Home – Guthaben',body:'Hier siehst du dein Support-Guthaben.'},
@@ -7075,11 +7098,12 @@ function getTourSteps() {
   ];
 }
 
-function startTour() {
+function startTour(tourId) {
+  _tourId = tourId || 1;
   _tourStep = 0;
-  renderTourStep();
   var overlay = ge('tour-overlay');
-  if (overlay) overlay.classList.add('active');
+  if (overlay) overlay.className = 'active tour-' + _tourId;
+  renderTourStep();
 }
 
 function renderTourStep() {
