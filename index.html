@@ -331,6 +331,7 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
 .prof-stat{background:var(--bg2);border-radius:12px;padding:11px 7px;text-align:center}
 .prof-stat-n{font-family:'Space Grotesk',sans-serif;font-size:1.2rem;font-weight:700;color:var(--v)}
 .prof-stat-l{font-size:9px;color:var(--t2);margin-top:2px;text-transform:uppercase;letter-spacing:.05em}
+.verified-chk{display:inline-flex;align-items:center;justify-content:center;background:var(--blue);color:#fff;border-radius:50%;width:15px;height:15px;font-size:9px;font-weight:900;margin-left:4px;vertical-align:middle;flex-shrink:0;box-shadow:0 1px 4px rgba(0,122,255,.35);line-height:1}
 .streak-wrap{margin:10px 0 4px;text-align:center}
 .streak-title{font-size:9px;color:var(--t3);margin-bottom:5px;letter-spacing:.06em;text-transform:uppercase}
 .streak-days{display:flex;gap:5px;justify-content:center}
@@ -1396,7 +1397,7 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
 
       <div class="profile-hero">
         <div class="prof-avatar" id="prof-avatar">😊</div>
-        <div class="prof-name" id="prof-name">–</div>
+        <div style="display:flex;align-items:center;justify-content:center;gap:4px"><div class="prof-name" id="prof-name">–</div><span id="prof-verified-chk" style="display:none;background:var(--blue);color:#fff;border-radius:50%;width:20px;height:20px;font-size:12px;font-weight:900;display:none;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,122,255,.35);flex-shrink:0" title="Verifiziert">✓</span></div>
         <div id="prof-rank" style="margin-bottom:4px"></div>
         <div id="prof-since" style="font-size:11px;color:var(--t2);margin-bottom:8px;letter-spacing:.02em"></div>
         <div id="rank-agenda" style="font-size:11px;color:var(--t2);text-align:center;margin-bottom:8px;line-height:1.6"></div>
@@ -4971,7 +4972,7 @@ function renderOpenList() {
     var ownerMem = DB.members[v.ownerKey];
     var avEmoji = ownerMem ? getAvatar(ownerMem) : esc(init);
     html += '<div class="vc-av" style="font-size:20px">'+avEmoji+'</div>';
-    html += '<div class="vc-info"><div class="vc-name">@'+esc(ownerName)+(ownerMem?' <span style="font-size:10px">'+trophySmall(ownerMem)+'</span>':'')+'</div>';
+    html += '<div class="vc-info"><div class="vc-name">@'+esc(ownerName)+verifiedBadge(ownerMem)+(ownerMem?' <span style="font-size:10px">'+trophySmall(ownerMem)+'</span>':'')+'</div>';
     var ts2 = Math.floor((left%60000)/1000);
     var pad2 = function(n){return n<10?'0'+n:String(n);};
     var timeStr = pad2(h)+'h '+pad2(m)+'m '+pad2(ts2)+'s';
@@ -5059,7 +5060,7 @@ function renderSupportCard(idx) {
   var avEmoji = ownerMem ? getAvatar(ownerMem) : (ownerName[0] || '?').toUpperCase();
   var html = '<div class="vc-top">';
   html += '<div class="vc-av" style="font-size:20px">' + avEmoji + '</div>';
-  html += '<div class="vc-info"><div class="vc-name">@' + esc(ownerName) + (ownerMem ? ' <span style="font-size:10px">' + trophySmall(ownerMem) + '</span>' : '') + '</div>';
+  html += '<div class="vc-info"><div class="vc-name">@' + esc(ownerName) + verifiedBadge(ownerMem) + (ownerMem ? ' <span style="font-size:10px">' + trophySmall(ownerMem) + '</span>' : '') + '</div>';
   html += '<div class="' + timeCls + '" data-expires="' + expiry + '">⏰ ' + pad2(h) + 'h ' + pad2(m) + 'm ' + pad2(ts2) + 's</div></div>';
   html += '<div class="rbadge ' + rbcls + '">' + t('r' + rnd) + '</div>';
   html += '</div>';
@@ -5385,7 +5386,9 @@ function renderProfile() {
   var u = DB.members[CU];
   if (!u.stats) { u.stats = {given:0, received:0}; }
   initPush();
-  st('prof-name', u.name||fbDec(CU));
+  var profNameEl = ge('prof-name'); if (profNameEl) profNameEl.textContent = u.name||fbDec(CU);
+  var profVchk = ge('prof-verified-chk');
+  if (profVchk) profVchk.style.display = isVerified(u) ? 'inline-flex' : 'none';
   ge('prof-avatar').textContent = getAvatar(u);
   ge('prof-rank').innerHTML = rankBadge(u);
   // Days in pool
@@ -5662,7 +5665,7 @@ function renderAdmOv() {
       var bc = bal>0?'var(--green)':bal<0?'var(--red)':'var(--text3)';
       html += '<div data-view-k="'+esc(mk)+'" class="adm-mem-row" style="display:flex;align-items:center;gap:9px;background:linear-gradient(135deg,rgba(15,18,40,0.98),rgba(10,14,32,0.95));border:1px solid rgba(232,184,75,0.1);border-radius:14px;padding:10px 11px;margin-bottom:6px;transition:border-color 0.2s;cursor:pointer">';
       html += '<div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#c49a2e,#ffd166);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;border:2px solid rgba(232,184,75,0.22)">'+getAvatar(m)+'</div>';
-      html += '<div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(m.name||mk)+(m.role==='admin'?' &#128081;':'')+'</div>';
+      html += '<div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(m.name||mk)+verifiedBadge(m)+(m.role==='admin'?' &#128081;':'')+'</div>';
       html += '<div style="font-size:10px;color:var(--text3);margin-top:2px;display:flex;align-items:center;gap:5px">'+trophySmall(m);
       if (hasLive) html += ' <span style="display:inline-flex;align-items:center;gap:3px;color:#10d98a;font-weight:700"><span style="width:7px;height:7px;border-radius:50%;background:#10d98a;box-shadow:0 0 6px #10d98a;display:inline-block;animation:liveP 1.2s ease-in-out infinite"></span>LIVE</span>';
       if (daysJoined!==null) html += ' · 📅 '+daysJoined+'d';
@@ -6156,6 +6159,25 @@ function startCountdownTick() {
 }
 
 // ── LEADERBOARD ───────────────────────────────────────────────────────────────
+// ── VERIFICATION CHECKMARK ───────────────────────────────────────────────────
+var VERIFIED_POSTS = 50;  // min. posts to qualify
+
+function isVerified(u) {
+  if (!u || (u.postsTotal||0) < VERIFIED_POSTS) return false;
+  // Require 7 consecutive active days (streak)
+  var days = getStreakData(u);
+  var streak = 0;
+  for (var j = days.length - 1; j >= 0; j--) {
+    if (days[j].active) streak++;
+    else if (j < days.length - 1) break;
+  }
+  return streak >= 7;
+}
+
+function verifiedBadge(u) {
+  return isVerified(u) ? '<span class="verified-chk" title="Verifiziert ✓">✓</span>' : '';
+}
+
 function renderLeaderboard() {
   var list = document.getElementById('lb-list');
   if (!list) return;
@@ -6191,7 +6213,7 @@ function renderLeaderboard() {
     var lbl = i < 3 ? medals[i] : String(i+1);
     html += '<div style="display:flex;align-items:center;gap:9px;padding:7px 0;border-bottom:1px solid var(--border)"'+(i===top.length-1?' class="lb-last"':'')+'>';
     html += '<div style="width:24px;height:24px;border-radius:50%;background:'+bg+';display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;flex-shrink:0">'+lbl+'</div>';
-    html += '<div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600;color:var(--text)">'+esc(e2.name)+(isMe?' &#11088;':'')+'<span style="font-size:10px"> '+(DB.members[e2.key]?trophySmall(DB.members[e2.key]):'')+' </span></div>';
+    html += '<div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600;color:var(--text)">'+esc(e2.name)+verifiedBadge(DB.members[e2.key])+(isMe?' &#11088;':'')+'<span style="font-size:10px"> '+(DB.members[e2.key]?trophySmall(DB.members[e2.key]):'')+' </span></div>';
     html += '<div style="font-size:10px;color:var(--text3)">'+e2.given+' Supports</div></div>';
     html += '<div style="font-size:1.1rem;font-weight:700;color:var(--gold2)">'+e2.given+'</div>';
     html += '</div>';
