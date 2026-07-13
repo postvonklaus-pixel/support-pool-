@@ -651,6 +651,21 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
 
 /* ── LOGIN AUTOCOMPLETE ── */
 #login-suggest{display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:#fff;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.13);overflow:hidden;z-index:100}
+#login-sug-overlay{display:none;position:fixed;top:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:#fff;border-radius:0 0 22px 22px;box-shadow:0 4px 28px rgba(0,0,0,.18);overflow:hidden;z-index:600;padding:12px 8px 8px;border-bottom:1.5px solid var(--bdr)}
+#login-sug-overlay-title{font-size:10px;font-weight:800;color:var(--t3);text-transform:uppercase;letter-spacing:.07em;padding:0 8px 8px}
+#balRedModal .modal-box{border-color:rgba(255,59,48,.35);border-width:2px}
+#balRedModal .modal-title{color:var(--red)}
+#balGreenModal .modal-box{border-color:rgba(52,199,89,.35);border-width:2px}
+#balGreenModal .modal-title{color:var(--green)}
+#setOnbModal .modal-box{border-color:rgba(0,122,255,.22);border-width:2px}
+#inviteInfoModal .modal-box{border-color:rgba(212,134,10,.35);border-width:2px}
+#inviteInfoModal .modal-title{color:var(--v)}
+.invite-copy-row{display:flex;gap:6px;align-items:stretch;margin-bottom:8px}
+.invite-copy-area{flex:1;background:var(--bg2);border-radius:10px;padding:10px 12px;font-size:12px;color:var(--text);line-height:1.5;white-space:pre-wrap;word-break:break-word;border:1.5px solid var(--bdr)}
+.invite-copy-btn{padding:0 12px;border-radius:10px;background:var(--blue);border:none;color:#fff;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0}
+.invite-lang-row{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px}
+.invite-lang-btn{padding:4px 10px;border-radius:20px;border:1.5px solid var(--bdr);background:var(--bg2);font-size:11px;cursor:pointer;font-family:inherit;color:var(--t2);transition:all .15s}
+.invite-lang-btn.active{background:var(--blue);border-color:var(--blue);color:#fff;font-weight:700}
 .login-sug-item{padding:11px 16px;cursor:pointer;font-size:14px;color:var(--text);border-bottom:1px solid var(--bdr);text-align:left}
 .login-sug-item:last-child{border-bottom:none}
 .login-sug-item:hover,.login-sug-item:active{background:var(--bg2)}
@@ -1148,7 +1163,7 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
         <input class="sp-input" id="loginInput" type="text" autocomplete="off"
                placeholder="TikTok Username"
                oninput="onLoginInput()"
-               onblur="setTimeout(function(){var s=ge('login-suggest');if(s)s.style.display='none';},160)"
+               onblur="setTimeout(function(){var s=ge('login-suggest');if(s)s.style.display='none';var ov=ge('login-sug-overlay');if(ov)ov.style.display='none';},160)"
                onkeydown="handleLoginKey(event)"/>
         <div id="login-suggest"></div>
         <button id="login-btn" onclick="doLogin()">→</button>
@@ -1548,6 +1563,25 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
         </div>
       </div>
 
+      <!-- Invite Friends -->
+      <div class="settings-section" id="set-invite-section">
+        <div class="settings-section-title" id="set-sec-invite">🤝 Freunde einladen</div>
+        <div class="settings-block">
+          <div class="invite-lang-row" id="invite-lang-row"></div>
+          <div style="font-size:11px;color:var(--t3);margin-bottom:5px" id="t-invite-msg-label">Einladungstext:</div>
+          <div class="invite-copy-row">
+            <div class="invite-copy-area" id="invite-msg-area"></div>
+            <button class="invite-copy-btn" onclick="copyInviteMsg()">📋</button>
+          </div>
+          <div style="font-size:11px;color:var(--t3);margin-bottom:5px" id="t-invite-link-label">Support Pool Link:</div>
+          <div class="invite-copy-row">
+            <div class="invite-copy-area" id="invite-link-area" style="font-size:11px;color:var(--t2)"></div>
+            <button class="invite-copy-btn" onclick="copyInviteLink()">📋</button>
+          </div>
+          <button class="btn-ghost" style="width:100%;text-align:center;margin-top:6px;font-size:11px" onclick="openInviteInfo()" id="t-invite-info-btn">Strategie ☝️</button>
+        </div>
+      </div>
+
       <!-- Logout -->
       <button class="logout-btn" onclick="doLogout()">
         🚪 <span id="t-logout-set">Abmelden</span>
@@ -1622,6 +1656,58 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
             </div>
           </div>
         </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Login Suggestion Overlay -->
+  <div id="login-sug-overlay">
+    <div id="login-sug-overlay-title">Mitglieder</div>
+    <div id="login-sug-overlay-list"></div>
+  </div>
+
+  <!-- Settings Onboarding Modal -->
+  <div class="modal-bg" id="setOnbModal">
+    <div class="modal-box">
+      <div class="modal-title" id="setOnb-title">PIN aktivieren?</div>
+      <div style="font-size:13px;color:var(--t2);line-height:1.6;margin-bottom:14px" id="setOnb-body"></div>
+      <div class="modal-footer" style="flex-direction:column;gap:7px">
+        <button class="btn-prime" style="width:100%;font-size:13px" onclick="setOnbPrimary()" id="setOnb-primary">→</button>
+        <button class="btn-ghost" style="width:100%;text-align:center" onclick="setOnbSecondary()" id="setOnb-secondary">—</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Balance Red Modal -->
+  <div class="modal-bg" id="balRedModal">
+    <div class="modal-box">
+      <div class="modal-title" id="balRed-title">⚖️ Balance prüfen!</div>
+      <div style="font-size:13px;color:var(--t2);line-height:1.6;margin-bottom:14px" id="balRed-body"></div>
+      <div class="modal-footer">
+        <button class="btn-prime" style="flex:1;font-size:13px" onclick="closeModal('balRedModal');goScreen('home')" id="balRed-btn">Jetzt supporten</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Balance Green Modal -->
+  <div class="modal-bg" id="balGreenModal">
+    <div class="modal-box">
+      <div class="modal-title" id="balGreen-title">🎉 Super Balance!</div>
+      <div style="font-size:13px;color:var(--t2);line-height:1.6;margin-bottom:14px" id="balGreen-body"></div>
+      <div class="modal-footer">
+        <button class="btn-ghost btn-sm" style="flex:1;text-align:center" onclick="closeModal('balGreenModal')" id="balGreen-btn">Schließen</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Invite Info Modal -->
+  <div class="modal-bg" id="inviteInfoModal">
+    <div class="modal-box">
+      <div class="modal-title" id="inviteInfo-title">☝️ TikTok-Strategie</div>
+      <div style="font-size:13px;color:var(--t2);line-height:1.7;margin-bottom:14px;white-space:pre-wrap" id="inviteInfo-body"></div>
+      <div class="modal-footer">
+        <button class="btn-ghost btn-sm" style="flex:1;text-align:center" onclick="closeModal('inviteInfoModal')">OK</button>
       </div>
     </div>
   </div>
@@ -2212,6 +2298,32 @@ de: {
   balAdjMsg: 'Deine Balance wurde angepasst. Neue Balance: {bal}',
   offlineSupError: '📡 Kein Internet — Supporten nicht möglich',
   notifsHint: '💡 Benachrichtigungen mit 🗑 löschen',
+  setOnbPinTitle: 'PIN aktivieren?',
+  setOnbPinBody: 'Schütze dein Konto mit einem 4-stelligen PIN. Schnell & sicher.',
+  setOnbPinGo: '🔑 Zur PIN-Eingabe',
+  setOnbPinSkip: 'Weiter ohne PIN',
+  setOnbPinDismiss: 'Nicht mehr erinnern',
+  setOnbPushTitle: 'Push-Nachrichten?',
+  setOnbPushBody: 'Erhalte eine Benachrichtigung, wenn jemand dein Video supportet.',
+  setOnbPushYes: '🔔 Ja, aktivieren',
+  setOnbPushNo: 'Nein danke',
+  setOnbPrivTitle: 'Datenschutz lesen',
+  setOnbPrivBody: 'Bevor du weitermachst – lies kurz unsere Datenschutzerklärung. Sie ist kurz!',
+  setOnbPrivRead: '🔒 Jetzt lesen',
+  setOnbPrivAccept: 'Akzeptieren & weiter',
+  balRedTitle: '⚖️ Balance prüfen!',
+  balRedBody: 'Deine Balance ist negativ. Bitte unterstütze andere Mitglieder, um wieder ausgeglichen zu sein.',
+  balRedBtn: 'Jetzt supporten',
+  balGreenTitle: '🎉 Super Balance!',
+  balGreenBody: 'Deine Balance ist positiv – du hilfst wirklich! Danke fürs Mitmachen.',
+  balGreenBtn: 'Schließen',
+  inviteSecTitle: '🤝 Freunde einladen',
+  inviteMsgLabel: 'Einladungstext:',
+  inviteLinkLabel: 'Support Pool Link:',
+  inviteInfoBtn: 'Strategie ☝️',
+  inviteInfoTitle: '☝️ TikTok-Strategie',
+  inviteInfoBody: '1️⃣ Schreibe einen persönlichen Kommentar unter einem TikTok-Video eines Freundes. Zeige echtes Interesse!\n2️⃣ Wenn der Kontakt warm ist – schick diese Einladung per DM. So wirkt sie einladend, nicht spammig.',
+  inviteMsg: 'Hey {name}! 👋 Ich nutze gerade NOVA Support Pool – eine App, wo wir uns gegenseitig auf TikTok supporten. Klingt interessant? Schau mal rein!',
   postedMsg: 'Video gepostet – {n} Supports in 12h benötigt',
   loginPH: 'TikTok @Username',
   postNow: '✅ Video posten jetzt möglich',
@@ -2317,6 +2429,32 @@ en: {
   balAdjMsg: 'Your balance was adjusted. New balance: {bal}',
   offlineSupError: '📡 No internet — support not available',
   notifsHint: '💡 Delete notifications with 🗑',
+  setOnbPinTitle: 'Activate PIN?',
+  setOnbPinBody: 'Protect your account with a 4-digit PIN. Quick & secure.',
+  setOnbPinGo: '🔑 Set PIN now',
+  setOnbPinSkip: 'Continue without PIN',
+  setOnbPinDismiss: 'Don\'t remind me again',
+  setOnbPushTitle: 'Push notifications?',
+  setOnbPushBody: 'Get notified when someone supports your video.',
+  setOnbPushYes: '🔔 Yes, activate',
+  setOnbPushNo: 'No thanks',
+  setOnbPrivTitle: 'Read privacy policy',
+  setOnbPrivBody: 'Before you continue – take a quick look at our privacy policy. It\'s short!',
+  setOnbPrivRead: '🔒 Read now',
+  setOnbPrivAccept: 'Accept & continue',
+  balRedTitle: '⚖️ Check your balance!',
+  balRedBody: 'Your balance is negative. Please support other members to get back on track.',
+  balRedBtn: 'Support now',
+  balGreenTitle: '🎉 Great balance!',
+  balGreenBody: 'Your balance is positive – you\'re really helping! Thanks for participating.',
+  balGreenBtn: 'Close',
+  inviteSecTitle: '🤝 Invite friends',
+  inviteMsgLabel: 'Invitation text:',
+  inviteLinkLabel: 'Support Pool link:',
+  inviteInfoBtn: 'Strategy ☝️',
+  inviteInfoTitle: '☝️ TikTok Strategy',
+  inviteInfoBody: '1️⃣ Write a personal comment on a friend\'s TikTok video. Show genuine interest!\n2️⃣ Once the contact is warm – send this invite via DM. That way it feels inviting, not spammy.',
+  inviteMsg: 'Hey {name}! 👋 I\'m using NOVA Support Pool – an app where we support each other on TikTok. Sounds interesting? Check it out!',
   postedMsg: 'Video posted – {n} supports needed in 12h',
   loginPH: 'TikTok @username',
   postNow: '✅ Post video now possible',
@@ -2422,6 +2560,32 @@ id: {
   balAdjMsg: 'Saldo Anda disesuaikan. Saldo baru: {bal}',
   offlineSupError: '📡 Tidak ada internet — support tidak tersedia',
   notifsHint: '💡 Hapus notifikasi dengan 🗑',
+  setOnbPinTitle: 'Aktifkan PIN?',
+  setOnbPinBody: 'Lindungi akunmu dengan PIN 4 digit. Cepat & aman.',
+  setOnbPinGo: '🔑 Atur PIN sekarang',
+  setOnbPinSkip: 'Lanjut tanpa PIN',
+  setOnbPinDismiss: 'Jangan ingatkan lagi',
+  setOnbPushTitle: 'Notifikasi Push?',
+  setOnbPushBody: 'Dapatkan notifikasi saat seseorang mendukung videomu.',
+  setOnbPushYes: '🔔 Ya, aktifkan',
+  setOnbPushNo: 'Tidak, terima kasih',
+  setOnbPrivTitle: 'Baca kebijakan privasi',
+  setOnbPrivBody: 'Sebelum melanjutkan – baca sekilas kebijakan privasi kami. Singkat kok!',
+  setOnbPrivRead: '🔒 Baca sekarang',
+  setOnbPrivAccept: 'Setuju & lanjut',
+  balRedTitle: '⚖️ Cek saldomu!',
+  balRedBody: 'Saldomu negatif. Tolong dukung anggota lain agar kembali seimbang.',
+  balRedBtn: 'Dukung sekarang',
+  balGreenTitle: '🎉 Saldo bagus!',
+  balGreenBody: 'Saldomu positif – kamu benar-benar membantu! Terima kasih sudah berpartisipasi.',
+  balGreenBtn: 'Tutup',
+  inviteSecTitle: '🤝 Undang teman',
+  inviteMsgLabel: 'Teks undangan:',
+  inviteLinkLabel: 'Link Support Pool:',
+  inviteInfoBtn: 'Strategi ☝️',
+  inviteInfoTitle: '☝️ Strategi TikTok',
+  inviteInfoBody: '1️⃣ Tulis komentar pribadi di video TikTok temanmu. Tunjukkan minat yang tulus!\n2️⃣ Setelah hubungan hangat – kirim undangan ini via DM. Terasa mengundang, bukan spam.',
+  inviteMsg: 'Hei {name}! 👋 Aku lagi pakai NOVA Support Pool – app buat saling support di TikTok. Menarik? Cek dulu yuk!',
   postedMsg: 'Video diposting – {n} dukungan dibutuhkan dalam 12 jam',
   loginPH: 'TikTok @username',
   postNow: '✅ Posting video sekarang',
@@ -2527,6 +2691,32 @@ it: {
   balAdjMsg: 'Il tuo saldo è stato modificato. Nuovo saldo: {bal}',
   offlineSupError: '📡 Nessuna connessione — supporto non disponibile',
   notifsHint: '💡 Elimina notifiche con 🗑',
+  setOnbPinTitle: 'Attivare PIN?',
+  setOnbPinBody: 'Proteggi il tuo account con un PIN a 4 cifre. Veloce e sicuro.',
+  setOnbPinGo: '🔑 Imposta PIN',
+  setOnbPinSkip: 'Continua senza PIN',
+  setOnbPinDismiss: 'Non ricordarmelo',
+  setOnbPushTitle: 'Notifiche push?',
+  setOnbPushBody: 'Ricevi una notifica quando qualcuno supporta il tuo video.',
+  setOnbPushYes: '🔔 Sì, attiva',
+  setOnbPushNo: 'No grazie',
+  setOnbPrivTitle: 'Leggi la privacy',
+  setOnbPrivBody: 'Prima di continuare – dai un\'occhiata alla nostra informativa sulla privacy. È breve!',
+  setOnbPrivRead: '🔒 Leggi ora',
+  setOnbPrivAccept: 'Accetta & continua',
+  balRedTitle: '⚖️ Controlla il saldo!',
+  balRedBody: 'Il tuo saldo è negativo. Supporta altri membri per tornare in equilibrio.',
+  balRedBtn: 'Supporta ora',
+  balGreenTitle: '🎉 Ottimo saldo!',
+  balGreenBody: 'Il tuo saldo è positivo – stai davvero aiutando! Grazie per la partecipazione.',
+  balGreenBtn: 'Chiudi',
+  inviteSecTitle: '🤝 Invita amici',
+  inviteMsgLabel: 'Testo invito:',
+  inviteLinkLabel: 'Link Support Pool:',
+  inviteInfoBtn: 'Strategia ☝️',
+  inviteInfoTitle: '☝️ Strategia TikTok',
+  inviteInfoBody: '1️⃣ Scrivi un commento personale sotto un video TikTok di un amico. Mostra interesse genuino!\n2️⃣ Quando il contatto è caldo – invia questo invito via DM. Così risulta invitante, non spam.',
+  inviteMsg: 'Ciao {name}! 👋 Sto usando NOVA Support Pool – un\'app dove ci supportiamo a vicenda su TikTok. Ti interessa? Dai un\'occhiata!',
   postedMsg: 'Video pubblicato – {n} supporti necessari in 12h',
   loginPH: 'TikTok @username',
   postNow: '✅ Pubblica video ora',
@@ -2632,6 +2822,32 @@ es: {
   balAdjMsg: 'Tu saldo fue ajustado. Nuevo saldo: {bal}',
   offlineSupError: '📡 Sin internet — no es posible apoyar',
   notifsHint: '💡 Elimina notificaciones con 🗑',
+  setOnbPinTitle: '¿Activar PIN?',
+  setOnbPinBody: 'Protege tu cuenta con un PIN de 4 dígitos. Rápido y seguro.',
+  setOnbPinGo: '🔑 Configurar PIN',
+  setOnbPinSkip: 'Continuar sin PIN',
+  setOnbPinDismiss: 'No recordarme más',
+  setOnbPushTitle: '¿Notificaciones push?',
+  setOnbPushBody: 'Recibe una notificación cuando alguien apoye tu video.',
+  setOnbPushYes: '🔔 Sí, activar',
+  setOnbPushNo: 'No gracias',
+  setOnbPrivTitle: 'Leer privacidad',
+  setOnbPrivBody: 'Antes de continuar – echa un vistazo a nuestra política de privacidad. ¡Es corta!',
+  setOnbPrivRead: '🔒 Leer ahora',
+  setOnbPrivAccept: 'Aceptar & continuar',
+  balRedTitle: '⚖️ ¡Revisa tu balance!',
+  balRedBody: 'Tu balance es negativo. Por favor apoya a otros miembros para equilibrarte.',
+  balRedBtn: 'Apoyar ahora',
+  balGreenTitle: '🎉 ¡Excelente balance!',
+  balGreenBody: 'Tu balance es positivo – ¡realmente estás ayudando! Gracias por participar.',
+  balGreenBtn: 'Cerrar',
+  inviteSecTitle: '🤝 Invitar amigos',
+  inviteMsgLabel: 'Texto de invitación:',
+  inviteLinkLabel: 'Enlace Support Pool:',
+  inviteInfoBtn: 'Estrategia ☝️',
+  inviteInfoTitle: '☝️ Estrategia TikTok',
+  inviteInfoBody: '1️⃣ Escribe un comentario personal en un video TikTok de un amigo. ¡Muestra interés genuino!\n2️⃣ Cuando el contacto esté cálido – envía esta invitación por DM. Así resulta acogedora, no spam.',
+  inviteMsg: '¡Hola {name}! 👋 Estoy usando NOVA Support Pool – una app donde nos apoyamos mutuamente en TikTok. ¿Suena interesante? ¡Échale un vistazo!',
   postedMsg: 'Video publicado – se necesitan {n} apoyos en 12h',
   loginPH: 'TikTok @usuario',
   postNow: '✅ Publicar video ahora',
@@ -2737,6 +2953,32 @@ tr: {
   balAdjMsg: 'Bakiyen güncellendi. Yeni bakiye: {bal}',
   offlineSupError: '📡 İnternet yok — destek mümkün değil',
   notifsHint: '💡 Bildirimleri 🗑 ile sil',
+  setOnbPinTitle: 'PIN aktif edilsin mi?',
+  setOnbPinBody: '4 haneli PIN ile hesabını koru. Hızlı ve güvenli.',
+  setOnbPinGo: '🔑 PIN kur',
+  setOnbPinSkip: 'PIN olmadan devam',
+  setOnbPinDismiss: 'Bir daha hatırlatma',
+  setOnbPushTitle: 'Bildirimler?',
+  setOnbPushBody: 'Biri videonuzu desteklediğinde bildirim al.',
+  setOnbPushYes: '🔔 Evet, aktif et',
+  setOnbPushNo: 'Hayır teşekkürler',
+  setOnbPrivTitle: 'Gizlilik politikası',
+  setOnbPrivBody: 'Devam etmeden önce – gizlilik politikamıza göz at. Kısa!',
+  setOnbPrivRead: '🔒 Şimdi oku',
+  setOnbPrivAccept: 'Kabul et & devam',
+  balRedTitle: '⚖️ Bakiyeni kontrol et!',
+  balRedBody: 'Bakiyen negatif. Dengeyi sağlamak için diğer üyeleri destekle.',
+  balRedBtn: 'Şimdi destekle',
+  balGreenTitle: '🎉 Harika bakiye!',
+  balGreenBody: 'Bakiyen pozitif – gerçekten yardım ediyorsun! Katılım için teşekkürler.',
+  balGreenBtn: 'Kapat',
+  inviteSecTitle: '🤝 Arkadaş davet et',
+  inviteMsgLabel: 'Davet metni:',
+  inviteLinkLabel: 'Support Pool linki:',
+  inviteInfoBtn: 'Strateji ☝️',
+  inviteInfoTitle: '☝️ TikTok Stratejisi',
+  inviteInfoBody: '1️⃣ Bir arkadaşının TikTok videosuna kişisel yorum yaz. Gerçek ilgi göster!\n2️⃣ İletişim ısınınca – bu daveti DM ile gönder. Böylece davetkar görünür, spam değil.',
+  inviteMsg: 'Merhaba {name}! 👋 NOVA Support Pool kullanıyorum – TikTok’ta birbirimizi desteklediğimiz bir uygulama. İlginç geldi mi? Bir göz at!',
   postedMsg: 'Video paylaşıldı – 12 saat içinde {n} destek gerekiyor',
   loginPH: 'TikTok @kullanıcı',
   postNow: '✅ Video paylaşımı şimdi mümkün',
@@ -2842,6 +3084,32 @@ ar: {
   balAdjMsg: 'تم تعديل رصيدك. الرصيد الجديد: {bal}',
   offlineSupError: '📡 لا يوجد إنترنت — الدعم غير متاح',
   notifsHint: '💡 احذف الإشعارات بـ 🗑',
+  setOnbPinTitle: 'تفعيل PIN؟',
+  setOnbPinBody: 'احمِ حسابك بـ PIN مكوّن من 4 أرقام. سريع وآمن.',
+  setOnbPinGo: '🔑 إعداد PIN',
+  setOnbPinSkip: 'المتابعة بدون PIN',
+  setOnbPinDismiss: 'لا تذكّرني مجدداً',
+  setOnbPushTitle: 'إشعارات؟',
+  setOnbPushBody: 'احصل على إشعار عندما يدعم أحدهم فيديوك.',
+  setOnbPushYes: '🔔 نعم، تفعيل',
+  setOnbPushNo: 'لا شكراً',
+  setOnbPrivTitle: 'اقرأ سياسة الخصوصية',
+  setOnbPrivBody: 'قبل المتابعة – ألقِ نظرة على سياسة الخصوصية. إنها قصيرة!',
+  setOnbPrivRead: '🔒 اقرأ الآن',
+  setOnbPrivAccept: 'قبول والمتابعة',
+  balRedTitle: '⚖️ تحقق من رصيدك!',
+  balRedBody: 'رصيدك سلبي. يرجى دعم الأعضاء الآخرين للعودة إلى التوازن.',
+  balRedBtn: 'ادعم الآن',
+  balGreenTitle: '🎉 رصيد ممتاز!',
+  balGreenBody: 'رصيدك إيجابي – أنت تساعد فعلاً! شكراً على المشاركة.',
+  balGreenBtn: 'إغلاق',
+  inviteSecTitle: '🤝 دعوة الأصدقاء',
+  inviteMsgLabel: 'نص الدعوة:',
+  inviteLinkLabel: 'رابط Support Pool:',
+  inviteInfoBtn: 'الاستراتيجية ☝️',
+  inviteInfoTitle: '☝️ استراتيجية تيك توك',
+  inviteInfoBody: '1️⃣ اكتب تعليقاً شخصياً على فيديو تيك توك لصديق. أظهر اهتماماً حقيقياً!\n2️⃣ حين يدفأ التواصل – أرسل هذه الدعوة عبر الرسائل. ستبدو مرحبة وليست بريداً مزعجاً.',
+  inviteMsg: 'مرحباً {name}! 👋 أستخدم NOVA Support Pool – تطبيق ندعم به بعضنا على تيك توك. يبدو مثيراً للاهتمام؟ ألقِ نظرة!',
   postedMsg: 'تم نشر الفيديو – مطلوب {n} دعم خلال 12 ساعة',
   loginPH: 'TikTok @المستخدم',
   postNow: '✅ نشر فيديو ممكن الآن',
@@ -2947,6 +3215,32 @@ zh: {
   balAdjMsg: '你的余额已调整。新余额：{bal}',
   offlineSupError: '📡 无网络连接 — 无法支持',
   notifsHint: '💡 用 🗑 删除通知',
+  setOnbPinTitle: '启用PIN？',
+  setOnbPinBody: '用4位PIN保护你的账户。快速且安全。',
+  setOnbPinGo: '🔑 设置PIN',
+  setOnbPinSkip: '不设置PIN继续',
+  setOnbPinDismiss: '不再提醒',
+  setOnbPushTitle: '推送通知？',
+  setOnbPushBody: '有人支持你的视频时收到通知。',
+  setOnbPushYes: '🔔 是，开启',
+  setOnbPushNo: '不了谢谢',
+  setOnbPrivTitle: '阅读隐私政策',
+  setOnbPrivBody: '继续之前 – 快速浏览我们的隐私政策，很简短！',
+  setOnbPrivRead: '🔒 立即阅读',
+  setOnbPrivAccept: '接受并继续',
+  balRedTitle: '⚖️ 检查余额！',
+  balRedBody: '你的余额为负。请支持其他成员以恢复平衡。',
+  balRedBtn: '立即支持',
+  balGreenTitle: '🎉 余额很棒！',
+  balGreenBody: '你的余额为正 – 你真的在帮助大家！感谢参与。',
+  balGreenBtn: '关闭',
+  inviteSecTitle: '🤝 邀请朋友',
+  inviteMsgLabel: '邀请文本：',
+  inviteLinkLabel: 'Support Pool链接：',
+  inviteInfoBtn: '策略 ☝️',
+  inviteInfoTitle: '☝️ 抖音策略',
+  inviteInfoBody: '1️⃣ 在朋友的TikTok视频下写一条个人评论，展示真诚的兴趣！\n2️⃣ 联系热络后 – 通过私信发送此邀请。这样显得友好，而非骚扰。',
+  inviteMsg: '嗨 {name}！👋 我在用NOVA Support Pool – 一个我们在TikTok上互相支持的应用。感兴趣吗？来看看吧！',
   postedMsg: '视频已发布 – 12小时内需要{n}个支持',
   loginPH: 'TikTok @用户名',
   postNow: '✅ 现在可以发布视频',
@@ -3052,6 +3346,32 @@ ja: {
   balAdjMsg: '残高が調整されました。新しい残高：{bal}',
   offlineSupError: '📡 インターネット接続なし — サポート不可',
   notifsHint: '💡 🗑 で通知を削除',
+  setOnbPinTitle: 'PINを有効にしますか？',
+  setOnbPinBody: '4桁のPINでアカウントを保護。素早く安全です。',
+  setOnbPinGo: '🔑 PINを設定',
+  setOnbPinSkip: 'PINなしで続ける',
+  setOnbPinDismiss: '今後表示しない',
+  setOnbPushTitle: 'プッシュ通知？',
+  setOnbPushBody: '誰かがあなたの動画をサポートしたら通知を受け取ります。',
+  setOnbPushYes: '🔔 はい、有効にする',
+  setOnbPushNo: 'いいえ、けっこうです',
+  setOnbPrivTitle: 'プライバシーを読む',
+  setOnbPrivBody: '続ける前に – プライバシーポリシーをご一読ください。短いです！',
+  setOnbPrivRead: '🔒 今すぐ読む',
+  setOnbPrivAccept: '同意して続ける',
+  balRedTitle: '⚖️ 残高を確認！',
+  balRedBody: '残高がマイナスです。他のメンバーをサポートしてバランスを取りましょう。',
+  balRedBtn: '今すぐサポート',
+  balGreenTitle: '🎉 素晴らしい残高！',
+  balGreenBody: '残高がプラスです – 本当に助けていただいています！ご参加ありがとうございます。',
+  balGreenBtn: '閉じる',
+  inviteSecTitle: '🤝 友達を招待',
+  inviteMsgLabel: '招待文:',
+  inviteLinkLabel: 'Support Poolリンク:',
+  inviteInfoBtn: '戦略 ☝️',
+  inviteInfoTitle: '☝️ TikTok戦略',
+  inviteInfoBody: '1️⃣ 友達のTikTok動画に個人的なコメントを書く。本物の興味を示そう！\n2️⃣ 関係が温まったら – DMでこの招待を送る。招待らしく見え、スパムに感じさせない。',
+  inviteMsg: 'やあ {name}！👋 NOVA Support Poolを使っています – TikTokでお互いをサポートし合うアプリ。興味ありますか？ぜひ見てみてください！',
   postedMsg: '動画を投稿しました – 12時間以内に{n}件のサポートが必要です',
   loginPH: 'TikTok @ユーザー名',
   postNow: '✅ 動画投稿が可能になりました',
@@ -3157,6 +3477,32 @@ pl: {
   balAdjMsg: 'Twoje saldo zostało dostosowane. Nowe saldo: {bal}',
   offlineSupError: '📡 Brak internetu — wspieranie niedostępne',
   notifsHint: '💡 Usuń powiadomienia z 🗑',
+  setOnbPinTitle: 'Aktywować PIN?',
+  setOnbPinBody: 'Chroń swoje konto 4-cyfrowym PIN-em. Szybko i bezpiecznie.',
+  setOnbPinGo: '🔑 Ustaw PIN',
+  setOnbPinSkip: 'Kontynuuj bez PIN',
+  setOnbPinDismiss: 'Nie przypominaj mi',
+  setOnbPushTitle: 'Powiadomienia push?',
+  setOnbPushBody: 'Otrzymaj powiadomienie, gdy ktoś wesprze Twój film.',
+  setOnbPushYes: '🔔 Tak, włącz',
+  setOnbPushNo: 'Nie, dziękuję',
+  setOnbPrivTitle: 'Przeczytaj prywatność',
+  setOnbPrivBody: 'Zanim przejdziesz dalej – przejrzyj naszą politykę prywatności. Jest krótka!',
+  setOnbPrivRead: '🔒 Czytaj teraz',
+  setOnbPrivAccept: 'Akceptuj & dalej',
+  balRedTitle: '⚖️ Sprawdź saldo!',
+  balRedBody: 'Twoje saldo jest ujemne. Wspieraj innych, żeby wrócić do równowagi.',
+  balRedBtn: 'Wspieraj teraz',
+  balGreenTitle: '🎉 Świetne saldo!',
+  balGreenBody: 'Twoje saldo jest dodatnie – naprawdę pomagasz! Dziękujemy za uczestnictwo.',
+  balGreenBtn: 'Zamknij',
+  inviteSecTitle: '🤝 Zaproś znajomych',
+  inviteMsgLabel: 'Tekst zaproszenia:',
+  inviteLinkLabel: 'Link Support Pool:',
+  inviteInfoBtn: 'Strategia ☝️',
+  inviteInfoTitle: '☝️ Strategia TikTok',
+  inviteInfoBody: '1️⃣ Napisz osobisty komentarz pod filmem znajomego na TikTok. Pokaż prawdziwe zainteresowanie!\n2️⃣ Gdy kontakt się ociepli – wyślij to zaproszenie przez DM. Tak wygląda zapraszająco, nie spamowo.',
+  inviteMsg: 'Hej {name}! 👋 Korzystam z NOVA Support Pool – aplikacji, gdzie nawzajem się wspieramy na TikTok. Brzmi ciekawie? Sprawdź!',
   postedMsg: 'Wideo opublikowane – potrzeba {n} wsparć w ciągu 12h',
   loginPH: 'TikTok @użytkownik',
   postNow: '✅ Publikacja wideo możliwa',
@@ -3682,10 +4028,10 @@ function renderLoginStats() {
 
 // ── LOGIN AUTOCOMPLETE ─────────────────────────────────────────────────
 function onLoginInput() {
-  var inp = ge('loginInput'), sug = ge('login-suggest');
+  var inp = ge('loginInput'), sug = ge('login-suggest'), ov = ge('login-sug-overlay'), ovl = ge('login-sug-overlay-list'), ovt = ge('login-sug-overlay-title');
   if (!inp || !sug) return;
   var raw = (inp.value || '').trim().toLowerCase().replace(/^@/, '');
-  if (!raw) { sug.style.display = 'none'; return; }
+  if (!raw) { sug.style.display = 'none'; if (ov) ov.style.display = 'none'; return; }
   var members = Object.values(DB.members).filter(function(m) {
     return m.status === 'active' && m.role !== 'admin' && m.key !== 'admin';
   });
@@ -3693,8 +4039,8 @@ function onLoginInput() {
     var name = (m.name || '').toLowerCase();
     var key  = (m.key  || '').toLowerCase();
     return name.indexOf(raw) === 0 || key.indexOf(raw) === 0;
-  }).slice(0, 6);
-  if (!matches.length) { sug.style.display = 'none'; return; }
+  }).slice(0, 8);
+  if (!matches.length) { sug.style.display = 'none'; if (ov) ov.style.display = 'none'; return; }
   var html = '';
   for (var i = 0; i < matches.length; i++) {
     var m = matches[i];
@@ -3702,20 +4048,33 @@ function onLoginInput() {
     html += '<div class="login-sug-item" onmousedown="pickLoginSug(event,\'' + esc(m.key) + '\',\'' + display + '\')">'
           + '<span class="login-sug-at">@</span>' + display + '</div>';
   }
-  sug.innerHTML = html;
-  sug.style.display = 'block';
+  if (raw.length === 1) {
+    sug.style.display = 'none';
+    if (ov && ovl) {
+      var l = L[LANG] || L.de;
+      if (ovt) ovt.textContent = (l.setSecSecurity ? 'Mitglieder' : 'Mitglieder');
+      ovl.innerHTML = html;
+      ov.style.display = 'block';
+    }
+  } else {
+    if (ov) ov.style.display = 'none';
+    sug.innerHTML = html;
+    sug.style.display = 'block';
+  }
 }
 
 function pickLoginSug(e, key, name) {
   e.preventDefault();
-  var inp = ge('loginInput'), sug = ge('login-suggest');
+  var inp = ge('loginInput'), sug = ge('login-suggest'), ov = ge('login-sug-overlay');
   if (inp) { inp.value = name || key; inp.focus(); }
   if (sug) sug.style.display = 'none';
+  if (ov) ov.style.display = 'none';
+  setTimeout(doLogin, 120);
 }
 
 function handleLoginKey(e) {
   if (e.key === 'Enter') { doLogin(); return; }
-  if (e.key === 'Escape') { var s = ge('login-suggest'); if (s) s.style.display = 'none'; }
+  if (e.key === 'Escape') { var s = ge('login-suggest'); if (s) s.style.display = 'none'; var ov = ge('login-sug-overlay'); if (ov) ov.style.display = 'none'; }
 }
 
 // ── MEMBER PIN SYSTEM ─────────────────────────────────────────────────
@@ -3841,6 +4200,210 @@ function renderSettings() {
   // Language card
   buildSetLangDrop();
   updateSetLangHeader();
+  // Invite & onboarding
+  renderInviteSection(l);
+  checkSettingsOnboarding(l);
+}
+
+// ── SETTINGS ONBOARDING ───────────────────────────────────────────────────
+var _setOnbType = null; // 'pin' | 'push' | 'priv'
+
+function checkSettingsOnboarding(l) {
+  if (!CU) return;
+  var u = DB.members[CU];
+  if (!u) return;
+  l = l || L[LANG] || L.de;
+  // Count settings visits (only onboard once per type)
+  var sv = parseInt(localStorage.getItem('sp6_sv') || '0', 10);
+  sv++;
+  localStorage.setItem('sp6_sv', sv);
+  // Skip if already has PIN
+  var hasPIN = !!(u.memberPin);
+  // Sequence: 1-2 → PIN, 3 → Push, 4 → Privacy
+  if (sv <= 2 && !hasPIN && !localStorage.getItem('sp6_pin_skip')) {
+    _setOnbType = 'pin';
+    renderSetOnb(l, sv);
+    openModal('setOnbModal');
+  } else if (sv === 3) {
+    var perm = typeof Notification !== 'undefined' ? Notification.permission : 'default';
+    if (perm !== 'granted') {
+      _setOnbType = 'push';
+      renderSetOnb(l, sv);
+      openModal('setOnbModal');
+    }
+  } else if (sv === 4) {
+    if (!localStorage.getItem('sp6_priv_done')) {
+      _setOnbType = 'priv';
+      renderSetOnb(l, sv);
+      openModal('setOnbModal');
+    }
+  }
+}
+
+function renderSetOnb(l, sv) {
+  l = l || L[LANG] || L.de;
+  var title, body, primary, secondary;
+  if (_setOnbType === 'pin') {
+    title = l.setOnbPinTitle || 'PIN aktivieren?';
+    body  = l.setOnbPinBody  || 'Schütze dein Konto mit einem 4-stelligen PIN.';
+    primary   = l.setOnbPinGo   || '🔑 Zur PIN-Eingabe';
+    secondary = (sv >= 2) ? (l.setOnbPinDismiss || 'Nicht mehr erinnern') : (l.setOnbPinSkip || 'Weiter ohne PIN');
+  } else if (_setOnbType === 'push') {
+    title = l.setOnbPushTitle || 'Push-Nachrichten?';
+    body  = l.setOnbPushBody  || 'Erhalte eine Benachrichtigung bei neuen Supports.';
+    primary   = l.setOnbPushYes || '🔔 Ja, aktivieren';
+    secondary = l.setOnbPushNo  || 'Nein danke';
+  } else if (_setOnbType === 'priv') {
+    title = l.setOnbPrivTitle || 'Datenschutz lesen';
+    body  = l.setOnbPrivBody  || 'Lies kurz unsere Datenschutzerklärung.';
+    primary   = l.setOnbPrivRead   || '🔒 Jetzt lesen';
+    secondary = l.setOnbPrivAccept || 'Akzeptieren & weiter';
+  }
+  st('setOnb-title', title); st('setOnb-body', body);
+  st('setOnb-primary', primary); st('setOnb-secondary', secondary);
+}
+
+function setOnbPrimary() {
+  closeModal('setOnbModal');
+  if (_setOnbType === 'pin') {
+    // Scroll to PIN section
+    setTimeout(function() {
+      var el = ge('set-sec-security'); if (el) el.scrollIntoView({behavior:'smooth', block:'center'});
+      var tog = ge('pin-toggle'); if (tog && !tog.classList.contains('on')) tog.click();
+    }, 300);
+  } else if (_setOnbType === 'push') {
+    if (typeof Notification !== 'undefined' && Notification.requestPermission) {
+      Notification.requestPermission(function(r) {
+        if (r === 'granted') { toast('🔔 Push aktiviert', 'ok'); renderSettings(); }
+      });
+    }
+  } else if (_setOnbType === 'priv') {
+    openPrivacyModal();
+  }
+  _setOnbType = null;
+}
+
+function setOnbSecondary() {
+  closeModal('setOnbModal');
+  if (_setOnbType === 'pin') {
+    var sv = parseInt(localStorage.getItem('sp6_sv') || '0', 10);
+    if (sv >= 2) localStorage.setItem('sp6_pin_skip', '1');
+  } else if (_setOnbType === 'priv') {
+    localStorage.setItem('sp6_priv_done', '1');
+  }
+  _setOnbType = null;
+}
+
+// ── BALANCE AMPEL ─────────────────────────────────────────────────────────
+function checkBalanceAmpel() {
+  if (!CU || !DB.members[CU]) return;
+  var u = DB.members[CU];
+  var l = L[LANG] || L.de;
+  var g = u.stats ? (u.stats.given||0) : 0;
+  var r = u.stats ? (u.stats.received||0) : 0;
+  var BAL_CAP = 20;
+  var rawBal = g - r, bal = Math.min(rawBal, BAL_CAP);
+  var now = Date.now();
+  var CD_RED   = 24 * 3600 * 1000; // 24h
+  var CD_GREEN = 12 * 3600 * 1000; // 12h
+  // Check red: bal < 0
+  if (bal < 0) {
+    var lastRed = parseInt(localStorage.getItem('sp6_bal_red') || '0', 10);
+    if (now - lastRed > CD_RED) {
+      localStorage.setItem('sp6_bal_red', now);
+      setTimeout(function() {
+        st('balRed-title', l.balRedTitle || '⚖️ Balance prüfen!');
+        st('balRed-body',  l.balRedBody  || 'Deine Balance ist negativ. Bitte unterstütze andere Mitglieder.');
+        st('balRed-btn',   l.balRedBtn   || 'Jetzt supporten');
+        openModal('balRedModal');
+      }, 4000);
+    }
+    return;
+  }
+  // Check green: bal >= 5
+  if (bal >= 5) {
+    var lastGreen = parseInt(localStorage.getItem('sp6_bal_green') || '0', 10);
+    if (now - lastGreen > CD_GREEN) {
+      localStorage.setItem('sp6_bal_green', now);
+      setTimeout(function() {
+        st('balGreen-title', l.balGreenTitle || '🎉 Super Balance!');
+        st('balGreen-body',  l.balGreenBody  || 'Deine Balance ist positiv – danke fürs Mitmachen.');
+        st('balGreen-btn',   l.balGreenBtn   || 'Schließen');
+        openModal('balGreenModal');
+      }, 4000);
+    }
+  }
+}
+
+// ── INVITE FRIENDS ────────────────────────────────────────────────────────
+var _inviteLang = null;
+
+function renderInviteSection(l) {
+  l = l || L[LANG] || L.de;
+  if (!CU || !DB.members[CU]) return;
+  st('set-sec-invite',     l.inviteSecTitle    || '🤝 Freunde einladen');
+  st('t-invite-msg-label', l.inviteMsgLabel    || 'Einladungstext:');
+  st('t-invite-link-label', l.inviteLinkLabel  || 'Support Pool Link:');
+  st('t-invite-info-btn',  l.inviteInfoBtn     || 'Strategie ☝️');
+  if (!_inviteLang) _inviteLang = LANG;
+  renderInviteLangOptions();
+  renderInviteText();
+  var la = ge('invite-link-area');
+  if (la) la.textContent = window.location.href;
+}
+
+function renderInviteLangOptions() {
+  var row = ge('invite-lang-row'); if (!row) return;
+  var langs = ['de','en','id','it','es','tr','ar','zh','ja','pl'];
+  var flags = {de:'🇩🇪',en:'🇬🇧',id:'🇮🇩',it:'🇮🇹',es:'🇪🇸',tr:'🇹🇷',ar:'🇸🇦',zh:'🇨🇳',ja:'🇯🇵',pl:'🇵🇱'};
+  var html = '';
+  for (var i = 0; i < langs.length; i++) {
+    var lg = langs[i];
+    var active = (lg === _inviteLang) ? ' active' : '';
+    html += '<button class="invite-lang-btn'+active+'" onclick="setInviteLang(\''+lg+'\')">'+flags[lg]+'</button>';
+  }
+  row.innerHTML = html;
+}
+
+function setInviteLang(lg) {
+  _inviteLang = lg;
+  renderInviteLangOptions();
+  renderInviteText();
+}
+
+function renderInviteText() {
+  var area = ge('invite-msg-area'); if (!area) return;
+  var lg = _inviteLang || LANG;
+  var l = L[lg] || L.de;
+  var u = (CU && DB.members[CU]) ? DB.members[CU] : null;
+  var name = u ? (u.name || fbDec(CU) || 'du') : 'du';
+  var tmpl = l.inviteMsg || 'Hey {name}! 👋 Schau dir NOVA Support Pool an!';
+  area.textContent = tmpl.replace('{name}', name);
+}
+
+function copyInviteMsg() {
+  var area = ge('invite-msg-area'); if (!area) return;
+  navigator.clipboard.writeText(area.textContent).then(function() {
+    toast('📋 Kopiert!', 'ok', 1500);
+  }).catch(function() {
+    toast('Kopieren fehlgeschlagen', 'error', 2000);
+  });
+}
+
+function copyInviteLink() {
+  navigator.clipboard.writeText(window.location.href).then(function() {
+    toast('🔗 Link kopiert!', 'ok', 1500);
+  }).catch(function() {
+    toast('Kopieren fehlgeschlagen', 'error', 2000);
+  });
+}
+
+function openInviteInfo() {
+  var l = L[_inviteLang || LANG] || L.de;
+  st('inviteInfo-title', l.inviteInfoTitle || '☝️ TikTok-Strategie');
+  var body = ge('inviteInfo-body');
+  if (body) body.textContent = l.inviteInfoBody || '';
+  openModal('inviteInfoModal');
 }
 
 function buildSetLangDrop() {
@@ -4273,6 +4836,7 @@ function renderHome() {
   initBtnReveal();
   startCountdownTick();
   checkActivityReminder();
+  checkBalanceAmpel();
 }
 
 function renderTimer(u) {
