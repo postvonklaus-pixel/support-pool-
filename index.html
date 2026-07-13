@@ -1712,6 +1712,20 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
     </div>
   </div>
 
+  <!-- Replace Video Modal -->
+  <div class="modal-bg" id="replaceVidModal">
+    <div class="modal-box">
+      <div class="modal-title" id="t-replvid-title">🔄 Video ersetzen</div>
+      <div style="font-size:12px;color:var(--t2);line-height:1.5;margin-bottom:12px" id="t-replvid-hint">Alle Supporters und Timer bleiben erhalten.</div>
+      <input class="sp-input" id="replVidUrl" type="url" placeholder="https://vm.tiktok.com/..." style="margin-bottom:10px"/>
+      <div style="font-size:10px;color:var(--t3);margin-bottom:12px" id="replvid-current"></div>
+      <div class="modal-footer">
+        <button class="btn-ghost btn-sm" onclick="closeModal('replaceVidModal')">Abbrechen</button>
+        <button class="btn-prime" style="flex:1;font-size:13px" onclick="submitReplaceVid()" id="t-replvid-btn">🔄 Ersetzen</button>
+      </div>
+    </div>
+  </div>
+
   <!-- BOTTOM NAV -->
   <div id="bottom-nav">
     <button class="ni active" id="ni-home" data-sc="home" onclick="goScreen('home')">
@@ -2333,7 +2347,7 @@ de: {
   obBtn0:'Weiter →',obBtn1:'Weiter →',obBtn2:'Los geht\'s! 🎉',
   obLi:['Poste dein TikTok-Video – auch ältere oder Videos von Freunden sind erlaubt','10 Mitglieder supporten es in 12 Std – Kommentar wird auto-kopiert','Nach 12 Std: Verlängerung – weitere 10 Supports = bis zu 20 Supports!','Erstes Video: nur 5 Supports nötig. Dann 3 Supports zurückgeben.','Nur online zählen Supports – fair und manipulationssicher'],
   ranks:['Neuling','Aufsteiger','Aktiv','Veteran','Elite'],
-  delVid:'🗑 Video löschen',scheduled:'Vorgemerkt',cancelSchedTxt:'Löschen',
+  delVid:'🗑 Video löschen',replaceVidTitle:'🔄 Video ersetzen',replaceVidHint:'Alle Supporters und Timer bleiben erhalten. Nur die URL wird ausgetauscht.',replaceVidBtn:'🔄 Ersetzen',replaceVidOk:'✅ Video ersetzt',scheduled:'Vorgemerkt',cancelSchedTxt:'Löschen',
   dmSearch:'Suchen',dmNotFound:'Kein Mitglied gefunden',dmSelect:'Auswählen',dmPicked:'ausgewählt',
   dmPlaceholder:'Nachricht schreiben...',toAdmin:'An Admin',toMember:'An Mitglied',
   postSuccessTitle:'🚀 Jetzt startklar!',
@@ -2464,7 +2478,7 @@ en: {
   obBtn0:'Next →',obBtn1:'Next →',obBtn2:'Let\'s go! 🎉',
   obLi:['Post your TikTok video – older or friends\' videos allowed','10 members support it in 12h – comment is auto-copied','After 12h: extension – 10 more supports = up to 20 supports!','First video: only 5 supports needed. Then give back 3.','Only online supports count – fair and manipulation-proof'],
   ranks:['Newcomer','Rising','Active','Veteran','Elite'],
-  delVid:'🗑 Delete Video',scheduled:'Scheduled',cancelSchedTxt:'Remove',
+  delVid:'🗑 Delete Video',replaceVidTitle:'🔄 Replace Video',replaceVidHint:'All supporters and timers are preserved. Only the URL is swapped.',replaceVidBtn:'🔄 Replace',replaceVidOk:'✅ Video replaced',scheduled:'Scheduled',cancelSchedTxt:'Remove',
   dmSearch:'Search',dmNotFound:'No member found',dmSelect:'Select',dmPicked:'selected',
   dmPlaceholder:'Write message...',toAdmin:'To Admin',toMember:'To Member',
   postSuccessTitle:'🚀 You are ready!',
@@ -2595,7 +2609,7 @@ id: {
   obBtn0:'Lanjut →',obBtn1:'Lanjut →',obBtn2:'Mulai! 🎉',
   obLi:['Posting video TikTok Anda – video lama atau teman juga boleh','10 anggota pertama mendukungnya dalam 12 jam – komentar disalin otomatis','Setelah 12 jam: perpanjangan – 10 dukungan lagi = hingga 20!','Video pertama: hanya butuh 5 dukungan. Kemudian berikan 3 balik.','Hanya dukungan online yang dihitung – adil dan aman'],
   ranks:['Pemula','Naik','Aktif','Veteran','Elite'],
-  delVid:'🗑 Hapus Video',scheduled:'Dijadwalkan',cancelSchedTxt:'Hapus',
+  delVid:'🗑 Hapus Video',replaceVidTitle:'🔄 Ganti Video',replaceVidHint:'Semua pendukung dan timer tetap ada. Hanya URL yang diganti.',replaceVidBtn:'🔄 Ganti',replaceVidOk:'✅ Video diganti',scheduled:'Dijadwalkan',cancelSchedTxt:'Hapus',
   dmSearch:'Cari',dmNotFound:'Anggota tidak ditemukan',dmSelect:'Pilih',dmPicked:'dipilih',
   dmPlaceholder:'Tulis pesan...',toAdmin:'Ke Admin',toMember:'Ke Anggota',
   postSuccessTitle:'🚀 Kamu siap!',
@@ -2726,7 +2740,7 @@ it: {
   obBtn0:'Avanti →',obBtn1:'Avanti →',obBtn2:'Iniziamo! 🎉',
   obLi:['Pubblica il tuo video TikTok – anche video vecchi o di amici','I primi 10 membri lo supportano in 12 ore – il commento viene copiato automaticamente','Dopo 12 ore: estensione – altri 10 support = fino a 20!','Primo video: solo 5 support necessari. Poi dai indietro 3.','Solo i support online contano – equo e a prova di manipolazione'],
   ranks:['Principiante','In salita','Attivo','Veterano','Elite'],
-  delVid:'🗑 Elimina Video',scheduled:'Programmato',cancelSchedTxt:'Rimuovi',
+  delVid:'🗑 Elimina Video',replaceVidTitle:'🔄 Sostituisci Video',replaceVidHint:'Tutti i supporter e i timer vengono mantenuti. Solo l\'URL viene sostituito.',replaceVidBtn:'🔄 Sostituisci',replaceVidOk:'✅ Video sostituito',scheduled:'Programmato',cancelSchedTxt:'Rimuovi',
   dmSearch:'Cerca',dmNotFound:'Nessun membro trovato',dmSelect:'Seleziona',dmPicked:'selezionato',
   dmPlaceholder:'Scrivi messaggio...',toAdmin:'All Admin',toMember:'Al Membro',
   postSuccessTitle:'🚀 Sei pronto!',
@@ -2857,7 +2871,7 @@ es: {
   obBtn0:'Siguiente →',obBtn1:'Siguiente →',obBtn2:'Vamos! 🎉',
   obLi:['Publica tu video de TikTok – tambien se permiten videos antiguos o de amigos','Los primeros 10 miembros lo apoyan en 12h – el comentario se copia automaticamente','Despues de 12h: extension – 10 apoyos mas = hasta 20!','Primer video: solo 5 apoyos necesarios. Luego devuelve 3.','Solo los apoyos online cuentan – justo y a prueba de manipulacion'],
   ranks:['Novato','Subiendo','Activo','Veterano','Elite'],
-  delVid:'🗑 Eliminar Video',scheduled:'Programado',cancelSchedTxt:'Quitar',
+  delVid:'🗑 Eliminar Video',replaceVidTitle:'🔄 Reemplazar Video',replaceVidHint:'Todos los supporters y temporizadores se conservan. Solo se reemplaza la URL.',replaceVidBtn:'🔄 Reemplazar',replaceVidOk:'✅ Video reemplazado',scheduled:'Programado',cancelSchedTxt:'Quitar',
   dmSearch:'Buscar',dmNotFound:'Miembro no encontrado',dmSelect:'Seleccionar',dmPicked:'seleccionado',
   dmPlaceholder:'Escribir mensaje...',toAdmin:'Al Admin',toMember:'Al Miembro',
   postSuccessTitle:'🚀 ¡Estás listo!',
@@ -2988,7 +3002,7 @@ tr: {
   obBtn0:'Ileri →',obBtn1:'Ileri →',obBtn2:'Hadi baslavalim! 🎉',
   obLi:['TikTok videonuzu paylasin – eski videolar veya arkadas videolari da kabul edilir','Ilk 10 uye 12 saatte destekler – yorum otomatik kopyalanir','12 saatin ardindan: uzatma – 10 destek daha = toplam 20!','Ilk videonuz: sadece 5 destek gerekli. Ardindan 3 destek verin.','Yalnizca cevrimici destekler sayilir – adil ve manipulasyona karsi'],
   ranks:['Yeni','Yükselen','Aktif','Veteran','Elite'],
-  delVid:'🗑 Videoyu Sil',scheduled:'Planlandı',cancelSchedTxt:'Kaldır',
+  delVid:'🗑 Videoyu Sil',replaceVidTitle:'🔄 Videoyu Değiştir',replaceVidHint:'Tüm destekçiler ve zamanlayıcılar korunur. Yalnızca URL değiştirilir.',replaceVidBtn:'🔄 Değiştir',replaceVidOk:'✅ Video değiştirildi',scheduled:'Planlandı',cancelSchedTxt:'Kaldır',
   dmSearch:'Ara',dmNotFound:'Üye bulunamadı',dmSelect:'Seç',dmPicked:'seçildi',
   dmPlaceholder:'Mesaj yaz...',toAdmin:'Admine',toMember:'Üyeye',
   postSuccessTitle:'🚀 Hazırsın!',
@@ -3119,7 +3133,7 @@ ar: {
   obBtn0:'التالي →',obBtn1:'التالي →',obBtn2:'هيا نبدأ! 🎉',
   obLi:['انشر فيديو TikTok الخاص بك – الفيديوهات القديمة أو فيديوهات الأصدقاء مسموح بها','أول 10 أعضاء يدعمونه في 12 ساعة – ينسخ التعليق تلقائيا','بعد 12 ساعة: تمديد – 10 دعم إضافي = حتى 20!','فيديوك الأول: تحتاج فقط 5 دعم. ثم أعط 3 بالمقابل.','الدعم عبر الإنترنت فقط هو المحسوب – عادل ومقاوم للتلاعب'],
   ranks:['مبتدئ','صاعد','نشط','محترف','نخبة'],
-  delVid:'🗑 حذف الفيديو',scheduled:'مجدول',cancelSchedTxt:'إزالة',
+  delVid:'🗑 حذف الفيديو',replaceVidTitle:'🔄 استبدال الفيديو',replaceVidHint:'يتم الحفاظ على جميع الداعمين والمؤقتات. يتم استبدال الرابط فقط.',replaceVidBtn:'🔄 استبدال',replaceVidOk:'✅ تم استبدال الفيديو',scheduled:'مجدول',cancelSchedTxt:'إزالة',
   dmSearch:'بحث',dmNotFound:'لم يتم العثور على عضو',dmSelect:'اختيار',dmPicked:'تم الاختيار',
   dmPlaceholder:'اكتب رسالة...',toAdmin:'إلى المشرف',toMember:'إلى العضو',
   postSuccessTitle:'🚀 أنت مستعد!',
@@ -3250,7 +3264,7 @@ zh: {
   obBtn0:'下一步 →',obBtn1:'下一步 →',obBtn2:'开始！🎉',
   obLi:['发布您的TikTok视频 – 也允许发布旧视频或朋友的视频','前10名成员在12小时内支持它 – 评论自动复制','12小时后延伸 – 再获10个支持 = 最多20个！','您的第一个视频只需5个支持。然后回馈3个。','只有在线支持才算数 – 公平和防操纵'],
   ranks:['新手','上升','活跃','老手','精英'],
-  delVid:'🗑 删除视频',scheduled:'已计划',cancelSchedTxt:'移除',
+  delVid:'🗑 删除视频',replaceVidTitle:'🔄 替换视频',replaceVidHint:'所有支持者和计时器均保留。仅替换链接。',replaceVidBtn:'🔄 替换',replaceVidOk:'✅ 视频已替换',scheduled:'已计划',cancelSchedTxt:'移除',
   dmSearch:'搜索',dmNotFound:'未找到成员',dmSelect:'选择',dmPicked:'已选择',
   dmPlaceholder:'写消息...',toAdmin:'给管理员',toMember:'给成员',
   postSuccessTitle:'🚀 准备好了！',
@@ -3381,7 +3395,7 @@ ja: {
   obBtn0:'次へ →',obBtn1:'次へ →',obBtn2:'始めよう！🎉',
   obLi:['TikTok動画を投稿 – 古い動画や友達の動画も許可されています','最初の10人のメンバーが12時間以内にサポート – コメントが自動コピーされます','12時間後延長 – さらに10サポート可能 = 最大20！','最初の動画は5サポートのみ必要。その後3サポートを返してください。','オンラインサポートのみカウント – 公平性と操作防止を維持'],
   ranks:['新人','上昇中','アクティブ','ベテラン','エリート'],
-  delVid:'🗑 動画を削除',scheduled:'予約済み',cancelSchedTxt:'削除',
+  delVid:'🗑 動画を削除',replaceVidTitle:'🔄 動画を差し替え',replaceVidHint:'サポーターとタイマーはそのまま保持されます。URLのみ変更されます。',replaceVidBtn:'🔄 差し替え',replaceVidOk:'✅ 動画を差し替えました',scheduled:'予約済み',cancelSchedTxt:'削除',
   dmSearch:'検索',dmNotFound:'メンバーが見つかりません',dmSelect:'選択',dmPicked:'選択済み',
   dmPlaceholder:'メッセージを書く...',toAdmin:'管理者へ',toMember:'メンバーへ',
   postSuccessTitle:'🚀 準備完了！',
@@ -3512,7 +3526,7 @@ pl: {
   obBtn0:'Dalej →',obBtn1:'Dalej →',obBtn2:'Zaczynamy! 🎉',
   obLi:['Opublikuj swoje wideo TikTok – dozwolone sa rowniez starsze filmy lub filmiki znajomych','Pierwszych 10 czlonkow wspiera je w ciagu 12h – komentarz jest automatycznie kopiowany','Po 12h przedluzenie – kolejne 10 wsparc = do 20!','Twoj pierwszy film: potrzebujesz tylko 5 wsparc. Potem oddaj 3.','Tylko wsparcia online sa liczone – wszystko pozostaje uczciwe'],
   ranks:['Nowicjusz','Wschodzący','Aktywny','Weteran','Elite'],
-  delVid:'🗑 Usuń wideo',scheduled:'Zaplanowano',cancelSchedTxt:'Usuń',
+  delVid:'🗑 Usuń wideo',replaceVidTitle:'🔄 Zamień wideo',replaceVidHint:'Wszyscy wspierający i liczniki pozostają. Tylko link zostaje zastąpiony.',replaceVidBtn:'🔄 Zamień',replaceVidOk:'✅ Wideo zamienione',scheduled:'Zaplanowano',cancelSchedTxt:'Usuń',
   dmSearch:'Szukaj',dmNotFound:'Nie znaleziono członka',dmSelect:'Wybierz',dmPicked:'wybrano',
   dmPlaceholder:'Napisz wiadomość...',toAdmin:'Do Admina',toMember:'Do Członka',
   postSuccessTitle:'🚀 Jesteś gotowy!',
@@ -5139,10 +5153,13 @@ function renderMyList(u) {
     if(v.status==='done'||v.status==='expired') {
       html += '<button data-del-vid="'+esc(v.id)+'" style="margin-top:9px;width:100%;padding:8px;border-radius:12px;background:rgba(255,59,48,.07);border:none;border-left:3px solid #ff3b30;color:#ff3b30;font-size:11px;cursor:pointer;font-family:inherit;font-weight:700;text-transform:uppercase;letter-spacing:.04em">'+t('delVid')+'</button>';
     }
+    if(isAct) {
+      html += '<button data-repl-vid="'+esc(v.id)+'" style="margin-top:8px;width:100%;padding:7px;border-radius:12px;background:rgba(0,122,255,.06);border:none;border-left:3px solid var(--blue);color:var(--blue);font-size:11px;cursor:pointer;font-family:inherit;font-weight:700;text-transform:uppercase;letter-spacing:.04em">'+t('replaceVidBtn')+'</button>';
+    }
     html += '</div>';
   }
   list.innerHTML = html;
-  list.onclick = function(e) { var btn=e.target.closest('[data-del-vid]'); if(btn) delMyVid(btn.getAttribute('data-del-vid')); };
+  list.onclick = function(e) { var btn=e.target.closest('[data-del-vid]'); if(btn) { delMyVid(btn.getAttribute('data-del-vid')); return; } var rb=e.target.closest('[data-repl-vid]'); if(rb) openReplaceVid(rb.getAttribute('data-repl-vid')); };
 }
 
 // ── POST VIDEO ──────────────────────────────────────────────────────────
@@ -6710,6 +6727,54 @@ function initBtnReveal() {
 function fmtMs(ms) {
   var s=Math.max(0,Math.floor(ms/1000)), pad=function(n){return n<10?'0'+n:String(n);};
   return pad(Math.floor(s/3600))+'h '+pad(Math.floor((s%3600)/60))+'m '+pad(s%60)+'s';
+}
+
+// ── REPLACE VIDEO ─────────────────────────────────────────────────────────
+var _replVidId = null;
+
+function openReplaceVid(vid) {
+  if (!CU || !DB.videos[vid]) return;
+  var v = DB.videos[vid];
+  if (v.status !== 'open') { toast(t('expired') || 'Nicht mehr aktiv', 'error'); return; }
+  var l = L[LANG] || L.de;
+  _replVidId = vid;
+  st('t-replvid-title', l.replaceVidTitle || '🔄 Video ersetzen');
+  st('t-replvid-hint',  l.replaceVidHint  || 'Alle Supporters und Timer bleiben erhalten.');
+  st('t-replvid-btn',   l.replaceVidBtn   || '🔄 Ersetzen');
+  var cur = ge('replvid-current');
+  if (cur) cur.textContent = '📎 ' + (v.url || '');
+  var inp = ge('replVidUrl'); if (inp) inp.value = '';
+  openModal('replaceVidModal');
+}
+
+function submitReplaceVid() {
+  if (!_replVidId) return;
+  var v = DB.videos[_replVidId];
+  if (!v) { closeModal('replaceVidModal'); return; }
+  var inp = ge('replVidUrl');
+  var url = (inp ? inp.value : '').trim();
+  if (!url || (url.indexOf('tiktok') < 0 && url.indexOf('vm.tiktok') < 0)) {
+    toast(t('errUrl') || 'Ungültige TikTok-URL', 'error'); return;
+  }
+  // Regenerate comment for the new URL context
+  var u = DB.members[CU];
+  var tpl = DB.settings.tpl || DEFAULT_TPL;
+  var grp = DB.groups[v.group];
+  var dt = new Date();
+  var comment = tpl.replace(/{gruppe}/g, grp ? grp.number : (v.groupNumber||1))
+    .replace(/{name}/g, v.owner || fbDec(v.ownerKey||''))
+    .replace(/{member}/g, CU)
+    .replace(/{date}/g, dt.toLocaleDateString())
+    .replace(/{time}/g, dt.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}));
+  v.url = url;
+  v.comment = comment;
+  v.replacedAt = Date.now();
+  closeModal('replaceVidModal');
+  var l = L[LANG] || L.de;
+  toast(l.replaceVidOk || '✅ Video ersetzt', 'success');
+  _replVidId = null;
+  save();
+  renderHome();
 }
 
 function delMyVid(vid) {
