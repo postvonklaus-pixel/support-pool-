@@ -4925,13 +4925,14 @@ function renderChat() {
   }
   var html = '';
   msgs.forEach(function(m) {
-    var age = Date.now() - (m.ts||0);
-    var timeStr = age < 3600000 ? Math.max(1, Math.round(age/60000)) + ' min' : Math.round(age/3600000) + 'h';
-    html += '<div class="chat-msg">';
-    html += '<div class="chat-msg-name">' + esc(m.fromName || m.from) + verifiedBadge(DB.members[m.from]) + '</div>';
     var msgText = (m.tpl !== undefined && m.tpl !== null)
       ? ((l.chatTpls && l.chatTpls[m.tpl]) || (L.de.chatTpls && L.de.chatTpls[m.tpl]) || '')
       : (m.text || '');
+    if (!msgText) return; // skip empty / corrupted messages
+    var age = Date.now() - (m.ts||0);
+    var timeStr = age < 3600000 ? Math.max(1, Math.round(age/60000)) + ' min' : Math.round(age/3600000) + 'h';
+    html += '<div class="chat-msg">';
+    html += '<div class="chat-msg-name">' + esc(m.fromName || m.from || '?') + verifiedBadge(DB.members[m.from]) + '</div>';
     html += '<div class="chat-msg-text">' + esc(msgText) + '</div>';
     html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:5px">';
     html += '<div class="chat-reactions">';
