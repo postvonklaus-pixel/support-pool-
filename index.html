@@ -3741,33 +3741,43 @@ function buildDrumPicker(wrapId) {
   }
   var ITEM_H = 48;
   var scId = wrapId + '-sc';
-  var html = '<div class="drum-sel"></div><div class="drum-sc" id="' + scId + '">';
-  items.forEach(function(z) {
-    html += '<div class="drum-item" data-lang="' + z.lang + '">';
-    html += '<span class="drum-flag">' + z.flag + '</span>';
-    html += '<span class="drum-name">' + (LANG_NATIVE[z.lang] || z.lang) + '</span>';
-    html += '</div>';
-  });
-  html += '</div>';
-  html += '<div class="drum-fade drum-fade-t"></div>';
-  html += '<div class="drum-fade drum-fade-b"></div>';
-  wrap.innerHTML = html;
   var sc = ge(scId);
-  if (!sc) return;
+  if (!sc) {
+    var html = '<div class="drum-sel"></div><div class="drum-sc" id="' + scId + '">';
+    items.forEach(function(z) {
+      html += '<div class="drum-item" data-lang="' + z.lang + '">';
+      html += '<span class="drum-flag">' + z.flag + '</span>';
+      html += '<span class="drum-name">' + (LANG_NATIVE[z.lang] || z.lang) + '</span>';
+      html += '</div>';
+    });
+    html += '</div>';
+    html += '<div class="drum-fade drum-fade-t"></div>';
+    html += '<div class="drum-fade drum-fade-b"></div>';
+    wrap.innerHTML = html;
+    sc = ge(scId);
+    if (!sc) return;
+    sc._prog = false;
+    var _dt = null;
+    sc.onscroll = function() {
+      if (sc._prog) return;
+      clearTimeout(_dt);
+      _dt = setTimeout(function() {
+        var idx = Math.round(sc.scrollTop / ITEM_H);
+        idx = Math.max(0, Math.min(idx, items.length - 1));
+        if (items[idx] && items[idx].lang !== LANG) setLang(items[idx].lang);
+      }, 150);
+    };
+  }
   var activeIdx = 0;
   for (var i = 0; i < items.length; i++) {
     if (items[i].lang === LANG) { activeIdx = i; break; }
   }
-  sc.scrollTop = activeIdx * ITEM_H;
-  var _dt = null;
-  sc.onscroll = function() {
-    clearTimeout(_dt);
-    _dt = setTimeout(function() {
-      var idx = Math.round(sc.scrollTop / ITEM_H);
-      idx = Math.max(0, Math.min(idx, items.length - 1));
-      if (items[idx] && items[idx].lang !== LANG) setLang(items[idx].lang);
-    }, 120);
-  };
+  var targetTop = activeIdx * ITEM_H;
+  if (sc.scrollTop !== targetTop) {
+    sc._prog = true;
+    sc.scrollTop = targetTop;
+    setTimeout(function() { sc._prog = false; }, 200);
+  }
 }
 
 function toggleLangDrop() {}
