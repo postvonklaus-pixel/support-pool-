@@ -4375,10 +4375,8 @@ function renderInviteText() {
   var area = ge('invite-msg-area'); if (!area) return;
   var lg = _inviteLang || LANG;
   var l = L[lg] || L.de;
-  var u = (CU && DB.members[CU]) ? DB.members[CU] : null;
-  var name = u ? (u.name || fbDec(CU) || 'du') : 'du';
   var tmpl = l.inviteMsg || 'Hey {name}! 👋 Schau dir NOVA Support Pool an!';
-  area.textContent = tmpl.replace('{name}', name);
+  area.textContent = tmpl.replace('{name}', '___');
 }
 
 function copyInviteMsg() {
