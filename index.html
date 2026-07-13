@@ -1438,6 +1438,7 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
         <div class="sec-title" id="t-notifs">🔔 Benachrichtigungen</div>
         <div class="sec-count" id="notif-count">0</div>
       </div>
+      <div id="t-notifs-hint" style="font-size:10px;color:var(--t3);margin:-2px 0 8px;padding:0 2px"></div>
       <div id="notif-list" style="max-height:420px;overflow-y:auto;padding-right:4px">
         <div class="empty-state"><div class="empty-icon">🔔</div><div class="empty-text" id="t-no-notif">Keine Benachrichtigungen</div></div>
       </div>
@@ -2202,6 +2203,11 @@ de: {
   tksTitle: '📹 TikTok Video öffnen',
   firstVideo: '🎁 Erstes Video – Los!',firstVideoShort:'Erstes<br>Video',postNowShort:'Jetzt<br>posten',
   supportMsg: 'hat dein Video supportet',
+  supportFrom: 'Support von',
+  inPool: 'im Support Pool',
+  balAdjMsg: 'Deine Balance wurde angepasst. Neue Balance: {bal}',
+  offlineSupError: '📡 Kein Internet — Supporten nicht möglich',
+  notifsHint: '💡 Benachrichtigungen mit 🗑 löschen',
   postedMsg: 'Video gepostet – {n} Supports in 12h benötigt',
   loginPH: 'TikTok @Username',
   postNow: '✅ Video posten jetzt möglich',
@@ -2302,6 +2308,11 @@ en: {
   tksTitle: '📹 Open TikTok Video',
   firstVideo: '🎁 First Video – Go!',firstVideoShort:'First<br>Video',postNowShort:'Post<br>now',
   supportMsg: 'supported your video',
+  supportFrom: 'Support from',
+  inPool: 'in the Support Pool',
+  balAdjMsg: 'Your balance was adjusted. New balance: {bal}',
+  offlineSupError: '📡 No internet — support not available',
+  notifsHint: '💡 Delete notifications with 🗑',
   postedMsg: 'Video posted – {n} supports needed in 12h',
   loginPH: 'TikTok @username',
   postNow: '✅ Post video now possible',
@@ -2402,6 +2413,11 @@ id: {
   tksTitle: '📹 Buka Video TikTok',
   firstVideo: '🎁 Video Pertama – Ayo!',
   supportMsg: 'mendukung video Anda',
+  supportFrom: 'Support dari',
+  inPool: 'di Support Pool',
+  balAdjMsg: 'Saldo Anda disesuaikan. Saldo baru: {bal}',
+  offlineSupError: '📡 Tidak ada internet — support tidak tersedia',
+  notifsHint: '💡 Hapus notifikasi dengan 🗑',
   postedMsg: 'Video diposting – {n} dukungan dibutuhkan dalam 12 jam',
   loginPH: 'TikTok @username',
   postNow: '✅ Posting video sekarang',
@@ -2502,6 +2518,11 @@ it: {
   tksTitle: '📹 Apri Video TikTok',
   firstVideo: '🎁 Primo Video – Via!',
   supportMsg: 'ha supportato il tuo video',
+  supportFrom: 'Support da',
+  inPool: 'nel Support Pool',
+  balAdjMsg: 'Il tuo saldo è stato modificato. Nuovo saldo: {bal}',
+  offlineSupError: '📡 Nessuna connessione — supporto non disponibile',
+  notifsHint: '💡 Elimina notifiche con 🗑',
   postedMsg: 'Video pubblicato – {n} supporti necessari in 12h',
   loginPH: 'TikTok @username',
   postNow: '✅ Pubblica video ora',
@@ -2602,6 +2623,11 @@ es: {
   tksTitle: '📹 Abrir Video TikTok',
   firstVideo: '🎁 Primer Video – ¡Vamos!',
   supportMsg: 'apoyó tu video',
+  supportFrom: 'Support de',
+  inPool: 'en el Support Pool',
+  balAdjMsg: 'Tu saldo fue ajustado. Nuevo saldo: {bal}',
+  offlineSupError: '📡 Sin internet — no es posible apoyar',
+  notifsHint: '💡 Elimina notificaciones con 🗑',
   postedMsg: 'Video publicado – se necesitan {n} apoyos en 12h',
   loginPH: 'TikTok @usuario',
   postNow: '✅ Publicar video ahora',
@@ -2702,6 +2728,11 @@ tr: {
   tksTitle: '📹 TikTok Videosunu Aç',
   firstVideo: '🎁 İlk Video – Hadi!',
   supportMsg: 'videonuzu destekledi',
+  supportFrom: 'Destek:',
+  inPool: 'Support Pool içinde',
+  balAdjMsg: 'Bakiyen güncellendi. Yeni bakiye: {bal}',
+  offlineSupError: '📡 İnternet yok — destek mümkün değil',
+  notifsHint: '💡 Bildirimleri 🗑 ile sil',
   postedMsg: 'Video paylaşıldı – 12 saat içinde {n} destek gerekiyor',
   loginPH: 'TikTok @kullanıcı',
   postNow: '✅ Video paylaşımı şimdi mümkün',
@@ -2802,6 +2833,11 @@ ar: {
   tksTitle: '📹 فتح فيديو TikTok',
   firstVideo: '🎁 أول فيديو – هيا!',
   supportMsg: 'دعم فيديوك',
+  supportFrom: 'دعم من',
+  inPool: 'في Support Pool',
+  balAdjMsg: 'تم تعديل رصيدك. الرصيد الجديد: {bal}',
+  offlineSupError: '📡 لا يوجد إنترنت — الدعم غير متاح',
+  notifsHint: '💡 احذف الإشعارات بـ 🗑',
   postedMsg: 'تم نشر الفيديو – مطلوب {n} دعم خلال 12 ساعة',
   loginPH: 'TikTok @المستخدم',
   postNow: '✅ نشر فيديو ممكن الآن',
@@ -2902,6 +2938,11 @@ zh: {
   tksTitle: '📹 打开TikTok视频',
   firstVideo: '🎁 第一个视频 – 开始！',
   supportMsg: '支持了你的视频',
+  supportFrom: '支持来自',
+  inPool: '在Support Pool中',
+  balAdjMsg: '你的余额已调整。新余额：{bal}',
+  offlineSupError: '📡 无网络连接 — 无法支持',
+  notifsHint: '💡 用 🗑 删除通知',
   postedMsg: '视频已发布 – 12小时内需要{n}个支持',
   loginPH: 'TikTok @用户名',
   postNow: '✅ 现在可以发布视频',
@@ -3002,6 +3043,11 @@ ja: {
   tksTitle: '📹 TikTok動画を開く',
   firstVideo: '🎁 最初の動画 – さあ！',
   supportMsg: 'があなたの動画をサポートしました',
+  supportFrom: 'サポートあり:',
+  inPool: 'Support Poolで',
+  balAdjMsg: '残高が調整されました。新しい残高：{bal}',
+  offlineSupError: '📡 インターネット接続なし — サポート不可',
+  notifsHint: '💡 🗑 で通知を削除',
   postedMsg: '動画を投稿しました – 12時間以内に{n}件のサポートが必要です',
   loginPH: 'TikTok @ユーザー名',
   postNow: '✅ 動画投稿が可能になりました',
@@ -3102,6 +3148,11 @@ pl: {
   tksTitle: '📹 Otwórz Film TikTok',
   firstVideo: '🎁 Pierwszy Film – Zaczynamy!',
   supportMsg: 'wsparł Twoje wideo',
+  supportFrom: 'Support od',
+  inPool: 'w Support Pool',
+  balAdjMsg: 'Twoje saldo zostało dostosowane. Nowe saldo: {bal}',
+  offlineSupError: '📡 Brak internetu — wspieranie niedostępne',
+  notifsHint: '💡 Usuń powiadomienia z 🗑',
   postedMsg: 'Wideo opublikowane – potrzeba {n} wsparć w ciągu 12h',
   loginPH: 'TikTok @użytkownik',
   postNow: '✅ Publikacja wideo możliwa',
@@ -4365,6 +4416,11 @@ function renderOpenList() {
 
 // ── SUPPORT CARD SYSTEM ────────────────────────────────────────────────────
 function openSupCard() {
+  var sb = ge('sync-badge');
+  if (sb && sb.classList.contains('offline')) {
+    toast((L[LANG]||L.de).offlineSupError||'📡 Kein Internet — Supporten nicht möglich','error',2500);
+    return;
+  }
   var scw = ge('sup-card-wrap');
   if (scw && scw.style.display !== 'none') {
     scw.scrollIntoView({behavior:'smooth', block:'start'});
@@ -4738,7 +4794,7 @@ function renderProfile() {
   // Days in pool
   var daysInPool = u.joined ? Math.max(0, Math.floor((Date.now() - u.joined) / 86400000)) : 0;
   var sincEl = ge('prof-since');
-  if (sincEl) sincEl.textContent = '📅 ' + daysInPool + ' ' + ((L[LANG]||L.de).streakDays||'Tage') + ' im Support Pool';
+  if (sincEl) sincEl.textContent = '📅 ' + daysInPool + ' ' + ((L[LANG]||L.de).streakDays||'Tage') + ' ' + ((L[LANG]||L.de).inPool||'im Support Pool');
   // Auto-record today if user is active but has no streak history yet
   if ((u.stats.given||0) > 0 && (!u.supportDays || u.supportDays.length === 0)) {
     recordSupportToday();
@@ -4770,6 +4826,8 @@ function renderProfile() {
 
 function renderNotifs() {
   var list = ge('notif-list');
+  var hintEl = ge('t-notifs-hint');
+  if (hintEl) hintEl.textContent = (L[LANG]||L.de).notifsHint||'💡 Benachrichtigungen mit 🗑 löschen';
   if (purgeStaleNotifs()) save();
   var notifs = Object.values(DB.messages||{}).filter(function(m){
     return m.to===CU && (m.type==='notif'||m.type==='dm'||m.reply);
@@ -4848,7 +4906,12 @@ function renderNotifs() {
       if (m.msgKey) {
         var tmpl = t(m.msgKey);
         if (m.needCount !== undefined) tmpl = tmpl.replace('{n}', m.needCount);
-        notifText = m.from ? (esc('@'+m.from) + ' ' + esc(tmpl)) : esc(tmpl);
+        if (m.balAmt !== undefined) tmpl = tmpl.replace('{bal}', m.balAmt);
+        if (m.subtype === 'support' && m.from) {
+          notifText = esc((t('supportFrom')||'Support von') + ' @' + m.from);
+        } else {
+          notifText = m.from ? (esc('@'+m.from) + ' ' + esc(tmpl)) : esc(tmpl);
+        }
       } else {
         notifText = esc(m.text||m.message||'');
       }
@@ -5179,7 +5242,8 @@ function saveBalAdj() {
   var bal = newG - newR;
 
   // Notify the affected member
-  addNotif(key, '⚖️', 'Admin hat deine Balance angepasst. Neue Balance: '+(bal>0?'+':'')+bal);
+  var _bs=(bal>0?'+':'')+bal;
+  addNotif(key,'⚖️','','balAdj',{msgKey:'balAdjMsg',balAmt:_bs});
 
   closeModal('balAdjModal');
   _balAdjKey = null;
