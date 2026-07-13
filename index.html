@@ -129,6 +129,17 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
 .lang-drop-item.active .lang-drop-name{color:var(--blue)}
 .lang-drop-citytime{text-align:right;font-size:11px;color:var(--t2);line-height:1.5;flex-shrink:0}
 .lang-drop-check{font-size:14px;color:var(--blue);font-weight:900;margin-left:6px;flex-shrink:0}
+/* ── DRUM PICKER ── */
+.drum-wrap{position:relative;height:144px;overflow:hidden;border-radius:16px;background:#fff;border:1px solid var(--bdr);box-shadow:0 2px 10px rgba(0,0,0,.06);margin-bottom:14px}
+.drum-sc{position:absolute;top:0;left:0;right:0;bottom:0;overflow-y:scroll;scroll-snap-type:y mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding:48px 0;z-index:2}
+.drum-sc::-webkit-scrollbar{display:none}
+.drum-item{height:48px;display:flex;align-items:center;justify-content:center;gap:10px;scroll-snap-align:center;cursor:pointer}
+.drum-flag{font-size:24px;line-height:1;flex-shrink:0}
+.drum-name{font-size:15px;font-weight:700;color:var(--text)}
+.drum-fade{position:absolute;left:0;right:0;height:52px;pointer-events:none;z-index:3}
+.drum-fade-t{top:0;background:linear-gradient(to bottom,rgba(255,255,255,.96) 0%,rgba(255,255,255,0) 100%)}
+.drum-fade-b{bottom:0;background:linear-gradient(to top,rgba(255,255,255,.96) 0%,rgba(255,255,255,0) 100%)}
+.drum-sel{position:absolute;top:50%;left:14px;right:14px;height:48px;transform:translateY(-50%);background:rgba(0,122,255,.07);border-radius:12px;border:1.5px solid rgba(0,122,255,.2);pointer-events:none;z-index:1}
 
 /* ── LOGIN INPUT + INLINE BUTTON ── */
 .login-input-row{position:relative;margin-bottom:12px}
@@ -1167,20 +1178,8 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
           <button class="bc-close" onclick="dismissBC()">✕</button>
         </div>
       </div>
-      <!-- Language Card (Settings-Style) -->
-      <div class="lang-card" id="lang-drop">
-        <div class="lang-card-hdr" onclick="toggleLangDrop()">
-          <div class="lang-card-hdr-left">
-            <div class="lang-card-sub">
-              <span class="lang-card-flag" id="lang-drop-flag">🇩🇪</span>
-              <span class="lang-card-name" id="lang-drop-cur">Deutsch</span>
-              <span class="lang-card-time" id="lang-drop-hdr-time"></span>
-            </div>
-          </div>
-          <span class="lang-card-chevron" id="lang-card-chevron">⌄</span>
-        </div>
-        <div class="lang-drop-list" id="lang-drop-list" style="display:none"></div>
-      </div>
+      <!-- Language Drum Picker -->
+      <div class="drum-wrap" id="lang-drum-wrap"></div>
       <!-- Hidden wc-row kept for JS compatibility -->
       <div style="display:none"><div id="wc-row"></div><div id="lang-row"></div></div>
       <!-- Input + inline Login Button -->
@@ -1523,20 +1522,7 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
       <!-- Language -->
       <div class="settings-section">
         <div class="settings-section-title" id="set-sec-lang">Sprache / Language</div>
-        <div class="lang-card" id="set-lang-card">
-          <div class="lang-card-hdr" onclick="toggleSetLangDrop()">
-            <div class="lang-card-hdr-left">
-              <div class="lang-card-title" id="set-lang-title">Sprache wählen</div>
-              <div class="lang-card-sub">
-                <span class="lang-card-flag" id="set-lang-flag">🇩🇪</span>
-                <span class="lang-card-name" id="set-lang-cur">Deutsch</span>
-                <span class="lang-card-time" id="set-lang-time"></span>
-              </div>
-            </div>
-            <span class="lang-card-chevron" id="set-lang-chevron">⌄</span>
-          </div>
-          <div class="lang-drop-list" id="set-lang-list" style="display:none"></div>
-        </div>
+        <div class="drum-wrap" id="set-drum-wrap"></div>
       </div>
 
       <!-- Security -->
@@ -3742,53 +3728,50 @@ function _zoneTime(z) {
 }
 
 function buildLangDrop() {
-  var cur = ge('lang-drop-cur');
-  var flag = ge('lang-drop-flag');
-  var hdrTime = ge('lang-drop-hdr-time');
-  var z0 = _getLangPrimaryZone(LANG);
-  if (cur) cur.textContent = LANG_NATIVE[LANG] || LANG;
-  if (flag) flag.textContent = z0 ? z0.flag : '';
-  if (hdrTime && z0) hdrTime.textContent = z0.city + ' · ' + _zoneTime(z0);
-
-  var list = ge('lang-drop-list');
-  if (!list) return;
-  var now = new Date();
-  var html = '';
+  buildDrumPicker('lang-drum-wrap');
+  buildDrumPicker('set-drum-wrap');
+}
+function buildDrumPicker(wrapId) {
+  var wrap = ge(wrapId);
+  if (!wrap) return;
+  var seen = {}, items = [];
   for (var i = 0; i < WC_ZONES.length; i++) {
     var z = WC_ZONES[i];
-    var active = z.lang === LANG;
-    var t = _zoneTime(z);
-    html += '<div class="lang-drop-item' + (active ? ' active' : '') + '" data-lang="' + z.lang + '">';
-    html += '<span class="lang-drop-flag">' + z.flag + '</span>';
-    html += '<span class="lang-drop-name">' + (LANG_NATIVE[z.lang] || z.lang) + '</span>';
-    html += '<span class="lang-drop-citytime">' + z.city + (t ? '<br>' + t : '') + '</span>';
-    if (active) html += '<span class="lang-drop-check">✓</span>';
-    html += '</div>';
+    if (!seen[z.lang]) { seen[z.lang] = true; items.push(z); }
   }
-  list.innerHTML = html;
-  list.onclick = function(e) {
-    var item = e.target.closest('[data-lang]');
-    if (item) { setLang(item.getAttribute('data-lang')); closeLangDrop(); }
+  var ITEM_H = 48;
+  var scId = wrapId + '-sc';
+  var html = '<div class="drum-sel"></div><div class="drum-sc" id="' + scId + '">';
+  items.forEach(function(z) {
+    html += '<div class="drum-item" data-lang="' + z.lang + '">';
+    html += '<span class="drum-flag">' + z.flag + '</span>';
+    html += '<span class="drum-name">' + (LANG_NATIVE[z.lang] || z.lang) + '</span>';
+    html += '</div>';
+  });
+  html += '</div>';
+  html += '<div class="drum-fade drum-fade-t"></div>';
+  html += '<div class="drum-fade drum-fade-b"></div>';
+  wrap.innerHTML = html;
+  var sc = ge(scId);
+  if (!sc) return;
+  var activeIdx = 0;
+  for (var i = 0; i < items.length; i++) {
+    if (items[i].lang === LANG) { activeIdx = i; break; }
+  }
+  sc.scrollTop = activeIdx * ITEM_H;
+  var _dt = null;
+  sc.onscroll = function() {
+    clearTimeout(_dt);
+    _dt = setTimeout(function() {
+      var idx = Math.round(sc.scrollTop / ITEM_H);
+      idx = Math.max(0, Math.min(idx, items.length - 1));
+      if (items[idx] && items[idx].lang !== LANG) setLang(items[idx].lang);
+    }, 120);
   };
 }
 
-function toggleLangDrop() {
-  _langDropOpen = !_langDropOpen;
-  var chev = ge('lang-card-chevron');
-  var list = ge('lang-drop-list');
-  if (chev) chev.classList.toggle('open', _langDropOpen);
-  if (!list) return;
-  if (_langDropOpen) { buildLangDrop(); list.style.display = ''; }
-  else list.style.display = 'none';
-}
-
-function closeLangDrop() {
-  _langDropOpen = false;
-  var chev = ge('lang-card-chevron');
-  var list = ge('lang-drop-list');
-  if (chev) chev.classList.remove('open');
-  if (list) list.style.display = 'none';
-}
+function toggleLangDrop() {}
+function closeLangDrop() { _langDropOpen = false; }
 
 function buildLangRow() {
   var row = ge('lang-row');
@@ -4466,44 +4449,10 @@ function openInviteInfo() {
   openModal('inviteInfoModal');
 }
 
-function buildSetLangDrop() {
-  var list = ge('set-lang-list'); if (!list) return;
-  var cur = LANG;
-  var html = '';
-  for (var i = 0; i < WC_ZONES.length; i++) {
-    var z = WC_ZONES[i];
-    var native = LANG_NATIVE[z.lang] || z.lang;
-    var isActive = (z.id === cur || (z.lang === cur && z.id !== 'en-la' && z.id !== 'en-us') ||
-                   (cur === 'en' && z.id === 'en-gb') || (cur === 'en-us' && z.id === 'en-us') || (cur === 'en-la' && z.id === 'en-la'));
-    html += '<div class="lang-drop-item' + (isActive?' active':'') + '" onclick="setLang(\'' + z.lang + '\');closeSetLangDrop()">'
-          + '<span class="lang-drop-flag">' + z.flag + '</span>'
-          + '<span class="lang-drop-name">' + native + '</span>'
-          + '<span class="lang-drop-citytime">' + z.city + '<br>' + _zoneTime(z) + '</span>'
-          + (isActive ? '<span class="lang-drop-check">✓</span>' : '')
-          + '</div>';
-  }
-  list.innerHTML = html;
-}
-function updateSetLangHeader() {
-  var z = _getLangPrimaryZone(LANG) || WC_ZONES[0];
-  var fl = ge('set-lang-flag'), cu = ge('set-lang-cur'), ti = ge('set-lang-time');
-  if (fl) fl.textContent = z.flag;
-  if (cu) cu.textContent = LANG_NATIVE[z.lang] || z.lang;
-  if (ti) ti.textContent = _zoneTime(z);
-}
-function toggleSetLangDrop() {
-  var list = ge('set-lang-list'), chev = ge('set-lang-chevron');
-  if (!list) return;
-  var open = list.style.display !== 'none';
-  if (!open) { buildSetLangDrop(); list.style.display = ''; if (chev) chev.classList.add('open'); }
-  else { list.style.display = 'none'; if (chev) chev.classList.remove('open'); }
-}
-function closeSetLangDrop() {
-  var list = ge('set-lang-list'), chev = ge('set-lang-chevron');
-  if (list) list.style.display = 'none';
-  if (chev) chev.classList.remove('open');
-  updateSetLangHeader();
-}
+function buildSetLangDrop() { buildDrumPicker('set-drum-wrap'); }
+function updateSetLangHeader() {}
+function toggleSetLangDrop() {}
+function closeSetLangDrop() {}
 
 function showHomescreenModal() { renderHomescreenModal(); openModal('homescreenModal'); }
 
