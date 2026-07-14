@@ -39,13 +39,13 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Space 
 #offline-bar.active{display:block}
 
 /* ── LOGIN ── */
-#screen-login{min-height:100vh;flex-direction:column;align-items:stretch;background:#fff}
+#screen-login{height:100vh;height:100dvh;overflow:hidden;flex-direction:column;align-items:stretch;background:#fff}
 #screen-login.active{display:flex!important}
 .login-hero{flex-shrink:0;background:#060d1f;text-align:center;position:relative;padding:0;border-radius:0 0 28px 28px;box-shadow:0 6px 32px rgba(0,0,0,.35);overflow:hidden}
-.login-hero-img{width:100%;height:290px;overflow:hidden;position:relative}
-.login-hero-img::after{content:'';position:absolute;bottom:0;left:0;right:0;height:90px;background:linear-gradient(to bottom,transparent,#060d1f);pointer-events:none;z-index:1}
+.login-hero-img{width:100%;height:clamp(140px,27vh,240px);overflow:hidden;position:relative}
+.login-hero-img::after{content:'';position:absolute;bottom:0;left:0;right:0;height:60px;background:linear-gradient(to bottom,transparent,#060d1f);pointer-events:none;z-index:1}
 .login-hero-pic{width:100%;height:100%;object-fit:cover;object-position:50% 36%;display:block}
-.login-hero-tagline{font-size:10px;font-weight:700;color:rgba(255,255,255,.5);letter-spacing:.13em;text-transform:uppercase;padding:8px 16px 10px}
+.login-hero-tagline{font-size:10px;font-weight:700;color:rgba(255,255,255,.5);letter-spacing:.13em;text-transform:uppercase;padding:5px 16px 7px}
 .lh-badge{display:none}
 .lh-icon{display:none}
 .lh-title{display:none}
@@ -55,7 +55,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Space 
 .lh-stat:last-child{border-right:none}
 .lh-stat-n{font-family:'Space Grotesk',sans-serif;font-size:1.3rem;font-weight:700;color:var(--v)}
 .lh-stat-l{font-size:9px;color:var(--t3);margin-top:2px;text-transform:uppercase;letter-spacing:.06em}
-.login-panel{flex:1;background:#fff;padding:20px 20px 44px}
+.login-panel{flex:1;background:#fff;padding:14px 20px 0;display:flex;flex-direction:column;overflow:hidden;min-height:0}
 .wc-scroll{overflow:hidden;padding:8px 0 6px;margin:0 20px;border-radius:14px;background:#fff}
 .wc-row{display:flex;gap:5px;padding:0;background:#fff}
 .wc-item{display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 10px;border-radius:12px;cursor:pointer;transition:background .2s,border-color .2s,box-shadow .2s;border:1.5px solid transparent;min-width:56px;flex-shrink:0;background:var(--bg2)}
@@ -106,9 +106,9 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
 .btn-danger{background:rgba(255,59,48,.07);border:none;border-left:3px solid var(--red);color:var(--red);padding:7px 12px;border-radius:10px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Space Grotesk',sans-serif;transition:all .2s;text-transform:uppercase}
 .btn-danger:hover{background:rgba(255,59,48,.13)}
 /* ── LOGIN MASCOT ── */
-.login-mascot-wrap{margin:20px -20px -44px;position:relative;overflow:hidden;line-height:0}
+.login-mascot-wrap{flex:1;margin:10px -20px 0;position:relative;overflow:hidden;line-height:0;min-height:60px}
 .login-mascot-wrap::before{content:'';position:absolute;top:0;left:0;right:0;height:72px;background:linear-gradient(to bottom,#fff 0%,rgba(255,255,255,0) 100%);z-index:1;pointer-events:none}
-.login-mascot{width:100%;display:block;max-height:320px;object-fit:cover;object-position:center 10%}
+.login-mascot{width:100%;height:100%;display:block;max-height:unset;object-fit:cover;object-position:center 10%}
 /* ── LANGUAGE CARD (Settings-Style) ── */
 .lang-card{background:#fff;border-radius:16px;border:1px solid var(--bdr);box-shadow:0 2px 10px rgba(0,0,0,.06);margin-bottom:14px;overflow:visible}
 .lang-card-hdr{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;cursor:pointer;user-select:none}
@@ -134,7 +134,7 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
 .lang-drop-citytime{text-align:right;font-size:11px;color:var(--t2);line-height:1.5;flex-shrink:0}
 .lang-drop-check{font-size:14px;color:var(--blue);font-weight:900;margin-left:6px;flex-shrink:0}
 /* ── DRUM PICKER ── */
-.drum-wrap{position:relative;height:144px;overflow:hidden;border-radius:16px;background:#fff;border:1px solid var(--bdr);box-shadow:0 2px 10px rgba(0,0,0,.06);margin-bottom:14px}
+.drum-wrap{position:relative;height:clamp(88px,16vh,128px);overflow:hidden;border-radius:16px;background:#fff;border:1px solid var(--bdr);box-shadow:0 2px 10px rgba(0,0,0,.06);margin-bottom:10px}
 .drum-sc{position:absolute;top:0;left:0;right:0;bottom:0;overflow-y:scroll;scroll-snap-type:y mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding:48px 0;z-index:2}
 .drum-sc::-webkit-scrollbar{display:none}
 .drum-item{height:48px;display:flex;align-items:center;justify-content:center;gap:10px;scroll-snap-align:center;cursor:pointer}
