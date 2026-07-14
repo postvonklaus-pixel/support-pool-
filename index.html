@@ -4289,19 +4289,9 @@ function onLoginInput() {
     html += '<div class="login-sug-item" onmousedown="pickLoginSug(event,\'' + esc(m.key) + '\',\'' + display + '\')">'
           + '<span class="login-sug-at">@</span>' + display + '</div>';
   }
-  if (raw.length === 1) {
-    sug.style.display = 'none';
-    if (ov && ovl) {
-      var l = L[LANG] || L.de;
-      if (ovt) ovt.textContent = (l.setSecSecurity ? 'Mitglieder' : 'Mitglieder');
-      ovl.innerHTML = html;
-      ov.style.display = 'block';
-    }
-  } else {
-    if (ov) ov.style.display = 'none';
-    sug.innerHTML = html;
-    sug.style.display = 'block';
-  }
+  if (ov) ov.style.display = 'none';
+  sug.innerHTML = html;
+  sug.style.display = 'block';
 }
 
 function pickLoginSug(e, key, name) {
@@ -4322,6 +4312,7 @@ function handleLoginKey(e) {
 var _memPinTarget = null, _memPinDigits = '';
 var _forgotPinTarget = null, _adminOverrideKey = null;
 function openMemPinPad(key, disp) {
+  if (document.activeElement) document.activeElement.blur();
   var l = L[LANG] || L.de;
   _memPinTarget = {key: key, disp: disp};
   _memPinDigits = '';
@@ -6368,6 +6359,7 @@ function doImport() {
 
 // ── PIN PAD ──────────────────────────────────────────────────────────────────
 function openPinPad(key, disp) {
+  if (document.activeElement) document.activeElement.blur();
   PIN_USER=key; PIN_DISP_NAME=disp; PIN_BUF=''; PIN_ATT=0;
   st('pin-err',''); updatePinDots();
   ge('pinPad').classList.add('active');
