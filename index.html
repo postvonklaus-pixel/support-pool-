@@ -1399,7 +1399,7 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
 
       <!-- Top Supporter Leaderboard -->
       <div class="leaderboard-card" id="lb-card">
-        <div class="lb-title" style="justify-content:space-between"><span>🏆 <span id="t-lb-title">Top-Supporter der Woche</span></span><span id="lb-reset-info" style="font-size:9px;font-weight:600;color:var(--t3);text-transform:none;letter-spacing:0;white-space:nowrap"></span></div>
+        <div class="lb-title" style="flex-direction:column;align-items:flex-start;gap:3px"><span>🏆 <span id="t-lb-title">Top-Supporter der Woche</span></span><span id="lb-reset-info" style="font-size:9px;font-weight:500;color:var(--t3);text-transform:none;letter-spacing:0"></span></div>
         <div id="lb-list"><div style="text-align:center;color:var(--t2);font-size:12px;padding:8px">Lade...</div></div>
       </div>
 
@@ -6601,11 +6601,11 @@ function renderLeaderboard() {
       if (wg > seen[normName].given) {
         var idx = scores.indexOf(seen[normName]);
         if (idx >= 0) scores.splice(idx, 1);
-        seen[normName] = {name:m.name||m.key, given:wg, key:m.key||m.name};
+        seen[normName] = {name:m.name||m.key, given:wg, total:(m.stats&&m.stats.given)||0, key:m.key||m.name};
         scores.push(seen[normName]);
       }
     } else {
-      var entry = {name:m.name||m.key, given:wg, key:m.key||m.name};
+      var entry = {name:m.name||m.key, given:wg, total:(m.stats&&m.stats.given)||0, key:m.key||m.name};
       seen[normName] = entry;
       scores.push(entry);
     }
@@ -6625,7 +6625,7 @@ function renderLeaderboard() {
     html += '<div style="width:24px;height:24px;border-radius:50%;background:'+bg+';display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;flex-shrink:0">'+lbl+'</div>';
     html += '<div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600;color:var(--text)">'+esc(e2.name)+verifiedBadge(DB.members[e2.key])+(isMe?' &#11088;':'')+'<span style="font-size:10px"> '+(DB.members[e2.key]?trophySmall(DB.members[e2.key]):'')+' </span></div>';
     html += '<div style="font-size:10px;color:var(--t2)">'+e2.given+' '+supLabel+'</div></div>';
-    html += '<div style="font-size:1.1rem;font-weight:700;color:var(--v)">'+e2.given+'</div>';
+    html += '<div style="text-align:right;flex-shrink:0"><div style="font-size:1.1rem;font-weight:700;color:var(--v);line-height:1.2">'+e2.given+'</div><div style="font-size:.72rem;font-weight:600;color:var(--t2);line-height:1.2">'+e2.total+'</div></div>';
     html += '</div>';
   }
   list.innerHTML = html;
