@@ -5196,34 +5196,21 @@ function copyProfileCheck() {
   var chk = function(v) { return v ? '✅' : '❌'; };
   var opt = function(v) { return v ? '✅' : '💡'; };
 
-  var text = '🏅 ' + (lng.profCheckTitle || 'Profile Check') + '
-' +
-    '👤 ' + name + ' · ' + dateStr + '
-' +
-    '━━━━━━━━━━━━━━━━━
-' +
-    chk(balance >= 0) + ' ' + lng.profCheckBal + ': ' + (balance >= 0 ? lng.profCheckBalGood : lng.profCheckBalBad) + '
-' +
-    chk(vids > 0) + ' ' + lng.profCheckVids + ': ' + vids + '
-' +
-    chk(given >= 5) + ' ' + lng.profCheckGiven + ': ' + given + '
-' +
-    chk(weeklyGiven >= 1) + ' ' + lng.profCheckWeek + ': ' + weeklyGiven + '
-' +
-    chk(memberDays >= 1) + ' ' + lng.profCheckSince.replace('{n}', memberDays) + '
-' +
-    chk(activeLast7 >= 4) + ' ' + lng.profCheckDays.replace('{n}', activeLast7) + '
-' +
-    '━━━━━━━━━━━━━━━━━
-' +
-    opt(hasPin) + ' ' + lng.profCheckPin + '
-' +
-    opt(hasPush) + ' ' + lng.profCheckPush + '
-' +
-    opt(hasPriv) + ' ' + lng.profCheckPriv + '
-' +
-    '━━━━━━━━━━━━━━━━━
-' +
+  var NL = '\n';
+  var text = '🏅 ' + (lng.profCheckTitle || 'Profile Check') + NL +
+    '👤 ' + name + ' · ' + dateStr + NL +
+    '━━━━━━━━━━━━━━━━━' + NL +
+    chk(balance >= 0) + ' ' + lng.profCheckBal + ': ' + (balance >= 0 ? lng.profCheckBalGood : lng.profCheckBalBad) + NL +
+    chk(vids > 0) + ' ' + lng.profCheckVids + ': ' + vids + NL +
+    chk(given >= 5) + ' ' + lng.profCheckGiven + ': ' + given + NL +
+    chk(weeklyGiven >= 1) + ' ' + lng.profCheckWeek + ': ' + weeklyGiven + NL +
+    chk(memberDays >= 1) + ' ' + lng.profCheckSince.replace('{n}', memberDays) + NL +
+    chk(activeLast7 >= 4) + ' ' + lng.profCheckDays.replace('{n}', activeLast7) + NL +
+    '━━━━━━━━━━━━━━━━━' + NL +
+    opt(hasPin) + ' ' + lng.profCheckPin + NL +
+    opt(hasPush) + ' ' + lng.profCheckPush + NL +
+    opt(hasPriv) + ' ' + lng.profCheckPriv + NL +
+    '━━━━━━━━━━━━━━━━━' + NL +
     lng.profCheckCert;
 
   if (navigator.clipboard && navigator.clipboard.writeText) {
