@@ -661,10 +661,10 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
 .action-card{border-radius:18px;display:flex;flex-direction:column;align-items:center;cursor:pointer;border:1.5px solid transparent;transition:all .22s;position:relative;text-align:center;overflow:hidden;min-height:148px;padding:0}
 .action-card:active{transform:scale(.95)}
 /* ── Post card (gold) ── */
-.ac-post{background:rgba(212,134,10,0.04);border-color:rgba(212,134,10,.35)}
+.ac-post{background:rgba(212,134,10,0.04);border-color:rgba(212,134,10,.35);animation:acGlowGold 2.8s ease-in-out infinite}
 .ac-post:hover{border-color:rgba(212,134,10,.65);background:rgba(212,134,10,0.08)}
 /* ── Support card (blue) ── */
-.ac-sup{background:rgba(0,122,255,0.04);border-color:rgba(0,122,255,.28)}
+.ac-sup{background:rgba(0,122,255,0.04);border-color:rgba(0,122,255,.28);animation:acGlowBlue 2.8s ease-in-out infinite .5s}
 .ac-sup:hover{border-color:rgba(0,122,255,.62);background:rgba(0,122,255,0.07)}
 /* ── Card internals ── */
 .ac-art{flex:1;display:flex;align-items:center;justify-content:center;width:100%;padding:12px 10px 4px}
@@ -871,6 +871,10 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
 @media(prefers-color-scheme:dark){.pc-btn-close{background:rgba(255,255,255,.1)}}
 :root[data-theme="dark"] .pc-btn-close{background:rgba(255,255,255,.1)}
 :root[data-theme="light"] .pc-btn-close{background:rgba(0,0,0,.07)}
+
+/* ── ACTION TILE ANIMATIONS ── */
+@keyframes acGlowGold{0%,100%{box-shadow:0 0 0 0 rgba(212,134,10,.0);border-color:rgba(212,134,10,.35)}50%{box-shadow:0 4px 18px 2px rgba(212,134,10,.28);border-color:rgba(212,134,10,.7)}}
+@keyframes acGlowBlue{0%,100%{box-shadow:0 0 0 0 rgba(0,122,255,.0);border-color:rgba(0,122,255,.28)}50%{box-shadow:0 4px 18px 2px rgba(0,122,255,.24);border-color:rgba(0,122,255,.62)}}
 </style>
 </head>
 <body>
@@ -5472,12 +5476,14 @@ function renderOpenList() {
   // Auto-show card viewer if videos available; hide if none
   var scw = ge('sup-card-wrap');
   if (scw) {
-    if (open.length > 0) {
-      scw.style.display = '';
-      if (_supCardIdx >= open.length) _supCardIdx = 0;
-      renderSupportCard(_supCardIdx);
-    } else {
+    if (open.length === 0) {
       scw.style.display = 'none';
+    } else {
+      if (_supCardIdx >= open.length) _supCardIdx = 0;
+      // Re-render if already open (e.g. after a support action); don't auto-open
+      if (scw.style.display !== 'none') {
+        renderSupportCard(_supCardIdx);
+      }
     }
   }
 
@@ -5543,8 +5549,13 @@ function openSupCard() {
     return;
   }
   var scw = ge('sup-card-wrap');
-  if (scw && scw.style.display !== 'none') {
-    scw.scrollIntoView({behavior:'smooth', block:'start'});
+  if (!scw) return;
+  if (_supCardOpen && _supCardOpen.length > 0) {
+    scw.style.display = '';
+    renderSupportCard(_supCardIdx || 0);
+    setTimeout(function(){ scw.scrollIntoView({behavior:'smooth', block:'start'}); }, 60);
+  } else {
+    toast((L[LANG]||L.de).noOpen||'Keine Videos zum Supporten','info',2000);
   }
 }
 
