@@ -833,6 +833,44 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
 .g-btn-sec:active{opacity:.7}
 #guide-float{position:fixed;bottom:76px;right:16px;z-index:8600;background:#007aff;color:#fff;border:none;border-radius:50px;padding:9px 14px;font-family:'Space Grotesk',sans-serif;font-size:12px;font-weight:800;cursor:pointer;box-shadow:0 4px 16px rgba(0,122,255,.4);display:none;align-items:center;gap:6px;letter-spacing:.04em}
 
+
+/* ── PROFILE CHECK ── */
+.profile-check-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:16px 20px;margin-bottom:14px;background:linear-gradient(135deg,rgba(88,86,214,.12) 0%,rgba(0,122,255,.12) 100%);border:1.5px solid rgba(88,86,214,.35);border-radius:18px;cursor:pointer;font-family:inherit;font-size:15px;font-weight:800;color:var(--fg);text-transform:uppercase;letter-spacing:.06em;animation:pcPulse 2.6s ease-in-out infinite;position:relative;overflow:hidden}
+.profile-check-btn .pc-icon{font-size:22px;animation:pcBounce 2.6s ease-in-out infinite}
+.profile-check-btn::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,.18) 50%,transparent 100%);transform:translateX(-100%);animation:pcShine 2.6s ease-in-out infinite}
+@keyframes pcPulse{0%,100%{box-shadow:0 2px 12px rgba(88,86,214,.15)}50%{box-shadow:0 4px 22px rgba(88,86,214,.38)}}
+@keyframes pcBounce{0%,100%{transform:scale(1)}50%{transform:scale(1.18)}}
+@keyframes pcShine{0%{transform:translateX(-100%)}60%,100%{transform:translateX(200%)}}
+#profile-check-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.52);z-index:9000;align-items:flex-end;justify-content:center;padding:0}
+#profile-check-overlay.open{display:flex}
+.profile-check-sheet{background:var(--bg);border-radius:26px 26px 0 0;width:100%;max-width:520px;max-height:88vh;overflow-y:auto;padding:0 0 env(safe-area-inset-bottom,16px);overscroll-behavior:contain}
+.pc-handle{width:40px;height:4px;background:var(--bdr);border-radius:2px;margin:12px auto 0}
+.pc-header{padding:16px 20px 12px;border-bottom:1px solid var(--bdr)}
+.pc-header-title{font-size:17px;font-weight:800;color:var(--fg);text-transform:uppercase;letter-spacing:.05em;text-align:center}
+.pc-header-sub{font-size:11px;color:var(--t2);text-align:center;margin-top:3px;text-transform:uppercase;letter-spacing:.04em}
+.pc-section-label{font-size:10px;font-weight:800;color:var(--t2);text-transform:uppercase;letter-spacing:.08em;padding:14px 20px 6px}
+.pc-row{display:flex;align-items:center;gap:12px;padding:11px 20px;border-bottom:1px solid rgba(0,0,0,.05)}
+.pc-row:last-child{border-bottom:none}
+.pc-row-icon{font-size:20px;flex-shrink:0;width:28px;text-align:center}
+.pc-row-text{flex:1;min-width:0}
+.pc-row-label{font-size:13px;font-weight:700;color:var(--fg)}
+.pc-row-val{font-size:11px;color:var(--t2);margin-top:1px}
+.pc-row-badge{font-size:18px;flex-shrink:0}
+.pc-divider{height:8px;background:var(--bdr);opacity:.35;margin:4px 0}
+.pc-summary{margin:14px 20px;padding:14px 16px;border-radius:16px;font-size:13px;line-height:1.55;font-weight:600;color:var(--fg)}
+.pc-summary.good{background:rgba(52,199,89,.1);border:1.5px solid rgba(52,199,89,.35)}
+.pc-summary.ok{background:rgba(255,159,10,.1);border:1.5px solid rgba(255,159,10,.35)}
+.pc-summary.bad{background:rgba(255,59,48,.1);border:1.5px solid rgba(255,59,48,.35)}
+.pc-inactive-warn{margin:0 20px 12px;padding:12px 16px;border-radius:14px;background:rgba(255,59,48,.08);border:1.5px solid rgba(255,59,48,.3);font-size:12px;font-weight:700;color:rgba(255,59,48,.9);text-align:center}
+.pc-cert-footer{margin:0 20px 10px;padding:10px 14px;border-radius:12px;background:rgba(88,86,214,.06);border:1px dashed rgba(88,86,214,.3);font-size:10px;color:var(--t2);line-height:1.5;text-align:center}
+.pc-actions{display:flex;gap:10px;padding:12px 20px 4px}
+.pc-btn{flex:1;padding:13px 10px;border-radius:14px;border:none;cursor:pointer;font-family:inherit;font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.05em}
+.pc-btn-copy{background:var(--blue);color:#fff}
+.pc-btn-copy.copied{background:var(--green)}
+.pc-btn-close{background:rgba(0,0,0,.07);color:var(--fg)}
+@media(prefers-color-scheme:dark){.pc-btn-close{background:rgba(255,255,255,.1)}}
+:root[data-theme="dark"] .pc-btn-close{background:rgba(255,255,255,.1)}
+:root[data-theme="light"] .pc-btn-close{background:rgba(0,0,0,.07)}
 </style>
 </head>
 <body>
@@ -1464,6 +1502,13 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
         </div>
       </div>
 
+
+      <!-- Profile Check Button -->
+      <button class="profile-check-btn" onclick="openProfileCheck()">
+        <span class="pc-icon">🏅</span>
+        <span id="t-profile-check-btn">Check mein Profil</span>
+      </button>
+
       <!-- Push Notification Banner -->
       <div id="push-notif-banner">
         <div style="font-size:22px;flex-shrink:0">🔔</div>
@@ -1521,6 +1566,19 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
         🚪 <span id="t-logout">Abmelden</span>
       </button>
 
+    </div>
+  </div>
+
+
+  <!-- Profile Check Overlay -->
+  <div id="profile-check-overlay" onclick="if(event.target===this)closeProfileCheck()">
+    <div class="profile-check-sheet">
+      <div class="pc-handle"></div>
+      <div class="pc-header">
+        <div class="pc-header-title" id="t-pc-title">Check mein Profil</div>
+        <div class="pc-header-sub" id="t-pc-sub">Live-Analyse</div>
+      </div>
+      <div id="profile-check-body"></div>
     </div>
   </div>
 
@@ -2398,7 +2456,7 @@ de: {
   postedMsg: 'Video gepostet – {n} Supports in 12h benötigt',
   loginPH: 'TikTok @Username',
   postNow: '✅ Video posten jetzt möglich',
-  lbTitle: 'Top-Supporter der Woche',weeklyTpl:['🎯 Gute Woche! Denk ans Supporten — jeder Kommentar zählt.','💪 Wer supportet, wird supportet! Schau nach neuen Videos.','🏆 Bleib aktiv und verbessere dein Ranking diese Woche!','📹 Neue Videos warten auf deinen Support-Kommentar!','⭐ Heute ist der perfekte Tag, um aktiv zu bleiben!','🚀 Gemeinsam sind wir stark — macht heute mit!','🏆 DIE LISTE DER TOP SUPPORTER DER WOCHE WURDE AKTUALISIERT. DER SUPPORT POOL WÜNSCHT DIR EIN SCHÖNES WOCHENENDE 👋🎉'],weeklyDmSent:'{n} Mitglieder erreicht ✅',weeklyDmTitle:'📬 Wöchentliche Nachricht',weeklyDmCustom:'Individuelle Nachricht (optional)',weeklyDmSend:'📬 An alle senden',weeklySupLabel:'Supports diese Woche',weeklyNextReset:'Reset Freitag 00:00 WIB',pinTitle:'Admin-Zugang',chatTitle:'Welt-Chat',chatPlaceholder:'Schreib was...',chatSend:'Senden',chatEmpty:'Noch keine Nachrichten. Sei der Erste!',chatOnlyActive:'Nur Mitglieder mit aktivem Video können schreiben',chatTpls:['🎬 Neues Video gepostet!','🔵 Runde 2 gestartet!','🙏 Danke für Support!','👀 Bitte supporten!','💪 Heute noch aktiv!','🔥 Video läuft heiß!','✅ Danke an alle!','🌟 Schaut rein!'],pinSub:'4-stelligen PIN eingeben',
+  profCheckBtn:'Check mein Profil',profCheckTitle:'PROFIL-CHECK',profCheckPos:'POSITIVES',profCheckOpt:'OPTIONAL EMPFOHLEN',profCheckSum:'MEIN ERGEBNIS',profCheckBal:'Guthaben',profCheckBalGood:'Im grünen Bereich',profCheckBalBad:'Benötigt Aufmerksamkeit',profCheckVids:'Videos gepostet',profCheckGiven:'Supports gegeben (gesamt)',profCheckWeek:'Supports diese Woche',profCheckSince:'Mitglied seit {n} Tagen',profCheckDays:'{n} von 7 Tagen aktiv',profCheckToday:'Supports heute: {n}',profCheckPin:'PIN-Schutz',profCheckPush:'Push-Nachrichten',profCheckPriv:'Datenschutz',profCheckRecom:'empfohlen',profCheckActiv:'aktiviert',profCheckConf:'bestätigt',profCheckCopy:'Kopieren',profCheckClose:'Schließen',profCheckInact:'Du bist seit {n} Tagen inaktiv — komm zurück! 🙌',profCheckSumGood:'Dein Profil ist in Topform! Du bist aktiv, unterstützt andere Mitglieder und wächst im Pool. Weiter so! 💪',profCheckSumOk:'Dein Profil entwickelt sich gut! Bleib aktiv, poste regelmäßig und unterstütze andere — der Pool belohnt Engagement.',profCheckSumBad:'Dein Profil braucht Aufmerksamkeit. Poste ein Video und starte mit dem Supporten — jeder Kommentar zählt!',profCheckCert:'Bestätigt von NOVA Support Pool · novapool.official',profCheckCopied:'Profil-Check kopiert! 📋',lbTitle: 'Top-Supporter der Woche',weeklyTpl:['🎯 Gute Woche! Denk ans Supporten — jeder Kommentar zählt.','💪 Wer supportet, wird supportet! Schau nach neuen Videos.','🏆 Bleib aktiv und verbessere dein Ranking diese Woche!','📹 Neue Videos warten auf deinen Support-Kommentar!','⭐ Heute ist der perfekte Tag, um aktiv zu bleiben!','🚀 Gemeinsam sind wir stark — macht heute mit!','🏆 DIE LISTE DER TOP SUPPORTER DER WOCHE WURDE AKTUALISIERT. DER SUPPORT POOL WÜNSCHT DIR EIN SCHÖNES WOCHENENDE 👋🎉'],weeklyDmSent:'{n} Mitglieder erreicht ✅',weeklyDmTitle:'📬 Wöchentliche Nachricht',weeklyDmCustom:'Individuelle Nachricht (optional)',weeklyDmSend:'📬 An alle senden',weeklySupLabel:'Supports diese Woche',weeklyNextReset:'Reset Freitag 00:00 WIB',pinTitle:'Admin-Zugang',chatTitle:'Welt-Chat',chatPlaceholder:'Schreib was...',chatSend:'Senden',chatEmpty:'Noch keine Nachrichten. Sei der Erste!',chatOnlyActive:'Nur Mitglieder mit aktivem Video können schreiben',chatTpls:['🎬 Neues Video gepostet!','🔵 Runde 2 gestartet!','🙏 Danke für Support!','👀 Bitte supporten!','💪 Heute noch aktiv!','🔥 Video läuft heiß!','✅ Danke an alle!','🌟 Schaut rein!'],pinSub:'4-stelligen PIN eingeben',
   obT0:'Willkommen!',obB0:'Du bist jetzt Teil des exklusivsten TikTok Support-Netzwerks. Hier wachsen wir gemeinsam.',
   obT1:'So funktioniert es',obT2:'Du bist bereit!',obB2:'Klicke auf Video posten und füge deine TikTok-URL ein!',
   obBtn0:'Weiter →',obBtn1:'Weiter →',obBtn2:'Los geht\'s! 🎉',
@@ -2545,7 +2603,7 @@ en: {
   postedMsg: 'Video posted – {n} supports needed in 12h',
   loginPH: 'TikTok @username',
   postNow: '✅ Post video now possible',
-  lbTitle: 'Top Supporters of the Week',weeklyTpl:['🎯 Good week! Remember to support — every comment counts.','💪 Who supports, gets supported! Check out new videos.','🏆 Stay active and improve your ranking this week!','📹 New videos are waiting for your support comment!','⭐ Today is the perfect day to stay active!','🚀 Together we are strong — join in today!','🏆 THE LIST OF THE TOP SUPPORTERS OF THE WEEK HAS BEEN UPDATED. THE SUPPORT POOL WISHES YOU A GREAT WEEKEND 👋🎉'],weeklyDmSent:'{n} members reached ✅',weeklyDmTitle:'📬 Weekly Message',weeklyDmCustom:'Custom message (optional)',weeklyDmSend:'📬 Send to all',weeklySupLabel:'Supports this week',weeklyNextReset:'Reset Friday 00:00 WIB',pinTitle:'Admin Access',chatTitle:'World Chat',chatPlaceholder:'Write something...',chatSend:'Send',chatEmpty:'No messages yet. Be the first!',chatOnlyActive:'Only members with an active video can write',chatTpls:['🎬 New video posted!','🔵 Round 2 started!','🙏 Thanks for support!','👀 Please support my video!','💪 Still active today!','🔥 Video is on fire!','✅ Thanks everyone!','🌟 Check it out!'],pinSub:'Enter 4-digit PIN',
+  profCheckBtn:'Check my Profile',profCheckTitle:'PROFILE CHECK',profCheckPos:'POSITIVES',profCheckOpt:'OPTIONAL RECOMMENDED',profCheckSum:'MY RESULT',profCheckBal:'Balance',profCheckBalGood:'In the green zone',profCheckBalBad:'Needs attention',profCheckVids:'Videos posted',profCheckGiven:'Supports given (total)',profCheckWeek:'Supports this week',profCheckSince:'Member for {n} days',profCheckDays:'{n} out of 7 days active',profCheckToday:'Supports today: {n}',profCheckPin:'PIN protection',profCheckPush:'Push notifications',profCheckPriv:'Privacy',profCheckRecom:'recommended',profCheckActiv:'activated',profCheckConf:'confirmed',profCheckCopy:'Copy',profCheckClose:'Close',profCheckInact:'You have been inactive for {n} days — come back! 🙌',profCheckSumGood:'Your profile is in top shape! You are active, supporting other members and growing in the pool. Keep it up! 💪',profCheckSumOk:'Your profile looks good! Stay active, post regularly and support others — the pool rewards engagement.',profCheckSumBad:'Your profile needs attention. Post a video and start supporting — every comment counts!',profCheckCert:'Verified by NOVA Support Pool · novapool.official',profCheckCopied:'Profile check copied! 📋',lbTitle: 'Top Supporters of the Week',weeklyTpl:['🎯 Good week! Remember to support — every comment counts.','💪 Who supports, gets supported! Check out new videos.','🏆 Stay active and improve your ranking this week!','📹 New videos are waiting for your support comment!','⭐ Today is the perfect day to stay active!','🚀 Together we are strong — join in today!','🏆 THE LIST OF THE TOP SUPPORTERS OF THE WEEK HAS BEEN UPDATED. THE SUPPORT POOL WISHES YOU A GREAT WEEKEND 👋🎉'],weeklyDmSent:'{n} members reached ✅',weeklyDmTitle:'📬 Weekly Message',weeklyDmCustom:'Custom message (optional)',weeklyDmSend:'📬 Send to all',weeklySupLabel:'Supports this week',weeklyNextReset:'Reset Friday 00:00 WIB',pinTitle:'Admin Access',chatTitle:'World Chat',chatPlaceholder:'Write something...',chatSend:'Send',chatEmpty:'No messages yet. Be the first!',chatOnlyActive:'Only members with an active video can write',chatTpls:['🎬 New video posted!','🔵 Round 2 started!','🙏 Thanks for support!','👀 Please support my video!','💪 Still active today!','🔥 Video is on fire!','✅ Thanks everyone!','🌟 Check it out!'],pinSub:'Enter 4-digit PIN',
   obT0:'Welcome!',obB0:'You are now part of the most exclusive TikTok support network.',
   obT1:'How it works',obT2:'You are ready!',obB2:'Click Post Video and paste your TikTok URL!',
   obBtn0:'Next →',obBtn1:'Next →',obBtn2:'Let\'s go! 🎉',
@@ -2692,7 +2750,7 @@ id: {
   postedMsg: 'Video diposting – {n} dukungan dibutuhkan dalam 12 jam',
   loginPH: 'TikTok @username',
   postNow: '✅ Posting video sekarang',
-  lbTitle: 'Pendukung Teratas Minggu Ini',weeklyTpl:['🎯 Minggu yang bagus! Jangan lupa support — setiap komentar berarti.','💪 Yang mendukung, akan didukung! Cek video baru.','🏆 Tetap aktif dan tingkatkan rankingmu minggu ini!','📹 Video baru menunggu komentar supportmu!','⭐ Hari ini adalah hari yang tepat untuk tetap aktif!','🚀 Bersama kita kuat — bergabunglah hari ini!','🏆 DAFTAR TOP SUPPORTER MINGGU INI TELAH DIPERBARUI. SUPPORT POOL MENGUCAPKAN SELAMAT AKHIR PEKAN 👋🎉'],weeklyDmSent:'{n} anggota tercapai ✅',weeklyDmTitle:'📬 Pesan Mingguan',weeklyDmCustom:'Pesan kustom (opsional)',weeklyDmSend:'📬 Kirim ke semua',weeklySupLabel:'Support minggu ini',weeklyNextReset:'Reset Jumat 00:00 WIB',pinTitle:'Akses Admin',chatTitle:'Obrolan Dunia',chatPlaceholder:'Tulis sesuatu...',chatSend:'Kirim',chatEmpty:'Belum ada pesan. Jadilah yang pertama!',chatOnlyActive:'Hanya anggota dengan video aktif yang bisa menulis',chatTpls:['🎬 Video baru diposting!','🔵 Ronde 2 mulai!','🙏 Terima kasih supportnya!','👀 Tolong support videoku!','💪 Masih aktif hari ini!','🔥 Video lagi panas!','✅ Terima kasih semua!','🌟 Cek video ku!'],pinSub:'Masukkan PIN 4 digit',
+  profCheckBtn:'Cek Profilku',profCheckTitle:'CEK PROFIL',profCheckPos:'HAL POSITIF',profCheckOpt:'OPSIONAL DIREKOMENDASIKAN',profCheckSum:'HASIL SAYA',profCheckBal:'Saldo',profCheckBalGood:'Dalam zona hijau',profCheckBalBad:'Perlu perhatian',profCheckVids:'Video diposting',profCheckGiven:'Support diberikan (total)',profCheckWeek:'Support minggu ini',profCheckSince:'Anggota selama {n} hari',profCheckDays:'{n} dari 7 hari aktif',profCheckToday:'Support hari ini: {n}',profCheckPin:'Perlindungan PIN',profCheckPush:'Notifikasi push',profCheckPriv:'Privasi',profCheckRecom:'direkomendasikan',profCheckActiv:'diaktifkan',profCheckConf:'dikonfirmasi',profCheckCopy:'Salin',profCheckClose:'Tutup',profCheckInact:'Kamu tidak aktif selama {n} hari — kembali lagi! 🙌',profCheckSumGood:'Profilmu dalam kondisi prima! Kamu aktif, mendukung anggota lain dan berkembang di pool. Pertahankan! 💪',profCheckSumOk:'Profilmu terlihat bagus! Tetap aktif, posting secara rutin dan dukung yang lain — pool menghargai keterlibatan.',profCheckSumBad:'Profilmu butuh perhatian. Posting video dan mulai mendukung — setiap komentar berarti!',profCheckCert:'Diverifikasi oleh NOVA Support Pool · novapool.official',profCheckCopied:'Cek profil disalin! 📋',lbTitle: 'Pendukung Teratas Minggu Ini',weeklyTpl:['🎯 Minggu yang bagus! Jangan lupa support — setiap komentar berarti.','💪 Yang mendukung, akan didukung! Cek video baru.','🏆 Tetap aktif dan tingkatkan rankingmu minggu ini!','📹 Video baru menunggu komentar supportmu!','⭐ Hari ini adalah hari yang tepat untuk tetap aktif!','🚀 Bersama kita kuat — bergabunglah hari ini!','🏆 DAFTAR TOP SUPPORTER MINGGU INI TELAH DIPERBARUI. SUPPORT POOL MENGUCAPKAN SELAMAT AKHIR PEKAN 👋🎉'],weeklyDmSent:'{n} anggota tercapai ✅',weeklyDmTitle:'📬 Pesan Mingguan',weeklyDmCustom:'Pesan kustom (opsional)',weeklyDmSend:'📬 Kirim ke semua',weeklySupLabel:'Support minggu ini',weeklyNextReset:'Reset Jumat 00:00 WIB',pinTitle:'Akses Admin',chatTitle:'Obrolan Dunia',chatPlaceholder:'Tulis sesuatu...',chatSend:'Kirim',chatEmpty:'Belum ada pesan. Jadilah yang pertama!',chatOnlyActive:'Hanya anggota dengan video aktif yang bisa menulis',chatTpls:['🎬 Video baru diposting!','🔵 Ronde 2 mulai!','🙏 Terima kasih supportnya!','👀 Tolong support videoku!','💪 Masih aktif hari ini!','🔥 Video lagi panas!','✅ Terima kasih semua!','🌟 Cek video ku!'],pinSub:'Masukkan PIN 4 digit',
   obT0:'Selamat datang!',obB0:'Anda sekarang bagian dari jaringan dukungan TikTok terbaik.',
   obT1:'Cara kerjanya',obT2:'Anda siap!',obB2:'Klik Posting Video dan tempel URL TikTok Anda!',
   obBtn0:'Lanjut →',obBtn1:'Lanjut →',obBtn2:'Mulai! 🎉',
@@ -2839,7 +2897,7 @@ it: {
   postedMsg: 'Video pubblicato – {n} supporti necessari in 12h',
   loginPH: 'TikTok @username',
   postNow: '✅ Pubblica video ora',
-  lbTitle: 'Top Supporter della Settimana',weeklyTpl:['🎯 Buona settimana! Ricordati di supportare — ogni commento conta.','💪 Chi supporta, viene supportato! Guarda i nuovi video.','🏆 Rimani attivo e migliora il tuo ranking questa settimana!','📹 Nuovi video aspettano il tuo commento di supporto!','⭐ Oggi è il giorno perfetto per restare attivi!','🚀 Insieme siamo forti — partecipa oggi!','🏆 LA LISTA DEI TOP SUPPORTER DELLA SETTIMANA È STATA AGGIORNATA. IL SUPPORT POOL TI AUGURA UN BUON FINE SETTIMANA 👋🎉'],weeklyDmSent:'{n} membri raggiunti ✅',weeklyDmTitle:'📬 Messaggio Settimanale',weeklyDmCustom:'Messaggio personalizzato (opzionale)',weeklyDmSend:'📬 Invia a tutti',weeklySupLabel:'Support questa settimana',weeklyNextReset:'Reset venerdì 00:00 WIB',pinTitle:'Accesso Admin',chatTitle:'Chat Mondiale',chatPlaceholder:'Scrivi qualcosa...',chatSend:'Invia',chatEmpty:'Nessun messaggio. Sii il primo!',chatOnlyActive:'Solo i membri con un video attivo possono scrivere',chatTpls:['🎬 Nuovo video postato!','🔵 Round 2 iniziato!','🙏 Grazie per il supporto!','👀 Supportate il mio video!','💪 Ancora attivo oggi!','🔥 Video in fiamme!','✅ Grazie a tutti!','🌟 Date un\'occhiata!'],pinSub:'Inserisci PIN a 4 cifre',
+  profCheckBtn:'Controlla il mio Profilo',profCheckTitle:'CONTROLLO PROFILO',profCheckPos:'PUNTI POSITIVI',profCheckOpt:'OPZIONALE CONSIGLIATO',profCheckSum:'IL MIO RISULTATO',profCheckBal:'Saldo',profCheckBalGood:'Nella zona verde',profCheckBalBad:'Necessita attenzione',profCheckVids:'Video pubblicati',profCheckGiven:'Support dati (totale)',profCheckWeek:'Support questa settimana',profCheckSince:'Membro da {n} giorni',profCheckDays:'{n} su 7 giorni attivo',profCheckToday:'Support oggi: {n}',profCheckPin:'Protezione PIN',profCheckPush:'Notifiche push',profCheckPriv:'Privacy',profCheckRecom:'consigliato',profCheckActiv:'attivato',profCheckConf:'confermato',profCheckCopy:'Copia',profCheckClose:'Chiudi',profCheckInact:'Sei inattivo da {n} giorni — torna! 🙌',profCheckSumGood:'Il tuo profilo è in ottima forma! Sei attivo, supporti altri membri e cresci nel pool. Continua così! 💪',profCheckSumOk:'Il tuo profilo ha un buon aspetto! Rimani attivo, posta regolarmente e supporta gli altri — il pool premia l\'impegno.',profCheckSumBad:'Il tuo profilo ha bisogno di attenzione. Pubblica un video e inizia a supportare — ogni commento conta!',profCheckCert:'Verificato da NOVA Support Pool · novapool.official',profCheckCopied:'Controllo profilo copiato! 📋',lbTitle: 'Top Supporter della Settimana',weeklyTpl:['🎯 Buona settimana! Ricordati di supportare — ogni commento conta.','💪 Chi supporta, viene supportato! Guarda i nuovi video.','🏆 Rimani attivo e migliora il tuo ranking questa settimana!','📹 Nuovi video aspettano il tuo commento di supporto!','⭐ Oggi è il giorno perfetto per restare attivi!','🚀 Insieme siamo forti — partecipa oggi!','🏆 LA LISTA DEI TOP SUPPORTER DELLA SETTIMANA È STATA AGGIORNATA. IL SUPPORT POOL TI AUGURA UN BUON FINE SETTIMANA 👋🎉'],weeklyDmSent:'{n} membri raggiunti ✅',weeklyDmTitle:'📬 Messaggio Settimanale',weeklyDmCustom:'Messaggio personalizzato (opzionale)',weeklyDmSend:'📬 Invia a tutti',weeklySupLabel:'Support questa settimana',weeklyNextReset:'Reset venerdì 00:00 WIB',pinTitle:'Accesso Admin',chatTitle:'Chat Mondiale',chatPlaceholder:'Scrivi qualcosa...',chatSend:'Invia',chatEmpty:'Nessun messaggio. Sii il primo!',chatOnlyActive:'Solo i membri con un video attivo possono scrivere',chatTpls:['🎬 Nuovo video postato!','🔵 Round 2 iniziato!','🙏 Grazie per il supporto!','👀 Supportate il mio video!','💪 Ancora attivo oggi!','🔥 Video in fiamme!','✅ Grazie a tutti!','🌟 Date un\'occhiata!'],pinSub:'Inserisci PIN a 4 cifre',
   obT0:'Benvenuto!',obB0:'Sei ora parte della rete di supporto TikTok piu esclusiva.',
   obT1:'Come funziona',obT2:'Sei pronto!',obB2:'Clicca Pubblica Video e incolla il tuo URL TikTok!',
   obBtn0:'Avanti →',obBtn1:'Avanti →',obBtn2:'Iniziamo! 🎉',
@@ -2986,7 +3044,7 @@ es: {
   postedMsg: 'Video publicado – se necesitan {n} apoyos en 12h',
   loginPH: 'TikTok @usuario',
   postNow: '✅ Publicar video ahora',
-  lbTitle: 'Mejores Apoyadores de la Semana',weeklyTpl:['🎯 ¡Buena semana! Recuerda apoyar — cada comentario cuenta.','💪 ¡Quien apoya, es apoyado! Revisa los nuevos videos.','🏆 ¡Mantente activo y mejora tu ranking esta semana!','📹 ¡Nuevos videos esperan tu comentario de apoyo!','⭐ ¡Hoy es el día perfecto para mantenerse activo!','🚀 ¡Juntos somos fuertes — únete hoy!','🏆 LA LISTA DE LOS TOP SUPPORTERS DE LA SEMANA HA SIDO ACTUALIZADA. EL SUPPORT POOL TE DESEA UN BUEN FIN DE SEMANA 👋🎉'],weeklyDmSent:'{n} miembros alcanzados ✅',weeklyDmTitle:'📬 Mensaje Semanal',weeklyDmCustom:'Mensaje personalizado (opcional)',weeklyDmSend:'📬 Enviar a todos',weeklySupLabel:'Supports esta semana',weeklyNextReset:'Reset viernes 00:00 WIB',pinTitle:'Acceso Admin',chatTitle:'Chat Mundial',chatPlaceholder:'Escribe algo...',chatSend:'Enviar',chatEmpty:'Sin mensajes aún. ¡Sé el primero!',chatOnlyActive:'Solo los miembros con un video activo pueden escribir',chatTpls:['🎬 ¡Nuevo video publicado!','🔵 ¡Ronda 2 iniciada!','🙏 ¡Gracias por el apoyo!','👀 ¡Apoyen mi video!','💪 ¡Todavía activo hoy!','🔥 ¡Video en llamas!','✅ ¡Gracias a todos!','🌟 ¡Échenle un vistazo!'],pinSub:'Introduce PIN de 4 digitos',
+  profCheckBtn:'Revisar mi Perfil',profCheckTitle:'REVISIÓN DE PERFIL',profCheckPos:'PUNTOS POSITIVOS',profCheckOpt:'OPCIONAL RECOMENDADO',profCheckSum:'MI RESULTADO',profCheckBal:'Saldo',profCheckBalGood:'En zona verde',profCheckBalBad:'Necesita atención',profCheckVids:'Videos publicados',profCheckGiven:'Apoyos dados (total)',profCheckWeek:'Apoyos esta semana',profCheckSince:'Miembro hace {n} días',profCheckDays:'{n} de 7 días activo',profCheckToday:'Apoyos hoy: {n}',profCheckPin:'Protección PIN',profCheckPush:'Notificaciones push',profCheckPriv:'Privacidad',profCheckRecom:'recomendado',profCheckActiv:'activado',profCheckConf:'confirmado',profCheckCopy:'Copiar',profCheckClose:'Cerrar',profCheckInact:'Has estado inactivo durante {n} días — ¡vuelve! 🙌',profCheckSumGood:'¡Tu perfil está en forma! Estás activo, apoyando a otros miembros y creciendo en el pool. ¡Sigue así! 💪',profCheckSumOk:'¡Tu perfil se ve bien! Mantente activo, publica regularmente y apoya a otros — el pool premia el compromiso.',profCheckSumBad:'¡Tu perfil necesita atención. Publica un video y empieza a apoyar — cada comentario cuenta!',profCheckCert:'Verificado por NOVA Support Pool · novapool.official',profCheckCopied:'¡Revisión de perfil copiada! 📋',lbTitle: 'Mejores Apoyadores de la Semana',weeklyTpl:['🎯 ¡Buena semana! Recuerda apoyar — cada comentario cuenta.','💪 ¡Quien apoya, es apoyado! Revisa los nuevos videos.','🏆 ¡Mantente activo y mejora tu ranking esta semana!','📹 ¡Nuevos videos esperan tu comentario de apoyo!','⭐ ¡Hoy es el día perfecto para mantenerse activo!','🚀 ¡Juntos somos fuertes — únete hoy!','🏆 LA LISTA DE LOS TOP SUPPORTERS DE LA SEMANA HA SIDO ACTUALIZADA. EL SUPPORT POOL TE DESEA UN BUEN FIN DE SEMANA 👋🎉'],weeklyDmSent:'{n} miembros alcanzados ✅',weeklyDmTitle:'📬 Mensaje Semanal',weeklyDmCustom:'Mensaje personalizado (opcional)',weeklyDmSend:'📬 Enviar a todos',weeklySupLabel:'Supports esta semana',weeklyNextReset:'Reset viernes 00:00 WIB',pinTitle:'Acceso Admin',chatTitle:'Chat Mundial',chatPlaceholder:'Escribe algo...',chatSend:'Enviar',chatEmpty:'Sin mensajes aún. ¡Sé el primero!',chatOnlyActive:'Solo los miembros con un video activo pueden escribir',chatTpls:['🎬 ¡Nuevo video publicado!','🔵 ¡Ronda 2 iniciada!','🙏 ¡Gracias por el apoyo!','👀 ¡Apoyen mi video!','💪 ¡Todavía activo hoy!','🔥 ¡Video en llamas!','✅ ¡Gracias a todos!','🌟 ¡Échenle un vistazo!'],pinSub:'Introduce PIN de 4 digitos',
   obT0:'Bienvenido!',obB0:'Ahora eres parte de la red de apoyo TikTok mas exclusiva.',
   obT1:'Como funciona',obT2:'Estas listo!',obB2:'Haz clic en Publicar Video y pega tu URL de TikTok!',
   obBtn0:'Siguiente →',obBtn1:'Siguiente →',obBtn2:'Vamos! 🎉',
@@ -3133,7 +3191,7 @@ tr: {
   postedMsg: 'Video paylaşıldı – 12 saat içinde {n} destek gerekiyor',
   loginPH: 'TikTok @kullanıcı',
   postNow: '✅ Video paylaşımı şimdi mümkün',
-  lbTitle: 'Haftanin En Iyi Destekculeri',weeklyTpl:['🎯 Iyi haftalar! Destek vermeyi unutma — her yorum sayilir.','💪 Kim desteklerse desteklenir! Yeni videolara bak.','🏆 Aktif kal ve bu hafta siralamanı yukselT!','📹 Yeni videolar destek yorumunu bekliyor!','⭐ Bugün aktif kalmak için mükemmel bir gün!','🚀 Birlikte güçlüyüz — bugün katıl!','🏆 HAFTANIN EN İYİ SUPPORTER LİSTESİ GÜNCELLENDİ. SUPPORT POOL SANA GÜZEL BİR HAFTA SONU DİLER 👋🎉'],weeklyDmSent:'{n} uyeye ulasild ✅',weeklyDmTitle:'📬 Haftalik Mesaj',weeklyDmCustom:'Ozel mesaj (istege bagli)',weeklyDmSend:'📬 Hepsine gonder',weeklySupLabel:'Bu hafta support',weeklyNextReset:'Cuma 00:00 WIB sıfırlanır',pinTitle:'Admin Erisimi',chatTitle:'Dünya Sohbeti',chatPlaceholder:'Bir şeyler yaz...',chatSend:'Gönder',chatEmpty:'Henüz mesaj yok. İlk sen yaz!',chatOnlyActive:'Yalnızca aktif videolu üyeler yazabilir',chatTpls:['🎬 Yeni video paylaşıldı!','🔵 2. tur başladı!','🙏 Destek için teşekkürler!','👀 Videoma destek ver!','💪 Bugün hâlâ aktif!','🔥 Video alev alev!','✅ Herkese teşekkürler!','🌟 Bir bak!'],pinSub:'4 haneli PIN gir',
+  profCheckBtn:'Profilimi Kontrol Et',profCheckTitle:'PROFİL KONTROLÜ',profCheckPos:'POZİTİF NOKTALAR',profCheckOpt:'İSTEĞE BAĞLI ÖNERİLEN',profCheckSum:'SONUCUM',profCheckBal:'Bakiye',profCheckBalGood:'Yeşil bölgede',profCheckBalBad:'Dikkat gerektiriyor',profCheckVids:'Yüklenen videolar',profCheckGiven:'Verilen destekler (toplam)',profCheckWeek:'Bu haftaki destekler',profCheckSince:'{n} gündür üye',profCheckDays:'7 günden {n} gün aktif',profCheckToday:'Bugünkü destekler: {n}',profCheckPin:'PIN koruması',profCheckPush:'Anlık bildirimler',profCheckPriv:'Gizlilik',profCheckRecom:'önerilir',profCheckActiv:'aktif',profCheckConf:'onaylandı',profCheckCopy:'Kopyala',profCheckClose:'Kapat',profCheckInact:'{n} gündür aktif değilsin — geri gel! 🙌',profCheckSumGood:'Profil harika durumda! Aktifsin, diğer üyeleri destekliyorsun ve havuzda büyüyorsun. Böyle devam et! 💪',profCheckSumOk:'Profil iyi görünüyor! Aktif kal, düzenli paylaş ve başkalarını destekle — havuz katılımı ödüllendirir.',profCheckSumBad:'Profil dikkat gerektiriyor. Bir video paylaş ve desteklemeye başla — her yorum önemli!',profCheckCert:'NOVA Support Pool tarafından doğrulandı · novapool.official',profCheckCopied:'Profil kontrolü kopyalandı! 📋',lbTitle: 'Haftanin En Iyi Destekculeri',weeklyTpl:['🎯 Iyi haftalar! Destek vermeyi unutma — her yorum sayilir.','💪 Kim desteklerse desteklenir! Yeni videolara bak.','🏆 Aktif kal ve bu hafta siralamanı yukselT!','📹 Yeni videolar destek yorumunu bekliyor!','⭐ Bugün aktif kalmak için mükemmel bir gün!','🚀 Birlikte güçlüyüz — bugün katıl!','🏆 HAFTANIN EN İYİ SUPPORTER LİSTESİ GÜNCELLENDİ. SUPPORT POOL SANA GÜZEL BİR HAFTA SONU DİLER 👋🎉'],weeklyDmSent:'{n} uyeye ulasild ✅',weeklyDmTitle:'📬 Haftalik Mesaj',weeklyDmCustom:'Ozel mesaj (istege bagli)',weeklyDmSend:'📬 Hepsine gonder',weeklySupLabel:'Bu hafta support',weeklyNextReset:'Cuma 00:00 WIB sıfırlanır',pinTitle:'Admin Erisimi',chatTitle:'Dünya Sohbeti',chatPlaceholder:'Bir şeyler yaz...',chatSend:'Gönder',chatEmpty:'Henüz mesaj yok. İlk sen yaz!',chatOnlyActive:'Yalnızca aktif videolu üyeler yazabilir',chatTpls:['🎬 Yeni video paylaşıldı!','🔵 2. tur başladı!','🙏 Destek için teşekkürler!','👀 Videoma destek ver!','💪 Bugün hâlâ aktif!','🔥 Video alev alev!','✅ Herkese teşekkürler!','🌟 Bir bak!'],pinSub:'4 haneli PIN gir',
   obT0:'Hos geldiniz!',obB0:'TikTok destek aginin en ozel uyelerinden biri oldunuz.',
   obT1:'Nasil calisir',obT2:'Hazirsiniz!',obB2:'Video Paylas a tiklayin ve TikTok URL nizi yapistirin!',
   obBtn0:'Ileri →',obBtn1:'Ileri →',obBtn2:'Hadi baslavalim! 🎉',
@@ -3280,7 +3338,7 @@ ar: {
   postedMsg: 'تم نشر الفيديو – مطلوب {n} دعم خلال 12 ساعة',
   loginPH: 'TikTok @المستخدم',
   postNow: '✅ نشر فيديو ممكن الآن',
-  lbTitle: 'أفضل الداعمين هذا الأسبوع',weeklyTpl:['🎯 أسبوع رائع! لا تنسَ الدعم — كل تعليق له قيمة.','💪 من يدعم يُدعم! تحقق من الفيديوهات الجديدة.','🏆 ابقَ نشطاً وحسّن ترتيبك هذا الأسبوع!','📹 فيديوهات جديدة تنتظر تعليق دعمك!','⭐ اليوم هو اليوم المثالي للبقاء نشطاً!','🚀 معاً نحن أقوى — انضم اليوم!','🏆 تم تحديث قائمة أفضل المدعمين للأسبوع. يتمنى لك Support Pool عطلة نهاية أسبوع رائعة 👋🎉'],weeklyDmSent:'{n} عضو وصله الرسالة ✅',weeklyDmTitle:'📬 رسالة أسبوعية',weeklyDmCustom:'رسالة مخصصة (اختياري)',weeklyDmSend:'📬 إرسال للجميع',weeklySupLabel:'دعم هذا الأسبوع',weeklyNextReset:'إعادة الجمعة 00:00 WIB',pinTitle:'وصول المشرف',chatTitle:'دردشة عالمية',chatPlaceholder:'اكتب شيئًا...',chatSend:'إرسال',chatEmpty:'لا توجد رسائل بعد. كن الأول!',chatOnlyActive:'فقط الأعضاء الذين لديهم فيديو نشط يمكنهم الكتابة',chatTpls:['🎬 تم نشر فيديو جديد!','🔵 الجولة 2 بدأت!','🙏 شكراً على الدعم!','👀 ادعموا فيديوي!','💪 لا أزال نشطاً اليوم!','🔥 الفيديو ملتهب!','✅ شكراً للجميع!','🌟 تفضلوا بالمشاهدة!'],pinSub:'أدخل رمز PIN من 4 أرقام',
+  profCheckBtn:'فحص ملفي الشخصي',profCheckTitle:'فحص الملف الشخصي',profCheckPos:'الإيجابيات',profCheckOpt:'اختياري موصى به',profCheckSum:'نتيجتي',profCheckBal:'الرصيد',profCheckBalGood:'في المنطقة الخضراء',profCheckBalBad:'يحتاج اهتماماً',profCheckVids:'فيديوهات منشورة',profCheckGiven:'الدعم المُقدَّم (الإجمالي)',profCheckWeek:'الدعم هذا الأسبوع',profCheckSince:'عضو منذ {n} يوماً',profCheckDays:'{n} من 7 أيام نشط',profCheckToday:'الدعم اليوم: {n}',profCheckPin:'حماية PIN',profCheckPush:'الإشعارات الفورية',profCheckPriv:'الخصوصية',profCheckRecom:'موصى به',profCheckActiv:'مفعّل',profCheckConf:'مؤكد',profCheckCopy:'نسخ',profCheckClose:'إغلاق',profCheckInact:'أنت غير نشط منذ {n} أيام — عُد! 🙌',profCheckSumGood:'ملفك الشخصي رائع! أنت نشط وتدعم الأعضاء الآخرين وتنمو في المجموعة. استمر! 💪',profCheckSumOk:'يبدو ملفك جيداً! ابقَ نشطاً وانشر بانتظام وادعم الآخرين — المجموعة تُكافئ المشاركة.',profCheckSumBad:'ملفك يحتاج اهتماماً. انشر فيديو وابدأ بالدعم — كل تعليق له قيمة!',profCheckCert:'موثَّق من NOVA Support Pool · novapool.official',profCheckCopied:'تم نسخ فحص الملف! 📋',lbTitle: 'أفضل الداعمين هذا الأسبوع',weeklyTpl:['🎯 أسبوع رائع! لا تنسَ الدعم — كل تعليق له قيمة.','💪 من يدعم يُدعم! تحقق من الفيديوهات الجديدة.','🏆 ابقَ نشطاً وحسّن ترتيبك هذا الأسبوع!','📹 فيديوهات جديدة تنتظر تعليق دعمك!','⭐ اليوم هو اليوم المثالي للبقاء نشطاً!','🚀 معاً نحن أقوى — انضم اليوم!','🏆 تم تحديث قائمة أفضل المدعمين للأسبوع. يتمنى لك Support Pool عطلة نهاية أسبوع رائعة 👋🎉'],weeklyDmSent:'{n} عضو وصله الرسالة ✅',weeklyDmTitle:'📬 رسالة أسبوعية',weeklyDmCustom:'رسالة مخصصة (اختياري)',weeklyDmSend:'📬 إرسال للجميع',weeklySupLabel:'دعم هذا الأسبوع',weeklyNextReset:'إعادة الجمعة 00:00 WIB',pinTitle:'وصول المشرف',chatTitle:'دردشة عالمية',chatPlaceholder:'اكتب شيئًا...',chatSend:'إرسال',chatEmpty:'لا توجد رسائل بعد. كن الأول!',chatOnlyActive:'فقط الأعضاء الذين لديهم فيديو نشط يمكنهم الكتابة',chatTpls:['🎬 تم نشر فيديو جديد!','🔵 الجولة 2 بدأت!','🙏 شكراً على الدعم!','👀 ادعموا فيديوي!','💪 لا أزال نشطاً اليوم!','🔥 الفيديو ملتهب!','✅ شكراً للجميع!','🌟 تفضلوا بالمشاهدة!'],pinSub:'أدخل رمز PIN من 4 أرقام',
   obT0:'مرحبا!',obB0:'أصبحت الآن جزءا من شبكة دعم TikTok الأكثر حصرية.',
   obT1:'كيف يعمل',obT2:'أنت مستعد!',obB2:'انقر على نشر فيديو والصق رابط TikTok الخاص بك!',
   obBtn0:'التالي →',obBtn1:'التالي →',obBtn2:'هيا نبدأ! 🎉',
@@ -3427,7 +3485,7 @@ zh: {
   postedMsg: '视频已发布 – 12小时内需要{n}个支持',
   loginPH: 'TikTok @用户名',
   postNow: '✅ 现在可以发布视频',
-  lbTitle: '本周顶级支持者',weeklyTpl:['🎯 周计划！别忘了支持 — 每条评论都有意义。','💪 支持别人，得到支持！查看新视频。','🏆 保持活跃，提升本周排名！','📹 新视频在等待你的支持评论！','⭐ 今天是保持活跃的最佳时机！','🚀 团结力量大 — 今天加入我们！','🏆 本周最佳支持者名单已更新。Support Pool 祝你周末愉快 👋🎉'],weeklyDmSent:'已发送给 {n} 名成员 ✅',weeklyDmTitle:'📬 每周消息',weeklyDmCustom:'自定义消息（可选）',weeklyDmSend:'📬 发送给所有人',weeklySupLabel:'本周支持次数',weeklyNextReset:'周五 00:00 WIB 重置',pinTitle:'管理员访问',chatTitle:'世界聊天',chatPlaceholder:'写点什么...',chatSend:'发送',chatEmpty:'还没有消息。第一个发言吧！',chatOnlyActive:'只有拥有活跃视频的成员才能发言',chatTpls:['🎬 新视频发布啦！','🔵 第2轮开始了！','🙏 感谢支持！','👀 请支持我的视频！','💪 今天还在活跃！','🔥 视频正在燃！','✅ 感谢大家！','🌟 来看看吧！'],pinSub:'输入4位PIN',
+  profCheckBtn:'检查我的资料',profCheckTitle:'资料检查',profCheckPos:'积极方面',profCheckOpt:'可选建议',profCheckSum:'我的结果',profCheckBal:'余额',profCheckBalGood:'处于绿色区间',profCheckBalBad:'需要关注',profCheckVids:'已发布视频',profCheckGiven:'已给予支持（总计）',profCheckWeek:'本周支持次数',profCheckSince:'加入 {n} 天',profCheckDays:'7天中 {n} 天活跃',profCheckToday:'今日支持: {n}',profCheckPin:'PIN保护',profCheckPush:'推送通知',profCheckPriv:'隐私',profCheckRecom:'建议',profCheckActiv:'已启用',profCheckConf:'已确认',profCheckCopy:'复制',profCheckClose:'关闭',profCheckInact:'你已 {n} 天未活跃 — 回来吧！🙌',profCheckSumGood:'你的资料状态极佳！你积极活跃，支持其他成员并在池中成长。继续保持！💪',profCheckSumOk:'你的资料看起来不错！保持活跃，定期发布并支持他人 — 池子奖励参与度。',profCheckSumBad:'你的资料需要关注。发布一个视频并开始支持 — 每条评论都有意义！',profCheckCert:'由 NOVA Support Pool 认证 · novapool.official',profCheckCopied:'资料检查已复制！📋',lbTitle: '本周顶级支持者',weeklyTpl:['🎯 周计划！别忘了支持 — 每条评论都有意义。','💪 支持别人，得到支持！查看新视频。','🏆 保持活跃，提升本周排名！','📹 新视频在等待你的支持评论！','⭐ 今天是保持活跃的最佳时机！','🚀 团结力量大 — 今天加入我们！','🏆 本周最佳支持者名单已更新。Support Pool 祝你周末愉快 👋🎉'],weeklyDmSent:'已发送给 {n} 名成员 ✅',weeklyDmTitle:'📬 每周消息',weeklyDmCustom:'自定义消息（可选）',weeklyDmSend:'📬 发送给所有人',weeklySupLabel:'本周支持次数',weeklyNextReset:'周五 00:00 WIB 重置',pinTitle:'管理员访问',chatTitle:'世界聊天',chatPlaceholder:'写点什么...',chatSend:'发送',chatEmpty:'还没有消息。第一个发言吧！',chatOnlyActive:'只有拥有活跃视频的成员才能发言',chatTpls:['🎬 新视频发布啦！','🔵 第2轮开始了！','🙏 感谢支持！','👀 请支持我的视频！','💪 今天还在活跃！','🔥 视频正在燃！','✅ 感谢大家！','🌟 来看看吧！'],pinSub:'输入4位PIN',
   obT0:'欢迎！',obB0:'您现在是最独家的TikTok支持网络的一部分。',
   obT1:'如何运作',obT2:'您准备好了！',obB2:'点击发布视频并粘贴您的TikTok链接！',
   obBtn0:'下一步 →',obBtn1:'下一步 →',obBtn2:'开始！🎉',
@@ -3574,7 +3632,7 @@ ja: {
   postedMsg: '動画を投稿しました – 12時間以内に{n}件のサポートが必要です',
   loginPH: 'TikTok @ユーザー名',
   postNow: '✅ 動画投稿が可能になりました',
-  lbTitle: '今週のトップサポーター',weeklyTpl:['🎯 良い一週間を！サポートを忘れずに — 一言コメントも大切です。','💪 サポートする人はサポートされる！新しい動画をチェックして。','🏆 アクティブを続けて、今週のランキングを上げよう！','📹 新しい動画があなたのサポートコメントを待っています！','⭐ 今日はアクティブに過ごす最高の日です！','🚀 一緒に強くなろう — 今日参加しよう！','🏆 今週のトップサポーターリストが更新されました。Support Poolが素敵な週末をお過ごしください 👋🎉'],weeklyDmSent:'{n}人のメンバーに届きました ✅',weeklyDmTitle:'📬 週間メッセージ',weeklyDmCustom:'カスタムメッセージ（任意）',weeklyDmSend:'📬 全員に送る',weeklySupLabel:'今週のサポート数',weeklyNextReset:'金曜 00:00 WIB にリセット',pinTitle:'管理者アクセス',chatTitle:'ワールドチャット',chatPlaceholder:'メッセージを入力...',chatSend:'送信',chatEmpty:'まだメッセージはありません。最初に投稿しよう！',chatOnlyActive:'アクティブな動画を持つメンバーのみ投稿できます',chatTpls:['🎬 新しい動画を投稿！','🔵 ラウンド2開始！','🙏 サポートありがとう！','👀 動画をサポートして！','💪 今日もアクティブ！','🔥 動画が熱い！','✅ みんなありがとう！','🌟 チェックして！'],pinSub:'4桁のPINを入力',
+  profCheckBtn:'プロフィールをチェック',profCheckTitle:'プロフィールチェック',profCheckPos:'ポジティブな点',profCheckOpt:'オプション・推奨',profCheckSum:'私の結果',profCheckBal:'残高',profCheckBalGood:'グリーンゾーン内',profCheckBalBad:'注意が必要',profCheckVids:'投稿した動画',profCheckGiven:'行ったサポート（合計）',profCheckWeek:'今週のサポート',profCheckSince:'メンバー歴 {n} 日',profCheckDays:'7日中 {n} 日アクティブ',profCheckToday:'今日のサポート: {n}',profCheckPin:'PIN保護',profCheckPush:'プッシュ通知',profCheckPriv:'プライバシー',profCheckRecom:'推奨',profCheckActiv:'有効',profCheckConf:'確認済み',profCheckCopy:'コピー',profCheckClose:'閉じる',profCheckInact:'{n}日間非アクティブです — 戻ってきて！🙌',profCheckSumGood:'プロフィールは絶好調！アクティブで他のメンバーをサポートし、プールで成長しています。その調子で！💪',profCheckSumOk:'プロフィールは良い状態です！アクティブを維持し、定期的に投稿して他をサポートしましょう — プールは参加を称えます。',profCheckSumBad:'プロフィールに注意が必要です。動画を投稿してサポートを始めましょう — すべてのコメントが大切です！',profCheckCert:'NOVA Support Pool が認証 · novapool.official',profCheckCopied:'プロフィールチェックをコピーしました！📋',lbTitle: '今週のトップサポーター',weeklyTpl:['🎯 良い一週間を！サポートを忘れずに — 一言コメントも大切です。','💪 サポートする人はサポートされる！新しい動画をチェックして。','🏆 アクティブを続けて、今週のランキングを上げよう！','📹 新しい動画があなたのサポートコメントを待っています！','⭐ 今日はアクティブに過ごす最高の日です！','🚀 一緒に強くなろう — 今日参加しよう！','🏆 今週のトップサポーターリストが更新されました。Support Poolが素敵な週末をお過ごしください 👋🎉'],weeklyDmSent:'{n}人のメンバーに届きました ✅',weeklyDmTitle:'📬 週間メッセージ',weeklyDmCustom:'カスタムメッセージ（任意）',weeklyDmSend:'📬 全員に送る',weeklySupLabel:'今週のサポート数',weeklyNextReset:'金曜 00:00 WIB にリセット',pinTitle:'管理者アクセス',chatTitle:'ワールドチャット',chatPlaceholder:'メッセージを入力...',chatSend:'送信',chatEmpty:'まだメッセージはありません。最初に投稿しよう！',chatOnlyActive:'アクティブな動画を持つメンバーのみ投稿できます',chatTpls:['🎬 新しい動画を投稿！','🔵 ラウンド2開始！','🙏 サポートありがとう！','👀 動画をサポートして！','💪 今日もアクティブ！','🔥 動画が熱い！','✅ みんなありがとう！','🌟 チェックして！'],pinSub:'4桁のPINを入力',
   obT0:'ようこそ！',obB0:'最も独占的なTikTokサポートネットワークの一員になりました。',
   obT1:'仕組み',obT2:'準備完了！',obB2:'動画を投稿をクリックしてTikTok URLを貼り付けてください！',
   obBtn0:'次へ →',obBtn1:'次へ →',obBtn2:'始めよう！🎉',
@@ -3721,7 +3779,7 @@ pl: {
   postedMsg: 'Wideo opublikowane – potrzeba {n} wsparć w ciągu 12h',
   loginPH: 'TikTok @użytkownik',
   postNow: '✅ Publikacja wideo możliwa',
-  lbTitle: 'Najlepsi Wspierający w tym Tygodniu',weeklyTpl:['🎯 Dobrego tygodnia! Pamiętaj o wspieraniu — każdy komentarz się liczy.','💪 Kto wspiera, będzie wspierany! Sprawdź nowe filmy.','🏆 Bądź aktywny i popraw swój ranking w tym tygodniu!','📹 Nowe filmy czekają na Twój komentarz wsparcia!','⭐ Dziś jest idealny dzień, żeby być aktywnym!','🚀 Razem jesteśmy silni — dołącz dziś!','🏆 LISTA NAJLEPSZYCH SUPPORTERÓW TYGODNIA ZOSTAŁA ZAKTUALIZOWANA. SUPPORT POOL ŻYCZY MIŁEGO WEEKENDU 👋🎉'],weeklyDmSent:'{n} członków dotarło ✅',weeklyDmTitle:'📬 Wiadomość tygodniowa',weeklyDmCustom:'Niestandardowa wiadomość (opcjonalnie)',weeklyDmSend:'📬 Wyślij do wszystkich',weeklySupLabel:'Supporty w tym tygodniu',weeklyNextReset:'Reset piątek 00:00 WIB',pinTitle:'Dostep admina',chatTitle:'Czat Świata',chatPlaceholder:'Napisz coś...',chatSend:'Wyślij',chatEmpty:'Brak wiadomości. Bądź pierwszy!',chatOnlyActive:'Tylko członkowie z aktywnym filmem mogą pisać',chatTpls:['🎬 Nowy film wrzucony!','🔵 Runda 2 ruszyla!','🙏 Dzieki za wsparcie!','👀 Wspierz moj film!','💪 Aktywny dzis!','🔥 Film plonie!','✅ Dzieki wszystkim!','🌟 Zerknij!'],pinSub:'Wprowadz 4-cyfrowy PIN',
+  profCheckBtn:'Sprawdź mój profil',profCheckTitle:'SPRAWDZENIE PROFILU',profCheckPos:'POZYTYWNE',profCheckOpt:'OPCJONALNE POLECANE',profCheckSum:'MÓJ WYNIK',profCheckBal:'Saldo',profCheckBalGood:'W zielonej strefie',profCheckBalBad:'Wymaga uwagi',profCheckVids:'Opublikowane filmy',profCheckGiven:'Wsparcie udzielone (łącznie)',profCheckWeek:'Wsparcie w tym tygodniu',profCheckSince:'Członek od {n} dni',profCheckDays:'{n} z 7 dni aktywny',profCheckToday:'Wsparcie dziś: {n}',profCheckPin:'Ochrona PIN',profCheckPush:'Powiadomienia push',profCheckPriv:'Prywatność',profCheckRecom:'polecane',profCheckActiv:'aktywowane',profCheckConf:'potwierdzone',profCheckCopy:'Kopiuj',profCheckClose:'Zamknij',profCheckInact:'Jesteś nieaktywny od {n} dni — wróć! 🙌',profCheckSumGood:'Twój profil jest w świetnej formie! Jesteś aktywny, wspierasz innych członków i rozwijasz się w puli. Tak trzymaj! 💪',profCheckSumOk:'Twój profil wygląda dobrze! Bądź aktywny, publikuj regularnie i wspieraj innych — pula nagradza zaangażowanie.',profCheckSumBad:'Twój profil wymaga uwagi. Opublikuj film i zacznij wspierać — każdy komentarz się liczy!',profCheckCert:'Zweryfikowane przez NOVA Support Pool · novapool.official',profCheckCopied:'Sprawdzenie profilu skopiowane! 📋',lbTitle: 'Najlepsi Wspierający w tym Tygodniu',weeklyTpl:['🎯 Dobrego tygodnia! Pamiętaj o wspieraniu — każdy komentarz się liczy.','💪 Kto wspiera, będzie wspierany! Sprawdź nowe filmy.','🏆 Bądź aktywny i popraw swój ranking w tym tygodniu!','📹 Nowe filmy czekają na Twój komentarz wsparcia!','⭐ Dziś jest idealny dzień, żeby być aktywnym!','🚀 Razem jesteśmy silni — dołącz dziś!','🏆 LISTA NAJLEPSZYCH SUPPORTERÓW TYGODNIA ZOSTAŁA ZAKTUALIZOWANA. SUPPORT POOL ŻYCZY MIŁEGO WEEKENDU 👋🎉'],weeklyDmSent:'{n} członków dotarło ✅',weeklyDmTitle:'📬 Wiadomość tygodniowa',weeklyDmCustom:'Niestandardowa wiadomość (opcjonalnie)',weeklyDmSend:'📬 Wyślij do wszystkich',weeklySupLabel:'Supporty w tym tygodniu',weeklyNextReset:'Reset piątek 00:00 WIB',pinTitle:'Dostep admina',chatTitle:'Czat Świata',chatPlaceholder:'Napisz coś...',chatSend:'Wyślij',chatEmpty:'Brak wiadomości. Bądź pierwszy!',chatOnlyActive:'Tylko członkowie z aktywnym filmem mogą pisać',chatTpls:['🎬 Nowy film wrzucony!','🔵 Runda 2 ruszyla!','🙏 Dzieki za wsparcie!','👀 Wspierz moj film!','💪 Aktywny dzis!','🔥 Film plonie!','✅ Dzieki wszystkim!','🌟 Zerknij!'],pinSub:'Wprowadz 4-cyfrowy PIN',
   obT0:'Witaj!',obB0:'Jestes teraz czescia najbardziej ekskluzywnej sieci wsparcia TikTok.',
   obT1:'Jak to dziala',obT2:'Jestes gotowy!',obB2:'Kliknij Opublikuj wideo i wklej swoj URL TikTok!',
   obBtn0:'Dalej →',obBtn1:'Dalej →',obBtn2:'Zaczynamy! 🎉',
@@ -4036,6 +4094,7 @@ function applyLang() {
   if (ta) ta.placeholder = (_contactMode==='admin') ? (l.msgPlaceholderAdmin||'Nachricht an Admin...') : (l.dmPlaceholder||'Nachricht...');
   st('t-notifs', l.notifs); st('t-no-notif', l.noNotif); st('t-logout', l.logout);
   st('t-p-given', l.pGiven); st('t-p-recv', l.pRecv); st('t-p-vids', l.pVids);
+  st('t-profile-check-btn', l.profCheckBtn || 'Check mein Profil');
   // Admin
   st('t-at-ov', l.atOv); st('t-at-msg', l.atMsg); st('t-at-set', l.atSet);
   st('t-a-grp', l.aGrp); st('t-a-mem', l.aMem); st('t-a-vid', l.aVid);
@@ -4992,6 +5051,190 @@ function doLogout() {
   for (var i = 0; i < screens.length; i++) { screens[i].classList.remove('active'); screens[i].style.display = ''; }
   var sl2 = ge('screen-login'); sl2.classList.add('active'); sl2.style.display = 'flex';
   renderLoginStats();
+}
+
+
+// ── PROFILE CHECK ─────────────────────────────────────────────────────────
+function openProfileCheck() {
+  var ov = ge('profile-check-overlay');
+  ov.classList.add('open');
+  renderProfileCheck();
+}
+
+function closeProfileCheck() {
+  ge('profile-check-overlay').classList.remove('open');
+}
+
+function pcRow(icon, label, val, ok) {
+  var badge = ok === true ? '✅' : ok === false ? '❌' : '💡';
+  return '<div class="pc-row">' +
+    '<div class="pc-row-icon">' + icon + '</div>' +
+    '<div class="pc-row-text"><div class="pc-row-label">' + label + '</div>' +
+    (val ? '<div class="pc-row-val">' + val + '</div>' : '') +
+    '</div><div class="pc-row-badge">' + badge + '</div></div>';
+}
+
+function renderProfileCheck() {
+  var lng = L[LANG] || L.de;
+  var u = (DB.members && DB.members[CU]) || {};
+  var stats = u.stats || {};
+  var given = (stats.given || 0);
+  var received = (stats.received || 0);
+  var balance = Math.min(given - received, 20);
+  var balGood = balance >= 0;
+  var vids = u.postsTotal || (u.myVideos ? Object.keys(u.myVideos).length : 0);
+  var weeklyGiven = u.weeklyGiven || 0;
+  var joinedMs = u.joined || Date.now();
+  var memberDays = Math.floor((Date.now() - joinedMs) / 86400000);
+  var hasPin = !!u.memberPin;
+  var hasPush = typeof Notification !== 'undefined' && Notification.permission === 'granted';
+  var hasPriv = !!localStorage.getItem('sp6_priv_done');
+
+  // Active days in last 7
+  var today = new Date();
+  var activeLast7 = 0;
+  var activeDays = u.supportDays || [];
+  for (var d = 0; d < 7; d++) {
+    var dd = new Date(today); dd.setDate(dd.getDate() - d);
+    var ds = dd.getFullYear() + '-' + String(dd.getMonth()+1).padStart(2,'0') + '-' + String(dd.getDate()).padStart(2,'0');
+    if (activeDays.indexOf(ds) >= 0) activeLast7++;
+  }
+
+  // Inactivity check (last support day vs today)
+  var inactiveDays = 0;
+  if (activeDays.length > 0) {
+    var lastDay = activeDays.slice().sort().reverse()[0];
+    var lastMs = new Date(lastDay).getTime();
+    inactiveDays = Math.floor((Date.now() - lastMs) / 86400000);
+  } else {
+    inactiveDays = memberDays;
+  }
+
+  // Score for summary
+  var score = 0;
+  if (balGood) score++;
+  if (vids > 0) score++;
+  if (given >= 10) score++;
+  if (weeklyGiven >= 3) score++;
+  if (activeLast7 >= 4) score++;
+
+  // Build HTML
+  var html = '';
+
+  // Positive section
+  html += '<div class="pc-section-label">' + lng.profCheckPos + '</div>';
+  html += pcRow('💰', lng.profCheckBal, balGood ? lng.profCheckBalGood : lng.profCheckBalBad, balGood);
+  html += pcRow('📹', lng.profCheckVids, vids + ' Videos', vids > 0);
+  html += pcRow('🤝', lng.profCheckGiven, given + '', given >= 5);
+  html += pcRow('📅', lng.profCheckWeek, weeklyGiven + '', weeklyGiven >= 1);
+  html += pcRow('🗓️', lng.profCheckSince.replace('{n}', memberDays), '', memberDays >= 1);
+  html += pcRow('🔥', lng.profCheckDays.replace('{n}', activeLast7), '', activeLast7 >= 4);
+  html += pcRow('⚡', lng.profCheckToday.replace('{n}', u.todayCount || 0), '', (u.todayCount || 0) >= 1);
+
+  html += '<div class="pc-divider"></div>';
+
+  // Optional section
+  html += '<div class="pc-section-label">' + lng.profCheckOpt + '</div>';
+  html += pcRow('🔒', lng.profCheckPin, '', hasPin ? true : null);
+  html += pcRow('🔔', lng.profCheckPush, '', hasPush ? true : null);
+  html += pcRow('🛡️', lng.profCheckPriv, '', hasPriv ? true : null);
+
+  html += '<div class="pc-divider"></div>';
+
+  // Summary
+  var summaryClass = score >= 4 ? 'good' : score >= 2 ? 'ok' : 'bad';
+  var summaryText = score >= 4 ? lng.profCheckSumGood : score >= 2 ? lng.profCheckSumOk : lng.profCheckSumBad;
+  html += '<div class="pc-section-label">' + lng.profCheckSum + '</div>';
+  html += '<div class="pc-summary ' + summaryClass + '">' + summaryText + '</div>';
+
+  // Inactivity warning
+  if (inactiveDays >= 3) {
+    html += '<div class="pc-inactive-warn">' + lng.profCheckInact.replace('{n}', inactiveDays) + '</div>';
+  }
+
+  // Certificate footer
+  html += '<div class="pc-cert-footer">' + lng.profCheckCert + '</div>';
+
+  // Action buttons
+  html += '<div class="pc-actions">' +
+    '<button class="pc-btn pc-btn-copy" id="pc-copy-btn" onclick="copyProfileCheck()">' + lng.profCheckCopy + '</button>' +
+    '<button class="pc-btn pc-btn-close" onclick="closeProfileCheck()">' + lng.profCheckClose + '</button>' +
+    '</div>';
+
+  ge('profile-check-body').innerHTML = html;
+
+  // Update header texts
+  st('t-pc-title', lng.profCheckTitle);
+  st('t-pc-sub', 'Live-Analyse · ' + new Date().toLocaleDateString(LANG === 'de' ? 'de-DE' : LANG === 'ja' ? 'ja-JP' : LANG === 'zh' ? 'zh-CN' : LANG === 'ar' ? 'ar-SA' : 'en-US'));
+}
+
+function copyProfileCheck() {
+  var lng = L[LANG] || L.de;
+  var u = (DB.members && DB.members[CU]) || {};
+  var stats = u.stats || {};
+  var given = stats.given || 0;
+  var received = stats.received || 0;
+  var balance = Math.min(given - received, 20);
+  var vids = u.postsTotal || (u.myVideos ? Object.keys(u.myVideos).length : 0);
+  var weeklyGiven = u.weeklyGiven || 0;
+  var joinedMs = u.joined || Date.now();
+  var memberDays = Math.floor((Date.now() - joinedMs) / 86400000);
+  var hasPin = !!u.memberPin;
+  var hasPush = typeof Notification !== 'undefined' && Notification.permission === 'granted';
+  var hasPriv = !!localStorage.getItem('sp6_priv_done');
+  var activeDays = u.supportDays || [];
+  var activeLast7 = 0;
+  var today = new Date();
+  for (var d = 0; d < 7; d++) {
+    var dd = new Date(today); dd.setDate(dd.getDate() - d);
+    var ds = dd.getFullYear() + '-' + String(dd.getMonth()+1).padStart(2,'0') + '-' + String(dd.getDate()).padStart(2,'0');
+    if (activeDays.indexOf(ds) >= 0) activeLast7++;
+  }
+
+  var name = u.name || CU || '—';
+  var dateStr = new Date().toLocaleDateString();
+  var chk = function(v) { return v ? '✅' : '❌'; };
+  var opt = function(v) { return v ? '✅' : '💡'; };
+
+  var text = '🏅 ' + (lng.profCheckTitle || 'Profile Check') + '
+' +
+    '👤 ' + name + ' · ' + dateStr + '
+' +
+    '━━━━━━━━━━━━━━━━━
+' +
+    chk(balance >= 0) + ' ' + lng.profCheckBal + ': ' + (balance >= 0 ? lng.profCheckBalGood : lng.profCheckBalBad) + '
+' +
+    chk(vids > 0) + ' ' + lng.profCheckVids + ': ' + vids + '
+' +
+    chk(given >= 5) + ' ' + lng.profCheckGiven + ': ' + given + '
+' +
+    chk(weeklyGiven >= 1) + ' ' + lng.profCheckWeek + ': ' + weeklyGiven + '
+' +
+    chk(memberDays >= 1) + ' ' + lng.profCheckSince.replace('{n}', memberDays) + '
+' +
+    chk(activeLast7 >= 4) + ' ' + lng.profCheckDays.replace('{n}', activeLast7) + '
+' +
+    '━━━━━━━━━━━━━━━━━
+' +
+    opt(hasPin) + ' ' + lng.profCheckPin + '
+' +
+    opt(hasPush) + ' ' + lng.profCheckPush + '
+' +
+    opt(hasPriv) + ' ' + lng.profCheckPriv + '
+' +
+    '━━━━━━━━━━━━━━━━━
+' +
+    lng.profCheckCert;
+
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(function() {
+      var btn = ge('pc-copy-btn');
+      if (btn) { btn.textContent = lng.profCheckCopied; btn.classList.add('copied'); }
+      setTimeout(function() {
+        if (btn) { btn.textContent = lng.profCheckCopy; btn.classList.remove('copied'); }
+      }, 2000);
+    });
+  }
 }
 
 // ── RENDER ALL ─────────────────────────────────────────────────────────
