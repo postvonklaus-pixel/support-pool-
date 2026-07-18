@@ -4519,9 +4519,18 @@ function onLoginInput() {
     html += '<div class="login-sug-item" onclick="pickLoginSug(event,\'' + esc(m.key) + '\',\'' + display + '\')">'
           + '<span class="login-sug-at">@</span>' + display + '</div>';
   }
-  if (ov) ov.style.display = 'none';
-  sug.innerHTML = html;
-  sug.style.display = 'block';
+  // On touch devices (iOS/Android) the keyboard covers the inline dropdown.
+  // Use the fixed overlay at top of screen instead so suggestions are always visible.
+  var isTouch = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
+  if (isTouch && ov && ovl) {
+    sug.style.display = 'none';
+    ovl.innerHTML = html;
+    ov.style.display = 'block';
+  } else {
+    if (ov) ov.style.display = 'none';
+    sug.innerHTML = html;
+    sug.style.display = 'block';
+  }
 }
 
 function pickLoginSug(e, key, name) {
@@ -5515,6 +5524,7 @@ function renderAll() {
   if (!a) return;
   var id = a.id.replace('screen-', '');
   if (id === 'home') renderHome();
+  else if (id === 'dashboard') renderDashboard();
   else if (id === 'profile') renderProfile();
   else if (id === 'admin') renderAdmin();
   else if (id === 'settings') renderSettings();
