@@ -8281,9 +8281,13 @@ function doGenerateCaption() {
   };
 
   if (fn) {
-    fn(payload).then(function(res) { done(res.data); }).catch(fail);
+    fn(payload).then(function(res) { done(res.data); }).catch(function() {
+      // Function not deployed yet → silent fallback to local generation
+      try { done(_localGenerate(niche, hookcat, topic)); }
+      catch(e) { fail(e); }
+    });
   } else {
-    // Fallback: generate locally (same logic as the Cloud Function)
+    // No Functions SDK → local generation directly
     try { done(_localGenerate(niche, hookcat, topic)); }
     catch(e) { fail(e); }
   }
