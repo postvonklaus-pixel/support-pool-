@@ -6031,12 +6031,10 @@ function showPostSuccess() {
 }
 
 function scrollToMyVideos() {
-  // Switch to home if needed, then scroll to "Meine Videos" section
-  goScreen('home');
+  goScreen('myvideos');
   setTimeout(function() {
     var myListSection = ge('my-list');
     if (!myListSection) return;
-    // Scroll the content area to the my-list section
     var content = myListSection.closest('.content') || document.querySelector('.content');
     if (content) {
       var offset = myListSection.getBoundingClientRect().top + content.scrollTop - 80;
@@ -6044,7 +6042,6 @@ function scrollToMyVideos() {
     } else {
       myListSection.scrollIntoView({behavior: 'smooth', block: 'start'});
     }
-    // Briefly flash the newest card to confirm it's there
     setTimeout(function() {
       var first = myListSection.querySelector('[data-del-vid], [style*="border-radius:18px"]');
       if (!first) first = myListSection.firstElementChild;
