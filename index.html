@@ -702,8 +702,8 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
 
 /* ── LOGIN AUTOCOMPLETE ── */
 #login-suggest{display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:#fff;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.13);overflow:hidden;z-index:100}
-#login-sug-overlay{display:none;position:fixed;top:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:#fff;border-radius:0 0 22px 22px;box-shadow:0 4px 28px rgba(0,0,0,.18);overflow:hidden;z-index:600;padding:12px 8px 8px;border-bottom:1.5px solid var(--bdr)}
-#login-sug-overlay-title{font-size:10px;font-weight:800;color:var(--t3);text-transform:uppercase;letter-spacing:.07em;padding:0 8px 8px}
+#login-sug-overlay{display:none;position:fixed;top:0;left:50%;transform:translateX(-50%);width:calc(100% - 32px);max-width:400px;background:#fff;border-radius:14px;box-shadow:0 6px 32px rgba(0,0,0,.22);overflow-y:auto;z-index:600;padding:4px 0}
+#login-sug-overlay-title{display:none}
 #balRedModal .modal-box{border-color:rgba(255,59,48,.35);border-top:3px solid var(--red)}
 #balRedModal .modal-title{color:var(--red)}
 #balGreenModal .modal-box{border-color:rgba(52,199,89,.35);border-top:3px solid var(--green)}
@@ -4498,6 +4498,24 @@ function renderLoginStats() {
 }
 
 // ── LOGIN AUTOCOMPLETE ─────────────────────────────────────────────────
+// Position the fixed overlay just above the input so it is always visible
+// above the keyboard, regardless of where the page has scrolled.
+function _posLoginSug() {
+  var ov = ge('login-sug-overlay');
+  if (!ov || ov.style.display === 'none') return;
+  var inp = ge('loginInput');
+  if (!inp) return;
+  var rect = inp.getBoundingClientRect();
+  var vv = window.visualViewport;
+  var viewTop = vv ? vv.offsetTop : 0;
+  var spaceAbove = rect.top - viewTop - 12;
+  var maxH = Math.min(Math.max(80, spaceAbove), 280);
+  ov.style.top = (rect.top - maxH - 8) + 'px';
+  ov.style.maxHeight = maxH + 'px';
+}
+if (window.visualViewport) {
+  window.visualViewport.addEventListener('resize', _posLoginSug);
+}
 function onLoginInput() {
   var inp = ge('loginInput'), sug = ge('login-suggest'), ov = ge('login-sug-overlay'), ovl = ge('login-sug-overlay-list'), ovt = ge('login-sug-overlay-title');
   if (!inp || !sug) return;
@@ -4520,12 +4538,13 @@ function onLoginInput() {
           + '<span class="login-sug-at">@</span>' + display + '</div>';
   }
   // On touch devices (iOS/Android) the keyboard covers the inline dropdown.
-  // Use the fixed overlay at top of screen instead so suggestions are always visible.
+  // Use the fixed overlay positioned just above the input via _posLoginSug().
   var isTouch = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
   if (isTouch && ov && ovl) {
     sug.style.display = 'none';
     ovl.innerHTML = html;
     ov.style.display = 'block';
+    _posLoginSug();
   } else {
     if (ov) ov.style.display = 'none';
     sug.innerHTML = html;
