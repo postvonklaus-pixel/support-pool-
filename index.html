@@ -12,6 +12,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-functions-compat.js"></script>
 <style>
 /* ── RESET & ROOT (light iOS theme) ── */
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -927,6 +929,30 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
 .db-tile-myvideos{display:block;border-radius:20px;overflow:hidden;cursor:pointer;position:relative;border:2px solid rgba(255,255,255,.18);box-shadow:0 4px 20px rgba(0,0,0,.25);-webkit-tap-highlight-color:transparent;transition:transform .16s;height:150px;margin-top:10px}
 .db-tile-myvideos:active{transform:scale(.96)}
 .db-tile-myvideos-label{position:absolute;bottom:0;left:0;right:0;padding:10px 14px;background:linear-gradient(transparent,rgba(0,0,0,.65));color:#fff;font-size:14px;font-weight:800;letter-spacing:.03em}
+
+/* ── Caption Generator ───────────────────────────────────────── */
+#screen-caption{padding:20px 16px 100px}
+.cap-header{font-size:22px;font-weight:800;margin-bottom:4px}
+.cap-sub{font-size:13px;color:#888;margin-bottom:20px}
+.cap-label{font-size:12px;font-weight:700;color:#555;margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em}
+.cap-select{width:100%;padding:12px 14px;border-radius:14px;border:1.5px solid #e0e0e0;font-size:15px;background:#fff;margin-bottom:16px;outline:none;-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='7'%3E%3Cpath d='M0 0l6 7 6-7' fill='none' stroke='%23888' stroke-width='1.5'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center}
+.cap-textarea{width:100%;padding:12px 14px;border-radius:14px;border:1.5px solid #e0e0e0;font-size:15px;min-height:80px;resize:vertical;outline:none;font-family:inherit;box-sizing:border-box;margin-bottom:16px}
+.cap-btn{width:100%;padding:15px;border-radius:18px;background:linear-gradient(135deg,#6c3fff,#9b5cff);color:#fff;font-size:16px;font-weight:800;border:none;cursor:pointer;margin-bottom:24px;transition:opacity .2s}
+.cap-btn:disabled{opacity:.5;cursor:default}
+.cap-result{background:#f8f6ff;border-radius:20px;padding:18px;margin-bottom:16px;display:none}
+.cap-result-title{font-size:13px;font-weight:700;color:#6c3fff;margin-bottom:8px;text-transform:uppercase;letter-spacing:.05em}
+.cap-result-text{font-size:14px;line-height:1.6;white-space:pre-wrap;word-break:break-word;color:#222}
+.cap-copy-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:10px;background:#6c3fff22;color:#6c3fff;font-size:13px;font-weight:700;border:none;cursor:pointer;margin-top:10px}
+.cap-tags-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.cap-tag{background:#eee;border-radius:20px;padding:4px 10px;font-size:12px;color:#333;cursor:pointer}
+.cap-tag:hover{background:#ddd}
+.cap-hook-card{background:#fff;border-radius:14px;padding:14px;margin-bottom:10px;border:1.5px solid #ebebeb}
+.cap-hook-formula{font-size:14px;font-weight:700;color:#222;margin-bottom:4px}
+.cap-hook-tip{font-size:12px;color:#888}
+.cap-tip-list{margin-top:8px;padding:0;list-style:none}
+.cap-tip-list li{font-size:12px;color:#666;padding:4px 0;border-bottom:1px solid #f0f0f0}
+.cap-tip-list li:last-child{border:none}
+.cap-tip-list li::before{content:"💡 "}
 </style>
 </head>
 <body>
@@ -1989,6 +2015,81 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
   </div>
 
   <!-- BOTTOM NAV -->
+  <!-- ── Caption Generator Screen ───────────────────────────── -->
+  <div class="screen" id="screen-caption">
+    <div class="cap-header">✍️ Caption Generator</div>
+    <div class="cap-sub" id="t-cap-sub">Hashtags &amp; Hook-Formeln für dein TikTok</div>
+
+    <div class="cap-label" id="t-cap-niche-lbl">Nische</div>
+    <select class="cap-select" id="cap-niche">
+      <option value="fitness">🏋️ Fitness</option>
+      <option value="beauty">💄 Beauty</option>
+      <option value="food">🍕 Food</option>
+      <option value="travel">✈️ Travel</option>
+      <option value="tech">💻 Tech</option>
+      <option value="education">📚 Education</option>
+      <option value="finance">💰 Finance</option>
+      <option value="fashion">👗 Fashion</option>
+      <option value="lifestyle">🌿 Lifestyle</option>
+      <option value="gaming">🎮 Gaming</option>
+      <option value="motivation">🔥 Motivation</option>
+      <option value="business">💼 Business</option>
+      <option value="pets">🐾 Pets</option>
+      <option value="music">🎵 Music</option>
+      <option value="comedy">😂 Comedy</option>
+    </select>
+
+    <div class="cap-label" id="t-cap-hook-lbl">Hook-Stil</div>
+    <select class="cap-select" id="cap-hookcat">
+      <option value="Curiosity">🤔 Curiosity</option>
+      <option value="Controversy">🔥 Controversy</option>
+      <option value="Relatability">🫂 Relatability</option>
+      <option value="Authority">🏆 Authority</option>
+      <option value="Urgency">⚡ Urgency</option>
+      <option value="Story">📖 Story</option>
+      <option value="List">📋 List</option>
+      <option value="Challenge">💪 Challenge</option>
+    </select>
+
+    <div class="cap-label" id="t-cap-topic-lbl">Dein Videoinhalt</div>
+    <textarea class="cap-textarea" id="cap-topic" placeholder="z.B. Wie ich in 30 Tagen 5kg abgenommen habe…" maxlength="300"></textarea>
+
+    <button class="cap-btn" id="cap-gen-btn" onclick="doGenerateCaption()">
+      <span id="cap-btn-label">✨ Caption generieren</span>
+    </button>
+
+    <!-- Result: ready-to-copy caption -->
+    <div class="cap-result" id="cap-result-caption">
+      <div class="cap-result-title" id="t-cap-res-caption">📋 Deine Caption</div>
+      <div class="cap-result-text" id="cap-caption-text"></div>
+      <button class="cap-copy-btn" onclick="capCopy('cap-caption-text')">📋 <span id="t-cap-copy">Kopieren</span></button>
+    </div>
+
+    <!-- Result: hook formulas -->
+    <div class="cap-result" id="cap-result-hooks">
+      <div class="cap-result-title" id="t-cap-res-hooks">🎣 Hook-Formeln</div>
+      <div id="cap-hooks-list"></div>
+    </div>
+
+    <!-- Result: hashtag cloud -->
+    <div class="cap-result" id="cap-result-tags">
+      <div class="cap-result-title" id="t-cap-res-tags">🏷️ Alle Hashtags</div>
+      <div class="cap-tags-row" id="cap-tags-row"></div>
+      <button class="cap-copy-btn" onclick="capCopy('cap-hashtag-hidden')">📋 <span id="t-cap-copy2">Alle kopieren</span></button>
+      <span id="cap-hashtag-hidden" style="display:none"></span>
+    </div>
+
+    <!-- Result: strategy tips -->
+    <div class="cap-result" id="cap-result-tips">
+      <div class="cap-result-title" id="t-cap-res-tips">💡 Strategie-Tipps</div>
+      <ul class="cap-tip-list" id="cap-tips-list"></ul>
+    </div>
+
+    <div style="font-size:11px;color:#bbb;text-align:center;margin-top:8px">
+      Powered by <a href="https://tiktapdown.com" target="_blank" rel="noopener" style="color:#6c3fff;text-decoration:none">TikTapDown</a> · kostenlos · keine TikTok-API
+    </div>
+  </div>
+
   <div id="bottom-nav">
     <button class="ni active" id="ni-home" data-sc="dashboard" onclick="goScreen('dashboard')">
       <span class="nav-icon">🏠</span>
@@ -2006,6 +2107,10 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
     <button class="ni" id="ni-settings" data-sc="settings" onclick="goScreen('settings')">
       <span class="nav-icon">⚙️</span>
       <span id="t-nav-settings">Einstellungen</span>
+    </button>
+    <button class="ni" id="ni-caption" onclick="goScreen('caption')">
+      <span class="nav-icon">✍️</span>
+      <span id="t-nav-caption">Caption</span>
     </button>
     <button class="ni" id="ni-wave" onclick="startTour(3)">
       <span class="nav-icon">🌊</span>
@@ -2531,6 +2636,7 @@ de: {
   schedLabel: 'Vorgemerkt', schedPostsIn: 'Wird gepostet in',
   schedPosted: 'Dein vorgemerktes Video wurde automatisch gepostet!',
   myVidsTile: '🎞️ Meine Videos',
+  navCaption:'Caption',capSub:'Hashtags & Hook-Formeln für dein TikTok',capNiche:'Nische',capHookStyle:'Hook-Stil',capTopic:'Dein Videoinhalt',capGenBtn:'✨ Caption generieren',capResCaption:'📋 Deine Caption',capResHooks:'🎣 Hook-Formeln',capResTags:'🏷️ Alle Hashtags',capResTips:'💡 Strategie-Tipps',capCopy:'Kopieren',capNeedTopic:'Bitte Videoinhalt eingeben.',capError:'Fehler: ',
   schedConfirm: 'Video vorgemerkt! Wird automatisch gepostet.',
   schedPending: '📅 Vorgemerkt:',
   schedBtn: 'Vormerken',
@@ -2679,6 +2785,7 @@ en: {
   schedLabel: 'Scheduled', schedPostsIn: 'Posts in',
   schedPosted: 'Your scheduled video was posted automatically!',
   myVidsTile: '🎞️ My Videos',
+  navCaption:'Caption',capSub:'Hashtags & Hook Formulas for your TikTok',capNiche:'Niche',capHookStyle:'Hook Style',capTopic:'Your Video Content',capGenBtn:'✨ Generate Caption',capResCaption:'📋 Your Caption',capResHooks:'🎣 Hook Formulas',capResTags:'🏷️ All Hashtags',capResTips:'💡 Strategy Tips',capCopy:'Copy',capNeedTopic:'Please enter your video content.',capError:'Error: ',
   schedConfirm: 'Video scheduled! Will be posted automatically.',
   schedPending: '📅 Scheduled:',
   schedBtn: 'Schedule',
@@ -2827,6 +2934,7 @@ id: {
   schedLabel: 'Dijadwalkan', schedPostsIn: 'Diposting dalam',
   schedPosted: 'Video yang dijadwalkan telah diposting otomatis!',
   myVidsTile: '🎞️ Video Saya',
+  navCaption:'Caption',capSub:'Hashtag & Rumus Hook untuk TikTok-mu',capNiche:'Niche',capHookStyle:'Gaya Hook',capTopic:'Konten Videomu',capGenBtn:'✨ Buat Caption',capResCaption:'📋 Caption-mu',capResHooks:'🎣 Rumus Hook',capResTags:'🏷️ Semua Hashtag',capResTips:'💡 Tips Strategi',capCopy:'Salin',capNeedTopic:'Silakan masukkan konten video.',capError:'Error: ',
   schedConfirm: 'Video dijadwalkan! Akan diposting otomatis.',
   schedPending: '📅 Dijadwalkan:',
   schedBtn: 'Jadwalkan',
@@ -2975,6 +3083,7 @@ it: {
   schedLabel: 'Programmato', schedPostsIn: 'Sarà pubblicato in',
   schedPosted: 'Il tuo video programmato è stato pubblicato automaticamente!',
   myVidsTile: '🎞️ I Miei Video',
+  navCaption:'Caption',capSub:'Hashtag e formule hook per il tuo TikTok',capNiche:'Nicchia',capHookStyle:'Stile Hook',capTopic:'Il tuo contenuto video',capGenBtn:'✨ Genera Caption',capResCaption:'📋 La tua Caption',capResHooks:'🎣 Formule Hook',capResTags:'🏷️ Tutti gli Hashtag',capResTips:'💡 Consigli Strategici',capCopy:'Copia',capNeedTopic:'Inserisci il contenuto del video.',capError:'Errore: ',
   schedConfirm: 'Video programmato! Verrà pubblicato automaticamente.',
   schedPending: '📅 Programmato:',
   schedBtn: 'Programma',
@@ -3123,6 +3232,7 @@ es: {
   schedLabel: 'Programado', schedPostsIn: 'Se publica en',
   schedPosted: '¡Tu video programado fue publicado automáticamente!',
   myVidsTile: '🎞️ Mis Videos',
+  navCaption:'Caption',capSub:'Hashtags y fórmulas de gancho para tu TikTok',capNiche:'Nicho',capHookStyle:'Estilo de Gancho',capTopic:'Tu contenido de video',capGenBtn:'✨ Generar Caption',capResCaption:'📋 Tu Caption',capResHooks:'🎣 Fórmulas de Gancho',capResTags:'🏷️ Todos los Hashtags',capResTips:'💡 Consejos Estratégicos',capCopy:'Copiar',capNeedTopic:'Por favor ingresa el contenido de tu video.',capError:'Error: ',
   schedConfirm: '¡Video programado! Se publicará automáticamente.',
   schedPending: '📅 Programado:',
   schedBtn: 'Programar',
@@ -3271,6 +3381,7 @@ tr: {
   schedLabel: 'Planlandı', schedPostsIn: 'Yayınlanıyor',
   schedPosted: 'Planlanan videonuz otomatik olarak yayınlandı!',
   myVidsTile: '🎞️ Videolarım',
+  navCaption:'Açıklama',capSub:'TikTok\'un için Hashtag ve Hook Formülleri',capNiche:'Niş',capHookStyle:'Hook Stili',capTopic:'Video İçeriğin',capGenBtn:'✨ Açıklama Oluştur',capResCaption:'📋 Açıklaman',capResHooks:'🎣 Hook Formülleri',capResTags:'🏷️ Tüm Hashtagler',capResTips:'💡 Strateji İpuçları',capCopy:'Kopyala',capNeedTopic:'Lütfen video içeriğini girin.',capError:'Hata: ',
   schedConfirm: 'Video planlandı! Otomatik paylaşılacak.',
   schedPending: '📅 Planlandı:',
   schedBtn: 'Planla',
@@ -3419,6 +3530,7 @@ ar: {
   schedLabel: 'مجدول', schedPostsIn: 'ينشر خلال',
   schedPosted: 'تم نشر الفيديو المجدول تلقائياً!',
   myVidsTile: '🎞️ مقاطع الفيديو',
+  navCaption:'تعليق',capSub:'هاشتاقات وصيغ جذب لتيك توك',capNiche:'المجال',capHookStyle:'أسلوب الجذب',capTopic:'محتوى الفيديو',capGenBtn:'✨ إنشاء تعليق',capResCaption:'📋 تعليقك',capResHooks:'🎣 صيغ الجذب',capResTags:'🏷️ كل الهاشتاقات',capResTips:'💡 نصائح استراتيجية',capCopy:'نسخ',capNeedTopic:'يرجى إدخال محتوى الفيديو.',capError:'خطأ: ',
   schedConfirm: 'تمت جدولة الفيديو! سيتم نشره تلقائياً.',
   schedPending: '📅 مجدول:',
   schedBtn: 'جدولة',
@@ -3567,6 +3679,7 @@ zh: {
   schedLabel: '已预约', schedPostsIn: '将在后发布',
   schedPosted: '您的预约视频已自动发布！',
   myVidsTile: '🎞️ 我的视频',
+  navCaption:'标题',capSub:'为你的TikTok生成话题标签和开场钩子',capNiche:'细分领域',capHookStyle:'钩子风格',capTopic:'你的视频内容',capGenBtn:'✨ 生成标题',capResCaption:'📋 你的标题',capResHooks:'🎣 钩子公式',capResTags:'🏷️ 所有话题标签',capResTips:'💡 策略建议',capCopy:'复制',capNeedTopic:'请输入视频内容。',capError:'错误：',
   schedConfirm: '视频已预约！将自动发布。',
   schedPending: '📅 已预约:',
   schedBtn: '预约',
@@ -3715,6 +3828,7 @@ ja: {
   schedLabel: '予約済み', schedPostsIn: '後に投稿',
   schedPosted: '予約した動画が自動的に投稿されました！',
   myVidsTile: '🎞️ マイ動画',
+  navCaption:'キャプション',capSub:'TikTok用ハッシュタグとフック文句',capNiche:'ニッチ',capHookStyle:'フックスタイル',capTopic:'動画の内容',capGenBtn:'✨ キャプション生成',capResCaption:'📋 あなたのキャプション',capResHooks:'🎣 フック公式',capResTags:'🏷️ 全ハッシュタグ',capResTips:'💡 戦略ヒント',capCopy:'コピー',capNeedTopic:'動画の内容を入力してください。',capError:'エラー：',
   schedConfirm: '動画を予約しました！自動で投稿されます。',
   schedPending: '📅 予約済み:',
   schedBtn: '予約する',
@@ -3863,6 +3977,7 @@ pl: {
   schedLabel: 'Zaplanowane', schedPostsIn: 'Zostanie opublikowane za',
   schedPosted: 'Twoje zaplanowane wideo zostało automatycznie opublikowane!',
   myVidsTile: '🎞️ Moje Filmy',
+  navCaption:'Opis',capSub:'Hashtagi i formuły haczyków dla TikToka',capNiche:'Nisza',capHookStyle:'Styl Haczyka',capTopic:'Twoja treść wideo',capGenBtn:'✨ Generuj opis',capResCaption:'📋 Twój opis',capResHooks:'🎣 Formuły haczyków',capResTags:'🏷️ Wszystkie hashtagi',capResTips:'💡 Wskazówki strategiczne',capCopy:'Kopiuj',capNeedTopic:'Proszę podać treść wideo.',capError:'Błąd: ',
   schedConfirm: 'Wideo zaplanowane! Zostanie opublikowane automatycznie.',
   schedPending: '📅 Zaplanowane:',
   schedBtn: 'Zaplanuj',
@@ -4327,11 +4442,16 @@ function setSyncUI(state) {
 }
 
 // ── FIREBASE ────────────────────────────────────────────────────────
+var CAP_FS = null;  // Firestore instance for caption drafts
+var CAP_FN = null;  // Firebase Functions instance
+
 function initFB() {
   try {
     var app = firebase.apps.length ? firebase.app() : firebase.initializeApp(FB_CFG);
     FB = firebase.database();
     FB_REF = FB.ref('sp6');
+    try { CAP_FS = firebase.firestore(); } catch(e) {}
+    try { CAP_FN = firebase.functions(); CAP_FN.region = 'asia-southeast1'; } catch(e) {}
     FB.ref('.info/connected').on('value', function(s) {
       ONLINE = s.val() === true;
       setSyncUI(ONLINE ? 'online' : 'offline');
@@ -4484,6 +4604,7 @@ function goScreen(id) {
   if (id === 'admin') renderAdmin();
   if (id === 'settings') renderSettings();
   if (id === 'myvideos') renderHome();
+  if (id === 'caption') renderCaption();
 }
 function openModal(id) { var el = ge(id); if (el) el.classList.add('active'); }
 function closeModal(id) { var el = ge(id); if (el) el.classList.remove('active'); }
@@ -8097,6 +8218,182 @@ function playCelebrationSound(){
 /* ── HAPTIC FEEDBACK (Surprise!) ── */
 function haptic(pattern){
   try{if(navigator.vibrate)navigator.vibrate(pattern||15);}catch(e){}
+}
+
+// ── CAPTION GENERATOR ────────────────────────────────────────────────────────
+
+function renderCaption() {
+  var l = L[LANG] || L.de;
+  st('t-cap-sub',        l.capSub        || 'Hashtags & Hook-Formeln für dein TikTok');
+  st('t-cap-niche-lbl',  l.capNiche      || 'Nische');
+  st('t-cap-hook-lbl',   l.capHookStyle  || 'Hook-Stil');
+  st('t-cap-topic-lbl',  l.capTopic      || 'Dein Videoinhalt');
+  st('cap-btn-label',    l.capGenBtn     || '✨ Caption generieren');
+  st('t-cap-res-caption',l.capResCaption || '📋 Deine Caption');
+  st('t-cap-res-hooks',  l.capResHooks   || '🎣 Hook-Formeln');
+  st('t-cap-res-tags',   l.capResTags    || '🏷️ Alle Hashtags');
+  st('t-cap-res-tips',   l.capResTips    || '💡 Strategie-Tipps');
+  st('t-cap-copy',       l.capCopy       || 'Kopieren');
+  st('t-cap-copy2',      l.capCopy       || 'Alle kopieren');
+  st('t-nav-caption',    l.navCaption    || 'Caption');
+}
+
+function doGenerateCaption() {
+  var niche     = ge('cap-niche')   && ge('cap-niche').value;
+  var hookcat   = ge('cap-hookcat') && ge('cap-hookcat').value;
+  var topic     = ge('cap-topic')   && ge('cap-topic').value.trim();
+  var l         = L[LANG] || L.de;
+
+  if (!topic) {
+    toast(l.capNeedTopic || 'Bitte Videoinhalt eingeben.', 'error', 2500);
+    return;
+  }
+
+  var btn = ge('cap-gen-btn');
+  if (btn) { btn.disabled = true; st('cap-btn-label', '⏳ …'); }
+
+  // Call Firebase Function
+  var fn = CAP_FN
+    ? CAP_FN.httpsCallable('generateCaption')
+    : null;
+
+  var payload = { niche: niche, hookCategory: hookcat, topic: topic, memberKey: CU || 'anon' };
+
+  var done = function(result) {
+    if (btn) { btn.disabled = false; st('cap-btn-label', l.capGenBtn || '✨ Caption generieren'); }
+    _showCaptionResult(result);
+  };
+  var fail = function(err) {
+    if (btn) { btn.disabled = false; st('cap-btn-label', l.capGenBtn || '✨ Caption generieren'); }
+    toast((l.capError || 'Fehler: ') + (err.message || err), 'error', 3500);
+  };
+
+  if (fn) {
+    fn(payload).then(function(res) { done(res.data); }).catch(fail);
+  } else {
+    // Fallback: generate locally (same logic as the Cloud Function)
+    try { done(_localGenerate(niche, hookcat, topic)); }
+    catch(e) { fail(e); }
+  }
+}
+
+// Local fallback when Functions are not yet deployed (uses same static data)
+var _CAP_NICHES = {
+  fitness:   {hashtags:["fitnessmotivation","workout","gymtok","fittok","homeworkout","weightloss","musclebuilding","cardio","fitnessgirl","fitnessjourney","healthylifestyle","workoutmotivation","gym","bodybuilding","personaltrainer"],tips:["Goal tags (#weightloss) outperform method tags (#cardio).","Commit to #gymtok OR #homeworkout — not both.","Use #fitnessmotivation only for emotional peak moments."]},
+  beauty:    {hashtags:["beautytok","makeuptutorial","skincare","grwm","makeupartist","skincareroutine","glassskin","cleanbeauty","beautyreview","drugstoremakeup","makeuptransformation","skintok","beautyover40","naturalmakeup","makeuptips"],tips:["#grwm is the highest-retention beauty format.","Pair transformation tags with routine tags.","#skintok has a highly engaged micro-community."]},
+  food:      {hashtags:["foodtok","recipe","cooking","foodie","easyrecipe","mealprep","whatieatinaday","tasty","homecooking","foodlovers","quickrecipes","healthyfood","asmrfood","mukbang","dinnerideas"],tips:["#easyrecipe filters for high-intent viewers.","ASMR food + #asmrfood drives 3x watch time.","#whatieatinaday is great for account growth."]},
+  travel:    {hashtags:["traveltok","travel","wanderlust","travelgram","travelreels","budgettravel","solotravel","travelcouple","hiddengems","travellife","adventure","digitalnomad","backpacker","traveladvice","travelinspiration"],tips:["#hiddengems earns saves.","#budgettravel attracts highly engaged communities.","Destination-specific hashtags outperform generic #travel."]},
+  tech:      {hashtags:["techtok","technology","techreview","gadgets","apple","android","coding","programming","techlifestyle","aitools","chatgpt","techhacks","softwareengineer","techsetup","productivitytools"],tips:["#aitools is the fastest-growing tech tag.","#techsetup drives aspirational saves.","Pair #coding with language-specific tags."]},
+  education: {hashtags:["learnontiktok","edutok","didyouknow","funfacts","studytok","science","history","psychologyfacts","lifelessons","mindblown","studywithme","learning","knowledge","factcheck","educationalcontent"],tips:["#learnontiktok and #edutok are TikTok-endorsed hubs.","Use #didyouknow and #mindblown for surprising facts.","#studywithme drives long watch-time sessions."]},
+  finance:   {hashtags:["personalfinance","moneytok","investing","financetok","stockmarket","budgeting","financialfreedom","savingmoney","passiveincome","wealthbuilding","crypto","daytrading","sidehustle","moneyadvice","financialliteracy"],tips:["#sidehustle has great reach-to-follower conversion.","#financialliteracy builds authority faster.","#personalfinance + #moneytok as your anchor pair."]},
+  fashion:   {hashtags:["fashiontok","outfitoftheday","ootd","styletips","fashioninspo","streetstyle","outfitinspiration","fashiontrends","thriftflip","stylechallenge","fashionover40","capsulewardrobe","sustainablefashion","fashionreview","outfitcheck"],tips:["#thriftflip has built-in transformation payoff.","#capsulewardrobe drives saves.","#ootd and #outfitoftheday cover search and FYP."]},
+  lifestyle: {hashtags:["lifestyletok","dayinmylife","morningroutine","selfcare","productividad","slowliving","minimalismlifestyle","wellbeing","lifestylegoals","selfimprovement","nightroutine","workfromhome","adulting","lifehacks","positivevibes"],tips:["#dayinmylife is the highest-retention lifestyle format.","#morningroutine and #nightroutine create episodic content.","#selfimprovement crosses over with finance and education."]},
+  gaming:    {hashtags:["gamingtok","gamertok","gaming","gameplay","gamer","twitch","streamer","esports","pcgaming","consolegaming","gamingsetup","videogames","fps","rpggames","gamingnews"],tips:["#gamingtok and #gamertok are TikTok-native.","Platform-specific tags attract loyal sub-audiences.","#gamingsetup is a high-save aspirational format."]},
+  motivation:{hashtags:["motivationtok","motivation","inspiration","mindset","successmindset","grindset","hustle","growthmindset","selfmotivation","dailymotivation","motivationalquotes","entrepreneur","mentalhealthawareness","positivity","nevergiveup"],tips:["#mindset + #growthmindset for maximum reach.","#entrepreneur dramatically expands reach.","#motivationtok for FYP + #dailymotivation for search."]},
+  business:  {hashtags:["businesstok","entrepreneur","startuplife","smallbusiness","businessadvice","marketing","ecommerce","socialmediatips","contentcreator","brandbuilding","businessmindset","freelance","digitalmarketing","saas","b2b"],tips:["#smallbusiness gets massive organic reach.","#saas and #b2b are high-intent, low-competition.","#digitalmarketing reaches owners and marketers."]},
+  pets:      {hashtags:["pettok","dogsoftiktok","catsoftiktok","petlover","funnypets","dogmom","catmom","petcare","animalsoftiktok","dogtraining","cuteanimals","petsofinstagram","bunnytok","reptiletek","petadvice"],tips:["#dogsoftiktok and #catsoftiktok are huge communities.","#dogtraining saves extremely well.","Niche tags like #bunnytok unlock micro-communities."]},
+  music:     {hashtags:["musictok","musician","originalmusic","coversong","singertok","producertok","musicproduction","guitarplayer","pianotok","beatmaker","indieartist","newmusic","musiciansoftiktok","songwriting","musicvideo"],tips:["#originalmusic signals creative ownership.","#coversong drives search discovery.","#producertok has a highly engaged niche community."]},
+  comedy:    {hashtags:["comedytok","funny","funnyvideo","humor","memes","relatable","skit","parody","standup","comedyskits","funnymoments","fail","adulthumor","darkhumor","comedylife"],tips:["#relatable is comedy's highest-engagement crossover.","#skit and #parody help algorithm categorization.","Keep hooks under 2 seconds for comedy."]}
+};
+var _CAP_HOOKS = {
+  Curiosity:    [{formula:"Nobody talks about [topic] but it changed everything for me",tip:"Triggers FOMO — positions content as hidden knowledge."},{formula:"The [adjective] truth about [topic] that [authority] won't tell you",tip:"Us-vs-them drives curiosity and shares."},{formula:"I tried [thing] for [duration] — here's what actually happened",tip:"First-person experiments feel authentic and shareable."}],
+  Controversy:  [{formula:"[Popular belief] is a lie. Here's the truth.",tip:"Challenge a widely-held belief to trigger reactions."},{formula:"Unpopular opinion: [contrarian take] (and I have receipts)",tip:"Compels people to agree or disagree."},{formula:"Why I quit [respected thing] — and I'm not going back",tip:"Makes viewers defensive and curious."}],
+  Relatability: [{formula:"POV: You're a [identity] who [relatable situation]",tip:"POV format builds instant connection."},{formula:"Me at [time/age] vs. me after [discovery/change]",tip:"Before/after framing sparks aspiration."},{formula:"If you [relatable experience], this video is for you",tip:"Filters the perfect audience."}],
+  Authority:    [{formula:"After [large number] [units], here's what I know about [topic]",tip:"Large numbers signal deep experience."},{formula:"[Number] things [expert role] never tell clients about [topic]",tip:"Insider secrets trigger FOMO."},{formula:"I studied [topic] for [duration] so you don't have to",tip:"Positions you as the researcher."}],
+  Urgency:      [{formula:"Stop doing [common action] if you want [desired outcome]",tip:"'Stop' is more compelling than 'start'."},{formula:"You have [timeframe] to [action] before [consequence]",tip:"Hard deadlines activate loss aversion."},{formula:"Most people don't know [time-sensitive thing] — watch this now",tip:"Combine scarcity with authority."}],
+  Story:        [{formula:"At [low point], I [desperate action]. What happened next changed everything.",tip:"Open with your lowest point — hooks viewers emotionally."},{formula:"Nobody believed I could [goal]. Here's how I proved them wrong.",tip:"Underdog framing earns instant investment."},{formula:"This is the story of how [transformation] in [short timeframe]",tip:"Compressed timelines trigger disbelief."}],
+  List:         [{formula:"[Number] [topic] mistakes that are silently [negative consequence]",tip:"Mistakes outperform tips — people fear loss."},{formula:"[Number] signs you're [diagnosis] (most people miss #[specific number])",tip:"Parenthetical creates curiosity about a specific item."},{formula:"[Number] things I wish I knew about [topic] before [experience]",tip:"Regret framing makes content feel like a gift."}],
+  Challenge:    [{formula:"I challenged myself to [extreme action] for [duration] — day [number]",tip:"Challenge series create follow-back loops."},{formula:"Can [simple person] do [expert thing] in [short time]? Watch.",tip:"Stakes + skepticism = built-in tension."},{formula:"I spent [amount] on [experience]. Was it worth it?",tip:"Money spent creates instant investment."}]
+};
+
+function _localGenerate(niche, hookcat, topic) {
+  var nd = _CAP_NICHES[niche];
+  var hd = _CAP_HOOKS[hookcat];
+  if (!nd) throw new Error('Unbekannte Nische: ' + niche);
+  if (!hd) throw new Error('Unbekannte Hook-Kategorie: ' + hookcat);
+  var top10 = nd.hashtags.slice(0, 10).map(function(h){ return '#' + h; }).join(' ');
+  var caption = hd[0].formula + '\n\n' + topic + '\n\n' + top10;
+  return {
+    hashtags: nd.hashtags,
+    hashtagString: nd.hashtags.map(function(h){ return '#'+h; }).join(' '),
+    hooks: hd,
+    caption: caption,
+    tips: nd.tips
+  };
+}
+
+function _showCaptionResult(data) {
+  // Caption box
+  var capEl = ge('cap-caption-text');
+  if (capEl) capEl.textContent = data.caption || '';
+  var capBox = ge('cap-result-caption');
+  if (capBox) capBox.style.display = 'block';
+
+  // Hook cards
+  var hooksList = ge('cap-hooks-list');
+  if (hooksList && data.hooks) {
+    hooksList.innerHTML = data.hooks.map(function(h) {
+      return '<div class="cap-hook-card">'
+        + '<div class="cap-hook-formula">' + esc(h.formula) + '</div>'
+        + '<div class="cap-hook-tip">' + esc(h.tip) + '</div>'
+        + '</div>';
+    }).join('');
+  }
+  var hooksBox = ge('cap-result-hooks');
+  if (hooksBox) hooksBox.style.display = 'block';
+
+  // Hashtag cloud
+  var tagsRow = ge('cap-tags-row');
+  var hidden  = ge('cap-hashtag-hidden');
+  if (tagsRow && data.hashtags) {
+    tagsRow.innerHTML = data.hashtags.map(function(h) {
+      return '<span class="cap-tag" onclick="capCopyText(\'#'+h+'\')">#'+h+'</span>';
+    }).join('');
+  }
+  if (hidden && data.hashtagString) hidden.textContent = data.hashtagString;
+  var tagsBox = ge('cap-result-tags');
+  if (tagsBox) tagsBox.style.display = 'block';
+
+  // Strategy tips
+  var tipsList = ge('cap-tips-list');
+  if (tipsList && data.tips) {
+    tipsList.innerHTML = data.tips.map(function(tp) {
+      return '<li>' + esc(tp) + '</li>';
+    }).join('');
+  }
+  var tipsBox = ge('cap-result-tips');
+  if (tipsBox) tipsBox.style.display = 'block';
+
+  toast('✅ Caption generiert!', 'success', 2000);
+}
+
+function capCopy(elId) {
+  var el = ge(elId);
+  if (!el) return;
+  capCopyText(el.textContent);
+}
+
+function capCopyText(text) {
+  if (!text) return;
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(function() {
+      toast('📋 Kopiert!', 'success', 1500);
+    }).catch(function() { _capCopyFallback(text); });
+  } else {
+    _capCopyFallback(text);
+  }
+}
+
+function _capCopyFallback(text) {
+  var ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed';
+  ta.style.opacity = '0';
+  document.body.appendChild(ta);
+  ta.focus(); ta.select();
+  try { document.execCommand('copy'); toast('📋 Kopiert!', 'success', 1500); }
+  catch(e) { toast('Kopieren fehlgeschlagen', 'error', 2000); }
+  document.body.removeChild(ta);
 }
 
 </script>

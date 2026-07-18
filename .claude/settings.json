@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "tiktapdown": {
+      "command": "npx",
+      "args": ["-y", "tiktapdown-mcp"],
+      "env": {}
+    }
+  }
+}

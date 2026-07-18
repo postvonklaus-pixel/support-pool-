@@ -1,0 +1,15 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Caption drafts: readable/writable only by the owner member key
+    // The function writes with memberKey; the client reads its own drafts
+    match /caption_drafts/{draftId} {
+      // Any authenticated-ish write comes through the Cloud Function (server-side)
+      // so client reads are open for now (app uses custom auth via Realtime DB)
+      allow read: if true;
+      allow write: if false; // writes only via Cloud Function
+    }
+
+  }
+}
