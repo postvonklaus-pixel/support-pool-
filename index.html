@@ -942,7 +942,7 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
 .cap-btn:disabled{opacity:.5;cursor:default}
 .cap-result{background:#f8f6ff;border-radius:20px;padding:18px;margin-bottom:16px;display:none}
 .cap-result-title{font-size:13px;font-weight:700;color:#6c3fff;margin-bottom:8px;text-transform:uppercase;letter-spacing:.05em}
-.cap-result-text{font-size:14px;line-height:1.6;white-space:pre-wrap;word-break:break-word;color:#222}
+.cap-result-text{font-size:14px;line-height:1.6;word-break:break-word;color:#222}
 .cap-copy-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:10px;background:#6c3fff22;color:#6c3fff;font-size:13px;font-weight:700;border:none;cursor:pointer;margin-top:10px}
 .cap-tags-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
 .cap-tag{background:#eee;border-radius:20px;padding:4px 10px;font-size:12px;color:#333;cursor:pointer}
@@ -950,6 +950,7 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
 .cap-hook-card{background:#fff;border-radius:14px;padding:14px;margin-bottom:10px;border:1.5px solid #ebebeb}
 .cap-hook-formula{font-size:14px;font-weight:700;color:#222;margin-bottom:4px}
 .cap-hook-tip{font-size:12px;color:#888}
+.cap-ph{background:#fff3cd;color:#856404;border-radius:4px;padding:0 3px;font-style:italic;font-weight:600}
 .cap-tip-list{margin-top:8px;padding:0;list-style:none}
 .cap-tip-list li{font-size:12px;color:#666;padding:4px 0;border-bottom:1px solid #f0f0f0}
 .cap-tip-list li:last-child{border:none}
@@ -8353,11 +8354,18 @@ function _localGenerate(niche, hookcat, topic) {
   if (!nd) throw new Error('Unbekannte Nische: ' + niche);
   if (!hd) throw new Error('Unbekannte Hook-Kategorie: ' + hookcat);
   var top10 = nd.hashtags.slice(0, 10).map(function(h){ return '#' + h; }).join(' ');
-  var caption = hd[0].formula + '\n\n' + topic + '\n\n' + top10;
+  // Fill [topic]/[thing] with the niche label (most natural fit for these placeholders)
+  var nicheLabel = niche.charAt(0).toUpperCase() + niche.slice(1);
+  function _fillHook(f) {
+    return f.replace(/\[topic\]/gi, nicheLabel).replace(/\[thing\]/gi, nicheLabel);
+  }
+  var filledHooks = hd.map(function(h){ return { formula: _fillHook(h.formula), tip: h.tip }; });
+  // Caption: filled hook line + user's description as body + top hashtags
+  var caption = filledHooks[0].formula + '\n\n' + topic + '\n\n' + top10;
   return {
     hashtags: nd.hashtags,
     hashtagString: nd.hashtags.map(function(h){ return '#'+h; }).join(' '),
-    hooks: hd,
+    hooks: filledHooks,
     caption: caption,
     tips: nd.tips
   };
@@ -8367,9 +8375,15 @@ function _showCaptionResult(data) {
   // Hide empty state once results arrive
   var emptyEl = ge('cap-empty-state');
   if (emptyEl) emptyEl.style.display = 'none';
-  // Caption box
+  // Caption box — display with highlighted placeholders; store raw text for copy button
   var capEl = ge('cap-caption-text');
-  if (capEl) capEl.textContent = data.caption || '';
+  if (capEl) {
+    var rawCaption = data.caption || '';
+    capEl.dataset.copy = rawCaption;
+    capEl.innerHTML = esc(rawCaption)
+      .replace(/\[([^\]]+)\]/g, '<span class="cap-ph">[$1]</span>')
+      .replace(/\n/g, '<br>');
+  }
   var capBox = ge('cap-result-caption');
   if (capBox) capBox.style.display = 'block';
 
@@ -8377,8 +8391,10 @@ function _showCaptionResult(data) {
   var hooksList = ge('cap-hooks-list');
   if (hooksList && data.hooks) {
     hooksList.innerHTML = data.hooks.map(function(h) {
+      // Highlight any remaining [placeholder] parts the user needs to fill in manually
+      var displayFormula = esc(h.formula).replace(/\[([^\]]+)\]/g, '<span class="cap-ph">[$1]</span>');
       return '<div class="cap-hook-card">'
-        + '<div class="cap-hook-formula">' + esc(h.formula) + '</div>'
+        + '<div class="cap-hook-formula">' + displayFormula + '</div>'
         + '<div class="cap-hook-tip">' + esc(h.tip) + '</div>'
         + '</div>';
     }).join('');
@@ -8414,7 +8430,8 @@ function _showCaptionResult(data) {
 function capCopy(elId) {
   var el = ge(elId);
   if (!el) return;
-  capCopyText(el.textContent);
+  // Prefer data-copy (raw text with newlines) over textContent (loses newlines from <br>)
+  capCopyText(el.dataset && el.dataset.copy ? el.dataset.copy : el.textContent);
 }
 
 function capCopyText(text) {
