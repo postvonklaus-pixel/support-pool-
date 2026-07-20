@@ -137,15 +137,18 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
 .lang-drop-check{font-size:14px;color:var(--blue);font-weight:900;margin-left:6px;flex-shrink:0}
 /* ── DRUM PICKER ── */
 .drum-wrap{position:relative;height:160px;overflow:hidden;border-radius:16px;background:#fff;border:1px solid var(--bdr);box-shadow:0 2px 10px rgba(0,0,0,.06);margin-bottom:10px}
-.drum-sc{position:absolute;top:0;left:0;right:0;bottom:0;overflow-y:scroll;scroll-snap-type:y mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding:56px 0;z-index:2}
+.drum-sc{position:absolute;top:0;left:0;right:0;bottom:0;overflow-y:scroll;scroll-snap-type:y mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding:50px 0;z-index:2}
 .drum-sc::-webkit-scrollbar{display:none}
-.drum-item{height:48px;display:flex;align-items:center;justify-content:center;gap:10px;scroll-snap-align:center;cursor:pointer}
+.drum-item{height:60px;display:flex;align-items:center;justify-content:center;gap:12px;scroll-snap-align:center;cursor:pointer;padding:0 14px}
 .drum-flag{font-size:24px;line-height:1;flex-shrink:0}
-.drum-name{font-size:15px;font-weight:700;color:var(--text)}
+.drum-text{display:flex;flex-direction:column;align-items:flex-start;min-width:0}
+.drum-name{font-size:15px;font-weight:700;color:var(--text);line-height:1.2;white-space:nowrap}
+.drum-city-row{font-size:11px;color:var(--t2);line-height:1.3;margin-top:1px;white-space:nowrap}
+.drum-live{color:var(--blue);font-weight:600}
 .drum-fade{position:absolute;left:0;right:0;height:20px;pointer-events:none;z-index:3}
 .drum-fade-t{top:0;background:linear-gradient(to bottom,rgba(255,255,255,.96) 0%,rgba(255,255,255,0) 100%)}
 .drum-fade-b{bottom:0;background:linear-gradient(to top,rgba(255,255,255,.96) 0%,rgba(255,255,255,0) 100%)}
-.drum-sel{position:absolute;top:50%;left:14px;right:14px;height:48px;transform:translateY(-50%);background:rgba(0,122,255,.07);border-radius:12px;border:1.5px solid rgba(0,122,255,.2);pointer-events:none;z-index:1}
+.drum-sel{position:absolute;top:50%;left:14px;right:14px;height:60px;transform:translateY(-50%);background:rgba(0,122,255,.07);border-radius:12px;border:1.5px solid rgba(0,122,255,.2);pointer-events:none;z-index:1}
 
 /* ── LOGIN INPUT + INLINE BUTTON ── */
 .login-input-row{position:relative;margin-bottom:12px}
@@ -2228,18 +2231,18 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
 
 // WORLD CLOCKS DATA
 var WC_ZONES = [
-  { lang:'de', id:'de',    flag:'🇩🇪', city:'Berlin',      tz:'Europe/Berlin'    },
-  { lang:'en', id:'en-gb', flag:'🇬🇧', city:'London',      tz:'Europe/London'    },
-  { lang:'id', id:'id',    flag:'🇮🇩', city:'Jakarta',     tz:'Asia/Jakarta'     },
-  { lang:'it', id:'it',    flag:'🇮🇹', city:'Rome',        tz:'Europe/Rome'      },
-  { lang:'es', id:'es',    flag:'🇪🇸', city:'Madrid',      tz:'Europe/Madrid'    },
-  { lang:'tr', id:'tr',    flag:'🇹🇷', city:'Istanbul',    tz:'Europe/Istanbul'  },
-  { lang:'ar', id:'ar',    flag:'🇸🇦', city:'Riyadh',      tz:'Asia/Riyadh'      },
-  { lang:'zh', id:'zh',    flag:'🇨🇳', city:'Beijing',     tz:'Asia/Shanghai'    },
-  { lang:'ja', id:'ja',    flag:'🇯🇵', city:'Tokyo',       tz:'Asia/Tokyo'       },
-  { lang:'pl', id:'pl',    flag:'🇵🇱', city:'Warsaw',      tz:'Europe/Warsaw'    },
-  { lang:'en', id:'en-us', flag:'🇺🇸', city:'New York',   tz:'America/New_York' },
-  { lang:'en', id:'en-la', flag:'🇺🇸', city:'Los Angeles', tz:'America/Los_Angeles' }
+  { lang:'de', id:'de',    flag:'🇩🇪', name:'Deutsch',     city:'Berlin',      tz:'Europe/Berlin'      },
+  { lang:'en', id:'en-gb', flag:'🇬🇧', name:'English',     city:'London',      tz:'Europe/London'      },
+  { lang:'id', id:'id',    flag:'🇮🇩', name:'Indonesia',   city:'Jakarta',     tz:'Asia/Jakarta'       },
+  { lang:'it', id:'it',    flag:'🇮🇹', name:'Italiano',    city:'Rome',        tz:'Europe/Rome'        },
+  { lang:'es', id:'es',    flag:'🇪🇸', name:'Español',     city:'Madrid',      tz:'Europe/Madrid'      },
+  { lang:'tr', id:'tr',    flag:'🇹🇷', name:'Türkçe',      city:'Istanbul',    tz:'Europe/Istanbul'    },
+  { lang:'ar', id:'ar',    flag:'🇸🇦', name:'العربية',     city:'Riyadh',      tz:'Asia/Riyadh'        },
+  { lang:'zh', id:'zh',    flag:'🇨🇳', name:'中文',         city:'Beijing',     tz:'Asia/Shanghai'      },
+  { lang:'ja', id:'ja',    flag:'🇯🇵', name:'日本語',        city:'Tokyo',       tz:'Asia/Tokyo'         },
+  { lang:'pl', id:'pl',    flag:'🇵🇱', name:'Polski',      city:'Warsaw',      tz:'Europe/Warsaw'      },
+  { lang:'en', id:'en-us', flag:'🇺🇸', name:'East Coast',  city:'New York',    tz:'America/New_York'   },
+  { lang:'en', id:'en-la', flag:'🇺🇸', name:'West Coast',  city:'Los Angeles', tz:'America/Los_Angeles'}
 ];
 
 // SESSION CONSTANTS
@@ -2355,7 +2358,7 @@ function updateWcActive() {
 
 function startWcTick() {
   if (_wcInt) clearInterval(_wcInt);
-  _wcInt = setInterval(updateWcTimes, 10000);
+  _wcInt = setInterval(function(){ updateWcTimes(); updateDrumTimes(); }, 10000);
 }
 
 function animateWorldClock() {
@@ -4282,27 +4285,30 @@ function buildLangDrop() {
   buildDrumPicker('lang-drum-wrap');
   buildDrumPicker('set-drum-wrap');
 }
+var SEL_ZONE_ID = null; // tracks which specific zone was last selected (for multi-English)
+
 function buildDrumPicker(wrapId) {
   var wrap = ge(wrapId);
   if (!wrap) return;
-  var seen = {}, items = [];
-  for (var i = 0; i < WC_ZONES.length; i++) {
-    var z = WC_ZONES[i];
-    if (!seen[z.lang]) { seen[z.lang] = true; items.push(z); }
-  }
-  var ITEM_H = 48;
+  // Show all unique zones (no language-level dedup) so East/West Coast appear separately
+  var items = WC_ZONES.slice();
+  var ITEM_H = 60;
   var N = items.length;
-  // Ghost items: last language before first, first language after last
-  // so there is always a visible item above/below the selected one
-  var paddedItems = [{lang:'', flag:'🇭🇲'}].concat(items).concat([items[0]]);
+  // Ghost: blank top, first-item clone at bottom
+  var paddedItems = [{lang:'', flag:'🇭🇲', name:'', city:'', id:'ghost'}].concat(items).concat([items[0]]);
   var scId = wrapId + '-sc';
   var sc = ge(scId);
   if (!sc) {
     var html = '<div class="drum-sel"></div><div class="drum-sc" id="' + scId + '">';
     paddedItems.forEach(function(z) {
-      html += '<div class="drum-item" data-lang="' + z.lang + '">';
+      html += '<div class="drum-item" data-lang="' + z.lang + '" data-zid="' + (z.id||'') + '">';
       html += '<span class="drum-flag">' + z.flag + '</span>';
-      html += '<span class="drum-name">' + (LANG_NATIVE[z.lang] || z.lang) + '</span>';
+      html += '<div class="drum-text">';
+      html += '<span class="drum-name">' + (z.name || LANG_NATIVE[z.lang] || z.lang) + '</span>';
+      if (z.city) {
+        html += '<div class="drum-city-row">' + z.city + '<span class="drum-live" id="dtime-' + z.id + '"> · --:--</span></div>';
+      }
+      html += '</div>';
       html += '</div>';
     });
     html += '</div>';
@@ -4318,7 +4324,6 @@ function buildDrumPicker(wrapId) {
       clearTimeout(_dt);
       _dt = setTimeout(function() {
         var rawIdx = Math.round(sc.scrollTop / ITEM_H);
-        // rawIdx 0 = ghost-top, 1..N = real items, N+1 = ghost-bottom
         var clampedIdx = Math.max(1, Math.min(rawIdx, N));
         if (clampedIdx !== rawIdx) {
           sc._prog = true;
@@ -4326,20 +4331,39 @@ function buildDrumPicker(wrapId) {
           setTimeout(function() { sc._prog = false; }, 200);
         }
         var realIdx = clampedIdx - 1;
-        if (items[realIdx] && items[realIdx].lang !== LANG) setLang(items[realIdx].lang);
+        var sel = items[realIdx];
+        if (sel) {
+          SEL_ZONE_ID = sel.id;
+          if (sel.lang !== LANG) setLang(sel.lang);
+        }
       }, 150);
     };
+    updateDrumTimes();
   }
+  // Find active index: prefer zone-id match, fall back to first language match
   var activeIdx = 0;
   for (var i = 0; i < items.length; i++) {
-    if (items[i].lang === LANG) { activeIdx = i; break; }
+    if (SEL_ZONE_ID ? (items[i].id === SEL_ZONE_ID) : (items[i].lang === LANG)) {
+      activeIdx = i; break;
+    }
   }
-  // +1 because ghost item at index 0 shifts all real items by one
   var targetTop = (activeIdx + 1) * ITEM_H;
   if (sc.scrollTop !== targetTop) {
     sc._prog = true;
     sc.scrollTop = targetTop;
     setTimeout(function() { sc._prog = false; }, 200);
+  }
+}
+
+function updateDrumTimes() {
+  var now = new Date();
+  for (var i = 0; i < WC_ZONES.length; i++) {
+    var z = WC_ZONES[i];
+    var el = ge('dtime-' + z.id);
+    if (!el) continue;
+    try {
+      el.textContent = ' · ' + now.toLocaleTimeString('de-DE', {timeZone: z.tz, hour:'2-digit', minute:'2-digit'});
+    } catch(e) {}
   }
 }
 
