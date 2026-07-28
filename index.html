@@ -7293,14 +7293,21 @@ var VERIFIED_POSTS = 50;  // min. posts to qualify
 
 function isVerified(u) {
   if (!u || (u.postsTotal||0) < VERIFIED_POSTS) return false;
-  // Require 7 consecutive active days (streak)
-  var days = getStreakData(u);
-  var streak = 0;
-  for (var j = days.length - 1; j >= 0; j--) {
-    if (days[j].active) streak++;
-    else if (j < days.length - 1) break;
+  // Require 5 out of 7 days active in the current week (since last Friday WIB reset)
+  var lastFri = getLastFridayWIB();
+  var ds = u.supportDays || [];
+  var activeDaysThisWeek = 0;
+  var now = Date.now();
+  for (var i = 0; i < 7; i++) {
+    var dayTs = lastFri + (i * 86400000);
+    if (dayTs > now) break;
+    var d = new Date(dayTs);
+    var dateKey = d.getFullYear() + '-'
+      + String(d.getMonth() + 1).padStart(2, '0') + '-'
+      + String(d.getDate()).padStart(2, '0');
+    if (ds.indexOf(dateKey) >= 0) activeDaysThisWeek++;
   }
-  return streak >= 7;
+  return activeDaysThisWeek >= 5;
 }
 
 function verifiedBadge(u) {
