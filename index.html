@@ -5346,6 +5346,7 @@ function completeLogin(key, disp) {
     }
     if (!DB.members[key].name) DB.members[key].name = disp;
     if (!DB.members[key].key) DB.members[key].key = key;
+    if (!DB.members[key].lang && LANG) DB.members[key].lang = LANG;
     saveLS();
     enterApp();
   }
@@ -5382,6 +5383,8 @@ function enterApp() {
   ge('header').style.display='flex';
   ge('bottom-nav').classList.add('show');
   var u = DB.members[CU];
+  // Persist language preference on every login so weekly DM language assignment is correct
+  if (u && !u.lang && LANG) u.lang = LANG;
   ge('user-pill').style.display = 'flex';
   st('up-name', u.name || fbDec(CU));
   ge('up-avatar').textContent = getAvatar(u);
@@ -6771,7 +6774,12 @@ function sendWeeklyDMs() {
   var active = Object.values(DB.members).filter(function(m) {
     return m.status === 'active' && m.role !== 'admin';
   });
+  // Remove all stale weekly DMs before writing fresh ones (prevents accumulation)
+  Object.keys(DB.messages).forEach(function(mid) {
+    if (DB.messages[mid] && DB.messages[mid].weeklyDm) delete DB.messages[mid];
+  });
   var sent = 0;
+  var sendTs = Date.now();
   active.forEach(function(m) {
     var mLang = m.lang || 'de';
     var lm = L[mLang] || L.de;
@@ -6782,10 +6790,12 @@ function sendWeeklyDMs() {
       var tpls = lm.weeklyTpl || (L.de.weeklyTpl || []);
       text = tpls[_weeklyTplIdx] || tpls[0] || '🎯 Gute Woche!';
     }
-    var dmId = 'wdm' + Date.now() + '_' + (Math.random()*9999|0);
+    // Use member key in dmId — guaranteed unique per member, no collision possible
+    var safeKey = (m.key || '').replace(/[.#$\[\]\/]/g, '_');
+    var dmId = 'wdm_' + safeKey + '_' + sendTs;
     DB.messages[dmId] = {
       id: dmId, from: 'admin', to: m.key, type: 'dm', icon: '📬',
-      text: text, message: text, timestamp: Date.now(), ts: Date.now(), read: false
+      text: text, message: text, timestamp: sendTs, ts: sendTs, read: false, weeklyDm: true
     };
     sent++;
   });
