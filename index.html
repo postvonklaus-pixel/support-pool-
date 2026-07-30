@@ -1164,7 +1164,7 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
 <div class="modal-bg" id="tplLibModal">
   <div class="modal-box">
     <div class="modal-title">📚 <span>Vorlagen-Bibliothek</span></div>
-    <div style="font-size:11px;color:var(--t2);margin-bottom:12px">Tippe auf eine Vorlage, um sie zu übernehmen.</div>
+    <div style="font-size:11px;color:var(--t2);margin-bottom:12px">🔄 = next in rotation &nbsp;|&nbsp; ✏️ = customized &nbsp;|&nbsp; Tap <b>Edit</b> to change a template.</div>
     <div class="tpl-lib-grid" id="tpl-lib-grid"></div>
     <div class="modal-footer" style="margin-top:14px">
       <button class="btn-ghost btn-sm" id="t-tpl-lib-close" onclick="closeModal('tplLibModal')">Schließen</button>
@@ -1941,7 +1941,7 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
             <div><div class="setting-lbl" id="t-set-tpl">Kommentar-Template</div><div class="setting-sub">Aktuelle Vorlage bearbeiten</div></div>
             <div style="display:flex;gap:5px">
               <button class="btn-ghost btn-sm" onclick="openTplLibrary()">📚</button>
-              <button class="btn-ghost btn-sm" onclick="openTplModal()">✏️</button>
+              <button class="btn-ghost btn-sm" onclick="_editTplIdx=(DB.settings.tplIdx||0)%TPL_LIBRARY.length;openTplModal()">✏️</button>
             </div>
           </div>
           <div class="setting-row">
@@ -4147,13 +4147,14 @@ pl: {
 var LANG = 'de';
 var ONLINE = navigator.onLine;
 var CU = null;
-var DB = {groups:{}, members:{}, videos:{}, messages:{}, chat:{}, settings:{admins:DEFAULT_ADMINS, tpl:DEFAULT_TPL, nextG:2}, _ts:0};
+var DB = {groups:{}, members:{}, videos:{}, messages:{}, chat:{}, settings:{admins:DEFAULT_ADMINS, tpl:DEFAULT_TPL, nextG:2, tplIdx:0, tplLibrary:[]}, _ts:0};
 var FB = null, FB_REF = null, FB_PUSH_TS = 0, FB_PENDING = false, FB_RECEIVED_ONCE = false;
 var PIN_BUF = '', PIN_ATT = 0, PIN_USER = '', PIN_DISP_NAME = '';
 var _lastMigratedGhost = null; // tracks ghost key removed during login migration
 var CP_BUF = '', CP_STEP = 'new', CP_FIRST = '';
 var PENDING_DEL = null, PENDING_REPLY = null;
 var ADMIN_TAB = 'ov';
+var _editTplIdx = 0;
 
 // ── UTILS ──────────────────────────────────────────────────────────
 function t(k) { return (L[LANG] || L.de)[k] || (L.de)[k] || k; }
@@ -4532,7 +4533,7 @@ function initFB() {
       purgeStaleNotifs(); // re-purge in case Firebase brought back an already-cleared support notif
       DB._ts = r._ts || 0;
       CU = cu;
-      if (r.settings) DB.settings = Object.assign({admins:DEFAULT_ADMINS,tpl:DEFAULT_TPL,nextG:2}, r.settings);
+      if (r.settings) DB.settings = Object.assign({admins:DEFAULT_ADMINS,tpl:DEFAULT_TPL,nextG:2,tplIdx:0,tplLibrary:[]}, r.settings);
       saveLS(); renderAll(); checkBC();
       // If a local action was queued before this first sync arrived, push it now
       // (pushFB already merged the snapshots in its own once() call; here we only
@@ -4594,7 +4595,7 @@ function pushFB() {
         // Chat: union — local may have new messages not yet on server
         DB.chat = Object.assign({}, r.chat || {}, snapChat);
         purgeStaleNotifs(); // re-purge in case the union brought back an already-cleared support notif
-        if (r.settings) DB.settings = Object.assign({admins:DEFAULT_ADMINS,tpl:DEFAULT_TPL,nextG:2}, r.settings);
+        if (r.settings) DB.settings = Object.assign({admins:DEFAULT_ADMINS,tpl:DEFAULT_TPL,nextG:2,tplIdx:0,tplLibrary:[]}, r.settings);
         DB._ts = r._ts || DB._ts;
         FB_RECEIVED_ONCE = true;
         saveLS(); renderAll();
@@ -4632,7 +4633,7 @@ function loadLS() {
     if (r && r.members) {
       DB.groups = r.groups||{}; DB.members = r.members||{}; DB.videos = r.videos||{};
       DB.messages = r.messages||{}; DB.chat = r.chat||{}; DB._ts = r._ts||0;
-      if (r.settings) DB.settings = Object.assign({admins:DEFAULT_ADMINS,tpl:DEFAULT_TPL,nextG:2}, r.settings);
+      if (r.settings) DB.settings = Object.assign({admins:DEFAULT_ADMINS,tpl:DEFAULT_TPL,nextG:2,tplIdx:0,tplLibrary:[]}, r.settings);
     } else { initDemo(); }
   } catch(e) { initDemo(); }
 }
@@ -5356,7 +5357,7 @@ function completeLogin(key, disp) {
         DB.videos = r.videos||DB.videos; DB.messages = r.messages||DB.messages;
         purgeStaleNotifs();
         DB._ts = r._ts||0;
-        if (r.settings) DB.settings = Object.assign({admins:DEFAULT_ADMINS,tpl:DEFAULT_TPL,nextG:2}, r.settings);
+        if (r.settings) DB.settings = Object.assign({admins:DEFAULT_ADMINS,tpl:DEFAULT_TPL,nextG:2,tplIdx:0,tplLibrary:[]}, r.settings);
       }
       finish();
     }).catch(finish);
@@ -6315,8 +6316,11 @@ function handleSupport(vid) {
   var r2lo = (v.r2Supporters||[]).map(function(k){return k.toLowerCase();});
   if (r1lo.indexOf(myKey)>=0 || r2lo.indexOf(myKey)>=0) { toast('Bereits supportet', 'error'); return; }
   if (v.status==='done'||v.status==='expired') { toast(t('expired'), 'error'); return; }
-  // Build comment
-  var tpl = DB.settings.tpl || DEFAULT_TPL;
+  // Build comment — rotate through all 20 templates so each successive supporter gets a different one
+  var _ri = (DB.settings.tplIdx || 0) % TPL_LIBRARY.length;
+  var _rl = DB.settings.tplLibrary || [];
+  var tpl = _rl[_ri] || TPL_LIBRARY[_ri];
+  DB.settings.tplIdx = (_ri + 1) % TPL_LIBRARY.length;
   var grp = DB.groups[v.group];
   var dt = new Date();
   var comment = tpl.replace(/{gruppe}/g, grp?(grp.number):(v.groupNumber||1)).replace(/{name}/g, v.owner||fbDec(v.ownerKey||'')).replace(/{member}/g, CU).replace(/{date}/g, dt.toLocaleDateString()).replace(/{time}/g, dt.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})) + makeUniq();
@@ -7000,48 +7004,61 @@ function cleanInactive() {
 // ── TEMPLATE ──────────────────────────────────────────────────────────────────
 // ── TEMPLATE LIBRARY ─────────────────────────────────────────────────
 var TPL_LIBRARY = [
-  '✨ support by {member} aus Gruppe {gruppe} fuer @{name} ✨',
-  '💫 {member} aus Gruppe {gruppe} supportet @{name} 💫',
-  '🔥 Support von {member} | Gruppe {gruppe} | @{name} 🔥',
-  '❤️ {member} (Gruppe {gruppe}) unterstützt @{name} ❤️',
-  '⭐ Von {member} • Gruppe {gruppe} • für @{name} ⭐',
-  '🚀 Support by {member} · Gruppe {gruppe} · @{name} 🚀',
-  '🎯 {member} supportet @{name} | Gruppe {gruppe} 🎯',
-  '💎 Unterstützung von {member} aus Gruppe {gruppe} für @{name} 💎',
-  '🌟 {member} | Gruppe {gruppe} | Support für @{name} 🌟',
-  '🎵 Support by {member} (Gruppe {gruppe}) für @{name} 🎵',
-  '📹 {member} aus Gruppe {gruppe} unterstützt @{name} 📹',
-  '🏆 Support von {member} | Gruppe {gruppe} | @{name} 🏆',
-  '💪 {member} Gruppe {gruppe} supportet @{name} 💪',
-  '✅ Support: {member} · Gruppe {gruppe} · @{name} ✅',
-  '🎉 {member} (Gruppe {gruppe}) für @{name} – gegenseitig stark! 🎉',
-  '👑 {member} | Gruppe {gruppe} | supportet @{name} 👑',
-  '💬 Support by {member} aus Gruppe {gruppe} – @{name} 💬',
-  '🌈 {member} Gruppe {gruppe} – ich suppporte @{name} 🌈',
-  '🔔 {member} (Gruppe {gruppe}) hat @{name} supportet 🔔',
-  '💥 {member} aus Gruppe {gruppe} unterstützt @{name} – Nova Support Pool 💥'
+  '✨ Just showed some love to @{name} — group {gruppe} is here for you! ✨',
+  '💫 Stopped by to cheer you on @{name} · {member} from group {gruppe} ✌️',
+  '🔥 Big support energy from group {gruppe} coming your way @{name} 🔥',
+  '❤️ Sending positive vibes to @{name} — {member}, group {gruppe} ❤️',
+  '⭐ Rooting for you @{name} · {member} from group {gruppe} has your back ⭐',
+  '🚀 Keep going @{name}! Group {gruppe} is cheering you on 🚀',
+  '🎯 Came here to support @{name} — group {gruppe} stays together 🎯',
+  '💎 Showing appreciation for @{name} — from {member}, group {gruppe} 💎',
+  '🌟 {member} from group {gruppe} drops in to support @{name} 🌟',
+  '🎵 Love the content @{name}! Greetings from {member}, group {gruppe} 🎵',
+  '📹 Visiting @{name} from group {gruppe} — keep creating! 📹',
+  '🏆 Great work @{name}! {member} from group {gruppe} supports you 🏆',
+  '💪 Spreading good energy to @{name} — group {gruppe} together 💪',
+  '✅ Showing support for @{name} · {member} · group {gruppe} ✅',
+  '🎉 Here to cheer @{name} on — {member} and group {gruppe} are with you 🎉',
+  '👑 Stopping by to appreciate @{name} — {member}, group {gruppe} 👑',
+  '💬 Sending kind words to @{name} from {member}, group {gruppe} 💬',
+  '🌈 Spreading love to @{name} — {member} representing group {gruppe} 🌈',
+  '🔔 Checking in to support @{name} — group {gruppe} shows up every time 🔔',
+  '💥 {member} from group {gruppe} dropping support for @{name} — let\'s grow together 💥'
 ];
 function openTplLibrary() {
   var grid = ge('tpl-lib-grid'); if (!grid) return;
-  var cur = DB.settings.tpl || DEFAULT_TPL;
+  var nextIdx = (DB.settings.tplIdx || 0) % TPL_LIBRARY.length;
+  var lib = DB.settings.tplLibrary || [];
   var html = '';
   for (var i = 0; i < TPL_LIBRARY.length; i++) {
-    var isCur = (TPL_LIBRARY[i] === cur);
-    html += '<div class="tpl-lib-item' + (isCur?' selected':'') + '" onclick="pickTplLib(' + i + ')">'
-          + '<div class="tpl-lib-num">Vorlage ' + (i+1) + (isCur ? ' ✓ Aktiv' : '') + '</div>'
-          + esc(TPL_LIBRARY[i]) + '</div>';
+    var isNext = (i === nextIdx);
+    var tplText = lib[i] || TPL_LIBRARY[i];
+    var isCustom = !!(lib[i]);
+    html += '<div class="tpl-lib-item' + (isNext?' selected':'') + '">'
+          + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">'
+          + '<span class="tpl-lib-num">Template ' + (i+1) + (isNext ? ' 🔄' : '') + (isCustom ? ' ✏️' : '') + '</span>'
+          + '<button class="btn-ghost btn-sm" style="padding:2px 8px;font-size:11px;flex-shrink:0" onclick="editTplLib(' + i + ')">Edit</button>'
+          + '</div>'
+          + esc(tplText) + '</div>';
   }
   grid.innerHTML = html;
   openModal('tplLibModal');
 }
-function pickTplLib(i) {
-  DB.settings.tpl = TPL_LIBRARY[i];
-  save();
-  toast('✅ Vorlage ' + (i+1) + ' aktiviert', 'ok');
+function editTplLib(i) {
+  _editTplIdx = i;
   closeModal('tplLibModal');
+  openTplModal();
 }
 
-function openTplModal() { ge('tplInput').value = DB.settings.tpl||DEFAULT_TPL; updateTplPrev(); openModal('tplModal'); }
+function openTplModal() {
+  var lib = DB.settings.tplLibrary || [];
+  var cur = lib[_editTplIdx] || TPL_LIBRARY[_editTplIdx] || DEFAULT_TPL;
+  ge('tplInput').value = cur;
+  var titleEl = ge('t-tpl-title');
+  if (titleEl) titleEl.textContent = 'Template ' + (_editTplIdx + 1);
+  updateTplPrev();
+  openModal('tplModal');
+}
 function insTpl(ph) {
   var el = ge('tplInput'), s = el.selectionStart, e2 = el.selectionEnd;
   el.value = el.value.slice(0,s)+ph+el.value.slice(e2);
@@ -7061,9 +7078,10 @@ function updateTplPrev() {
 function saveTpl() {
   var r = (ge('tplInput').value || '').trim();
   if (!r) return;
-  DB.settings.tpl = r;
+  if (!Array.isArray(DB.settings.tplLibrary)) DB.settings.tplLibrary = [];
+  DB.settings.tplLibrary[_editTplIdx] = r;
   closeModal('tplModal');
-  toast(t('okSave'), 'success');
+  toast('✅ Template ' + (_editTplIdx + 1) + ' saved', 'success');
   save();
 }
 
@@ -7082,7 +7100,7 @@ function doImport() {
     if (!imp.groups || !imp.members) throw new Error('Invalid');
     DB.groups=imp.groups||{}; DB.members=imp.members||{}; DB.videos=imp.videos||{}; DB.messages=imp.messages||{};
     DB._ts = Date.now();
-    if (imp.settings) DB.settings = Object.assign({admins:DEFAULT_ADMINS,tpl:DEFAULT_TPL,nextG:2}, imp.settings);
+    if (imp.settings) DB.settings = Object.assign({admins:DEFAULT_ADMINS,tpl:DEFAULT_TPL,nextG:2,tplIdx:0,tplLibrary:[]}, imp.settings);
     saveLS(); if (ONLINE) { FB_PUSH_TS=Date.now(); pushFB(); }
     closeModal('importModal');
     toast(t('okImport'), 'success');
@@ -7512,7 +7530,7 @@ function forceSyncNow() {
     DB.videos = r.videos || {};
     DB.messages = r.messages || {};
     purgeStaleNotifs();
-    if (r.settings) DB.settings = Object.assign({admins:DEFAULT_ADMINS, tpl:DEFAULT_TPL, nextG:2}, r.settings);
+    if (r.settings) DB.settings = Object.assign({admins:DEFAULT_ADMINS, tpl:DEFAULT_TPL, nextG:2, tplIdx:0, tplLibrary:[]}, r.settings);
     DB._ts = r._ts || 0;
     CU = cu;
     saveLS();
