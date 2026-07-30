@@ -6323,7 +6323,8 @@ function handleSupport(vid) {
   DB.settings.tplIdx = (_ri + 1) % TPL_LIBRARY.length;
   var grp = DB.groups[v.group];
   var dt = new Date();
-  var comment = tpl.replace(/{gruppe}/g, grp?(grp.number):(v.groupNumber||1)).replace(/{name}/g, v.owner||fbDec(v.ownerKey||'')).replace(/{member}/g, CU).replace(/{date}/g, dt.toLocaleDateString()).replace(/{time}/g, dt.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})) + makeUniq();
+  var memberName = (u && u.name) || CU;
+  var comment = tpl.replace(/{gruppe}/g, grp?(grp.number):(v.groupNumber||1)).replace(/{name}/g, v.owner||fbDec(v.ownerKey||'')).replace(/{member}/g, memberName).replace(/{date}/g, dt.toLocaleDateString()).replace(/{time}/g, dt.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})) + makeUniq();
   fallbackCopy(comment);
   try { if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(comment).catch(function(){}); } catch(e) {}
   // Store pending — only commit when user actually opens TikTok
@@ -7073,7 +7074,8 @@ function updateTplPrev() {
     if (previewG) previewGrp = String(previewG.number);
   }
   var previewName = (CU && DB.members[CU] && DB.members[CU].name) ? DB.members[CU].name : 'meinTikTok';
-  ge('tplPreview').textContent = r.replace(/{gruppe}/g, previewGrp).replace(/{name}/g, previewName).replace(/{member}/g, CU||'supporter').replace(/{date}/g, new Date().toLocaleDateString()).replace(/{time}/g, new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}));
+  var previewMember = (CU && DB.members[CU] && DB.members[CU].name) || CU || 'supporter';
+  ge('tplPreview').textContent = r.replace(/{gruppe}/g, previewGrp).replace(/{name}/g, previewName).replace(/{member}/g, previewMember).replace(/{date}/g, new Date().toLocaleDateString()).replace(/{time}/g, new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}));
 }
 function saveTpl() {
   var r = (ge('tplInput').value || '').trim();
