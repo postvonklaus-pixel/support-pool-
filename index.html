@@ -1172,6 +1172,18 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
   </div>
 </div>
 
+<!-- Member Language Picker Modal (Admin) -->
+<div class="modal-bg" id="membLangModal">
+  <div class="modal-box">
+    <div class="modal-title">🌐 Mitglieder-Sprache</div>
+    <div style="font-size:12px;color:var(--t2);margin-bottom:12px" id="memb-lang-modal-name"></div>
+    <div id="memb-lang-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px"></div>
+    <div class="modal-footer">
+      <button class="btn-ghost btn-sm" onclick="closeModal('membLangModal')">Abbrechen</button>
+    </div>
+  </div>
+</div>
+
 <!-- Privacy Policy Modal -->
 <div class="modal-bg" id="privacyModal">
   <div class="modal-box">
@@ -4155,6 +4167,7 @@ var CP_BUF = '', CP_STEP = 'new', CP_FIRST = '';
 var PENDING_DEL = null, PENDING_REPLY = null;
 var ADMIN_TAB = 'ov';
 var _editTplIdx = 0;
+var _memberLangKey = '';
 
 // ── UTILS ──────────────────────────────────────────────────────────
 function t(k) { return (L[LANG] || L.de)[k] || (L.de)[k] || k; }
@@ -6677,6 +6690,42 @@ function renderAdmin() {
   admTab(ADMIN_TAB);
 }
 
+function getLangFlag(lang) {
+  for (var i = 0; i < WC_ZONES.length; i++) {
+    if (WC_ZONES[i].lang === lang && WC_ZONES[i].id !== 'en-la') return WC_ZONES[i].flag;
+  }
+  return '🌐';
+}
+function openMemberLangPicker(key) {
+  _memberLangKey = key;
+  var m = DB.members[key];
+  var curLang = (m && m.lang) || 'de';
+  var nameEl = ge('memb-lang-modal-name');
+  if (nameEl) nameEl.textContent = '@' + (m ? (m.name || key) : key);
+  var grid = ge('memb-lang-grid');
+  if (grid) {
+    var html = '', seen = {};
+    for (var i = 0; i < WC_ZONES.length; i++) {
+      var z = WC_ZONES[i];
+      if (z.id === 'en-la') continue;
+      if (seen[z.lang]) continue;
+      seen[z.lang] = true;
+      var active = z.lang === curLang ? 'background:var(--blue);color:#fff;border-color:var(--blue);' : '';
+      html += '<button onclick="setMemberLang(\''+z.lang+'\')" style="padding:8px 12px;border-radius:12px;border:1.5px solid var(--bdr);background:var(--bg2);cursor:pointer;font-size:13px;text-align:left;'+active+'">'+z.flag+' '+z.name+'</button>';
+    }
+    grid.innerHTML = html;
+  }
+  openModal('membLangModal');
+}
+function setMemberLang(lang) {
+  var m = DB.members[_memberLangKey];
+  if (!m) return;
+  m.lang = lang;
+  closeModal('membLangModal');
+  renderAdmOv();
+  save();
+  toast('✅ ' + getLangFlag(lang) + ' Sprache gespeichert', 'success');
+}
 function renderAdmOv() {
   st('a-grp', Object.keys(DB.groups).length);
   st('a-mem', Object.values(DB.members).filter(function(m){ return m.status==='active'&&m.role!=='admin'; }).length);
@@ -6712,6 +6761,7 @@ function renderAdmOv() {
       if (m.role!=='admin') {
         var adjBtnColor = bal<0 ? 'rgba(255,107,107,.22)' : 'rgba(124,58,237,.15)';
         var adjBtnBdr = bal<0 ? 'rgba(255,107,107,.5)' : 'var(--vb)';
+        html += '<button data-lang-k="'+esc(mk)+'" style="padding:3px 6px;border-radius:8px;background:rgba(255,255,255,.06);border:1px solid var(--bdr);cursor:pointer;font-size:14px;line-height:1" title="Sprache setzen">'+getLangFlag(m.lang||'de')+'</button>';
         html += '<button data-adj-k="'+esc(mk)+'" style="padding:4px 7px;border-radius:8px;background:'+adjBtnColor+';border:1px solid '+adjBtnBdr+';color:var(--v3);cursor:pointer;font-size:12px;line-height:1" title="Balance anpassen">⚖️</button>';
         html += '<button class="btn-danger" data-rm-g="'+esc(grp.id)+'" data-rm-k="'+esc(mk)+'" style="padding:5px 9px;border-radius:9px;font-size:14px">&#128465;</button>';
       }
@@ -6722,6 +6772,8 @@ function renderAdmOv() {
   }
   list.innerHTML = html || '<div class="empty-state"><div style="font-size:36px">&#128101;</div></div>';
   list.onclick = function(e) {
+    var lb = e.target.closest('[data-lang-k]');
+    if (lb) { openMemberLangPicker(lb.getAttribute('data-lang-k')); return; }
     var ab = e.target.closest('[data-adj-k]');
     if (ab) { openBalAdj(ab.getAttribute('data-adj-k')); return; }
     var rb = e.target.closest('[data-rm-g]');
@@ -7323,21 +7375,22 @@ var VERIFIED_POSTS = 50;  // min. posts to qualify
 
 function isVerified(u) {
   if (!u || (u.postsTotal||0) < VERIFIED_POSTS) return false;
-  // Require 5 out of 7 days active in the current week (since last Friday WIB reset)
-  var lastFri = getLastFridayWIB();
   var ds = u.supportDays || [];
-  var activeDaysThisWeek = 0;
   var now = Date.now();
-  for (var i = 0; i < 7; i++) {
-    var dayTs = lastFri + (i * 86400000);
-    if (dayTs > now) break;
-    var d = new Date(dayTs);
-    var dateKey = d.getFullYear() + '-'
-      + String(d.getMonth() + 1).padStart(2, '0') + '-'
-      + String(d.getDate()).padStart(2, '0');
-    if (ds.indexOf(dateKey) >= 0) activeDaysThisWeek++;
+  function countWeekDays(weekStart) {
+    var n = 0;
+    for (var i = 0; i < 7; i++) {
+      var dayTs = weekStart + (i * 86400000);
+      if (dayTs > now) break;
+      var d = new Date(dayTs);
+      var dk = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+      if (ds.indexOf(dk) >= 0) n++;
+    }
+    return n;
   }
-  return activeDaysThisWeek >= 5;
+  var lastFri = getLastFridayWIB();
+  // Badge earned last week carries over as grace week; only removed at next reset if this week also fails
+  return countWeekDays(lastFri) >= 5 || countWeekDays(lastFri - 7 * 86400000) >= 5;
 }
 
 function verifiedBadge(u) {
