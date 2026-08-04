@@ -1175,14 +1175,14 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
 <!-- Inactivity Warning Modal -->
 <div class="modal-bg" id="inactivityModal">
   <div class="modal-box">
-    <div class="modal-title">⚠️ Inaktivitäts-Erinnerung</div>
+    <div class="modal-title" id="inact-title">⚠️ Inaktivitäts-Erinnerung</div>
     <div style="text-align:center;padding:4px 0 12px">
       <div style="font-size:44px;margin-bottom:10px">😴</div>
-      <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:8px">Du warst <span id="inact-days" style="color:var(--red)">3</span> Tage inaktiv.</div>
-      <div style="font-size:12px;color:var(--t2);line-height:1.5">Nach <strong>7 Tagen</strong> Inaktivität wird dein Account automatisch entfernt und eine Neuanmeldung ist erforderlich.<br><br>Noch <strong id="inact-days-left" style="color:var(--gold2)">4</strong> Tage bis zur automatischen Entfernung.</div>
+      <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:8px" id="inact-body">Du warst 3 Tage inaktiv.</div>
+      <div style="font-size:12px;color:var(--t2);line-height:1.5"><span id="inact-warn">Nach 7 Tagen Inaktivität wird dein Account automatisch entfernt und eine Neuanmeldung ist erforderlich.</span><br><br><strong id="inact-left" style="color:var(--gold2)">Noch 4 Tage bis zur automatischen Entfernung.</strong></div>
     </div>
     <div class="modal-footer">
-      <button class="btn-prime" onclick="closeModal('inactivityModal')">Verstanden ✓</button>
+      <button class="btn-prime" id="inact-btn" onclick="closeModal('inactivityModal')">Verstanden ✓</button>
     </div>
   </div>
 </div>
@@ -1190,15 +1190,15 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
 <!-- Support Lock Modal -->
 <div class="modal-bg" id="supportLockModal">
   <div class="modal-box">
-    <div class="modal-title">🔒 Support pausiert</div>
+    <div class="modal-title" id="lock-title">🔒 Support pausiert</div>
     <div style="text-align:center;padding:4px 0 12px">
       <div style="font-size:44px;margin-bottom:10px">🎬</div>
-      <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:8px">Du hast mehr gegeben als empfangen.</div>
-      <div style="font-size:12px;color:var(--t2);line-height:1.5">Poste zuerst ein neues Video, damit andere dich supporten können — so bleibt das System für alle in Balance.</div>
+      <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:8px" id="lock-msg1">Du hast mehr gegeben als empfangen.</div>
+      <div style="font-size:12px;color:var(--t2);line-height:1.5" id="lock-msg2">Poste zuerst ein neues Video, damit andere dich supporten können — so bleibt das System für alle in Balance.</div>
     </div>
     <div class="modal-footer" style="flex-direction:column;gap:8px">
-      <button class="btn-prime" onclick="closeModal('supportLockModal');goHome('post')">🎬 Jetzt Video posten</button>
-      <button class="btn-ghost btn-sm" onclick="closeModal('supportLockModal')">Schließen</button>
+      <button class="btn-prime" id="lock-post-btn" onclick="closeModal('supportLockModal');goHome('post')">🎬 Jetzt Video posten</button>
+      <button class="btn-ghost btn-sm" id="lock-close-btn" onclick="closeModal('supportLockModal')">Schließen</button>
     </div>
   </div>
 </div>
@@ -2841,7 +2841,8 @@ de: {
     {icon:'🏆',title:'Ränge & Belohnungen',body:'Steige im Rang auf: vom Newcomer bis zum Pool-Profi!'},
     {icon:'🤝',title:'Freunde einladen',body:'Lade Freunde ein und erhalte Bonus-Guthaben für jeden Neuzugang.'},
     {icon:'🚀',title:'Bereit zum Tauchen?',body:'Der Pool wartet auf dich – tauche ein und wachse! 🌊'}
-  ]
+  ],
+  inactTitle:'⚠️ Inaktivitäts-Erinnerung',inactBody:'Du warst {n} Tage inaktiv.',inactWarn:'Nach 7 Tagen Inaktivität wird dein Account automatisch entfernt und eine Neuanmeldung ist erforderlich.',inactLeft:'Noch {r} Tage bis zur automatischen Entfernung.',inactBtn:'Verstanden ✓',lockTitle:'🔒 Support pausiert',lockMsg1:'Du hast mehr gegeben als empfangen.',lockMsg2:'Poste zuerst ein neues Video, damit andere dich supporten können — so bleibt das System für alle in Balance.',lockPostBtn:'🎬 Jetzt Video posten',lockClose:'Schließen',lockBanMsg:'Dein Guthaben ist positiv, aber du hast kein aktives Video. Poste zuerst ein Video, damit das System in Balance bleibt.'
 },
 en: {
   tagline:'The Premium TikTok Support Network',lsMem:'Members',lsGrp:'Groups',lsSup:'Supports',lsVid:'Videos',
@@ -2990,7 +2991,8 @@ en: {
     {icon:'🏆',title:'Ranks & Rewards',body:'Level up: from Newcomer to Pool Pro!'},
     {icon:'🤝',title:'Invite Friends',body:'Invite friends and receive bonus balance for each new member.'},
     {icon:'🚀',title:'Ready to Dive?',body:'The pool is waiting for you – dive in and grow! 🌊'}
-  ]
+  ],
+  inactTitle:'⚠️ Inactivity Reminder',inactBody:'You have been inactive for {n} days.',inactWarn:'After 7 days of inactivity your account will be automatically removed and you will need to sign up again.',inactLeft:'{r} days remaining before automatic removal.',inactBtn:'Got it ✓',lockTitle:'🔒 Support paused',lockMsg1:'You have given more than you received.',lockMsg2:'Post a new video first so others can support you — this keeps the system balanced for everyone.',lockPostBtn:'🎬 Post Video Now',lockClose:'Close',lockBanMsg:'Your balance is positive but you have no active video. Post a video first to keep the system in balance.'
 },
 id: {
   tagline:'Jaringan Dukungan TikTok Premium',lsMem:'Anggota',lsGrp:'Grup',lsSup:'Dukungan',lsVid:'Video',
@@ -3139,7 +3141,8 @@ id: {
     {icon:'🏆',title:'Peringkat & Hadiah',body:'Naik peringkat: dari Newcomer hingga Pool Pro!'},
     {icon:'🤝',title:'Undang Teman',body:'Undang teman dan dapatkan saldo bonus untuk setiap anggota baru.'},
     {icon:'🚀',title:'Siap Menyelam?',body:'Kolam menunggumu – selami dan berkembanglah! 🌊'}
-  ]
+  ],
+  inactTitle:'⚠️ Pengingat Tidak Aktif',inactBody:'Kamu tidak aktif selama {n} hari.',inactWarn:'Setelah 7 hari tidak aktif, akunmu akan dihapus otomatis dan kamu perlu mendaftar ulang.',inactLeft:'{r} hari tersisa sebelum penghapusan otomatis.',inactBtn:'Mengerti ✓',lockTitle:'🔒 Support dijeda',lockMsg1:'Kamu telah memberi lebih dari yang diterima.',lockMsg2:'Posting video baru terlebih dahulu agar orang lain bisa mendukungmu — ini menjaga sistem tetap seimbang.',lockPostBtn:'🎬 Posting Video Sekarang',lockClose:'Tutup',lockBanMsg:'Saldo kamu positif tapi tidak ada video aktif. Posting video dulu agar sistem tetap seimbang.'
 },
 it: {
   tagline:'La Rete Premium di Supporto TikTok',lsMem:'Membri',lsGrp:'Gruppi',lsSup:'Supporti',lsVid:'Video',
@@ -3288,7 +3291,8 @@ it: {
     {icon:'🏆',title:'Gradi & Premi',body:'Sali di grado: da Newcomer a Pool Pro!'},
     {icon:'🤝',title:'Invita Amici',body:'Invita amici e ricevi saldo bonus per ogni nuovo membro.'},
     {icon:'🚀',title:'Pronto a tuffarti?',body:'Il pool ti aspetta – tuffati e cresci! 🌊'}
-  ]
+  ],
+  inactTitle:'⚠️ Promemoria Inattività',inactBody:'Sei stato inattivo per {n} giorni.',inactWarn:'Dopo 7 giorni di inattività il tuo account sarà rimosso automaticamente e dovrai registrarti di nuovo.',inactLeft:'{r} giorni rimanenti prima della rimozione automatica.',inactBtn:'Capito ✓',lockTitle:'🔒 Support in pausa',lockMsg1:'Hai dato più di quanto ricevuto.',lockMsg2:'Prima pubblica un nuovo video così gli altri potranno supportarti — mantiene il sistema in equilibrio per tutti.',lockPostBtn:'🎬 Pubblica Video Ora',lockClose:'Chiudi',lockBanMsg:'Il tuo saldo è positivo ma non hai video attivi. Pubblica prima un video per mantenere il sistema in equilibrio.'
 },
 es: {
   tagline:'La Red Premium de Apoyo TikTok',lsMem:'Miembros',lsGrp:'Grupos',lsSup:'Apoyos',lsVid:'Vídeos',
@@ -3437,7 +3441,8 @@ es: {
     {icon:'🏆',title:'Rangos & Recompensas',body:'¡Sube de rango: de Newcomer a Pool Pro!'},
     {icon:'🤝',title:'Invitar Amigos',body:'Invita amigos y recibe saldo de bonificación por cada nuevo miembro.'},
     {icon:'🚀',title:'¿Listo para sumergirte?',body:'¡El pool te espera – sumérgete y crece! 🌊'}
-  ]
+  ],
+  inactTitle:'⚠️ Recordatorio de Inactividad',inactBody:'Has estado inactivo durante {n} días.',inactWarn:'Después de 7 días de inactividad tu cuenta será eliminada automáticamente y tendrás que registrarte de nuevo.',inactLeft:'{r} días restantes antes de la eliminación automática.',inactBtn:'Entendido ✓',lockTitle:'🔒 Support pausado',lockMsg1:'Has dado más de lo que has recibido.',lockMsg2:'Primero publica un nuevo video para que otros puedan apoyarte — así el sistema se mantiene en equilibrio para todos.',lockPostBtn:'🎬 Publicar Video Ahora',lockClose:'Cerrar',lockBanMsg:'Tu saldo es positivo pero no tienes video activo. Publica un video primero para mantener el sistema en equilibrio.'
 },
 tr: {
   tagline:'Premium TikTok Destek Agi',lsMem:'Uyeler',lsGrp:'Gruplar',lsSup:'Destekler',lsVid:'Videolar',
@@ -3586,7 +3591,8 @@ tr: {
     {icon:'🏆',title:'Sıralamalar & Ödüller',body:"Sıranda yüksel: Newcomer'dan Pool Pro'ya!"},
     {icon:'🤝',title:'Arkadaşları Davet Et',body:'Arkadaşlarını davet et, her yeni üye için bonus bakiye kazan.'},
     {icon:'🚀',title:'Dalmaya Hazır mısın?',body:'Havuz seni bekliyor – dal ve büyü! 🌊'}
-  ]
+  ],
+  inactTitle:'⚠️ Hareketsizlik Hatırlatıcısı',inactBody:'{n} gündür hareketsizsin.',inactWarn:'7 gün hareketsizliğin ardından hesabın otomatik olarak silinecek ve yeniden kayıt olman gerekecek.',inactLeft:'Otomatik silinmeye {r} gün kaldı.',inactBtn:'Anladım ✓',lockTitle:'🔒 Destek duraklatıldı',lockMsg1:'Aldığından daha fazlasını verdin.',lockMsg2:'Başkalarının seni destekleyebilmesi için önce yeni bir video paylaş — bu sistem dengesini korur.',lockPostBtn:'🎬 Şimdi Video Paylaş',lockClose:'Kapat',lockBanMsg:'Bakiyen pozitif ama aktif videon yok. Sistemi dengede tutmak için önce video paylaş.'
 },
 ar: {
   tagline:'شبكة دعم TikTok المتميزة',lsMem:'الأعضاء',lsGrp:'المجموعات',lsSup:'الدعم',lsVid:'فيديوهات',
@@ -3735,7 +3741,8 @@ ar: {
     {icon:'🏆',title:'الرتب والمكافآت',body:'ارتقِ في الرتبة: من مبتدئ إلى Pool Pro!'},
     {icon:'🤝',title:'دعوة الأصدقاء',body:'ادعُ أصدقاءك واحصل على رصيد إضافي لكل عضو جديد.'},
     {icon:'🚀',title:'مستعد للغوص؟',body:'الحوض ينتظرك – اغطس وانمُ! 🌊'}
-  ]
+  ],
+  inactTitle:'⚠️ تذكير بالخمول',inactBody:'لم تكن نشطاً لمدة {n} أيام.',inactWarn:'بعد 7 أيام من الخمول سيُحذف حسابك تلقائياً وستحتاج إلى التسجيل مجدداً.',inactLeft:'{r} أيام متبقية قبل الحذف التلقائي.',inactBtn:'مفهوم ✓',lockTitle:'🔒 الدعم متوقف',lockMsg1:'لقد أعطيت أكثر مما تلقيت.',lockMsg2:'انشر فيديو جديداً أولاً حتى يتمكن الآخرون من دعمك — هذا يحافظ على توازن النظام للجميع.',lockPostBtn:'🎬 انشر فيديو الآن',lockClose:'إغلاق',lockBanMsg:'رصيدك إيجابي لكن ليس لديك فيديو نشط. انشر فيديو أولاً للحفاظ على توازن النظام.'
 },
 zh: {
   tagline:'高级TikTok支持网络',lsMem:'成员',lsGrp:'组',lsSup:'支持',lsVid:'视频',
@@ -3884,7 +3891,8 @@ zh: {
     {icon:'🏆',title:'排名与奖励',body:'晋升排名：从新手到Pool Pro！'},
     {icon:'🤝',title:'邀请好友',body:'邀请朋友，每位新成员都能为您带来奖励余额。'},
     {icon:'🚀',title:'准备好潜入了吗？',body:'泳池等待着您——潜入并成长！🌊'}
-  ]
+  ],
+  inactTitle:'⚠️ 非活跃提醒',inactBody:'你已经 {n} 天没有活动了。',inactWarn:'超过7天不活跃后，你的账户将被自动删除，需要重新注册。',inactLeft:'距离自动删除还有 {r} 天。',inactBtn:'明白了 ✓',lockTitle:'🔒 支持已暂停',lockMsg1:'你给出的支持多于收到的。',lockMsg2:'请先发布一个新视频，让其他人可以支持你——这样系统对所有人保持平衡。',lockPostBtn:'🎬 立即发布视频',lockClose:'关闭',lockBanMsg:'你的余额为正，但没有活跃的视频。请先发布视频以保持系统平衡。'
 },
 ja: {
   tagline:'プレミアムTikTokサポートネットワーク',lsMem:'メンバー',lsGrp:'グループ',lsSup:'サポート',lsVid:'動画',
@@ -4033,7 +4041,8 @@ ja: {
     {icon:'🏆',title:'ランク＆報酬',body:'ランクアップ：ニューカマーからPool Proへ！'},
     {icon:'🤝',title:'友達を招待',body:'友達を招待して、新メンバーごとにボーナス残高をゲット。'},
     {icon:'🚀',title:'飛び込む準備はできてる？',body:'プールが待っている――飛び込んで成長しよう！🌊'}
-  ]
+  ],
+  inactTitle:'⚠️ 非アクティブリマインダー',inactBody:'{n} 日間非アクティブです。',inactWarn:'7日間非アクティブになるとアカウントが自動的に削除され、再登録が必要になります。',inactLeft:'自動削除まであと {r} 日。',inactBtn:'了解 ✓',lockTitle:'🔒 サポートが一時停止中',lockMsg1:'受け取った以上にサポートを提供しました。',lockMsg2:'他のメンバーがあなたをサポートできるよう、まず新しい動画を投稿してください — システムのバランスを保ちます。',lockPostBtn:'🎬 今すぐ動画を投稿',lockClose:'閉じる',lockBanMsg:'残高はプラスですが、アクティブな動画がありません。システムのバランスを保つため、まず動画を投稿してください。'
 },
 pl: {
   tagline:'Siec Premium Wsparcia TikTok',lsMem:'Czlonkowie',lsGrp:'Grupy',lsSup:'Wsparcia',lsVid:'Filmy',
@@ -4182,7 +4191,8 @@ pl: {
     {icon:'🏆',title:'Rangi i nagrody',body:'Awansuj: od Nowicjusza do Pool Pro!'},
     {icon:'🤝',title:'Zaproś znajomych',body:'Zaproś znajomych i otrzymaj bonusowe saldo za każdego nowego członka.'},
     {icon:'🚀',title:'Gotowy do skoku?',body:'Basen na Ciebie czeka – skocz i rozwijaj się! 🌊'}
-  ]
+  ],
+  inactTitle:'⚠️ Przypomnienie o nieaktywności',inactBody:'Byłeś nieaktywny przez {n} dni.',inactWarn:'Po 7 dniach nieaktywności Twoje konto zostanie automatycznie usunięte i będziesz musiał ponownie się zarejestrować.',inactLeft:'{r} dni do automatycznego usunięcia.',inactBtn:'Rozumiem ✓',lockTitle:'🔒 Wsparcie wstrzymane',lockMsg1:'Dałeś więcej niż otrzymałeś.',lockMsg2:'Najpierw opublikuj nowe wideo, aby inni mogli Cię wspierać — to utrzymuje system w równowadze dla wszystkich.',lockPostBtn:'🎬 Opublikuj wideo teraz',lockClose:'Zamknij',lockBanMsg:'Twoje saldo jest dodatnie, ale nie masz aktywnego wideo. Opublikuj wideo, aby utrzymać system w równowadze.'
 }
 };
 
@@ -6030,11 +6040,12 @@ function renderOpenList() {
     return;
   }
   var html = '';
+  var _ll = L[LANG] || L.de;
   if (locked) {
     html += '<div style="margin-bottom:12px;padding:12px 14px;border-radius:14px;background:rgba(255,149,0,.1);border:1.5px solid rgba(255,149,0,.4);text-align:center">'
-          + '<div style="font-size:13px;font-weight:700;color:#e67e00;margin-bottom:6px">🔒 Support pausiert</div>'
-          + '<div style="font-size:11px;color:var(--t2);margin-bottom:10px">Dein Guthaben ist positiv, aber du hast kein aktives Video. Poste zuerst ein Video, damit das System in Balance bleibt.</div>'
-          + '<button class="btn-prime" style="font-size:12px;padding:8px 18px" onclick="goHome(\'post\')">🎬 Jetzt Video posten</button>'
+          + '<div style="font-size:13px;font-weight:700;color:#e67e00;margin-bottom:6px">' + (_ll.lockTitle||'🔒 Support pausiert') + '</div>'
+          + '<div style="font-size:11px;color:var(--t2);margin-bottom:10px">' + (_ll.lockBanMsg||'Dein Guthaben ist positiv, aber du hast kein aktives Video. Poste zuerst ein Video, damit das System in Balance bleibt.') + '</div>'
+          + '<button class="btn-prime" style="font-size:12px;padding:8px 18px" onclick="goHome(\'post\')">' + (_ll.lockPostBtn||'🎬 Jetzt Video posten') + '</button>'
           + '</div>';
   }
   for (var i = 0; i < open.length; i++) {
@@ -6375,9 +6386,24 @@ function getDaysInactive(u) {
 }
 
 function showInactivityWarning(days) {
-  var el = ge('inact-days'); if (el) el.textContent = days;
-  var el2 = ge('inact-days-left'); if (el2) el2.textContent = Math.max(0, 7 - days);
+  var l = L[LANG] || L.de;
+  var rem = Math.max(0, 7 - days);
+  var et = ge('inact-title'); if (et) et.textContent = l.inactTitle || '⚠️ Inaktivitäts-Erinnerung';
+  var eb = ge('inact-body'); if (eb) eb.textContent = (l.inactBody || 'Du warst {n} Tage inaktiv.').replace('{n}', days);
+  var ew = ge('inact-warn'); if (ew) ew.textContent = l.inactWarn || 'Nach 7 Tagen Inaktivität wird dein Account automatisch entfernt.';
+  var el = ge('inact-left'); if (el) el.textContent = (l.inactLeft || 'Noch {r} Tage bis zur automatischen Entfernung.').replace('{r}', rem);
+  var ebtn = ge('inact-btn'); if (ebtn) ebtn.textContent = l.inactBtn || 'Verstanden ✓';
   openModal('inactivityModal');
+}
+
+function openSupportLockModal() {
+  var l = L[LANG] || L.de;
+  var et = ge('lock-title'); if (et) et.textContent = l.lockTitle || '🔒 Support pausiert';
+  var em1 = ge('lock-msg1'); if (em1) em1.textContent = l.lockMsg1 || 'Du hast mehr gegeben als empfangen.';
+  var em2 = ge('lock-msg2'); if (em2) em2.textContent = l.lockMsg2 || 'Poste zuerst ein neues Video.';
+  var ep = ge('lock-post-btn'); if (ep) ep.textContent = l.lockPostBtn || '🎬 Jetzt Video posten';
+  var ec = ge('lock-close-btn'); if (ec) ec.textContent = l.lockClose || 'Schließen';
+  openModal('supportLockModal');
 }
 
 function hasOpenVideo(u) {
@@ -6401,7 +6427,7 @@ var _pendingSupportComment = '';
 function handleSupport(vid) {
   if (!ONLINE && !FB_REF) { toast(t('errOff'), 'error'); return; }
   var u = DB.members[CU];
-  if (isSupportLocked(u)) { openModal('supportLockModal'); return; }
+  if (isSupportLocked(u)) { openSupportLockModal(); return; }
   var v = DB.videos[vid];
   if (!v) { toast('Video nicht gefunden', 'error'); return; }
   var myKey = CU.toLowerCase();
