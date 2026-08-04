@@ -1172,6 +1172,37 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
   </div>
 </div>
 
+<!-- Inactivity Warning Modal -->
+<div class="modal-bg" id="inactivityModal">
+  <div class="modal-box">
+    <div class="modal-title">⚠️ Inaktivitäts-Erinnerung</div>
+    <div style="text-align:center;padding:4px 0 12px">
+      <div style="font-size:44px;margin-bottom:10px">😴</div>
+      <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:8px">Du warst <span id="inact-days" style="color:var(--red)">3</span> Tage inaktiv.</div>
+      <div style="font-size:12px;color:var(--t2);line-height:1.5">Nach <strong>7 Tagen</strong> Inaktivität wird dein Account automatisch entfernt und eine Neuanmeldung ist erforderlich.<br><br>Noch <strong id="inact-days-left" style="color:var(--gold2)">4</strong> Tage bis zur automatischen Entfernung.</div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-prime" onclick="closeModal('inactivityModal')">Verstanden ✓</button>
+    </div>
+  </div>
+</div>
+
+<!-- Support Lock Modal -->
+<div class="modal-bg" id="supportLockModal">
+  <div class="modal-box">
+    <div class="modal-title">🔒 Support pausiert</div>
+    <div style="text-align:center;padding:4px 0 12px">
+      <div style="font-size:44px;margin-bottom:10px">🎬</div>
+      <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:8px">Du hast mehr gegeben als empfangen.</div>
+      <div style="font-size:12px;color:var(--t2);line-height:1.5">Poste zuerst ein neues Video, damit andere dich supporten können — so bleibt das System für alle in Balance.</div>
+    </div>
+    <div class="modal-footer" style="flex-direction:column;gap:8px">
+      <button class="btn-prime" onclick="closeModal('supportLockModal');goHome('post')">🎬 Jetzt Video posten</button>
+      <button class="btn-ghost btn-sm" onclick="closeModal('supportLockModal')">Schließen</button>
+    </div>
+  </div>
+</div>
+
 <!-- Member Language Picker Modal (Admin) -->
 <div class="modal-bg" id="membLangModal">
   <div class="modal-box">
@@ -5413,6 +5444,10 @@ function enterApp() {
     goScreen('dashboard');
     setTimeout(function(){ initGuide(); }, 400);
     setTimeout(checkBalCapReminder, 700);
+    setTimeout(function() {
+      var days = getDaysInactive(u);
+      if (days >= 3) showInactivityWarning(days);
+    }, 900);
   }
   if (ONLINE) pushFB();
   setTimeout(checkPendingOnBoot, 1500);
@@ -5989,11 +6024,19 @@ function renderOpenList() {
     }
   }
 
+  var locked = isSupportLocked(DB.members[CU]);
   if (!open.length) {
     if (list) list.innerHTML = '';
     return;
   }
   var html = '';
+  if (locked) {
+    html += '<div style="margin-bottom:12px;padding:12px 14px;border-radius:14px;background:rgba(255,149,0,.1);border:1.5px solid rgba(255,149,0,.4);text-align:center">'
+          + '<div style="font-size:13px;font-weight:700;color:#e67e00;margin-bottom:6px">🔒 Support pausiert</div>'
+          + '<div style="font-size:11px;color:var(--t2);margin-bottom:10px">Dein Guthaben ist positiv, aber du hast kein aktives Video. Poste zuerst ein Video, damit das System in Balance bleibt.</div>'
+          + '<button class="btn-prime" style="font-size:12px;padding:8px 18px" onclick="goHome(\'post\')">🎬 Jetzt Video posten</button>'
+          + '</div>';
+  }
   for (var i = 0; i < open.length; i++) {
     var v = open[i];
     var rnd = v.round||1;
@@ -6032,7 +6075,11 @@ function renderOpenList() {
       html += '<div class="prog-num">'+sups.length+'/'+need+'</div></div>';
     }
     // Use data-vid — NO inline JS with variable
-    html += '<button class="sup-btn sup-btn-anim" data-vid="'+esc(v.id)+'">'+t('supBtn')+'</button>';
+    if (locked) {
+      html += '<button class="sup-btn" data-vid="'+esc(v.id)+'" style="opacity:0.45;background:linear-gradient(135deg,rgba(100,100,100,.25),rgba(80,80,80,.15));border-color:rgba(150,150,150,.3)">🔒 '+t('supBtn')+'</button>';
+    } else {
+      html += '<button class="sup-btn sup-btn-anim" data-vid="'+esc(v.id)+'">'+t('supBtn')+'</button>';
+    }
     html += '</div>';
   }
   list.innerHTML = html;
@@ -6319,12 +6366,42 @@ function submitPost() {
   showPostSuccess();
 }
 
+// ── INACTIVITY + SUPPORT LOCK ─────────────────────────────────────────────
+var SUPPORT_LOCK_BALANCE = 3; // min. positive balance (given - received) with no open video triggers lock
+
+function getDaysInactive(u) {
+  var lastActive = u.lastPost || u.joined || 0;
+  return lastActive ? Math.floor((Date.now() - lastActive) / 86400000) : 0;
+}
+
+function showInactivityWarning(days) {
+  var el = ge('inact-days'); if (el) el.textContent = days;
+  var el2 = ge('inact-days-left'); if (el2) el2.textContent = Math.max(0, 7 - days);
+  openModal('inactivityModal');
+}
+
+function hasOpenVideo(u) {
+  var vids = u.myVideos || [];
+  for (var i = 0; i < vids.length; i++) {
+    var v = DB.videos[vids[i]];
+    if (v && v.status === 'open') return true;
+  }
+  return false;
+}
+
+function isSupportLocked(u) {
+  if (!u || u.role === 'admin') return false;
+  var bal = (u.stats && u.stats.given || 0) - (u.stats && u.stats.received || 0);
+  return bal >= SUPPORT_LOCK_BALANCE && !hasOpenVideo(u);
+}
+
 // ── SUPPORT ──────────────────────────────────────────────────────────────
 var _pendingSupportVid = null;
 var _pendingSupportComment = '';
 function handleSupport(vid) {
   if (!ONLINE && !FB_REF) { toast(t('errOff'), 'error'); return; }
   var u = DB.members[CU];
+  if (isSupportLocked(u)) { openModal('supportLockModal'); return; }
   var v = DB.videos[vid];
   if (!v) { toast('Video nicht gefunden', 'error'); return; }
   var myKey = CU.toLowerCase();
