@@ -13,6 +13,6 @@ COPY . .
 
 RUN mkdir -p logs data
 
-EXPOSE 4242 8501
+EXPOSE 8080 8501
 
 CMD ["python", "main.py"]

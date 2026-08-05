@@ -72,7 +72,7 @@ Das macht Folgendes:
 1. Laedt alle Umgebungsvariablen aus `.env`
 2. Initialisiert die Datenbank und legt automatisch 5 Test-User an, falls
    die DB leer ist (siehe `seed.py`)
-3. Startet den Stripe-Webhook-Server unter `http://localhost:4242/webhook`
+3. Startet den Stripe-Webhook-Server unter `http://localhost:8080/webhook`
 4. Initialisiert die 5 KI-Agenten (Content Creator, Publisher, Engagement,
    Analytics, Growth)
 5. Fuehrt den taeglichen Workflow einmal sofort aus (nur fuer aktive Abos)
@@ -125,7 +125,7 @@ Manuelles Neu-Seeden: `python seed.py`.
 
 Sobald `python main.py` laeuft, ist zusaetzlich verfuegbar:
 
-- **Landing Page**: `http://localhost:4242/` - stellt die 4 Abo-Modelle vor
+- **Landing Page**: `http://localhost:8080/` - stellt die 4 Abo-Modelle vor
   und hat ein Beta-Access-Formular (`POST /beta-signup`).
 - **Beta-Tester-Plan**: kostenlos, voller Feature-Zugriff (wie Agent-Plan).
   Wird automatisch bei Signup ueber die Landing Page vergeben
@@ -160,7 +160,7 @@ Fuer echte Tests im Stripe-Testmodus:
    Webhooks weiterleiten:
    ```bash
    stripe login
-   stripe listen --forward-to localhost:4242/webhook
+   stripe listen --forward-to localhost:8080/webhook
    ```
    Die CLI gibt einen `whsec_...` Webhook-Secret aus -> in `.env` als
    `STRIPE_WEBHOOK_SECRET` eintragen.

@@ -1,0 +1,47 @@
+name: Deploy Landing Page to GitHub Pages
+
+# Deployt NUR die statische Landing Page (static/landing.html) zu GitHub
+# Pages. GitHub Pages kann kein Python/Flask/Datenbank ausfuehren - das
+# Backend (app.py / production.py) laeuft hier NICHT mit, siehe DEPLOY.md.
+#
+# EINMALIGER manueller Schritt vor dem ersten erfolgreichen Deploy:
+# Settings -> Pages -> "Build and deployment" -> Source: "GitHub Actions"
+# (siehe DEPLOY.md fuer die genaue Anleitung).
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build Pages-Ordner (landing.html -> index.html)
+        run: |
+          mkdir -p _site
+          cp static/landing.html _site/index.html
+
+      - name: Upload Pages-Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - name: Deploy zu GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

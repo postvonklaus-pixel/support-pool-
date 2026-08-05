@@ -28,7 +28,10 @@ DATABASE_URL = os.getenv("DATABASE_URL") or "sqlite:///./data/app.db"
 REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379")
 
 WEBHOOK_HOST = os.getenv("WEBHOOK_HOST", "0.0.0.0")
-WEBHOOK_PORT = int(os.getenv("WEBHOOK_PORT", "4242"))
+# PORT wird von den meisten "whatever"-Hosts (Heroku, Render, Railway) selbst
+# gesetzt und hat Vorrang; WEBHOOK_PORT bleibt als expliziter Override nutzbar;
+# Standard-Fallback ist 8080 (siehe Phase 3: Production-Deployment).
+WEBHOOK_PORT = int(os.getenv("PORT", os.getenv("WEBHOOK_PORT", "8080")))
 
 # --------------------------------------------------------------------------
 # API-Keys / externe Services

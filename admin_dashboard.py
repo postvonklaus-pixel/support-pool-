@@ -110,7 +110,7 @@ with tab_beta:
         if inactive:
             st.warning(f"⚠️ {len(inactive)} Beta-Tester haben sich seit ≥3 Tagen nicht eingeloggt (oder noch nie) — ggf. nachfassen.")
     else:
-        st.info("Noch keine Beta-Tester registriert. Landing Page: http://localhost:4242/")
+        st.info("Noch keine Beta-Tester registriert. Landing Page: http://localhost:8080/")
 
 # --------------------------------------------------------------------------
 # Tab 3: Feedback

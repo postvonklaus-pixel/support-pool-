@@ -97,7 +97,7 @@ vorab ab, ohne dass du dafuer zahlst.
    **TODO**: aktuell nicht im Repo enthalten, da explizit "keine Domain/SSL"
    fuer die jetzige Phase gewuenscht war.
 6. Firewall: nur Ports 80/443 (und ggf. 22 fuer SSH) oeffentlich freigeben,
-   4242/8501/8502 nicht direkt exponieren, sondern nur ueber den Proxy.
+   8080/8501/8502 nicht direkt exponieren, sondern nur ueber den Proxy.
 
 ---
 

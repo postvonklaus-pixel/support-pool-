@@ -38,7 +38,7 @@ services:
       REDIS_URL: redis://redis:6379
       WEBHOOK_HOST: 0.0.0.0
     ports:
-      - "4242:4242"
+      - "8080:8080"
     depends_on:
       postgres:
         condition: service_healthy
@@ -69,7 +69,7 @@ services:
   stripe-webhook-listener:
     image: stripe/stripe-cli:latest
     container_name: sma_stripe_listener
-    command: ["listen", "--forward-to", "app:4242/webhook", "--api-key", "${STRIPE_SECRET_KEY}"]
+    command: ["listen", "--forward-to", "app:8080/webhook", "--api-key", "${STRIPE_SECRET_KEY}"]
     env_file:
       - .env
     depends_on:

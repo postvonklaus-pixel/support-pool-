@@ -8,7 +8,7 @@ lokalen Datenbank verbucht. Das erlaubt "python cli.py ..." / "python main.py"
 ohne jeden Stripe-Account.
 
 TODO: Fuer echten Betrieb "stripe" SDK konfigurieren (stripe.api_key) und
-Stripe-CLI ("stripe listen --forward-to localhost:4242/webhook") fuer lokale
+Stripe-CLI ("stripe listen --forward-to localhost:8080/webhook") fuer lokale
 Webhook-Tests nutzen (siehe README).
 """
 import logging

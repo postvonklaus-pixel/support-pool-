@@ -8,6 +8,7 @@ replicate
 pinecone-client
 sendgrid
 flask
+gunicorn
 streamlit
 pandas
 click
