@@ -250,11 +250,15 @@
           throw new Error(data.error || 'Unbekannter Fehler');
         }
 
+        const dashboardLink = data.login_url
+          ? `<a href="${API_BASE_URL}${data.login_url}" class="underline font-semibold hover:text-emerald-300">Direkt zum Dashboard &rarr;</a> (Link 5 Min. gueltig)`
+          : '';
+
         if (data.status === 'already_registered') {
-          messageEl.textContent = `Diese E-Mail ist bereits registriert (User #${data.user_id}). Schau in deinem Postfach nach den Zugangsdaten.`;
+          messageEl.innerHTML = `Diese E-Mail ist bereits registriert (User #${data.user_id}). ${dashboardLink}`;
           messageEl.classList.add('text-amber-400');
         } else {
-          messageEl.textContent = `Willkommen an Bord, User #${data.user_id}! Wir haben dir eine Onboarding-Mail mit Login-Daten geschickt (Mock-Modus: siehe Server-Logs).`;
+          messageEl.innerHTML = `Willkommen an Bord, User #${data.user_id}! ${dashboardLink}`;
           messageEl.classList.add('text-emerald-400');
           form.reset();
         }

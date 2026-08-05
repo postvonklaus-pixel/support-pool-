@@ -14,6 +14,8 @@ eigentlichen Start-Befehl ("python production.py"). Fuer WSGI-Server:
     gunicorn app:app --bind 0.0.0.0:8080
 """
 import logging
+import secrets
+import time
 from datetime import datetime
 from urllib.parse import quote
 
@@ -34,6 +36,19 @@ app.secret_key = SECRET_KEY
 # Datenbank sofort sicherstellen, egal wie app.py gestartet wird (direkt,
 # gunicorn, production.py, Tests) - init_db() ist idempotent.
 init_db()
+
+# Einmal-Tokens fuer Auto-Login direkt nach dem Beta-Signup (siehe
+# beta_signup()/auto_login() unten). Bewusst nur In-Memory: kurzlebig
+# (5 Minuten), ein Prozess-Neustart verwirft sie einfach - fuer den
+# Mock-/Beta-Zweck ausreichend, keine Datenbank-Tabelle noetig.
+_AUTO_LOGIN_TOKEN_TTL_SECONDS = 300
+_auto_login_tokens: dict[str, tuple[int, float]] = {}
+
+
+def _issue_auto_login_token(user_id: int) -> str:
+    token = secrets.token_urlsafe(24)
+    _auto_login_tokens[token] = (user_id, time.time() + _AUTO_LOGIN_TOKEN_TTL_SECONDS)
+    return token
 
 
 # --------------------------------------------------------------------------
@@ -77,9 +92,40 @@ def beta_signup():
     except BetaSignupError as exc:
         return jsonify({"error": str(exc)}), 400
     # Nie das temporaere Passwort in der HTTP-Antwort zurueckgeben - es steht
-    # in der (Mock-)Onboarding-E-Mail / im Server-Log.
+    # in der (Mock-)Onboarding-E-Mail / im Server-Log. Stattdessen einen
+    # kurzlebigen Auto-Login-Link mitgeben, damit man ohne Passwort direkt
+    # ins Dashboard kommt (sowohl bei neuem Signup als auch bei bereits
+    # registrierter E-Mail).
     result.pop("temp_password", None)
+    token = _issue_auto_login_token(result["user_id"])
+    result["login_url"] = f"/auto-login/{token}"
     return jsonify(result), 201 if result["status"] == "created" else 200
+
+
+@app.get("/auto-login/<token>")
+def auto_login(token: str):
+    """Einmaliger Login-Link direkt nach dem Beta-Signup (siehe /beta-signup)."""
+    entry = _auto_login_tokens.pop(token, None)
+    if not entry:
+        return render_template_string(
+            LOGIN_TEMPLATE, style_head=STYLE_HEAD,
+            error="Dieser Login-Link ist abgelaufen oder wurde bereits verwendet. Bitte einloggen.",
+        )
+    user_id, expires_at = entry
+    if time.time() > expires_at:
+        return render_template_string(
+            LOGIN_TEMPLATE, style_head=STYLE_HEAD,
+            error="Dieser Login-Link ist abgelaufen (gueltig 5 Minuten). Bitte einloggen.",
+        )
+
+    with get_session() as db_session:
+        user = db_session.get(User, user_id)
+        if not user:
+            return redirect("/dashboard")
+        user.last_login_at = datetime.utcnow()
+        session["user_id"] = user.id
+
+    return redirect("/dashboard")
 
 
 @app.post("/webhook")
