@@ -4,9 +4,12 @@ name: Deploy Landing Page to GitHub Pages
 # Pages. GitHub Pages kann kein Python/Flask/Datenbank ausfuehren - das
 # Backend (app.py / production.py) laeuft hier NICHT mit, siehe DEPLOY.md.
 #
-# EINMALIGER manueller Schritt vor dem ersten erfolgreichen Deploy:
-# Settings -> Pages -> "Build and deployment" -> Source: "GitHub Actions"
-# (siehe DEPLOY.md fuer die genaue Anleitung).
+# Pages-Source ist auf "GitHub Actions" gestellt (Settings -> Pages ->
+# "Build and deployment"). Vorher lief parallel Github's Legacy-Branch-Build
+# ("pages build and deployment"), der bei jedem Push den Root-Inhalt von
+# main (die alte Support-Pool-index.html) ausgeliefert und damit diesen
+# Workflow-Deploy stillschweigend ueberschrieben hat - daher zeigte die
+# Pages-URL bis eben die falsche Seite an.
 
 on:
   push:
