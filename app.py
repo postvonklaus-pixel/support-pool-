@@ -14,22 +14,19 @@ eigentlichen Start-Befehl ("python production.py"). Fuer WSGI-Server:
     gunicorn app:app --bind 0.0.0.0:8080
 """
 import logging
-import os
 from datetime import datetime
 from urllib.parse import quote
 
-from flask import Flask, jsonify, redirect, render_template_string, request, send_from_directory, session
+from flask import Flask, jsonify, redirect, render_template_string, request, session
 
 import payment
 from auth import verify_password
 from beta import BetaSignupError, create_beta_user
-from config import MOCK_STRIPE, PLAN_CONFIG, PlanTier, SECRET_KEY, SELF_SERVICE_PLANS
+from config import LANDING_PAGE_URL, MOCK_STRIPE, PLAN_CONFIG, PlanTier, SECRET_KEY, SELF_SERVICE_PLANS
 from db import get_session, init_db
 from models import Content, Feedback, FeedbackCategoryEnum, User, enum_value
 
 logger = logging.getLogger("app")
-
-STATIC_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static")
 
 app = Flask(__name__)
 app.secret_key = SECRET_KEY
@@ -40,11 +37,30 @@ init_db()
 
 
 # --------------------------------------------------------------------------
+# CORS: die Landing Page laeuft auf GitHub Pages (anderer Origin) und ruft
+# /beta-signup per fetch() auf - ohne diese Header wuerde der Browser den
+# Cross-Origin-Request blocken. "*" ist hier bewusst offen (oeffentliche
+# Mock-Demo, keine sensiblen Daten hinter Cookie-Auth erreichbar, siehe
+# /dashboard-Login der ohnehin ueber direkte Navigation laeuft, nicht fetch).
+# TODO: fuer echten Betrieb auf die konkrete Pages-Origin einschraenken.
+# --------------------------------------------------------------------------
+@app.after_request
+def add_cors_headers(response):
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
+    response.headers["Access-Control-Allow-Headers"] = "Content-Type"
+    return response
+
+
+# --------------------------------------------------------------------------
 # Landing Page, Health, Beta-Signup, Stripe-Webhook
 # --------------------------------------------------------------------------
 @app.get("/")
 def landing_page():
-    return send_from_directory(STATIC_DIR, "landing.html")
+    """Leitet zur kanonischen Landing Page auf GitHub Pages weiter, damit es
+    nur eine massgebliche URL gibt (statt Pages + Backend doppelt zu pflegen).
+    static/landing.html bleibt Teil des Repos fuer den GitHub-Pages-Build."""
+    return redirect(LANDING_PAGE_URL)
 
 
 @app.get("/health")

@@ -215,6 +215,13 @@
   </footer>
 
   <script>
+    // Diese Seite laeuft auf GitHub Pages (statisch) - das Backend
+    // (Beta-Signup-API) laeuft auf einem separaten Host (z.B. Railway).
+    // TODO: Nach dem Backend-Deploy hier die echte URL eintragen, siehe
+    // RAILWAY_DEPLOY.md letzter Schritt, z.B.:
+    // const API_BASE_URL = 'https://dein-projekt.up.railway.app';
+    const API_BASE_URL = '';
+
     const form = document.getElementById('beta-form');
     const messageEl = document.getElementById('beta-message');
 
@@ -223,13 +230,19 @@
       const email = document.getElementById('beta-email').value.trim();
       const button = form.querySelector('button');
 
+      if (!API_BASE_URL) {
+        messageEl.textContent = 'Backend ist noch nicht verbunden (siehe RAILWAY_DEPLOY.md) - bitte spaeter erneut versuchen.';
+        messageEl.className = 'text-sm mt-4 text-amber-400';
+        return;
+      }
+
       button.disabled = true;
       button.textContent = 'Sende...';
       messageEl.textContent = '';
       messageEl.className = 'text-sm mt-4';
 
       try {
-        const response = await fetch('/beta-signup', {
+        const response = await fetch(`${API_BASE_URL}/beta-signup`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email }),

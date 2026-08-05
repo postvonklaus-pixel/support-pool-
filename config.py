@@ -33,6 +33,12 @@ WEBHOOK_HOST = os.getenv("WEBHOOK_HOST", "0.0.0.0")
 # Standard-Fallback ist 8080 (siehe Phase 3: Production-Deployment).
 WEBHOOK_PORT = int(os.getenv("PORT", os.getenv("WEBHOOK_PORT", "8080")))
 
+# Kanonische Landing Page (GitHub Pages). app.py's "/" leitet dorthin um,
+# damit es nur EINE massgebliche Landing-Page-URL gibt, statt sie doppelt
+# (Pages + Backend) zu pflegen. Per Env-Var ueberschreibbar, z.B. bei
+# eigener Domain.
+LANDING_PAGE_URL = os.getenv("LANDING_PAGE_URL", "https://postvonklaus-pixel.github.io/support-pool-/")
+
 # --------------------------------------------------------------------------
 # API-Keys / externe Services
 # --------------------------------------------------------------------------
