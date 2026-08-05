@@ -28,6 +28,18 @@ verfuegbar) - **einmalig, dauert 10 Sekunden:**
    (NICHT "Deploy from a branch")
 3. Fertig - nichts speichern/bestaetigen noetig, die Auswahl greift sofort.
 
+> **Falls dieses Repo vorher schon eine GitHub-Pages-Seite hatte** (z.B. weil
+> hier bereits eine andere App lag): Der Schritt oben ist dann nicht
+> optional, sondern zwingend zu pruefen. Steht Source noch auf "Deploy from
+> a branch", liefert GitHub bei jedem Push auf `main` automatisch den
+> kompletten Root-Inhalt von `main` aus (die alte Seite) und ueberschreibt
+> damit stillschweigend jeden erfolgreichen Deploy dieses Workflows - der
+> Workflow selbst meldet trotzdem "success", das Ergebnis ist aber die
+> falsche Seite. Symptom: Die Pages-URL zeigt die alte/falsche Seite, obwohl
+> der Actions-Run gruen ist. Fix: wie oben, Source auf "GitHub Actions"
+> umstellen, danach einmal per Push (oder Actions -&gt; "Run workflow")
+> neu deployen.
+
 ### 2. Workflow ausloesen
 
 Der Workflow `.github/workflows/deploy.yml` deployed `static/landing.html`
