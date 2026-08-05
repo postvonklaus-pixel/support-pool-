@@ -5,14 +5,16 @@ Plan-Upgrade/Downgrade mit Stripe-Checkout (Mock-Modus faehig).
 Start:
     streamlit run dashboard.py
 """
+from datetime import datetime
+
 import pandas as pd
 import streamlit as st
 
 import payment
 from auth import verify_password
-from config import MOCK_STRIPE, PLAN_CONFIG, PlanTier
+from config import MOCK_STRIPE, PLAN_CONFIG, PlanTier, SELF_SERVICE_PLANS
 from db import get_session, init_db
-from models import Analytics, Content, User, enum_value
+from models import Analytics, Content, Feedback, FeedbackCategoryEnum, User, enum_value
 
 init_db()
 
@@ -25,6 +27,14 @@ def _load_user(email: str) -> User | None:
         if user:
             session.expunge(user)
         return user
+
+
+def _record_login(user_id: int) -> None:
+    """Trackt den letzten Login-Zeitpunkt (fuer das Admin-/Beta-Dashboard)."""
+    with get_session() as session:
+        user = session.get(User, user_id)
+        if user:
+            user.last_login_at = datetime.utcnow()
 
 
 def login_view() -> None:
@@ -41,13 +51,14 @@ def login_view() -> None:
         if user and verify_password(password, user.password_hash):
             st.session_state["user_id"] = user.id
             st.session_state["email"] = user.email
+            _record_login(user.id)
             st.rerun()
         else:
             st.error("E-Mail oder Passwort falsch.")
 
 
 def _plan_badge(plan: str) -> str:
-    colors = {"starter": "🟢", "creator": "🔵", "pro": "🟣", "agent": "🟠"}
+    colors = {"starter": "🟢", "creator": "🔵", "pro": "🟣", "agent": "🟠", "beta": "🟡"}
     return f"{colors.get(plan, '⚪')} {PLAN_CONFIG[PlanTier(plan)]['name']}"
 
 
@@ -100,7 +111,7 @@ def content_view(user_id: int) -> None:
             for c in contents
         ]
     if rows:
-        st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
+        st.dataframe(pd.DataFrame(rows), width='stretch', hide_index=True)
     else:
         st.info("Noch kein Content vorhanden. Nutze `python cli.py generate-content --user-id ...`.")
 
@@ -132,7 +143,7 @@ def analytics_view(user_id: int) -> None:
             st.line_chart(df.set_index("Datum")[["Impressions", "Reach"]])
         with col2:
             st.line_chart(df.set_index("Datum")[["Engagement-Rate"]])
-        st.dataframe(df, use_container_width=True, hide_index=True)
+        st.dataframe(df, width='stretch', hide_index=True)
     else:
         st.info("Noch keine Analytics-Daten. Fuehre den Analytics-Agenten aus (z.B. via workflow.py).")
 
@@ -145,7 +156,7 @@ def billing_view(user: User) -> None:
         st.caption("⚠️ MOCK-Modus: Es werden keine echten Zahlungen verarbeitet (kein STRIPE_SECRET_KEY gesetzt).")
 
     st.markdown("#### Plan wechseln")
-    target_plans = [p for p in PlanTier if p.value != user.plan]
+    target_plans = [p for p in SELF_SERVICE_PLANS if p.value != user.plan]
     plan_choice = st.selectbox(
         "Neuer Plan",
         options=[p.value for p in target_plans],
@@ -172,9 +183,48 @@ def billing_view(user: User) -> None:
     st.markdown("#### Rechnungshistorie")
     invoices = payment.get_invoice_history(user.id)
     if invoices:
-        st.dataframe(pd.DataFrame(invoices), use_container_width=True, hide_index=True)
+        st.dataframe(pd.DataFrame(invoices), width='stretch', hide_index=True)
     else:
         st.info("Noch keine Rechnungen vorhanden.")
+
+
+def feedback_view(user_id: int) -> None:
+    st.subheader("Feedback geben")
+    st.caption("Bug gefunden? Feature-Idee? Sag uns Bescheid — wir lesen alles.")
+
+    with st.form("feedback_form", clear_on_submit=True):
+        category = st.selectbox(
+            "Kategorie",
+            options=[c.value for c in FeedbackCategoryEnum],
+            format_func=lambda v: {"bug": "🐞 Bug", "feature": "✨ Feature-Wunsch", "idea": "💡 Idee"}[v],
+        )
+        message = st.text_area("Deine Nachricht", placeholder="Was ist dir aufgefallen?")
+        submitted = st.form_submit_button("Feedback senden")
+
+    if submitted:
+        if not message.strip():
+            st.error("Bitte eine Nachricht eingeben.")
+        else:
+            with get_session() as session:
+                session.add(Feedback(user_id=user_id, category=category, message=message.strip()))
+            st.success("Danke fuer dein Feedback! 🙏")
+
+    st.markdown("#### Dein bisheriges Feedback")
+    with get_session() as session:
+        entries = (
+            session.query(Feedback)
+            .filter_by(user_id=user_id)
+            .order_by(Feedback.created_at.desc())
+            .all()
+        )
+        rows = [
+            {"Datum": e.created_at.strftime("%Y-%m-%d %H:%M"), "Kategorie": enum_value(e.category), "Nachricht": e.message}
+            for e in entries
+        ]
+    if rows:
+        st.dataframe(pd.DataFrame(rows), width='stretch', hide_index=True)
+    else:
+        st.info("Du hast noch kein Feedback gesendet.")
 
 
 def main() -> None:
@@ -195,8 +245,8 @@ def main() -> None:
     sidebar_view(user)
     st.title("📊 Dein Social-Media-Automation-Dashboard")
 
-    tab_usage, tab_content, tab_analytics, tab_billing = st.tabs(
-        ["Verbrauch", "Content", "Analytics", "Abo & Zahlungen"]
+    tab_usage, tab_content, tab_analytics, tab_billing, tab_feedback = st.tabs(
+        ["Verbrauch", "Content", "Analytics", "Abo & Zahlungen", "Feedback geben"]
     )
     with tab_usage:
         usage_view(user.id)
@@ -206,6 +256,8 @@ def main() -> None:
         analytics_view(user.id)
     with tab_billing:
         billing_view(user)
+    with tab_feedback:
+        feedback_view(user.id)
 
 
 if __name__ == "__main__":

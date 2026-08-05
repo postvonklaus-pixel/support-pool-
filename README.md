@@ -16,6 +16,7 @@ einem Streamlit-Dashboard.
 - [Projekt starten](#projekt-starten)
 - [CLI](#cli)
 - [Dashboard](#dashboard)
+- [Phase 2: Beta-Testing](#phase-2-beta-testing)
 - [Stripe-Setup (Testmodus)](#stripe-setup-testmodus)
 - [MOCK-Modi](#mock-modi)
 - [Docker](#docker)
@@ -41,6 +42,11 @@ Alle Limits werden strikt durchgesetzt (siehe `payment.check_plan_limits`,
 `agents/base_agent.py` und `agents/publisher.py`). Bei abgelaufenem Abo hat
 der User nur noch Lesezugriff - es werden keine neuen Posts erstellt oder
 veroeffentlicht (siehe [Grace-Period](#grace-period--abo-ablauf)).
+
+Daneben gibt es einen fuenften, internen Plan **Beta-Tester ($0)** mit vollem
+Feature-Zugriff wie Agent - wird ausschliesslich automatisch ueber den
+Beta-Signup auf der Landing Page vergeben, nicht ueber den regulaeren
+Stripe-Checkout waehlbar (siehe [Phase 2: Beta-Testing](#phase-2-beta-testing)).
 
 ## Setup
 
@@ -114,6 +120,34 @@ Analytics-Charts sowie Plan-Upgrade/-Downgrade inkl. (Mock-)Stripe-Checkout.
 
 Passwort fuer alle Seed-User: `testpassword123`.
 Manuelles Neu-Seeden: `python seed.py`.
+
+## Phase 2: Beta-Testing
+
+Sobald `python main.py` laeuft, ist zusaetzlich verfuegbar:
+
+- **Landing Page**: `http://localhost:4242/` - stellt die 4 Abo-Modelle vor
+  und hat ein Beta-Access-Formular (`POST /beta-signup`).
+- **Beta-Tester-Plan**: kostenlos, voller Feature-Zugriff (wie Agent-Plan).
+  Wird automatisch bei Signup ueber die Landing Page vergeben
+  (`beta.create_beta_user()`), inkl. Onboarding-Mail und einem
+  automatisch erstellten Beispiel-Post.
+- **Feedback-System**: Tab "Feedback geben" im Kunden-Dashboard
+  (`dashboard.py`); Uebersicht per `python cli.py list-feedback`.
+- **Admin-Dashboard** (separat, kein Login noetig - nur lokal starten):
+  ```bash
+  streamlit run admin_dashboard.py --server.port 8502
+  ```
+  Zeigt MRR, das 90-Tage-Wachstumsziel (`mrr.mrr_goal_progress()`,
+  konfigurierbar ueber `MRR_GOAL_*` in `.env`), Beta-Tester-Aktivitaet
+  (Signup-Datum, letzter Login, erstellte Posts) und alle Feedback-Eintraege.
+- **Weitere Dokumente**:
+  - [`docs/BETA_MARKETING_PLAN.md`](docs/BETA_MARKETING_PLAN.md) - Zielgruppen,
+    5 LinkedIn- + 5 Twitter/X-Posts, 3 E-Mail-Vorlagen fuer die ersten 10 Beta-User
+  - [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) - 3 Deployment-Optionen mit
+    Kosten/Schritten (DigitalOcean, Railway/Render, eigener VPS);
+    `./deploy.sh check` validiert lokal den Docker-Build, ohne etwas zu deployen
+  - [`docs/ROADMAP_7_DAYS.md`](docs/ROADMAP_7_DAYS.md) - konkreter 7-Tage-Plan
+    mit Risiken/Gegenmassnahmen fuer den Beta-Launch
 
 ## Stripe-Setup (Testmodus)
 

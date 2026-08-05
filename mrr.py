@@ -8,9 +8,17 @@ Nur User mit aktivem oder in der Grace-Period befindlichem Abo
 """
 import logging
 from calendar import monthrange
-from datetime import datetime
+from datetime import date, datetime, timedelta
 
-from config import MRR_TARGET_MONTHLY, PLAN_CONFIG, PlanTier
+from config import (
+    MRR_GOAL_DAYS,
+    MRR_GOAL_START_DATE,
+    MRR_GOAL_TARGET_USD,
+    MRR_TARGET_MONTHLY,
+    PLAN_CONFIG,
+    PlanTier,
+    SELF_SERVICE_PLANS,
+)
 from db import get_session
 from models import SubscriptionStatusEnum, User, enum_value
 
@@ -71,6 +79,52 @@ def daily_mrr_report() -> dict:
     return report
 
 
+def _goal_start_date() -> date:
+    if MRR_GOAL_START_DATE:
+        return date.fromisoformat(MRR_GOAL_START_DATE)
+    return date.today()
+
+
+def mrr_goal_progress() -> dict:
+    """
+    Fortschritt Richtung Wachstumsziel (z.B. $50.000 MRR in 90 Tagen, siehe
+    config.MRR_GOAL_*). Liefert Tage bis Ziel sowie, wie viele neue User pro
+    Tag (je nach Plan) noetig waeren, um die Luecke bis zum Ziel-Datum zu
+    schliessen - als Alternativ-Szenarien pro Plan, nicht als fixe Mischung.
+    """
+    start = _goal_start_date()
+    deadline = start + timedelta(days=MRR_GOAL_DAYS)
+    today = date.today()
+    days_left = max((deadline - today).days, 0)
+    days_elapsed = min(max((today - start).days, 0), MRR_GOAL_DAYS)
+
+    current_usd = compute_mrr()["mrr_total"]
+    remaining_usd = max(MRR_GOAL_TARGET_USD - current_usd, 0)
+    expected_by_now = MRR_GOAL_TARGET_USD * (days_elapsed / MRR_GOAL_DAYS) if MRR_GOAL_DAYS else 0
+    on_track = current_usd >= expected_by_now
+
+    needed_per_day_usd = remaining_usd / days_left if days_left > 0 else remaining_usd
+
+    users_per_day_by_plan = {
+        tier.value: round(needed_per_day_usd / PLAN_CONFIG[tier]["price_usd"], 2)
+        for tier in SELF_SERVICE_PLANS
+    }
+
+    return {
+        "target_usd": MRR_GOAL_TARGET_USD,
+        "current_usd": current_usd,
+        "remaining_usd": round(remaining_usd, 2),
+        "days_total": MRR_GOAL_DAYS,
+        "days_elapsed": days_elapsed,
+        "days_left": days_left,
+        "deadline": deadline.isoformat(),
+        "needed_per_day_usd": round(needed_per_day_usd, 2),
+        "users_per_day_by_plan": users_per_day_by_plan,
+        "on_track": on_track,
+    }
+
+
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     print(daily_mrr_report())
+    print(mrr_goal_progress())

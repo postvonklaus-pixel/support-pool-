@@ -71,6 +71,7 @@ class PlanTier(str, Enum):
     CREATOR = "creator"
     PRO = "pro"
     AGENT = "agent"
+    BETA = "beta"  # Kostenloser Beta-Tester-Plan mit vollem Feature-Zugriff (Phase 2: Beta-Testing).
 
 
 class SubscriptionStatus(str, Enum):
@@ -166,7 +167,36 @@ PLAN_CONFIG = {
         "white_label": True,
         "priority_support": True,
     },
+    PlanTier.BETA: {
+        # Kostenloser Beta-Tester-Zugang: voller Funktionsumfang wie "Agent",
+        # aber $0/Monat. Wird ausschliesslich ueber den Beta-Signup-Flow
+        # vergeben (siehe beta.py), nicht ueber den regulaeren Stripe-Checkout.
+        "name": "Beta-Tester",
+        "price_usd": 0,
+        "platform_limit": 6,
+        "post_limit": UNLIMITED,
+        "video_limit": UNLIMITED,
+        "agents": [
+            AGENT_CONTENT_CREATOR,
+            AGENT_PUBLISHER,
+            AGENT_ENGAGEMENT,
+            AGENT_ANALYTICS,
+            AGENT_GROWTH,
+        ],
+        "engagement_level": "full_leads",
+        "analytics_level": "full",
+        "analytics_frequency": "realtime",
+        "content_calendar": True,
+        "lead_identification": True,
+        "white_label": False,
+        "priority_support": False,
+    },
 }
+
+# Plaene, die ueber den regulaeren (Selbstbedienungs-)Upgrade-Dialog waehlbar
+# sind. BETA ist bewusst ausgenommen - der Beta-Plan wird nur ueber den
+# Landing-Page-Signup vergeben (siehe beta.py), nicht als Upgrade-Ziel.
+SELF_SERVICE_PLANS = [PlanTier.STARTER, PlanTier.CREATOR, PlanTier.PRO, PlanTier.AGENT]
 
 # 7-Tage-Grace-Period bei Zahlungsfehlschlag (PAST_DUE -> EXPIRED danach).
 GRACE_PERIOD_DAYS = int(os.getenv("GRACE_PERIOD_DAYS", "7"))
@@ -177,3 +207,9 @@ GRACE_PERIOD_DAYS = int(os.getenv("GRACE_PERIOD_DAYS", "7"))
 # Monatliches MRR-Ziel, linear auf die Tage des Monats umgelegt fuer den
 # taeglichen Report/Alarm ("Alarm wenn MRR < Ziel fuer aktuellen Tag").
 MRR_TARGET_MONTHLY = float(os.getenv("MRR_TARGET_MONTHLY", "10000"))
+
+# Langfristiges Wachstumsziel (Beta-Phase): $X in Y Tagen ab Start-Datum.
+# Siehe mrr.py: mrr_goal_progress() fuer Countdown + benoetigte Neu-User/Tag.
+MRR_GOAL_TARGET_USD = float(os.getenv("MRR_GOAL_TARGET_USD", "50000"))
+MRR_GOAL_DAYS = int(os.getenv("MRR_GOAL_DAYS", "90"))
+MRR_GOAL_START_DATE = os.getenv("MRR_GOAL_START_DATE", "")  # Format: YYYY-MM-DD, leer = heute

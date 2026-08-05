@@ -13,13 +13,15 @@ Startet mit "python main.py":
 Laeuft komplett im MOCK-Modus ohne echte API-Keys (siehe .env.example / README).
 """
 import logging
+import os
 import threading
 import time
 
 import schedule
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, send_from_directory
 
 import payment
+from beta import BetaSignupError, create_beta_user
 from config import MOCK_STRIPE, WEBHOOK_HOST, WEBHOOK_PORT
 from db import init_db
 from agents import build_agents
@@ -30,7 +32,15 @@ from workflow import daily_workflow
 setup_logging()
 logger = logging.getLogger("main")
 
+STATIC_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static")
+
 webhook_app = Flask(__name__)
+
+
+@webhook_app.get("/")
+def landing_page():
+    """Serviert die Marketing-/Beta-Landing-Page (static/landing.html)."""
+    return send_from_directory(STATIC_DIR, "landing.html")
 
 
 @webhook_app.get("/health")
@@ -50,10 +60,26 @@ def stripe_webhook():
         return jsonify({"error": str(exc)}), 400
 
 
+@webhook_app.post("/beta-signup")
+def beta_signup():
+    """Von der Landing Page aufgerufen: registriert einen neuen Beta-Tester."""
+    data = request.get_json(silent=True) or {}
+    email = data.get("email", "")
+    try:
+        result = create_beta_user(email)
+    except BetaSignupError as exc:
+        return jsonify({"error": str(exc)}), 400
+
+    # Aus Sicherheitsgruenden nie das temporaere Passwort in der HTTP-Antwort
+    # zurueckgeben - es steht in der (Mock-)Onboarding-E-Mail / im Log.
+    result.pop("temp_password", None)
+    return jsonify(result), 201 if result["status"] == "created" else 200
+
+
 def start_webhook_server() -> threading.Thread:
     def _run():
-        logger.info("Stripe-Webhook-Server startet auf http://%s:%s/webhook (MOCK_STRIPE=%s)",
-                    WEBHOOK_HOST, WEBHOOK_PORT, MOCK_STRIPE)
+        logger.info("Landing Page: http://localhost:%s/  |  Webhook: http://%s:%s/webhook (MOCK_STRIPE=%s)",
+                    WEBHOOK_PORT, WEBHOOK_HOST, WEBHOOK_PORT, MOCK_STRIPE)
         webhook_app.run(host=WEBHOOK_HOST, port=WEBHOOK_PORT, use_reloader=False, threaded=True)
 
     thread = threading.Thread(target=_run, name="webhook-server", daemon=True)

@@ -7,6 +7,7 @@ Beispiele:
     python cli.py generate-content --user-id 1
     python cli.py show-usage --user-id 1
     python cli.py run-workflow --user-id 1
+    python cli.py list-feedback
 """
 import logging
 
@@ -21,7 +22,7 @@ from config import PLAN_CONFIG, PlanTier
 from db import get_session, init_db
 from email_service import send_welcome_email
 from logging_config import setup_logging
-from models import User, enum_value
+from models import Feedback, FeedbackCategoryEnum, User, enum_value
 from workflow import PIPELINE_ORDER
 
 setup_logging()
@@ -75,11 +76,12 @@ def list_users():
         if not users:
             click.echo("Keine User vorhanden.")
             return
-        click.echo(f"{'ID':<5}{'E-Mail':<28}{'Plan':<10}{'Status':<12}{'Erstellt':<20}")
-        click.echo("-" * 75)
+        click.echo(f"{'ID':<5}{'E-Mail':<33}{'Plan':<10}{'Status':<12}{'Erstellt':<20}")
+        click.echo("-" * 80)
         for u in users:
+            email_col = u.email if len(u.email) <= 31 else u.email[:28] + "..."
             click.echo(
-                f"{u.id:<5}{u.email:<28}{enum_value(u.plan):<10}{enum_value(u.subscription_status):<12}"
+                f"{u.id:<5}{email_col:<33}{enum_value(u.plan):<10}{enum_value(u.subscription_status):<12}"
                 f"{u.created_at.strftime('%Y-%m-%d %H:%M'):<20}"
             )
 
@@ -175,6 +177,51 @@ def run_workflow(user_id: int):
                 click.echo(f"  - {agent_id}: FEHLER -> {exc}", err=True)
 
     click.echo("Pipeline abgeschlossen.")
+
+
+@cli.command("list-feedback")
+@click.option("--category", type=click.Choice([c.value for c in FeedbackCategoryEnum]), default=None,
+              help="Nur Feedback dieser Kategorie anzeigen.")
+def list_feedback(category: str):
+    """Listet alle eingegangenen Feedback-Eintraege auf (neueste zuerst)."""
+    with get_session() as session:
+        query = session.query(Feedback, User.email).join(User, Feedback.user_id == User.id)
+        if category:
+            query = query.filter(Feedback.category == category)
+        rows = query.order_by(Feedback.created_at.desc()).all()
+
+        if not rows:
+            click.echo("Kein Feedback vorhanden.")
+            return
+
+        click.echo(f"{'ID':<5}{'Datum':<18}{'Kategorie':<10}{'User':<33}{'Nachricht'}")
+        click.echo("-" * 105)
+        for fb, email in rows:
+            preview = fb.message.replace("\n", " ")[:60]
+            email_col = email if len(email) <= 31 else email[:28] + "..."
+            click.echo(
+                f"{fb.id:<5}{fb.created_at.strftime('%Y-%m-%d %H:%M'):<18}"
+                f"{enum_value(fb.category):<10}{email_col:<33}{preview}"
+            )
+
+
+@cli.command("submit-feedback")
+@click.option("--user-id", required=True, type=int)
+@click.option("--category", required=True, type=click.Choice([c.value for c in FeedbackCategoryEnum]))
+@click.option("--message", required=True)
+def submit_feedback(user_id: int, category: str, message: str):
+    """Legt einen Feedback-Eintrag an (z.B. zum Testen ohne Dashboard)."""
+    with get_session() as session:
+        user = session.get(User, user_id)
+        if not user:
+            click.echo(f"Fehler: User {user_id} nicht gefunden.", err=True)
+            raise SystemExit(1)
+        fb = Feedback(user_id=user_id, category=category, message=message)
+        session.add(fb)
+        session.flush()
+        fb_id = fb.id
+
+    click.echo(f"Feedback #{fb_id} gespeichert (Kategorie: {category}).")
 
 
 if __name__ == "__main__":

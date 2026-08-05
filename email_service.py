@@ -49,6 +49,27 @@ def send_welcome_email(to_email: str, plan: str) -> dict:
     return _send(to_email, subject, body)
 
 
+def send_beta_onboarding_email(to_email: str, temp_password: str) -> dict:
+    subject = "Willkommen in der Beta! Deine Zugangsdaten + erste Schritte"
+    body = (
+        f"Hallo,\n\nschoen, dass du dabei bist! Dein Beta-Tester-Account ist "
+        f"aktiv - mit vollem Zugriff auf alle 5 KI-Agenten, unbegrenzte Posts "
+        f"und Videos, komplett kostenlos waehrend der Beta.\n\n"
+        f"Login: {to_email}\n"
+        f"Temporaeres Passwort: {temp_password}\n"
+        f"(Bitte nach dem ersten Login aendern - Passwort-Aenderung ist ein "
+        f"TODO fuer die naechste Ausbaustufe des Dashboards.)\n\n"
+        f"So startest du:\n"
+        f"1. Dashboard oeffnen und einloggen (streamlit run dashboard.py)\n"
+        f"2. Wir haben bereits einen ersten Beispiel-Post fuer dich erstellt -\n"
+        f"   schau im Tab 'Content' vorbei\n"
+        f"3. Nutze 'Feedback geben' im Dashboard, um uns Bugs, Ideen oder\n"
+        f"   Feature-Wuensche zu schicken - das hilft uns extrem!\n\n"
+        f"Viel Spass beim Testen!"
+    )
+    return _send(to_email, subject, body)
+
+
 def send_payment_reminder(to_email: str, days_left: int) -> dict:
     subject = "Zahlungserinnerung: Bitte aktualisiere deine Zahlungsmethode"
     body = (

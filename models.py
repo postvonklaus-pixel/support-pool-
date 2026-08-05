@@ -43,6 +43,7 @@ class PlanEnum(str, enum.Enum):
     creator = "creator"
     pro = "pro"
     agent = "agent"
+    beta = "beta"
 
 
 class SubscriptionStatusEnum(str, enum.Enum):
@@ -99,12 +100,17 @@ class User(Base):
     stripe_customer_id = Column(String(255), nullable=True)
     stripe_subscription_id = Column(String(255), nullable=True)
 
+    # Beta-/Onboarding-Tracking (Phase 2): wann zuletzt eingeloggt, um
+    # inaktive Beta-Tester im Admin-Dashboard erkennen zu koennen.
+    last_login_at = Column(DateTime, nullable=True)
+
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     contents = relationship("Content", back_populates="user", cascade="all, delete-orphan")
     analytics = relationship("Analytics", back_populates="user", cascade="all, delete-orphan")
     payments = relationship("Payment", back_populates="user", cascade="all, delete-orphan")
+    feedback_entries = relationship("Feedback", back_populates="user", cascade="all, delete-orphan")
 
     def is_read_only(self) -> bool:
         """Bei abgelaufenem Abo: nur noch Lesezugriff, keine neuen Posts."""
@@ -191,3 +197,26 @@ class Payment(Base):
 
     def __repr__(self) -> str:
         return f"<Payment id={self.id} user_id={self.user_id} amount={self.amount} status={enum_value(self.status)}>"
+
+
+class FeedbackCategoryEnum(str, enum.Enum):
+    bug = "bug"
+    feature = "feature"
+    idea = "idea"
+
+
+class Feedback(Base):
+    __tablename__ = "feedback"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+
+    category = Column(SAEnum(FeedbackCategoryEnum), nullable=False, default=FeedbackCategoryEnum.idea)
+    message = Column(Text, nullable=False)
+
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    user = relationship("User", back_populates="feedback_entries")
+
+    def __repr__(self) -> str:
+        return f"<Feedback id={self.id} user_id={self.user_id} category={enum_value(self.category)}>"
