@@ -1,3 +1,17 @@
 node_modules/
 package-lock.json
 package.json
+
+# --- Python / KI-Social-Media-Automation-System ---
+__pycache__/
+*.pyc
+.venv/
+venv/
+env/
+.env
+data/*.db
+data/*.sqlite3
+logs/*.log
+.streamlit/
+*.egg-info/
+.pytest_cache/

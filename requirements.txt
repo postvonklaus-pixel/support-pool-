@@ -1,0 +1,15 @@
+sqlalchemy
+psycopg2-binary
+redis
+python-dotenv
+stripe
+openai
+replicate
+pinecone-client
+sendgrid
+flask
+streamlit
+pandas
+click
+schedule
+werkzeug
