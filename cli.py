@@ -6,12 +6,15 @@ Beispiele:
     python cli.py list-users
     python cli.py generate-content --user-id 1
     python cli.py show-usage --user-id 1
+    python cli.py run-workflow --user-id 1
 """
 import logging
 
 import click
 
 import payment
+from agents import build_agents
+from agents.base_agent import AgentAccessDenied
 from agents.content_creator import ContentCreatorAgent
 from auth import hash_password
 from config import PLAN_CONFIG, PlanTier
@@ -19,6 +22,7 @@ from db import get_session, init_db
 from email_service import send_welcome_email
 from logging_config import setup_logging
 from models import User, enum_value
+from workflow import PIPELINE_ORDER
 
 setup_logging()
 logger = logging.getLogger("cli")
@@ -130,6 +134,47 @@ def show_usage(user_id: int):
     click.echo(f"  Agenten     : {usage['agent_count']} / {fmt_limit(usage['agent_limit'])}")
     if usage["is_read_only"]:
         click.echo("  Hinweis: Abo abgelaufen -> nur Lesezugriff, keine neuen Posts moeglich.")
+
+
+@cli.command("run-workflow")
+@click.option("--user-id", required=True, type=int, help="ID des Users, fuer den die Agenten-Pipeline laeuft.")
+def run_workflow(user_id: int):
+    """
+    Fuehrt die Agenten-Pipeline (Content Creator -> Publisher -> Engagement ->
+    Analytics -> Growth) einmalig fuer einen einzelnen User aus - nur die
+    Agenten, die laut Plan freigeschaltet sind, und nur bei aktivem Abo
+    (bzw. innerhalb der Grace-Period).
+    """
+    agents = build_agents()
+
+    with get_session() as session:
+        user = session.get(User, user_id)
+        if not user:
+            click.echo(f"Fehler: User {user_id} nicht gefunden.", err=True)
+            raise SystemExit(1)
+
+        if user.is_read_only():
+            click.echo(
+                f"User {user_id} hat Status '{enum_value(user.subscription_status)}' -> "
+                f"nur Lesezugriff, Pipeline wird nicht ausgefuehrt."
+            )
+            return
+
+        click.echo(f"Starte Pipeline fuer User {user_id} (Plan: {enum_value(user.plan)})...")
+        for agent_id in PIPELINE_ORDER:
+            if agent_id not in (user.agent_access or []):
+                click.echo(f"  - {agent_id}: uebersprungen (nicht im Plan enthalten)")
+                continue
+            agent = agents[agent_id]
+            try:
+                result = agent.run(user)
+                click.echo(f"  - {agent_id}: OK -> {result}")
+            except AgentAccessDenied as exc:
+                click.echo(f"  - {agent_id}: Zugriff verweigert ({exc})")
+            except Exception as exc:
+                click.echo(f"  - {agent_id}: FEHLER -> {exc}", err=True)
+
+    click.echo("Pipeline abgeschlossen.")
 
 
 if __name__ == "__main__":

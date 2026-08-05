@@ -30,7 +30,16 @@ from email_service import (
     send_payment_reminder,
     send_upgrade_confirmation,
 )
-from models import Content, ContentTypeEnum, Payment, PaymentStatusEnum, SubscriptionStatusEnum, User, enum_value
+from models import (
+    Content,
+    ContentStatusEnum,
+    ContentTypeEnum,
+    Payment,
+    PaymentStatusEnum,
+    SubscriptionStatusEnum,
+    User,
+    enum_value,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -343,16 +352,24 @@ def check_plan_limits(user_id: int) -> dict:
 
         month_start = datetime.utcnow().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
 
-        contents_this_month = (
+        # Nur VEROEFFENTLICHTER Content zaehlt gegen das Monats-Limit - das
+        # entspricht der Durchsetzung in agents/publisher.py (Entwuerfe
+        # duerfen unbegrenzt erstellt werden, das Limit greift erst beim
+        # tatsaechlichen Veroeffentlichen).
+        published_this_month = (
             session.query(Content)
-            .filter(Content.user_id == user_id, Content.created_at >= month_start)
+            .filter(
+                Content.user_id == user_id,
+                Content.status == ContentStatusEnum.published.value,
+                Content.published_at >= month_start,
+            )
             .all()
         )
 
-        platform_count = len({c.platform for c in contents_this_month})
-        post_count = len([c for c in contents_this_month if c.content_type != ContentTypeEnum.video.value
+        platform_count = len({c.platform for c in published_this_month})
+        post_count = len([c for c in published_this_month if c.content_type != ContentTypeEnum.video.value
                            and c.content_type != ContentTypeEnum.reel.value])
-        video_count = len([c for c in contents_this_month if c.content_type in
+        video_count = len([c for c in published_this_month if c.content_type in
                             (ContentTypeEnum.video.value, ContentTypeEnum.reel.value)])
         agent_count = len(user.agent_access or [])
 
