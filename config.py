@@ -52,6 +52,13 @@ LANDING_PAGE_URL = os.getenv(
     "LANDING_PAGE_URL", "https://postvonklaus-pixel.github.io/support-pool-/ai-automation/"
 )
 
+# Oeffentliche URL des Backends selbst (fuer Links in E-Mails, z.B. zum
+# Dashboard-Login) - RAILWAY_PUBLIC_DOMAIN wird von Railway automatisch
+# gesetzt, sobald der Service eine oeffentliche Domain hat, daher normalerweise
+# kein manuelles Setzen noetig. Leer, wenn unbekannt (z.B. lokal ohne Domain).
+_railway_domain = os.getenv("RAILWAY_PUBLIC_DOMAIN", "")
+BACKEND_BASE_URL = os.getenv("BACKEND_BASE_URL") or (f"https://{_railway_domain}" if _railway_domain else "")
+
 # --------------------------------------------------------------------------
 # API-Keys / externe Services
 # --------------------------------------------------------------------------
