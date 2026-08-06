@@ -1,42 +1,39 @@
 """
-E-Mail-Versand ueber SendGrid.
+E-Mail-Versand ueber SMTP (z.B. Gmail mit App-Passwort).
 
-Laeuft im MOCK-Modus (config.MOCK_SENDGRID), wenn kein echter SENDGRID_API_KEY
-gesetzt ist: E-Mails werden nicht versendet, sondern nur geloggt (Konsole +
-logs/app.log). So laesst sich der komplette Flow ohne SendGrid-Account testen.
+Laeuft im MOCK-Modus (config.MOCK_EMAIL), wenn kein echter SMTP_USERNAME/
+SMTP_PASSWORD gesetzt ist: E-Mails werden nicht versendet, sondern nur
+geloggt (Konsole + logs/app.log). So laesst sich der komplette Flow ohne
+E-Mail-Account testen.
 
-TODO: Fuer Produktion echte HTML-Templates (z.B. via SendGrid Dynamic
-Templates) statt Plaintext verwenden.
+TODO: Fuer Produktion echte HTML-Templates statt Plaintext verwenden.
 """
 import logging
+import smtplib
+from email.mime.text import MIMEText
 
-from config import BACKEND_BASE_URL, MOCK_SENDGRID, SENDGRID_API_KEY, SENDGRID_FROM_EMAIL
+from config import BACKEND_BASE_URL, MOCK_EMAIL, SMTP_FROM_EMAIL, SMTP_HOST, SMTP_PASSWORD, SMTP_PORT, SMTP_USERNAME
 
 logger = logging.getLogger(__name__)
 
-if not MOCK_SENDGRID:
-    from sendgrid import SendGridAPIClient
-    from sendgrid.helpers.mail import Mail
-else:
-    SendGridAPIClient = None  # type: ignore
-    Mail = None  # type: ignore
-
 
 def _send(to_email: str, subject: str, body: str) -> dict:
-    if MOCK_SENDGRID:
+    if MOCK_EMAIL:
         logger.info("[MOCK-EMAIL] An: %s | Betreff: %s\n%s", to_email, subject, body)
         return {"status": "mocked", "to": to_email, "subject": subject}
 
-    message = Mail(
-        from_email=SENDGRID_FROM_EMAIL,
-        to_emails=to_email,
-        subject=subject,
-        plain_text_content=body,
-    )
-    client = SendGridAPIClient(SENDGRID_API_KEY)
-    response = client.send(message)
-    logger.info("E-Mail an %s gesendet (status=%s)", to_email, response.status_code)
-    return {"status": "sent", "to": to_email, "subject": subject, "status_code": response.status_code}
+    message = MIMEText(body, "plain", "utf-8")
+    message["Subject"] = subject
+    message["From"] = SMTP_FROM_EMAIL
+    message["To"] = to_email
+
+    with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as server:
+        server.starttls()
+        server.login(SMTP_USERNAME, SMTP_PASSWORD)
+        server.sendmail(SMTP_FROM_EMAIL, [to_email], message.as_string())
+
+    logger.info("E-Mail an %s gesendet", to_email)
+    return {"status": "sent", "to": to_email, "subject": subject}
 
 
 def send_welcome_email(to_email: str, plan: str) -> dict:

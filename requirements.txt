@@ -6,7 +6,6 @@ stripe
 openai
 replicate
 pinecone-client
-sendgrid
 flask
 gunicorn
 streamlit

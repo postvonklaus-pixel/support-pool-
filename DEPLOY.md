@@ -185,7 +185,9 @@ im Dashboard.
   Users, daher aktuell zurueckgestellt. Bis dahin: SQLite-Daten (Beta-Tester,
   Feedback, Content) gehen bei jedem Redeploy verloren; fuer die aktuelle
   Beta-Phase mit wenigen Signups tragbar.
-- **TODO:** Fuer mehr als ein paar Test-User: SendGrid-Key eintragen, damit
-  Onboarding-Mails wirklich verschickt werden (siehe README &rarr; MOCK-Modi)
+- **Code-seitig fertig, dein Schritt fehlt noch:** Echte Onboarding-Mails
+  via Gmail-SMTP statt SendGrid (Umstieg wegen SendGrid-Verifizierungs-
+  problemen) - `SMTP_USERNAME`/`SMTP_PASSWORD` (Gmail-App-Passwort, siehe
+  `.env.example`) in Railway Variables setzen.
 - **TODO:** Fuer echte Zahlungen: Stripe-Testmodus-Keys eintragen und
   Webhook in Stripe auf `https://<deine-app-url>/webhook` zeigen lassen
