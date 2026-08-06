@@ -153,6 +153,45 @@ Alternativ: die bereits geseedeten Test-User funktionieren auch live sofort
 | `user_agent@test.com` | Agent |
 | `user_expired@test.com` | Starter (abgelaufen) |
 
+## Persistente Datenbank: Postgres statt SQLite
+
+**Warum:** Railways Dateisystem ist standardmaessig **nicht persistent**
+ueber Deploys hinweg - jeder Deploy = frischer Container, die
+SQLite-Datei ist danach weg. Fuer die ersten Tests okay (Seed-Daten legen
+sich automatisch neu an), aber sobald echte Beta-User/Feedback/Content
+angelegt sind, gehen die bei jedem Redeploy verloren.
+
+**Der Code ist bereits vollstaendig Postgres-faehig, ohne jede Aenderung**
+(lokal mit einem echten Postgres-Server End-to-End getestet: Tabellen
+anlegen, Beta-Signup, Dashboard, Admin-Uebersicht, JSON-/Enum-Spalten -
+alles funktioniert identisch zu SQLite). Es fehlt nur die Railway-seitige
+Einrichtung:
+
+1. Im Railway-Projekt (selbe Umgebung wie die App): **"+ Create"** &rarr;
+   **"Database"** &rarr; **"Add PostgreSQL"**. Railway legt automatisch
+   einen neuen Postgres-Service mit eigener `DATABASE_URL` an.
+2. Auf den App-Service wechseln &rarr; **Variables** &rarr; neue Variable
+   `DATABASE_URL` anlegen und per Railway-Referenz auf den Postgres-Service
+   zeigen lassen: Wert eingeben als `${{Postgres.DATABASE_URL}}` (Railway
+   loest das automatisch zur echten Verbindungs-URL des Postgres-Service auf
+   - exakter Referenzname steht auch direkt im Postgres-Service unter
+   "Variables", meist heisst der Service "Postgres").
+3. Speichern &rarr; Railway deployed die App automatisch neu. `config.py`
+   nimmt `DATABASE_URL` automatisch statt der SQLite-Datei (siehe
+   `config.py`: `DATABASE_URL = os.getenv("DATABASE_URL") or "sqlite:///..."`).
+4. Testen: `curl https://<deine-railway-url>/health` sollte weiterhin
+   `{"status":"ok",...}` liefern; in den Railway-Logs nach
+   `"Keine User gefunden, lege Test-Daten an..."` suchen - das bestaetigt,
+   dass die App die neue (leere) Postgres-Datenbank gefunden und befuellt
+   hat.
+
+**Achtung:** Die bisherigen SQLite-Daten (bereits angelegte Beta-Tester,
+Feedback) werden dabei NICHT automatisch uebernommen - die App startet auf
+Postgres mit einer frischen, geseedeten Datenbank. Bei nur ein paar
+Test-Signups bisher ist das unkritisch; falls schon relevante echte
+Beta-Tester-Daten drin stehen, vorher Bescheid sagen, dann bauen wir einen
+kurzen Export/Import-Schritt.
+
 ## Troubleshooting
 
 - **Healthcheck schlaegt fehl / App startet nicht:** Railway-Logs pruefen
@@ -162,9 +201,8 @@ Alternativ: die bereits geseedeten Test-User funktionieren auch live sofort
 - **CORS-Fehler im Browser (Landing Page kann Backend nicht erreichen):**
   `API_BASE_URL` in `ai-automation/index.html` pruefen (Schritt 7) - haeufigster
   Fehler ist ein vergessenes `https://` oder ein tippfehlerhafter Domainname.
-- **SQLite-Daten verschwinden nach Redeploy:** Railway's Dateisystem ist
-  standardmaessig **nicht persistent** ueber Deploys hinweg (jeder Deploy =
-  frischer Container). Fuer dauerhafte Daten in Railway unter "Volumes" ein
-  Volume auf `/app/data` mounten. Fuer die Beta-Testphase mit haeufigen
-  Redeploys ist das ok (Seed-Daten werden automatisch neu angelegt), fuer
-  echten Betrieb aber vorher einrichten.
+- **SQLite-Daten verschwinden nach Redeploy:** siehe Abschnitt "Persistente
+  Datenbank: Postgres statt SQLite" oben - das ist die empfohlene Loesung.
+  Alternativ (nicht empfohlen, nur als Notloesung) laesst sich auch ein
+  Railway-Volume auf `/app/data` mounten, um die SQLite-Datei selbst
+  persistent zu machen - Postgres ist aber die robustere Wahl.

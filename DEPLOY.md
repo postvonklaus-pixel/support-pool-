@@ -173,10 +173,12 @@ im Dashboard.
 ## Naechste Schritte fuer echten Live-Betrieb
 
 - ✅ **Erledigt:** Flask-Dev-Server durch Gunicorn (WSGI-Server) ersetzt.
-- **TODO:** Persistente Datenbank statt SQLite auf Railways fluechtigem
-  Dateisystem - sonst gehen echte Beta-User/Feedback/Content bei jedem
-  Redeploy verloren. Railway-Postgres-Addon hinzufuegen und `DATABASE_URL`
-  setzen (psycopg2-binary ist schon in `requirements.txt`).
+- **Code-seitig fertig, dein Schritt fehlt noch:** Persistente Datenbank
+  (Postgres) statt SQLite auf Railways fluechtigem Dateisystem - Code ist
+  bereits vollstaendig Postgres-faehig (lokal mit echtem Postgres-Server
+  End-to-End getestet, keine Aenderung noetig). Railway-Postgres-Addon
+  hinzufuegen und `DATABASE_URL` setzen - Anleitung Schritt fuer Schritt in
+  `RAILWAY_DEPLOY.md` &rarr; "Persistente Datenbank: Postgres statt SQLite".
 - **TODO:** Fuer mehr als ein paar Test-User: SendGrid-Key eintragen, damit
   Onboarding-Mails wirklich verschickt werden (siehe README &rarr; MOCK-Modi)
 - **TODO:** Fuer echte Zahlungen: Stripe-Testmodus-Keys eintragen und
