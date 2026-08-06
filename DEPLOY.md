@@ -96,6 +96,15 @@ Dashboard: `https://<deine-app-url>/dashboard` im Browser oeffnen, mit
 angelegten Beta-User - Passwort steht im Server-Log der Plattform, da im
 Mock-Modus keine echte Mail verschickt wird, siehe unten).
 
+Frisch registrierte Beta-Tester sehen zunaechst nur den einen automatisch
+erzeugten Beispiel-Post, da die volle Agenten-Pipeline (Post erstellen +
+veroeffentlichen + Kommentare/DMs beantworten + Analytics-Report +
+Wachstumsstrategie) normalerweise nur einmal taeglich fuer alle User
+gemeinsam laeuft (06:00 Uhr). Im Dashboard gibt es dafuer den Button
+"🔄 Neue Beispiel-Aktivitaet generieren" - stoesst denselben Durchlauf
+sofort nur fuer den eingeloggten User an, damit man ohne Wartezeit direkt
+etwas zum Testen hat.
+
 **Admin-Uebersicht** (MRR, Wachstumsziel, Beta-Tester-Aktivitaet, Feedback):
 `https://<deine-app-url>/admin` im Browser oeffnen, mit dem `ADMIN_PASSWORD`
 einloggen. **WICHTIG:** Auf der Deployment-Plattform (z.B. Railway) unbedingt

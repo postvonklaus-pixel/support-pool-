@@ -22,6 +22,7 @@ from urllib.parse import quote
 from flask import Flask, jsonify, redirect, render_template_string, request, session
 
 import payment
+from agents import build_agents
 from auth import verify_password
 from beta import BetaSignupError, create_beta_user
 from config import (
@@ -36,6 +37,7 @@ from config import (
 from db import get_session, init_db
 from models import Content, Feedback, FeedbackCategoryEnum, User, enum_value
 from mrr import daily_mrr_report, mrr_goal_progress
+from workflow import run_user_pipeline
 
 logger = logging.getLogger("app")
 
@@ -45,6 +47,10 @@ app.secret_key = SECRET_KEY
 # Datenbank sofort sicherstellen, egal wie app.py gestartet wird (direkt,
 # gunicorn, production.py, Tests) - init_db() ist idempotent.
 init_db()
+
+# Fuer den manuellen "Jetzt testen"-Button im Dashboard (dashboard_run_agents()
+# unten) - dieselben Agenten-Instanzen, die auch der taegliche Workflow nutzt.
+_agents = build_agents()
 
 # Einmal-Tokens fuer Auto-Login direkt nach dem Beta-Signup (siehe
 # beta_signup()/auto_login() unten). Bewusst nur In-Memory: kurzlebig
@@ -229,6 +235,22 @@ DASHBOARD_TEMPLATE = """
   </section>
 
   <section>
+    <h2 class="text-lg font-semibold mb-3">Jetzt testen</h2>
+    <p class="text-slate-500 text-sm mb-3">
+      Die Agenten laufen normalerweise einmal taeglich automatisch fuer alle User.
+      Zum Ausprobieren kannst du hier sofort einen kompletten Durchlauf fuer deinen
+      Account anstossen (neuer Post, Veroeffentlichung, Kommentar-/DM-Antworten,
+      Analytics-Report, Wachstumsstrategie - je nachdem was dein Plan freischaltet).
+    </p>
+    <form method="post" action="/dashboard/run-agents">
+      <button {% if usage.is_read_only %}disabled{% endif %}
+        class="bg-indigo-600 hover:bg-indigo-500 transition rounded-lg px-4 py-2 text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed">
+        🔄 Neue Beispiel-Aktivität generieren
+      </button>
+    </form>
+  </section>
+
+  <section>
     <h2 class="text-lg font-semibold mb-3">Plan wechseln (Mock-Upgrade, sofort)</h2>
     <form method="post" action="/dashboard/upgrade" class="flex flex-wrap gap-3 items-center">
       <select name="plan" class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm">
@@ -398,6 +420,50 @@ def dashboard_upgrade():
         flash = quote(f"Plan gewechselt: {result['old_plan']} -> {result['new_plan']}")
         return redirect(f"/dashboard?flash={flash}")
     return redirect("/dashboard")
+
+
+@app.post("/dashboard/run-agents")
+def dashboard_run_agents():
+    """Stoesst fuer den eingeloggten User sofort einen kompletten
+    Agenten-Durchlauf an (statt auf den taeglichen 06:00-Job zu warten),
+    damit frische Beta-Tester direkt etwas zum Testen sehen."""
+    if "user_id" not in session:
+        return redirect("/dashboard")
+
+    user_id = session["user_id"]
+    usage = payment.check_plan_limits(user_id)
+    if usage["is_read_only"]:
+        flash = quote("Abo abgelaufen - keine neue Aktivität möglich.")
+        return redirect(f"/dashboard?flash={flash}")
+
+    with get_session() as db_session:
+        user = db_session.get(User, user_id)
+        if not user:
+            session.clear()
+            return redirect("/dashboard")
+        results = run_user_pipeline(user, _agents)
+
+    parts = []
+    content_result = results.get("content_creator")
+    if content_result and "id" in content_result:
+        parts.append("1 neuer Post erstellt")
+
+    published = [r for r in (results.get("publisher") or []) if r.get("status") == "published"]
+    if published:
+        parts.append(f"{len(published)} Post(s) veröffentlicht")
+
+    engagement_result = results.get("engagement") or {}
+    if engagement_result.get("replies_sent"):
+        parts.append(f"{engagement_result['replies_sent']} Kommentar-/DM-Antworten")
+
+    if results.get("analytics", {}).get("record_id"):
+        parts.append("1 Analytics-Report erstellt")
+
+    if results.get("growth", {}).get("growth_strategy"):
+        parts.append("1 Wachstumsstrategie erstellt")
+
+    summary = "✅ " + ", ".join(parts) + "." if parts else "Durchlauf abgeschlossen - dein Plan schaltet aktuell keinen dieser Schritte frei."
+    return redirect(f"/dashboard?flash={quote(summary)}")
 
 
 @app.post("/dashboard/feedback")
