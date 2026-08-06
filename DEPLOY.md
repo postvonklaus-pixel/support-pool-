@@ -186,8 +186,10 @@ im Dashboard.
   Feedback, Content) gehen bei jedem Redeploy verloren; fuer die aktuelle
   Beta-Phase mit wenigen Signups tragbar.
 - **Code-seitig fertig, dein Schritt fehlt noch:** Echte Onboarding-Mails
-  via Gmail-SMTP statt SendGrid (Umstieg wegen SendGrid-Verifizierungs-
-  problemen) - `SMTP_USERNAME`/`SMTP_PASSWORD` (Gmail-App-Passwort, siehe
-  `.env.example`) in Railway Variables setzen.
+  via Resend (HTTP-API) - erst SendGrid (Verifizierungsprobleme), dann
+  Gmail-SMTP (Railway blockiert ausgehende SMTP-Ports) probiert, beides
+  gescheitert. Resend laeuft per normaler HTTPS-Anfrage, die nicht blockiert
+  wird. `RESEND_API_KEY`/`RESEND_FROM_EMAIL` (siehe `.env.example`) in
+  Railway Variables setzen.
 - **TODO:** Fuer echte Zahlungen: Stripe-Testmodus-Keys eintragen und
   Webhook in Stripe auf `https://<deine-app-url>/webhook` zeigen lassen

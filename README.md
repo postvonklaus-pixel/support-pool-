@@ -187,7 +187,7 @@ zugehoerige API-Key in `.env` fehlt oder einen Platzhalterwert
 | Buffer (Veroeffentlichen) | `MOCK_BUFFER` | Simuliert erfolgreiches Posting, kein echter API-Call |
 | Stripe (Zahlungen) | `MOCK_STRIPE` | Erstellt Fake-Checkout-Sessions, verbucht direkt in der DB |
 | Pinecone (Vektor-DB) | `MOCK_PINECONE` | Reserviert fuer zukuenftiges Retrieval, aktuell ungenutzt |
-| SMTP (E-Mail, z.B. Gmail) | `MOCK_EMAIL` | Loggt die E-Mail nach `logs/app.log` statt sie zu versenden |
+| Resend (E-Mail) | `MOCK_EMAIL` | Loggt die E-Mail nach `logs/app.log` statt sie zu versenden |
 
 Alle mock-relevanten Stellen sind im Code mit `TODO`-Kommentaren markiert
 (z.B. `agents/content_creator.py`, `agents/publisher.py`, `payment.py`,
@@ -240,7 +240,7 @@ Alarm geloggt (`logs/app.log`, Level `WARNING`). Der Report ist Teil jedes
 ├── db.py                     # Engine/Session-Handling
 ├── auth.py                   # Passwort-Hashing
 ├── payment.py                 # Stripe-Integration (Checkout, Webhooks, Upgrades, Limits)
-├── email_service.py           # SMTP-E-Mails, z.B. Gmail (mock-faehig)
+├── email_service.py           # Resend-E-Mails ueber HTTP-API (mock-faehig)
 ├── workflow.py                 # Taeglicher Workflow (nur aktive Abos)
 ├── mrr.py                     # MRR-Berechnung & Alarm
 ├── seed.py                    # 5 Test-User anlegen

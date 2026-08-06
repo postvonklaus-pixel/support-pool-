@@ -1,20 +1,25 @@
 """
-E-Mail-Versand ueber SMTP (z.B. Gmail mit App-Passwort).
+E-Mail-Versand ueber die Resend-HTTP-API (https://resend.com).
 
-Laeuft im MOCK-Modus (config.MOCK_EMAIL), wenn kein echter SMTP_USERNAME/
-SMTP_PASSWORD gesetzt ist: E-Mails werden nicht versendet, sondern nur
-geloggt (Konsole + logs/app.log). So laesst sich der komplette Flow ohne
-E-Mail-Account testen.
+Laeuft im MOCK-Modus (config.MOCK_EMAIL), wenn kein echter RESEND_API_KEY
+gesetzt ist: E-Mails werden nicht versendet, sondern nur geloggt (Konsole +
+logs/app.log). So laesst sich der komplette Flow ohne Resend-Account testen.
+
+Bewusst per HTTPS statt SMTP: viele PaaS-Hoster (u.a. Railway) blockieren
+ausgehende SMTP-Ports als Anti-Spam-Massnahme (siehe git-history - direkter
+SMTP-Versand ueber Gmail scheiterte deshalb dort mit einem Connection-Fehler).
 
 TODO: Fuer Produktion echte HTML-Templates statt Plaintext verwenden.
 """
 import logging
-import smtplib
-from email.mime.text import MIMEText
 
-from config import BACKEND_BASE_URL, MOCK_EMAIL, SMTP_FROM_EMAIL, SMTP_HOST, SMTP_PASSWORD, SMTP_PORT, SMTP_USERNAME
+import requests
+
+from config import BACKEND_BASE_URL, MOCK_EMAIL, RESEND_API_KEY, RESEND_FROM_EMAIL
 
 logger = logging.getLogger(__name__)
+
+RESEND_API_URL = "https://api.resend.com/emails"
 
 
 def _send(to_email: str, subject: str, body: str) -> dict:
@@ -22,17 +27,15 @@ def _send(to_email: str, subject: str, body: str) -> dict:
         logger.info("[MOCK-EMAIL] An: %s | Betreff: %s\n%s", to_email, subject, body)
         return {"status": "mocked", "to": to_email, "subject": subject}
 
-    message = MIMEText(body, "plain", "utf-8")
-    message["Subject"] = subject
-    message["From"] = SMTP_FROM_EMAIL
-    message["To"] = to_email
+    response = requests.post(
+        RESEND_API_URL,
+        headers={"Authorization": f"Bearer {RESEND_API_KEY}"},
+        json={"from": RESEND_FROM_EMAIL, "to": [to_email], "subject": subject, "text": body},
+        timeout=10,
+    )
+    response.raise_for_status()
 
-    with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=10) as server:
-        server.starttls()
-        server.login(SMTP_USERNAME, SMTP_PASSWORD)
-        server.sendmail(SMTP_FROM_EMAIL, [to_email], message.as_string())
-
-    logger.info("E-Mail an %s gesendet", to_email)
+    logger.info("E-Mail an %s gesendet (id=%s)", to_email, response.json().get("id"))
     return {"status": "sent", "to": to_email, "subject": subject}
 
 

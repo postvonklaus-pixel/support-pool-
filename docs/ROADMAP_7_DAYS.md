@@ -10,7 +10,7 @@ MRR/Beta-Stats. Noch **nichts ist oeffentlich erreichbar**.
 - [ ] `./deploy.sh check` lokal ausfuehren, um den Docker-Build zu validieren
 - [ ] Landing Page live deployen, URL testen (Health-Check `/health`, Signup-Flow einmal durchklicken)
 - [ ] LinkedIn-Post 1 + Twitter-Post 1 aus `docs/BETA_MARKETING_PLAN.md` posten
-- [ ] Vorbereiten: Gmail-App-Passwort fuer echte Onboarding-Mails, falls gewuenscht - optional, Mock-Modus funktioniert auch ohne
+- [ ] Vorbereiten: Resend-API-Key fuer echte Onboarding-Mails, falls gewuenscht - optional, Mock-Modus funktioniert auch ohne
 
 **Risiko:** Free-Tier-Deploy-Plattform verhaelt sich anders als lokal (Env-Var
 vergessen, DB-Verbindung fehlt). **Gegenmassnahme:** `/health`-Endpoint direkt
@@ -77,6 +77,6 @@ gewichten als Social-Posts.
 | Risiko | Auswirkung | Gegenmassnahme |
 |---|---|---|
 | Deployment-Plattform-Limits (Free-Tier) | App wird langsam/nicht erreichbar | Admin-Dashboard taeglich pruefen, bei Bedarf frueher auf Option A/C wechseln |
-| Mock-Modus wird oeffentlich sichtbar (z.B. "MOCK-EMAIL" in Logs) | Wirkt unprofessionell gegenueber Beta-Testern | Vor Live-Gang mind. SMTP (Gmail-App-Passwort) auf echte Werte umstellen, damit Onboarding-Mails wirklich ankommen |
+| Mock-Modus wird oeffentlich sichtbar (z.B. "MOCK-EMAIL" in Logs) | Wirkt unprofessionell gegenueber Beta-Testern | Vor Live-Gang mind. Resend-API-Key auf echte Werte umstellen, damit Onboarding-Mails wirklich ankommen |
 | Kein Login/Passwort-Reset-Flow | Beta-User verlieren temp. Passwort, koennen sich nicht einloggen | Kurzfristig: Passwort per Hand im Admin-Dashboard/DB nachschauen und erneut zuschicken; TODO fuer spaeter: echten Magic-Link-Login bauen |
 | Alle Limits/Preise sind aktuell nur Mock-Stripe | Keine echten Zahlungen moeglich, falls jemand direkt zahlen will | Fuer die Beta okay (Ziel ist Feedback, nicht Umsatz) - vor Umstieg auf zahlende Kunden echten Stripe-Testmodus-Flow durchspielen (siehe Haupt-README) |

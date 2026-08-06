@@ -69,17 +69,13 @@ STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY", "")
 STRIPE_WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET", "")
 PINECONE_API_KEY = os.getenv("PINECONE_API_KEY", "")
 
-# E-Mail-Versand ueber SMTP (z.B. Gmail: smtp.gmail.com, Port 587, mit einem
-# App-Passwort statt des normalen Google-Passworts - siehe
-# https://myaccount.google.com/apppasswords). SMTP_USERNAME ist bei Gmail die
-# vollstaendige Adresse; SMTP_FROM_EMAIL faellt automatisch darauf zurueck.
-SMTP_HOST = os.getenv("SMTP_HOST", "smtp.gmail.com")
-SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
-SMTP_USERNAME = os.getenv("SMTP_USERNAME", "")
-# Google zeigt App-Passwoerter mit Leerzeichen an (z.B. "abcd efgh ijkl mnop"),
-# erwartet sie aber ohne - Leerzeichen defensiv entfernen, falls 1:1 kopiert.
-SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "").replace(" ", "")
-SMTP_FROM_EMAIL = os.getenv("SMTP_FROM_EMAIL") or SMTP_USERNAME or "reports@example.com"
+# E-Mail-Versand ueber die Resend-HTTP-API (https://resend.com) statt SMTP -
+# viele PaaS-Hoster (u.a. Railway) blockieren ausgehende SMTP-Ports (587/25)
+# als Anti-Spam-Massnahme, eine normale HTTPS-Anfrage funktioniert dagegen
+# ueberall. RESEND_FROM_EMAIL kann ohne eigene Domain-Verifizierung auf
+# "onboarding@resend.dev" stehen bleiben (Resends Test-Absender).
+RESEND_API_KEY = os.getenv("RESEND_API_KEY", "")
+RESEND_FROM_EMAIL = os.getenv("RESEND_FROM_EMAIL", "onboarding@resend.dev")
 
 _PLACEHOLDER_MARKERS = ("dein_", "your_", "changeme", "xxxx", "")
 
@@ -98,7 +94,7 @@ MOCK_REPLICATE = not _is_configured(REPLICATE_API_TOKEN)
 MOCK_BUFFER = not _is_configured(BUFFER_ACCESS_TOKEN)
 MOCK_STRIPE = not _is_configured(STRIPE_SECRET_KEY)
 MOCK_PINECONE = not _is_configured(PINECONE_API_KEY)
-MOCK_EMAIL = not (_is_configured(SMTP_USERNAME) and _is_configured(SMTP_PASSWORD))
+MOCK_EMAIL = not _is_configured(RESEND_API_KEY)
 
 # --------------------------------------------------------------------------
 # Pricing-Tiers
