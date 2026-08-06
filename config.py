@@ -76,7 +76,9 @@ PINECONE_API_KEY = os.getenv("PINECONE_API_KEY", "")
 SMTP_HOST = os.getenv("SMTP_HOST", "smtp.gmail.com")
 SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
 SMTP_USERNAME = os.getenv("SMTP_USERNAME", "")
-SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "")
+# Google zeigt App-Passwoerter mit Leerzeichen an (z.B. "abcd efgh ijkl mnop"),
+# erwartet sie aber ohne - Leerzeichen defensiv entfernen, falls 1:1 kopiert.
+SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "").replace(" ", "")
 SMTP_FROM_EMAIL = os.getenv("SMTP_FROM_EMAIL") or SMTP_USERNAME or "reports@example.com"
 
 _PLACEHOLDER_MARKERS = ("dein_", "your_", "changeme", "xxxx", "")

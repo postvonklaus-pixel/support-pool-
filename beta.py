@@ -68,7 +68,15 @@ def create_beta_user(email: str) -> dict:
             user, platform="instagram", topic="Willkommen in der Beta - so startest du durch"
         )
 
-    send_beta_onboarding_email(email, temp_password)
+    try:
+        send_beta_onboarding_email(email, temp_password)
+    except Exception:
+        # Der Account ist bereits angelegt (siehe oben) - ein SMTP-Fehler
+        # (z.B. falsches App-Passwort) soll den Signup nicht mehr zum
+        # Absturz bringen, nur die Mail faellt dann aus (Auto-Login-Link
+        # auf der Landing Page bleibt der zuverlaessige Fallback).
+        logger.exception("Onboarding-Mail an %s konnte nicht verschickt werden.", email)
+
     logger.info("Neuer Beta-Tester registriert: id=%s email=%s", user_id, email)
 
     return {

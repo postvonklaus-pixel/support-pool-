@@ -27,7 +27,7 @@ def _send(to_email: str, subject: str, body: str) -> dict:
     message["From"] = SMTP_FROM_EMAIL
     message["To"] = to_email
 
-    with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as server:
+    with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=10) as server:
         server.starttls()
         server.login(SMTP_USERNAME, SMTP_PASSWORD)
         server.sendmail(SMTP_FROM_EMAIL, [to_email], message.as_string())
