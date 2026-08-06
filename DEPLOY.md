@@ -185,11 +185,21 @@ im Dashboard.
   Users, daher aktuell zurueckgestellt. Bis dahin: SQLite-Daten (Beta-Tester,
   Feedback, Content) gehen bei jedem Redeploy verloren; fuer die aktuelle
   Beta-Phase mit wenigen Signups tragbar.
-- **Code-seitig fertig, dein Schritt fehlt noch:** Echte Onboarding-Mails
-  via Resend (HTTP-API) - erst SendGrid (Verifizierungsprobleme), dann
-  Gmail-SMTP (Railway blockiert ausgehende SMTP-Ports) probiert, beides
-  gescheitert. Resend laeuft per normaler HTTPS-Anfrage, die nicht blockiert
-  wird. `RESEND_API_KEY`/`RESEND_FROM_EMAIL` (siehe `.env.example`) in
-  Railway Variables setzen.
+- **PAUSIERT (braucht eigene Domain):** Echte Onboarding-Mails an beliebige
+  Beta-Tester. Reihe an Versuchen: SendGrid (Verifizierung scheiterte),
+  Gmail-SMTP (Railway blockiert ausgehende SMTP-Ports 25/587 als Anti-Spam-
+  Massnahme), Resend (HTTP-API, umgeht das Port-Problem) - Resend liefert
+  aber ohne eigene per DNS verifizierte Domain nur an die eigene
+  Account-Adresse aus (`403 Forbidden` bei anderen Empfaengern), branchen-
+  ueblich bei allen Transaktions-Mail-Diensten. Kein Code-Problem mehr,
+  sondern eine echte Domain waere noetig (~$10-15/Jahr, z.B. Namecheap/
+  Cloudflare + DNS-Verifizierung bei Resend).
+  **Bewusst zurueckgestellt:** Der Auto-Login-Link direkt auf der Landing
+  Page (`data.login_url` aus `/beta-signup`) ist der zuverlaessige,
+  produktiv genutzte Weg fuer Beta-Zugang - sogar eine bessere UX als
+  E-Mail (sofortiger Zugriff, kein Postfach-Check noetig). `RESEND_API_KEY`
+  ist optional bereits in Railway gesetzt; ohne verifizierte Domain
+  schlagen Mails an Fremd-Adressen weiterhin fehl, werden aber sauber
+  abgefangen (siehe `beta.py`) und blockieren den Signup nicht.
 - **TODO:** Fuer echte Zahlungen: Stripe-Testmodus-Keys eintragen und
   Webhook in Stripe auf `https://<deine-app-url>/webhook` zeigen lassen
