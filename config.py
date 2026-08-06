@@ -37,7 +37,15 @@ WEBHOOK_PORT = int(os.getenv("PORT", os.getenv("WEBHOOK_PORT", "8080")))
 # damit es nur EINE massgebliche Landing-Page-URL gibt, statt sie doppelt
 # (Pages + Backend) zu pflegen. Per Env-Var ueberschreibbar, z.B. bei
 # eigener Domain.
-LANDING_PAGE_URL = os.getenv("LANDING_PAGE_URL", "https://postvonklaus-pixel.github.io/support-pool-/")
+#
+# Liegt bewusst unter /ai-automation/ statt am Repo-Root: der Root
+# (index.html) gehoert der bereits bestehenden Support-Pool-App dieses
+# Repos. Da GitHub Pages hier im "Deploy from a branch"-Legacy-Modus laeuft,
+# wird /ai-automation/index.html automatisch mitausgeliefert, ohne den Root
+# zu beruehren - kein zusaetzlicher Workflow/Build-Schritt noetig.
+LANDING_PAGE_URL = os.getenv(
+    "LANDING_PAGE_URL", "https://postvonklaus-pixel.github.io/support-pool-/ai-automation/"
+)
 
 # --------------------------------------------------------------------------
 # API-Keys / externe Services

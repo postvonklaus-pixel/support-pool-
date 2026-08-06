@@ -13,16 +13,15 @@ Startet mit "python main.py":
 Laeuft komplett im MOCK-Modus ohne echte API-Keys (siehe .env.example / README).
 """
 import logging
-import os
 import threading
 import time
 
 import schedule
-from flask import Flask, jsonify, request, send_from_directory
+from flask import Flask, jsonify, redirect, request
 
 import payment
 from beta import BetaSignupError, create_beta_user
-from config import MOCK_STRIPE, WEBHOOK_HOST, WEBHOOK_PORT
+from config import LANDING_PAGE_URL, MOCK_STRIPE, WEBHOOK_HOST, WEBHOOK_PORT
 from db import init_db
 from agents import build_agents
 from logging_config import setup_logging
@@ -32,15 +31,15 @@ from workflow import daily_workflow
 setup_logging()
 logger = logging.getLogger("main")
 
-STATIC_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static")
-
 webhook_app = Flask(__name__)
 
 
 @webhook_app.get("/")
 def landing_page():
-    """Serviert die Marketing-/Beta-Landing-Page (static/landing.html)."""
-    return send_from_directory(STATIC_DIR, "landing.html")
+    """Leitet zur kanonischen Landing Page auf GitHub Pages weiter (siehe
+    config.LANDING_PAGE_URL) - die Quelldatei liegt im Repo unter
+    ai-automation/index.html."""
+    return redirect(LANDING_PAGE_URL)
 
 
 @webhook_app.get("/health")

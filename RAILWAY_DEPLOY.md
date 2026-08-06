@@ -21,7 +21,7 @@ Testphase mit haeufigen Deploys ist das meist okay; fuer echte Daten siehe
 - [x] CORS eingebaut (`Access-Control-Allow-Origin: *` fuer Beta-Signup von GitHub Pages)
 - [x] Lokal getestet (siehe unten)
 - [ ] Deployed auf Railway ← **dein Schritt**
-- [ ] `API_BASE_URL` in `static/landing.html` mit echter Railway-URL aktualisiert ← **dein Schritt**
+- [ ] `API_BASE_URL` in `ai-automation/index.html` mit echter Railway-URL aktualisiert ← **dein Schritt**
 - [ ] Beta-Signup funktioniert LIVE
 - [ ] Dashboard erreichbar
 
@@ -71,26 +71,27 @@ curl https://<deine-railway-url>/health
 
 ### 7. Landing Page mit dem Backend verbinden
 
-`static/landing.html` hat aktuell absichtlich eine leere `API_BASE_URL`
+`ai-automation/index.html` hat aktuell absichtlich eine leere `API_BASE_URL`
 (die Seite zeigt sonst einen freundlichen Hinweis statt eines stillen
 Fehlers). Jetzt eintragen:
 
 ```js
-// in static/landing.html, im <script>-Block:
+// in ai-automation/index.html, im <script>-Block:
 const API_BASE_URL = 'https://<deine-railway-url>';
 ```
 
 Dann committen und pushen (auf `main`, oder auf einen Branch + PR, je nachdem
-was du bevorzugst) - der bestehende GitHub-Actions-Workflow
-(`.github/workflows/deploy.yml`) deployed die aktualisierte Landing Page
-automatisch neu zu GitHub Pages. Kein weiterer manueller Schritt noetig.
+was du bevorzugst) - `ai-automation/index.html` liegt direkt im Branch, GitHub
+Pages liefert Aenderungen daran automatisch bei jedem Push aus (kein
+Workflow, kein Build-Schritt, siehe `DEPLOY.md` Schritt A). Kein weiterer
+manueller Schritt noetig.
 
 ## Automatische Deploys (Railway)
 
 Sobald das Projekt einmal verbunden ist, deployed Railway automatisch bei
 jedem Push auf `main` neu - das ist Railway-Standardverhalten fuer
-GitHub-verbundene Projekte, kein weiteres Setup noetig. Der GitHub-Actions-
-Workflow fuer die Landing Page laeuft unabhaengig davon fuer sich.
+GitHub-verbundene Projekte, kein weiteres Setup noetig. Die Landing Page auf
+GitHub Pages aktualisiert sich unabhaengig davon fuer sich (siehe oben).
 
 ## Lokaler Test (bereits durchgefuehrt, zum Nachvollziehen)
 
@@ -141,7 +142,7 @@ Alternativ: die bereits geseedeten Test-User funktionieren auch live sofort
   wird nicht als Start-Befehl erkannt - in Railway unter Settings pruefen,
   dass kein anderer Start-Befehl manuell ueberschrieben wurde.
 - **CORS-Fehler im Browser (Landing Page kann Backend nicht erreichen):**
-  `API_BASE_URL` in `static/landing.html` pruefen (Schritt 7) - haeufigster
+  `API_BASE_URL` in `ai-automation/index.html` pruefen (Schritt 7) - haeufigster
   Fehler ist ein vergessenes `https://` oder ein tippfehlerhafter Domainname.
 - **SQLite-Daten verschwinden nach Redeploy:** Railway's Dateisystem ist
   standardmaessig **nicht persistent** ueber Deploys hinweg (jeder Deploy =

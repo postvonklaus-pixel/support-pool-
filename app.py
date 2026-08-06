@@ -74,7 +74,7 @@ def add_cors_headers(response):
 def landing_page():
     """Leitet zur kanonischen Landing Page auf GitHub Pages weiter, damit es
     nur eine massgebliche URL gibt (statt Pages + Backend doppelt zu pflegen).
-    static/landing.html bleibt Teil des Repos fuer den GitHub-Pages-Build."""
+    Die Quelldatei liegt im Repo unter ai-automation/index.html."""
     return redirect(LANDING_PAGE_URL)
 
 

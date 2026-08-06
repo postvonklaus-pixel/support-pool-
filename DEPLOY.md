@@ -7,7 +7,7 @@ Kurz vorweg, weil es fuer alles Folgende wichtig ist:
 > Konfigurationsfrage, sondern eine harte Plattform-Grenze von GitHub Pages.
 >
 > Das heisst konkret:
-> - Die **Landing Page** (`static/landing.html`) kann direkt auf GitHub
+> - Die **Landing Page** (`ai-automation/index.html`) kann direkt auf GitHub
 >   Pages live gehen - das deckt Schritt A unten ab.
 > - Das **Python-Backend** (`app.py` / `production.py` mit Beta-Signup,
 >   Dashboard, Workflow) kann NICHT auf GitHub Pages laufen. Dafuer brauchst
@@ -18,59 +18,45 @@ Kurz vorweg, weil es fuer alles Folgende wichtig ist:
 
 ## Schritt A: Landing Page auf GitHub Pages (rein GitHub, $0)
 
-### 1. Einmalig: GitHub Pages aktivieren
+**Historie/wichtig:** Dieses Repo hatte bereits vor diesem Projekt eine
+eigene GitHub-Pages-Seite (eine andere, bestehende App unter dem Repo-Root
+`index.html`, Pages-Source "Deploy from a branch"). Ein frueherer Versuch,
+die Landing Page per eigenem GitHub-Actions-Workflow direkt auf den Root zu
+deployen, ist deshalb wiederholt fehlgeschlagen: der Actions-Workflow hat
+den Root ueberschrieben, aber die Legacy-Branch-Pipeline hat ihn bei jedem
+Push kurz danach wieder mit der alten Seite ueberschrieben (Race
+Condition) - und die Root-`index.html` gehoert ohnehin der anderen App,
+sie durfte gar nicht angefasst werden.
 
-Das kann nur im Repo selbst per Klick gemacht werden (keine API dafuer
-verfuegbar) - **einmalig, dauert 10 Sekunden:**
+**Loesung:** Die Landing Page liegt stattdessen als eigener Unterordner
+direkt im Branch: [`ai-automation/index.html`](ai-automation/index.html).
+Da GitHub Pages im Legacy-Branch-Modus den kompletten Branch-Inhalt 1:1
+ausliefert, wird dieser Unterordner automatisch mitpubliziert - **ohne
+jeden weiteren Schritt, ohne Settings-Aenderung, ohne Workflow, ohne
+Race-Condition-Risiko fuer die bestehende App.** Jeder Push auf `main`
+aktualisiert die Seite automatisch (GitHub's eingebauter Pages-Mechanismus,
+kein eigener Workflow mehr noetig).
 
-1. Im Repo auf GitHub: **Settings** &rarr; **Pages** (linkes Menu, unter "Code and automation")
-2. Bei **"Build and deployment"** &rarr; **Source**: `GitHub Actions` auswaehlen
-   (NICHT "Deploy from a branch")
-3. Fertig - nichts speichern/bestaetigen noetig, die Auswahl greift sofort.
+### 1. Live-URL
 
-> **Falls dieses Repo vorher schon eine GitHub-Pages-Seite hatte** (z.B. weil
-> hier bereits eine andere App lag): Der Schritt oben ist dann nicht
-> optional, sondern zwingend zu pruefen. Steht Source noch auf "Deploy from
-> a branch", liefert GitHub bei jedem Push auf `main` automatisch den
-> kompletten Root-Inhalt von `main` aus (die alte Seite) und ueberschreibt
-> damit stillschweigend jeden erfolgreichen Deploy dieses Workflows - der
-> Workflow selbst meldet trotzdem "success", das Ergebnis ist aber die
-> falsche Seite. Symptom: Die Pages-URL zeigt die alte/falsche Seite, obwohl
-> der Actions-Run gruen ist. Fix: wie oben, Source auf "GitHub Actions"
-> umstellen, danach einmal per Push (oder Actions -&gt; "Run workflow")
-> neu deployen.
-
-### 2. Workflow ausloesen
-
-Der Workflow `.github/workflows/deploy.yml` deployed `static/landing.html`
-als `index.html` zu GitHub Pages:
-- **Automatisch** bei jedem Push auf `main`
-- **Manuell** jederzeit ueber: Repo &rarr; **Actions** &rarr; "Deploy Landing
-  Page to GitHub Pages" &rarr; **Run workflow**
-
-### 3. Live-URL bekommen
-
-Nach dem ersten erfolgreichen Workflow-Lauf (gruener Haken) erscheint die
-URL an zwei Stellen:
-- Im Workflow-Run selbst, unter dem Job "deploy" &rarr; Feld "Deploy to
-  GitHub Pages" zeigt die URL
-- In den Repo-**Settings &rarr; Pages** oben ("Your site is live at ...")
-
-Das Muster fuer Projekt-Repos ist immer:
 ```
-https://<dein-github-username>.github.io/<repo-name>/
+https://postvonklaus-pixel.github.io/support-pool-/ai-automation/
 ```
 
-### 4. Testen
+(Root `https://postvonklaus-pixel.github.io/support-pool-/` bleibt
+unveraendert die bestehende App.)
+
+### 2. Testen
 
 ```bash
-curl -I https://<dein-github-username>.github.io/<repo-name>/
+curl -I https://postvonklaus-pixel.github.io/support-pool-/ai-automation/
 # Erwartet: HTTP/2 200
 ```
 
 Oder einfach im Browser oeffnen - das Beta-Formular auf der Seite selbst
-funktioniert dort aber **nicht** (es ruft `/beta-signup` auf, das es auf
-GitHub Pages nicht gibt - siehe Schritt B).
+funktioniert dort aber **nicht von allein**, solange kein Backend
+deployed ist (es ruft `/beta-signup` auf, das es auf GitHub Pages nicht
+gibt - siehe Schritt B).
 
 ---
 
@@ -149,7 +135,7 @@ Konsolen-Ausgabe von `python production.py`.
 
 | Datei | Zweck | Wo lauffaehig |
 |---|---|---|
-| `static/landing.html` | Marketing-Landing-Page | GitHub Pages, oder jeder Static-Host |
+| `ai-automation/index.html` | Marketing-Landing-Page | GitHub Pages (Unterpfad, siehe Schritt A), oder jeder Static-Host |
 | `app.py` | Flask-App: Landing Page + API + HTML-Dashboard, EINE Datei | Jeder Python-Host (Railway, Render, VPS, ...) - NICHT GitHub Pages |
 | `production.py` | Start-Befehl fuer `app.py` inkl. DB-Init, Seed, taeglichem Workflow | s.o. |
 | `main.py` + `dashboard.py` + `admin_dashboard.py` | Voller lokaler Dev-Modus mit Streamlit-Dashboards (Charts etc.) | Nur lokal / eigener Host, nicht als "ein Prozess" gedacht |

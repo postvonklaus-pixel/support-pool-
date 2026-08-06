@@ -125,8 +125,10 @@ Manuelles Neu-Seeden: `python seed.py`.
 
 Sobald `python main.py` laeuft, ist zusaetzlich verfuegbar:
 
-- **Landing Page**: `http://localhost:8080/` - stellt die 4 Abo-Modelle vor
-  und hat ein Beta-Access-Formular (`POST /beta-signup`).
+- **Landing Page**: Quelle liegt unter [`ai-automation/index.html`](ai-automation/index.html)
+  (live auf GitHub Pages, siehe `DEPLOY.md`) - stellt die 4 Abo-Modelle vor
+  und hat ein Beta-Access-Formular. `http://localhost:8080/` leitet dorthin
+  weiter; die Beta-Signup-API selbst laeuft immer lokal unter `POST /beta-signup`.
 - **Beta-Tester-Plan**: kostenlos, voller Feature-Zugriff (wie Agent-Plan).
   Wird automatisch bei Signup ueber die Landing Page vergeben
   (`beta.create_beta_user()`), inkl. Onboarding-Mail und einem
