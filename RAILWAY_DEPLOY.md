@@ -155,6 +155,15 @@ Alternativ: die bereits geseedeten Test-User funktionieren auch live sofort
 
 ## Persistente Datenbank: Postgres statt SQLite
 
+> **Status: pausiert.** Auf einem Railway-Trial-Account war weder das
+> Postgres-Addon (dauerhaft im richtigen Projekt, nicht als temporaeres
+> Wegwerf-Projekt) noch "Volumes" (Alternative, siehe unten) erreichbar -
+> "Volumes" taucht in den Service-Settings gar nicht auf, vermutlich eine
+> Trial-Einschraenkung. Braucht wahrscheinlich ein bezahltes Railway-Plan-
+> Upgrade (Workspace-Settings &rarr; Plans pruefen). Der Code-Teil unten
+> bleibt trotzdem gueltig/getestet - nur die Railway-seitige Einrichtung
+> steht noch aus.
+
 **Warum:** Railways Dateisystem ist standardmaessig **nicht persistent**
 ueber Deploys hinweg - jeder Deploy = frischer Container, die
 SQLite-Datei ist danach weg. Fuer die ersten Tests okay (Seed-Daten legen

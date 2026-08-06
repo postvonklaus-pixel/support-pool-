@@ -173,12 +173,18 @@ im Dashboard.
 ## Naechste Schritte fuer echten Live-Betrieb
 
 - ✅ **Erledigt:** Flask-Dev-Server durch Gunicorn (WSGI-Server) ersetzt.
-- **Code-seitig fertig, dein Schritt fehlt noch:** Persistente Datenbank
-  (Postgres) statt SQLite auf Railways fluechtigem Dateisystem - Code ist
-  bereits vollstaendig Postgres-faehig (lokal mit echtem Postgres-Server
-  End-to-End getestet, keine Aenderung noetig). Railway-Postgres-Addon
-  hinzufuegen und `DATABASE_URL` setzen - Anleitung Schritt fuer Schritt in
-  `RAILWAY_DEPLOY.md` &rarr; "Persistente Datenbank: Postgres statt SQLite".
+- **PAUSIERT (Railway-Trial-Limit):** Persistente Datenbank (Postgres) statt
+  SQLite auf Railways fluechtigem Dateisystem - Code ist bereits vollstaendig
+  Postgres-faehig (lokal mit echtem Postgres-Server End-to-End getestet,
+  keine Aenderung noetig, siehe `RAILWAY_DEPLOY.md`). Sowohl das
+  Postgres-Addon als dauerhafter Service als auch Volumes (Alternative fuer
+  persistente SQLite-Datei) waren im Railway-Trial-Plan nicht verfuegbar
+  ("Volumes" taucht in den Service-Settings gar nicht erst auf). Erfordert
+  vermutlich ein Upgrade auf einen bezahlten Railway-Plan (ab ca. $5/Monat,
+  Workspace-Settings &rarr; Plans pruefen) - bewusste Kostenentscheidung des
+  Users, daher aktuell zurueckgestellt. Bis dahin: SQLite-Daten (Beta-Tester,
+  Feedback, Content) gehen bei jedem Redeploy verloren; fuer die aktuelle
+  Beta-Phase mit wenigen Signups tragbar.
 - **TODO:** Fuer mehr als ein paar Test-User: SendGrid-Key eintragen, damit
   Onboarding-Mails wirklich verschickt werden (siehe README &rarr; MOCK-Modi)
 - **TODO:** Fuer echte Zahlungen: Stripe-Testmodus-Keys eintragen und
