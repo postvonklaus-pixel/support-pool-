@@ -134,18 +134,15 @@ im Dashboard.
 ## Naechste Schritte fuer echten Live-Betrieb
 
 - ✅ **Erledigt:** Flask-Dev-Server durch Gunicorn (WSGI-Server) ersetzt.
-- **PAUSIERT (Railway-Trial-Limit):** Persistente Datenbank (Postgres) statt
-  SQLite auf Railways fluechtigem Dateisystem - Code ist bereits vollstaendig
-  Postgres-faehig (lokal mit echtem Postgres-Server End-to-End getestet,
-  keine Aenderung noetig, siehe `RAILWAY_DEPLOY.md`). Sowohl das
-  Postgres-Addon als dauerhafter Service als auch Volumes (Alternative fuer
-  persistente SQLite-Datei) waren im Railway-Trial-Plan nicht verfuegbar
-  ("Volumes" taucht in den Service-Settings gar nicht erst auf). Erfordert
-  vermutlich ein Upgrade auf einen bezahlten Railway-Plan (ab ca. $5/Monat,
-  Workspace-Settings &rarr; Plans pruefen) - bewusste Kostenentscheidung des
-  Users, daher aktuell zurueckgestellt. Bis dahin: SQLite-Daten (Beta-Tester,
-  Feedback, Content) gehen bei jedem Redeploy verloren; fuer die aktuelle
-  Beta-Phase mit wenigen Signups tragbar.
+- ✅ **Erledigt:** Persistente Datenbank (Postgres) statt SQLite auf Railways
+  fluechtigem Dateisystem. War auf dem kostenlosen Trial-Plan nicht moeglich
+  (weder Postgres-Addon noch Volumes verfuegbar) - nach Upgrade auf den
+  Hobby-Plan Postgres-Service in Railway hinzugefuegt, `DATABASE_URL` beim
+  "web"-Service auf `${{Postgres.DATABASE_URL}}` gesetzt. Code brauchte
+  keine Aenderung (war schon vorher lokal mit echtem Postgres-Server
+  End-to-End getestet, siehe `RAILWAY_DEPLOY.md`). Live bestaetigt: App
+  fand nach dem Wechsel die neue, leere Postgres-DB und seedete sie
+  automatisch - Daten ueberleben jetzt Redeploys.
 - ✅ **Erledigt:** Echte Onboarding-Mails an beliebige Beta-Tester. Weg
   dorthin: SendGrid (Verifizierung scheiterte) → Gmail-SMTP (Railway
   blockiert ausgehende SMTP-Ports 25/587) → Resend-Sandbox (nur an eigene
