@@ -38,19 +38,12 @@ WEBHOOK_HOST = os.getenv("WEBHOOK_HOST", "0.0.0.0")
 # Standard-Fallback ist 8080 (siehe Phase 3: Production-Deployment).
 WEBHOOK_PORT = int(os.getenv("PORT", os.getenv("WEBHOOK_PORT", "8080")))
 
-# Kanonische Landing Page (GitHub Pages). app.py's "/" leitet dorthin um,
-# damit es nur EINE massgebliche Landing-Page-URL gibt, statt sie doppelt
-# (Pages + Backend) zu pflegen. Per Env-Var ueberschreibbar, z.B. bei
-# eigener Domain.
-#
-# Liegt bewusst unter /ai-automation/ statt am Repo-Root: der Root
-# (index.html) gehoert der bereits bestehenden Support-Pool-App dieses
-# Repos. Da GitHub Pages hier im "Deploy from a branch"-Legacy-Modus laeuft,
-# wird /ai-automation/index.html automatisch mitausgeliefert, ohne den Root
-# zu beruehren - kein zusaetzlicher Workflow/Build-Schritt noetig.
-LANDING_PAGE_URL = os.getenv(
-    "LANDING_PAGE_URL", "https://postvonklaus-pixel.github.io/support-pool-/ai-automation/"
-)
+# Kanonische Landing-Page-URL - app.py selbst rendert die Landing Page
+# inzwischen direkt unter "/" (siehe LANDING_TEMPLATE), diese Variable wird
+# nur noch von main.py (lokaler Dev-Modus) fuer dessen eigenen "/"-Redirect
+# genutzt. War frueher eine separate GitHub-Pages-URL (siehe git-history:
+# ai-automation/index.html ist jetzt nur noch ein Redirect-Stub dorthin).
+LANDING_PAGE_URL = os.getenv("LANDING_PAGE_URL", "https://autosocial.cc")
 
 # Oeffentliche URL des Backends selbst (fuer Links in E-Mails, z.B. zum
 # Dashboard-Login) - RAILWAY_PUBLIC_DOMAIN wird von Railway automatisch
