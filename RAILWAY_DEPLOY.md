@@ -44,7 +44,9 @@ gewaehren.
 Railway liest `railway.json` automatisch:
 - Builder: NIXPACKS (nicht das vorhandene `Dockerfile` - bewusst so
   konfiguriert, siehe Kommentar in `railway.json`)
-- Start-Befehl: `python production.py`
+- Start-Befehl: `gunicorn app:app --bind 0.0.0.0:$PORT --workers 1 --threads 4
+  --timeout 120` (echter WSGI-Server statt Flask-Dev-Server; DB-Init, Seed
+  und der taegliche Scheduler laufen automatisch beim Import von `app.py` mit)
 - Healthcheck: `/health`
 
 Nichts weiter einzustellen noetig. Umgebungsvariablen sind **optional** -
@@ -108,6 +110,10 @@ GitHub Pages aktualisiert sich unabhaengig davon fuer sich (siehe oben).
 ## Lokaler Test (bereits durchgefuehrt, zum Nachvollziehen)
 
 ```bash
+# Identisch zum Railway-Startbefehl:
+gunicorn app:app --bind 0.0.0.0:8080 --workers 1 --threads 4 --timeout 120
+
+# Oder als einfacher lokaler Fallback ohne Gunicorn:
 python production.py
 ```
 
@@ -150,8 +156,8 @@ Alternativ: die bereits geseedeten Test-User funktionieren auch live sofort
 ## Troubleshooting
 
 - **Healthcheck schlaegt fehl / App startet nicht:** Railway-Logs pruefen
-  (Deployments &rarr; View Logs). Haeufigste Ursache: `python production.py`
-  wird nicht als Start-Befehl erkannt - in Railway unter Settings pruefen,
+  (Deployments &rarr; View Logs). Haeufigste Ursache: der Gunicorn-Startbefehl
+  aus `railway.json` wird nicht erkannt - in Railway unter Settings pruefen,
   dass kein anderer Start-Befehl manuell ueberschrieben wurde.
 - **CORS-Fehler im Browser (Landing Page kann Backend nicht erreichen):**
   `API_BASE_URL` in `ai-automation/index.html` pruefen (Schritt 7) - haeufigster

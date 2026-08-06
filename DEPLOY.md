@@ -69,13 +69,15 @@ in `docs/DEPLOYMENT.md`):
 
 1. Auf [railway.app](https://railway.app) oder [render.com](https://render.com)
    mit GitHub einloggen, dieses Repo verbinden
-2. Start-Befehl: `python production.py` (steht auch im `Procfile`, wird von
-   beiden Plattformen automatisch erkannt)
-3. Umgebungsvariablen: **keine zwingend noetig** - `production.py` laeuft
-   automatisch im Mock-Modus mit SQLite. Optional aus `.env.example`
-   uebernehmen, wenn du z.B. echte E-Mails willst.
-4. `PORT` setzt die Plattform automatisch (production.py liest das automatisch,
-   siehe `config.py`)
+2. Start-Befehl: `gunicorn app:app --bind 0.0.0.0:$PORT --workers 1 --threads 4
+   --timeout 120` (steht auch im `Procfile` bzw. `railway.json`, wird von
+   beiden Plattformen automatisch erkannt) - echter WSGI-Server statt Flask-
+   Dev-Server, DB-Init/Seed/taeglicher Workflow laufen dabei automatisch beim
+   Start von `app.py` mit (siehe Kurzreferenz unten)
+3. Umgebungsvariablen: **keine zwingend noetig** - laeuft automatisch im
+   Mock-Modus mit SQLite. Optional aus `.env.example` uebernehmen, wenn du
+   z.B. echte E-Mails willst.
+4. `PORT` setzt die Plattform automatisch, Gunicorn bindet direkt darauf
 5. Deploy ausloesen - die Plattform vergibt automatisch eine oeffentliche URL
    (z.B. `https://dein-projekt.up.railway.app`)
 
@@ -143,7 +145,8 @@ oder 2 nutzen.)
 Onboarding-Mail nicht wirklich verschickt, sondern nur geloggt. Auf der
 Deployment-Plattform in den Logs nach `[MOCK-EMAIL]` suchen, dort steht das
 temporaere Passwort. Lokal steht es in `logs/app.log` bzw. in der
-Konsolen-Ausgabe von `python production.py`.
+Konsolen-Ausgabe von `python production.py` (lokaler Fallback ohne
+Gunicorn).
 
 ---
 
@@ -152,20 +155,28 @@ Konsolen-Ausgabe von `python production.py`.
 | Datei | Zweck | Wo lauffaehig |
 |---|---|---|
 | `ai-automation/index.html` | Marketing-Landing-Page | GitHub Pages (Unterpfad, siehe Schritt A), oder jeder Static-Host |
-| `app.py` | Flask-App: Landing Page + API + HTML-Dashboard, EINE Datei | Jeder Python-Host (Railway, Render, VPS, ...) - NICHT GitHub Pages |
-| `production.py` | Start-Befehl fuer `app.py` inkl. DB-Init, Seed, taeglichem Workflow | s.o. |
+| `app.py` | Flask-App: Landing Page + API + HTML-Dashboard, EINE Datei. Erledigt beim Import selbst: DB-Init, Seed (falls leer), Logging-Setup, taeglichen Scheduler starten - laeuft dadurch identisch unter Gunicorn und lokal | Jeder Python-Host (Railway, Render, VPS, ...) - NICHT GitHub Pages |
+| `production.py` | Duenner lokaler Fallback ohne Gunicorn (`python production.py`) - fuer den echten Deploy nicht mehr noetig, siehe Gunicorn-Startbefehl oben | Nur lokal |
 | `main.py` + `dashboard.py` + `admin_dashboard.py` | Voller lokaler Dev-Modus mit Streamlit-Dashboards (Charts etc.) | Nur lokal / eigener Host, nicht als "ein Prozess" gedacht |
 
-`app.py`/`production.py` sind die schlanke Production-Variante (ein Prozess,
-ein Port, kein Streamlit) - fuer lokale Entwicklung mit vollem
+`app.py` (per Gunicorn gestartet) ist die schlanke Production-Variante (ein
+Prozess, ein Port, kein Streamlit) - fuer lokale Entwicklung mit vollem
 Funktionsumfang bleibt `main.py` die bessere Wahl (siehe Haupt-README).
+
+**Hinweis zum Neustart-Verhalten:** Der taegliche Agenten-Workflow laeuft nur
+noch nach Zeitplan (06:00 Uhr), nicht mehr automatisch bei jedem Server-Start/
+-Neustart - bei echten Beta-Nutzern soll ein Redeploy nicht jedes Mal die
+volle Pipeline fuer alle User neu anstossen. Fuer sofortige Test-Aktivitaet
+nach einem Signup gibt es den "🔄 Neue Beispiel-Aktivitaet generieren"-Button
+im Dashboard.
 
 ## Naechste Schritte fuer echten Live-Betrieb
 
-- **TODO:** Flask-Dev-Server durch einen WSGI-Server ersetzen:
-  `gunicorn app:app --bind 0.0.0.0:$PORT` (ist bereits in `requirements.txt`
-  enthalten). Der eingebaute Server warnt selbst: "Do not use it in a
-  production deployment."
+- ✅ **Erledigt:** Flask-Dev-Server durch Gunicorn (WSGI-Server) ersetzt.
+- **TODO:** Persistente Datenbank statt SQLite auf Railways fluechtigem
+  Dateisystem - sonst gehen echte Beta-User/Feedback/Content bei jedem
+  Redeploy verloren. Railway-Postgres-Addon hinzufuegen und `DATABASE_URL`
+  setzen (psycopg2-binary ist schon in `requirements.txt`).
 - **TODO:** Fuer mehr als ein paar Test-User: SendGrid-Key eintragen, damit
   Onboarding-Mails wirklich verschickt werden (siehe README &rarr; MOCK-Modi)
 - **TODO:** Fuer echte Zahlungen: Stripe-Testmodus-Keys eintragen und

@@ -15,10 +15,12 @@ eigentlichen Start-Befehl ("python production.py"). Fuer WSGI-Server:
 """
 import logging
 import secrets
+import threading
 import time
 from datetime import datetime
 from urllib.parse import quote
 
+import schedule
 from flask import Flask, jsonify, redirect, render_template_string, request, session
 
 import payment
@@ -35,10 +37,17 @@ from config import (
     SELF_SERVICE_PLANS,
 )
 from db import get_session, init_db
+from logging_config import setup_logging
 from models import Content, Feedback, FeedbackCategoryEnum, User, enum_value
 from mrr import daily_mrr_report, mrr_goal_progress
-from workflow import run_user_pipeline
+from seed import has_users, seed_users
+from workflow import daily_workflow, run_user_pipeline
 
+# Auf Modul-Ebene statt nur in production.py/main.py, damit Logging auch
+# unter Gunicorn greift (Gunicorn importiert app.py direkt, ruft die
+# anderen Einstiegspunkte nie auf) - sonst verschwinden alle Agenten-/
+# MRR-/Fehler-Logs auf Railway ins Leere.
+setup_logging()
 logger = logging.getLogger("app")
 
 app = Flask(__name__)
@@ -48,9 +57,31 @@ app.secret_key = SECRET_KEY
 # gunicorn, production.py, Tests) - init_db() ist idempotent.
 init_db()
 
+if not has_users():
+    logger.info("Keine User gefunden, lege Test-Daten an...")
+    seed_users()
+
 # Fuer den manuellen "Jetzt testen"-Button im Dashboard (dashboard_run_agents()
 # unten) - dieselben Agenten-Instanzen, die auch der taegliche Workflow nutzt.
 _agents = build_agents()
+
+
+def _run_scheduler_loop() -> None:
+    schedule.every().day.at("06:00").do(daily_workflow, agents=_agents)
+    logger.info("Taeglicher Workflow eingeplant fuer 06:00 Uhr (naechster Lauf morgen).")
+    while True:
+        schedule.run_pending()
+        time.sleep(30)
+
+
+# Modul-Ebene statt in production.py's main(), damit der taegliche Workflow
+# auch unter "gunicorn app:app" laeuft (Gunicorn importiert app.py direkt,
+# ruft production.py's main() nie auf). Bewusst NICHT auch sofort einmal
+# ausgefuehrt beim Start (frueheres Verhalten) - bei echten Beta-Nutzern soll
+# ein Server-Neustart nicht jedes Mal die volle Pipeline fuer alle User neu
+# anstossen. Fuer sofortige Test-Aktivitaet gibt es den "Jetzt testen"-Button
+# im Dashboard (siehe dashboard_run_agents()).
+threading.Thread(target=_run_scheduler_loop, name="daily-workflow-scheduler", daemon=True).start()
 
 # Einmal-Tokens fuer Auto-Login direkt nach dem Beta-Signup (siehe
 # beta_signup()/auto_login() unten). Bewusst nur In-Memory: kurzlebig
