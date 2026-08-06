@@ -96,6 +96,13 @@ Dashboard: `https://<deine-app-url>/dashboard` im Browser oeffnen, mit
 angelegten Beta-User - Passwort steht im Server-Log der Plattform, da im
 Mock-Modus keine echte Mail verschickt wird, siehe unten).
 
+**Admin-Uebersicht** (MRR, Wachstumsziel, Beta-Tester-Aktivitaet, Feedback):
+`https://<deine-app-url>/admin` im Browser oeffnen, mit dem `ADMIN_PASSWORD`
+einloggen. **WICHTIG:** Auf der Deployment-Plattform (z.B. Railway) unbedingt
+im Variables-Tab eine echte `ADMIN_PASSWORD` setzen - der Code-Default
+`changeme-admin` ist nur fuer lokale Tests gedacht und unsicher, wenn er live
+stehen bleibt.
+
 ---
 
 ## Beta-User hinzufuegen

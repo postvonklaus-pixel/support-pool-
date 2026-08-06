@@ -22,6 +22,11 @@ SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret-change-me")
 LOG_DIR = os.getenv("LOG_DIR", "logs")
 LOG_FILE = os.path.join(LOG_DIR, "app.log")
 
+# Schuetzt app.py's "/admin"-Route (MRR/Beta-Tester/Feedback-Uebersicht).
+# TODO: unbedingt per Env-Var auf Railway setzen (Variables-Tab) - der
+# Default hier ist nur fuer lokale Mock-Tests gedacht.
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "changeme-admin")
+
 # Fallback auf SQLite, damit "python main.py" ohne jedes Setup laeuft.
 # In Produktion via .env DATABASE_URL=postgresql://... setzen.
 DATABASE_URL = os.getenv("DATABASE_URL") or "sqlite:///./data/app.db"

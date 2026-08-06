@@ -24,9 +24,18 @@ from flask import Flask, jsonify, redirect, render_template_string, request, ses
 import payment
 from auth import verify_password
 from beta import BetaSignupError, create_beta_user
-from config import LANDING_PAGE_URL, MOCK_STRIPE, PLAN_CONFIG, PlanTier, SECRET_KEY, SELF_SERVICE_PLANS
+from config import (
+    ADMIN_PASSWORD,
+    LANDING_PAGE_URL,
+    MOCK_STRIPE,
+    PLAN_CONFIG,
+    PlanTier,
+    SECRET_KEY,
+    SELF_SERVICE_PLANS,
+)
 from db import get_session, init_db
 from models import Content, Feedback, FeedbackCategoryEnum, User, enum_value
+from mrr import daily_mrr_report, mrr_goal_progress
 
 logger = logging.getLogger("app")
 
@@ -402,3 +411,263 @@ def dashboard_feedback():
             db_session.add(Feedback(user_id=session["user_id"], category=category, message=message))
         return redirect(f"/dashboard?flash={quote('Danke fuer dein Feedback!')}")
     return redirect("/dashboard")
+
+
+# --------------------------------------------------------------------------
+# /admin: MRR, Wachstumsziel, Beta-Tester-Aktivitaet, Feedback - als einfache
+# HTML-Seite (Pendant zu admin_dashboard.py, aber live erreichbar ohne
+# Streamlit/lokalen Rechner noetig). Passwortgeschuetzt ueber ADMIN_PASSWORD,
+# komplett getrennt vom User-Login unter /dashboard.
+# --------------------------------------------------------------------------
+ADMIN_LOGIN_TEMPLATE = """
+<!doctype html><html lang="de"><head>{{ style_head|safe }}<title>Admin-Login</title></head>
+<body class="bg-slate-950 text-slate-100 min-h-screen">
+<div class="max-w-sm mx-auto px-6 pt-24">
+  <h1 class="text-2xl font-bold mb-1">🧭 Admin-Login</h1>
+  <p class="text-slate-500 text-sm mb-6">Nur fuer dich - MRR, Beta-Tester, Feedback.</p>
+  {% if error %}
+  <p class="bg-red-950 border border-red-800 text-red-300 rounded-lg px-4 py-2 mb-4 text-sm">{{ error }}</p>
+  {% endif %}
+  <form method="post" action="/admin/login" class="bg-slate-900 border border-slate-800 rounded-xl p-6 space-y-4">
+    <div>
+      <label class="text-sm text-slate-400 block mb-1">Admin-Passwort</label>
+      <input name="password" type="password" required autofocus
+        class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2">
+    </div>
+    <button class="w-full bg-indigo-600 hover:bg-indigo-500 transition rounded-lg py-2 font-semibold">Login</button>
+  </form>
+  <p class="text-xs text-slate-600 mt-6"><a href="/" class="hover:text-slate-400">&larr; Zur Landing Page</a></p>
+</div>
+</body></html>
+"""
+
+ADMIN_TEMPLATE = """
+<!doctype html><html lang="de"><head>{{ style_head|safe }}<title>Admin</title></head>
+<body class="bg-slate-950 text-slate-100 min-h-screen">
+<nav class="max-w-4xl mx-auto flex items-center justify-between px-6 py-6">
+  <span class="font-bold">🧭 Admin-Dashboard</span>
+  <form method="post" action="/admin/logout"><button class="text-red-400 hover:text-red-300 text-sm">Logout</button></form>
+</nav>
+<main class="max-w-4xl mx-auto px-6 pb-16 space-y-10">
+
+  <section>
+    <h2 class="text-lg font-semibold mb-3">Aktueller MRR</h2>
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
+        <p class="text-xs text-slate-500">MRR gesamt</p>
+        <p class="text-xl font-bold">${{ '{:,.0f}'.format(mrr.mrr_total) }}</p>
+      </div>
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
+        <p class="text-xs text-slate-500">Tagesziel (Monat)</p>
+        <p class="text-xl font-bold">${{ '{:,.0f}'.format(mrr.target) }}</p>
+      </div>
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
+        <p class="text-xs text-slate-500">Aktive User</p>
+        <p class="text-xl font-bold">{{ mrr.user_count }}</p>
+      </div>
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
+        <p class="text-xs text-slate-500">Status</p>
+        <p class="text-xl font-bold">{% if mrr.alarm %}🔴 Unter Ziel{% else %}🟢 Im Ziel{% endif %}</p>
+      </div>
+    </div>
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-3">
+      {% for plan in ["starter", "creator", "pro", "agent"] %}
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-3">
+        <p class="text-xs text-slate-500">{{ plan_names[plan] }}</p>
+        <p class="text-lg font-semibold">{{ mrr.counts.get(plan, 0) }}</p>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section>
+    <h2 class="text-lg font-semibold mb-1">🎯 Wachstumsziel: ${{ '{:,.0f}'.format(goal.target_usd) }} in {{ goal.days_total }} Tagen</h2>
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-3">
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
+        <p class="text-xs text-slate-500">Tage bis Ziel</p>
+        <p class="text-xl font-bold">{{ goal.days_left }}</p>
+      </div>
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
+        <p class="text-xs text-slate-500">Noch benoetigt</p>
+        <p class="text-xl font-bold">${{ '{:,.0f}'.format(goal.remaining_usd) }}</p>
+      </div>
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
+        <p class="text-xs text-slate-500">Benoetigt/Tag</p>
+        <p class="text-xl font-bold">${{ '{:,.0f}'.format(goal.needed_per_day_usd) }}</p>
+      </div>
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
+        <p class="text-xs text-slate-500">Auf Kurs?</p>
+        <p class="text-xl font-bold">{% if goal.on_track %}✅ Ja{% else %}⚠️ Nein{% endif %}</p>
+      </div>
+    </div>
+    <div class="w-full bg-slate-800 rounded-full h-2 mt-4 overflow-hidden">
+      <div class="bg-indigo-500 h-2 rounded-full" style="width: {{ goal_progress_pct }}%"></div>
+    </div>
+    <p class="text-xs text-slate-500 mt-1">${{ '{:,.0f}'.format(goal.current_usd) }} / ${{ '{:,.0f}'.format(goal.target_usd) }} MRR</p>
+
+    <p class="text-sm text-slate-400 mt-5 mb-2">Alternative: benoetigte Neu-User/Tag, je nach Plan-Mix (Szenarien, nicht kombiniert)</p>
+    <div class="overflow-x-auto bg-slate-900 border border-slate-800 rounded-xl">
+      <table class="w-full text-sm">
+        <thead class="text-slate-500 text-left"><tr>
+          <th class="px-4 py-2">Plan</th><th class="px-4 py-2">Preis/Monat</th><th class="px-4 py-2">Neu-User/Tag noetig</th>
+        </tr></thead>
+        <tbody>
+          {% for plan, v in goal.users_per_day_by_plan.items() %}
+          <tr class="border-t border-slate-800">
+            <td class="px-4 py-2">{{ plan_names[plan] }}</td>
+            <td class="px-4 py-2">${{ plan_prices[plan] }}</td>
+            <td class="px-4 py-2">{{ v }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="text-lg font-semibold mb-3">Beta-Tester ({{ beta_users|length }})</h2>
+    {% if beta_users %}
+    <div class="overflow-x-auto bg-slate-900 border border-slate-800 rounded-xl">
+      <table class="w-full text-sm">
+        <thead class="text-slate-500 text-left"><tr>
+          <th class="px-4 py-2">E-Mail</th><th class="px-4 py-2">Registriert</th>
+          <th class="px-4 py-2">Letzter Login</th><th class="px-4 py-2">Tage seit Login</th>
+          <th class="px-4 py-2">Posts erstellt</th>
+        </tr></thead>
+        <tbody>
+          {% for u in beta_users %}
+          <tr class="border-t border-slate-800">
+            <td class="px-4 py-2">{{ u.email }}</td>
+            <td class="px-4 py-2">{{ u.registered }}</td>
+            <td class="px-4 py-2">{{ u.last_login }}</td>
+            <td class="px-4 py-2 {% if u.inactive %}text-amber-400{% endif %}">{{ u.days_since_login }}</td>
+            <td class="px-4 py-2">{{ u.post_count }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% if inactive_count %}
+    <p class="text-amber-400 text-sm mt-3">⚠️ {{ inactive_count }} Beta-Tester seit &ge;3 Tagen inaktiv (oder nie eingeloggt) - ggf. nachfassen.</p>
+    {% endif %}
+    {% else %}
+    <p class="text-slate-500 text-sm">Noch keine Beta-Tester registriert.</p>
+    {% endif %}
+  </section>
+
+  <section>
+    <h2 class="text-lg font-semibold mb-3">Feedback ({{ feedback_entries|length }})</h2>
+    {% if feedback_entries %}
+    <div class="grid grid-cols-3 gap-4 mb-4 max-w-md">
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-3">
+        <p class="text-xs text-slate-500">🐞 Bugs</p>
+        <p class="text-lg font-semibold">{{ feedback_counts.bug }}</p>
+      </div>
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-3">
+        <p class="text-xs text-slate-500">✨ Features</p>
+        <p class="text-lg font-semibold">{{ feedback_counts.feature }}</p>
+      </div>
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-3">
+        <p class="text-xs text-slate-500">💡 Ideen</p>
+        <p class="text-lg font-semibold">{{ feedback_counts.idea }}</p>
+      </div>
+    </div>
+    <div class="space-y-2">
+      {% for f in feedback_entries %}
+      <div class="bg-slate-900 border border-slate-800 rounded-lg px-4 py-2 text-sm">
+        <span class="text-slate-500">{{ f.created_at }} &middot; {{ f.category }} &middot; {{ f.email }}</span><br>{{ f.message }}
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="text-slate-500 text-sm">Noch kein Feedback vorhanden.</p>
+    {% endif %}
+  </section>
+
+</main>
+</body></html>
+"""
+
+
+@app.get("/admin")
+def admin_view():
+    if not session.get("is_admin"):
+        return render_template_string(ADMIN_LOGIN_TEMPLATE, style_head=STYLE_HEAD, error=None)
+
+    mrr_report = daily_mrr_report()
+    goal = mrr_goal_progress()
+    goal_progress_pct = min(goal["current_usd"] / goal["target_usd"], 1.0) * 100 if goal["target_usd"] else 0
+
+    with get_session() as db_session:
+        beta_users_raw = (
+            db_session.query(User)
+            .filter_by(plan=PlanTier.BETA.value)
+            .order_by(User.created_at.desc())
+            .all()
+        )
+        beta_users = []
+        inactive_count = 0
+        for u in beta_users_raw:
+            post_count = db_session.query(Content).filter_by(user_id=u.id).count()
+            days_since_login = (datetime.utcnow() - u.last_login_at).days if u.last_login_at else None
+            inactive = days_since_login is None or days_since_login >= 3
+            if inactive:
+                inactive_count += 1
+            beta_users.append({
+                "email": u.email,
+                "registered": u.created_at.strftime("%Y-%m-%d"),
+                "last_login": u.last_login_at.strftime("%Y-%m-%d %H:%M") if u.last_login_at else "noch nie",
+                "days_since_login": days_since_login if days_since_login is not None else "-",
+                "post_count": post_count,
+                "inactive": inactive,
+            })
+
+        feedback_raw = (
+            db_session.query(Feedback, User.email)
+            .join(User, Feedback.user_id == User.id)
+            .order_by(Feedback.created_at.desc())
+            .limit(50)
+            .all()
+        )
+        feedback_entries = [
+            {
+                "created_at": fb.created_at.strftime("%Y-%m-%d %H:%M"),
+                "category": enum_value(fb.category),
+                "email": email,
+                "message": fb.message,
+            }
+            for fb, email in feedback_raw
+        ]
+        feedback_counts = {"bug": 0, "feature": 0, "idea": 0}
+        for f in feedback_entries:
+            if f["category"] in feedback_counts:
+                feedback_counts[f["category"]] += 1
+
+    return render_template_string(
+        ADMIN_TEMPLATE,
+        style_head=STYLE_HEAD,
+        mrr=mrr_report,
+        goal=goal,
+        goal_progress_pct=goal_progress_pct,
+        plan_names={p.value: PLAN_CONFIG[p]["name"] for p in PlanTier},
+        plan_prices={p.value: PLAN_CONFIG[p]["price_usd"] for p in PlanTier},
+        beta_users=beta_users,
+        inactive_count=inactive_count,
+        feedback_entries=feedback_entries,
+        feedback_counts=feedback_counts,
+    )
+
+
+@app.post("/admin/login")
+def admin_login():
+    password = request.form.get("password", "")
+    if not secrets.compare_digest(password, ADMIN_PASSWORD):
+        return render_template_string(ADMIN_LOGIN_TEMPLATE, style_head=STYLE_HEAD, error="Falsches Passwort.")
+    session["is_admin"] = True
+    return redirect("/admin")
+
+
+@app.post("/admin/logout")
+def admin_logout():
+    session.pop("is_admin", None)
+    return redirect("/admin")

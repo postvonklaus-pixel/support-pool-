@@ -24,6 +24,8 @@ Testphase mit haeufigen Deploys ist das meist okay; fuer echte Daten siehe
 - [ ] `API_BASE_URL` in `ai-automation/index.html` mit echter Railway-URL aktualisiert ← **dein Schritt**
 - [ ] Beta-Signup funktioniert LIVE
 - [ ] Dashboard erreichbar
+- [ ] `ADMIN_PASSWORD` in Railway-Variables gesetzt (echtes Passwort, nicht der Default) ← **dein Schritt**
+- [ ] `/admin`-Uebersicht erreichbar
 
 ## Schritte
 
@@ -49,6 +51,11 @@ Nichts weiter einzustellen noetig. Umgebungsvariablen sind **optional** -
 ohne sie laeuft alles automatisch im Mock-Modus mit SQLite (siehe
 `.env.example`, falls du z.B. echte E-Mails willst).
 
+**Eine Variable solltest du trotzdem setzen:** `Settings → Variables` &rarr;
+`ADMIN_PASSWORD` mit einem eigenen, echten Passwort anlegen. Schuetzt die
+`/admin`-Uebersicht (MRR, Wachstumsziel, Beta-Tester, Feedback - siehe Schritt
+6). Ohne diese Variable gilt der unsichere Code-Default `changeme-admin`.
+
 ### 5. Deploy starten
 Railway deployed automatisch nach dem Verbinden. Fortschritt im "Deployments"-Tab
 verfolgen (dauert ueblicherweise 1-3 Minuten fuer den ersten Build).
@@ -68,6 +75,11 @@ festlegen, das entscheidet Railway beim Deploy.
 curl https://<deine-railway-url>/health
 # Erwartet: {"status": "ok", "mock_stripe": true}
 ```
+
+**Admin-Uebersicht:** `https://<deine-railway-url>/admin` im Browser oeffnen,
+mit dem in Schritt 4 gesetzten `ADMIN_PASSWORD` einloggen - zeigt MRR,
+Wachstumsziel-Fortschritt, Beta-Tester-Aktivitaet (inkl. Inaktivitaets-Warnung)
+und alle Feedback-Eintraege, live von der Railway-Datenbank.
 
 ### 7. Landing Page mit dem Backend verbinden
 
