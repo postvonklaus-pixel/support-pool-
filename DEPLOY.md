@@ -1,66 +1,24 @@
 # Live-Deployment
 
-Kurz vorweg, weil es fuer alles Folgende wichtig ist:
+**Aktueller Stand:** Landing Page, Beta-Signup, Dashboard, Admin-Uebersicht
+und Webhook laufen alle als EINE Flask-App (`app.py`) auf Railway, live
+unter der eigenen Domain **`https://autosocial.cc`**. Kein GitHub Pages mehr
+im Spiel fuer dieses Produkt (Support Pool, die andere App in diesem Repo,
+laeuft weiterhin unveraendert unter `postvonklaus-pixel.github.io/support-pool-/`
+auf GitHub Pages - komplett getrennt, nicht betroffen).
 
-> **GitHub Pages kann nur statische Dateien ausliefern** (HTML/CSS/JS) - kein
-> Python, kein Flask, keine Datenbank, keine Server-Logik. Das ist keine
-> Konfigurationsfrage, sondern eine harte Plattform-Grenze von GitHub Pages.
->
-> Das heisst konkret:
-> - Die **Landing Page** (`ai-automation/index.html`) kann direkt auf GitHub
->   Pages live gehen - das deckt Schritt A unten ab.
-> - Das **Python-Backend** (`app.py` / `production.py` mit Beta-Signup,
->   Dashboard, Workflow) kann NICHT auf GitHub Pages laufen. Dafuer brauchst
->   du einen echten Compute-Host - Schritt B unten zeigt den schnellsten
->   Weg dahin, weiterhin kostenlos, weiterhin ohne echte API-Keys.
-
----
-
-## Schritt A: Landing Page auf GitHub Pages (rein GitHub, $0)
-
-**Historie/wichtig:** Dieses Repo hatte bereits vor diesem Projekt eine
-eigene GitHub-Pages-Seite (eine andere, bestehende App unter dem Repo-Root
-`index.html`, Pages-Source "Deploy from a branch"). Ein frueherer Versuch,
-die Landing Page per eigenem GitHub-Actions-Workflow direkt auf den Root zu
-deployen, ist deshalb wiederholt fehlgeschlagen: der Actions-Workflow hat
-den Root ueberschrieben, aber die Legacy-Branch-Pipeline hat ihn bei jedem
-Push kurz danach wieder mit der alten Seite ueberschrieben (Race
-Condition) - und die Root-`index.html` gehoert ohnehin der anderen App,
-sie durfte gar nicht angefasst werden.
-
-**Loesung:** Die Landing Page liegt stattdessen als eigener Unterordner
-direkt im Branch: [`ai-automation/index.html`](ai-automation/index.html).
-Da GitHub Pages im Legacy-Branch-Modus den kompletten Branch-Inhalt 1:1
-ausliefert, wird dieser Unterordner automatisch mitpubliziert - **ohne
-jeden weiteren Schritt, ohne Settings-Aenderung, ohne Workflow, ohne
-Race-Condition-Risiko fuer die bestehende App.** Jeder Push auf `main`
-aktualisiert die Seite automatisch (GitHub's eingebauter Pages-Mechanismus,
-kein eigener Workflow mehr noetig).
-
-### 1. Live-URL
-
-```
-https://postvonklaus-pixel.github.io/support-pool-/ai-automation/
-```
-
-(Root `https://postvonklaus-pixel.github.io/support-pool-/` bleibt
-unveraendert die bestehende App.)
-
-### 2. Testen
-
-```bash
-curl -I https://postvonklaus-pixel.github.io/support-pool-/ai-automation/
-# Erwartet: HTTP/2 200
-```
-
-Oder einfach im Browser oeffnen - das Beta-Formular auf der Seite selbst
-funktioniert dort aber **nicht von allein**, solange kein Backend
-deployed ist (es ruft `/beta-signup` auf, das es auf GitHub Pages nicht
-gibt - siehe Schritt B).
+**Historie (fuer's Verstaendnis, nicht mehr aktueller Weg):** Die Landing
+Page lief zunaechst auf GitHub Pages (statisch, da GitHub Pages kein Python/
+Flask kann), zeitweise sogar als Unterordner `ai-automation/` im selben
+Branch wie Support Pool, um dessen bestehende Pages-Seite nicht zu stoeren.
+Nach dem Kauf einer eigenen Domain wurde die Landing Page direkt in `app.py`
+verschoben (Route `GET /`, siehe `LANDING_TEMPLATE`) - einfacher, ein
+Prozess, keine Cross-Origin-Klimmzuege mehr fuer den Beta-Signup-Fetch.
+`ai-automation/index.html` ist nur noch ein Redirect-Stub fuer alte Links.
 
 ---
 
-## Schritt B: Backend live bringen (Beta-Signup, Dashboard, Workflow)
+## Backend live bringen (Beta-Signup, Dashboard, Workflow)
 
 Braucht einen echten Host. Schnellster kostenloser Weg (Details/Alternativen
 in `docs/DEPLOYMENT.md`):
@@ -82,6 +40,9 @@ in `docs/DEPLOYMENT.md`):
    (z.B. `https://dein-projekt.up.railway.app`)
 
 ### Testen
+
+`<deine-app-url>` unten ist aktuell `https://autosocial.cc` (eigene Domain,
+siehe RAILWAY_DEPLOY.md &rarr; "Custom Domain").
 
 ```bash
 curl https://<deine-app-url>/health
@@ -120,7 +81,7 @@ stehen bleibt.
 
 Drei Wege, je nachdem wo das Backend laeuft:
 
-**1. Ueber die Landing Page (empfohlen, sobald Schritt B live ist):**
+**1. Ueber die Landing Page (empfohlen, sobald das Backend live ist):**
 Landing Page &rarr; Formular am Ende &rarr; E-Mail eingeben &rarr;
 "Beta Access anfordern". Legt automatisch einen User mit dem kostenlosen
 Beta-Tester-Plan an (voller Feature-Zugriff) und erstellt einen
@@ -154,8 +115,8 @@ Gunicorn).
 
 | Datei | Zweck | Wo lauffaehig |
 |---|---|---|
-| `ai-automation/index.html` | Marketing-Landing-Page | GitHub Pages (Unterpfad, siehe Schritt A), oder jeder Static-Host |
-| `app.py` | Flask-App: Landing Page + API + HTML-Dashboard, EINE Datei. Erledigt beim Import selbst: DB-Init, Seed (falls leer), Logging-Setup, taeglichen Scheduler starten - laeuft dadurch identisch unter Gunicorn und lokal | Jeder Python-Host (Railway, Render, VPS, ...) - NICHT GitHub Pages |
+| `ai-automation/index.html` | Nur noch ein Redirect-Stub zu `autosocial.cc`, fuer alte Links | GitHub Pages (unveraendert vorhanden, aber nicht mehr die aktive Landing Page) |
+| `app.py` | Flask-App: Landing Page (Route `/`, siehe `LANDING_TEMPLATE`) + API + HTML-Dashboard + Admin, EINE Datei. Erledigt beim Import selbst: DB-Init, Seed (falls leer), Logging-Setup, taeglichen Scheduler starten - laeuft dadurch identisch unter Gunicorn und lokal | Jeder Python-Host (Railway, Render, VPS, ...) - live unter `autosocial.cc` |
 | `production.py` | Duenner lokaler Fallback ohne Gunicorn (`python production.py`) - fuer den echten Deploy nicht mehr noetig, siehe Gunicorn-Startbefehl oben | Nur lokal |
 | `main.py` + `dashboard.py` + `admin_dashboard.py` | Voller lokaler Dev-Modus mit Streamlit-Dashboards (Charts etc.) | Nur lokal / eigener Host, nicht als "ein Prozess" gedacht |
 
@@ -185,21 +146,15 @@ im Dashboard.
   Users, daher aktuell zurueckgestellt. Bis dahin: SQLite-Daten (Beta-Tester,
   Feedback, Content) gehen bei jedem Redeploy verloren; fuer die aktuelle
   Beta-Phase mit wenigen Signups tragbar.
-- **PAUSIERT (braucht eigene Domain):** Echte Onboarding-Mails an beliebige
-  Beta-Tester. Reihe an Versuchen: SendGrid (Verifizierung scheiterte),
-  Gmail-SMTP (Railway blockiert ausgehende SMTP-Ports 25/587 als Anti-Spam-
-  Massnahme), Resend (HTTP-API, umgeht das Port-Problem) - Resend liefert
-  aber ohne eigene per DNS verifizierte Domain nur an die eigene
-  Account-Adresse aus (`403 Forbidden` bei anderen Empfaengern), branchen-
-  ueblich bei allen Transaktions-Mail-Diensten. Kein Code-Problem mehr,
-  sondern eine echte Domain waere noetig (~$10-15/Jahr, z.B. Namecheap/
-  Cloudflare + DNS-Verifizierung bei Resend).
-  **Bewusst zurueckgestellt:** Der Auto-Login-Link direkt auf der Landing
-  Page (`data.login_url` aus `/beta-signup`) ist der zuverlaessige,
-  produktiv genutzte Weg fuer Beta-Zugang - sogar eine bessere UX als
-  E-Mail (sofortiger Zugriff, kein Postfach-Check noetig). `RESEND_API_KEY`
-  ist optional bereits in Railway gesetzt; ohne verifizierte Domain
-  schlagen Mails an Fremd-Adressen weiterhin fehl, werden aber sauber
-  abgefangen (siehe `beta.py`) und blockieren den Signup nicht.
+- ✅ **Erledigt:** Echte Onboarding-Mails an beliebige Beta-Tester. Weg
+  dorthin: SendGrid (Verifizierung scheiterte) → Gmail-SMTP (Railway
+  blockiert ausgehende SMTP-Ports 25/587) → Resend-Sandbox (nur an eigene
+  Adresse) → eigene Domain `autosocial.cc` bei Cloudflare gekauft, Railway
+  Custom Domain + Resend-Domain-Verifizierung eingerichtet (beide per
+  Cloudflare-Ein-Klick-Integration, keine manuellen DNS-Eintraege noetig).
+  `RESEND_FROM_EMAIL=beta@autosocial.cc` gesetzt, live verifiziert:
+  Beta-Signup an eine echte Fremd-Adresse kommt an. Landing Page laeuft
+  jetzt ebenfalls direkt unter `https://autosocial.cc` (Flask statt
+  GitHub Pages, siehe Kurzreferenz oben).
 - **TODO:** Fuer echte Zahlungen: Stripe-Testmodus-Keys eintragen und
   Webhook in Stripe auf `https://<deine-app-url>/webhook` zeigen lassen

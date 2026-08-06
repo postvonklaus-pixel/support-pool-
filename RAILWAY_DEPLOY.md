@@ -15,16 +15,15 @@ Testphase mit haeufigen Deploys ist das meist okay; fuer echte Daten siehe
 
 ## Checkliste
 
-- [x] `app.py` bereit (Landing-Redirect, Beta-Signup, Webhook, Dashboard, CORS)
+- [x] `app.py` bereit (Landing Page, Beta-Signup, Webhook, Dashboard, Admin)
 - [x] `railway.json` erstellt
 - [x] `Procfile` erstellt
-- [x] CORS eingebaut (`Access-Control-Allow-Origin: *` fuer Beta-Signup von GitHub Pages)
 - [x] Lokal getestet (siehe unten)
-- [ ] Deployed auf Railway ← **dein Schritt**
-- [ ] `API_BASE_URL` in `ai-automation/index.html` mit echter Railway-URL aktualisiert ← **dein Schritt**
-- [ ] Beta-Signup funktioniert LIVE
-- [ ] Dashboard erreichbar
-- [ ] `ADMIN_PASSWORD` in Railway-Variables gesetzt (echtes Passwort, nicht der Default) ← **dein Schritt**
+- [x] Deployed auf Railway
+- [x] Custom Domain (`autosocial.cc`) eingerichtet
+- [x] Beta-Signup funktioniert LIVE
+- [x] Dashboard erreichbar
+- [x] `ADMIN_PASSWORD` in Railway-Variables gesetzt (echtes Passwort, nicht der Default)
 - [ ] `/admin`-Uebersicht erreichbar
 
 ## Schritte
@@ -83,29 +82,46 @@ mit dem in Schritt 4 gesetzten `ADMIN_PASSWORD` einloggen - zeigt MRR,
 Wachstumsziel-Fortschritt, Beta-Tester-Aktivitaet (inkl. Inaktivitaets-Warnung)
 und alle Feedback-Eintraege, live von der Railway-Datenbank.
 
-### 7. Landing Page mit dem Backend verbinden
+### 7. Custom Domain einrichten (optional, aber empfohlen)
 
-`ai-automation/index.html` hat aktuell absichtlich eine leere `API_BASE_URL`
-(die Seite zeigt sonst einen freundlichen Hinweis statt eines stillen
-Fehlers). Jetzt eintragen:
+Die Landing Page laeuft direkt in `app.py` (Route `/`) - kein separater
+Verbindungsschritt zu GitHub Pages mehr noetig (das war ein frueherer
+Zwischenstand, siehe git-history). Mit einer eigenen Domain (z.B. bei
+Cloudflare gekauft) laesst sich die railway.app-URL trotzdem durch etwas
+Praesentableres ersetzen:
 
-```js
-// in ai-automation/index.html, im <script>-Block:
-const API_BASE_URL = 'https://<deine-railway-url>';
-```
+1. Domain bei einem Registrar kaufen (z.B. Cloudflare Registrar, guenstig,
+   kein Markup) - DNS liegt dann automatisch bei Cloudflare
+2. Railway: „web"-Service &rarr; Settings &rarr; Networking &rarr; **„+ Custom
+   Domain"** &rarr; deine Domain eintragen (z.B. `autosocial.cc`), Port
+   `8080` (wird automatisch als "Railway magic" vorgeschlagen)
+3. Railway zeigt danach ein **„One-Click DNS Setup"** mit Cloudflare-Logo,
+   falls die Domain bei Cloudflare liegt - einfach auf „Connect" tippen und
+   die Autorisierung bestaetigen. Railway traegt dann selbststaendig den
+   noetigen `CNAME`- und `TXT`-Verifizierungs-Record bei Cloudflare ein
+   (Alternative: die Records manuell in Cloudflares DNS-Einstellungen
+   eintragen, Railway zeigt sie in der gleichen Ansicht an)
+4. Nach ein paar Minuten (DNS-Propagierung) zeigt Railway die Domain als
+   aktiv/verifiziert - `https://<deine-domain>` sollte dann die App zeigen
+5. In Railway Variables `BACKEND_BASE_URL=https://<deine-domain>` setzen
+   (fuer korrekte Links in E-Mails, z.B. zum Dashboard) und deployen
 
-Dann committen und pushen (auf `main`, oder auf einen Branch + PR, je nachdem
-was du bevorzugst) - `ai-automation/index.html` liegt direkt im Branch, GitHub
-Pages liefert Aenderungen daran automatisch bei jedem Push aus (kein
-Workflow, kein Build-Schritt, siehe `DEPLOY.md` Schritt A). Kein weiterer
-manueller Schritt noetig.
+**Fuer echte E-Mails an beliebige Empfaenger** (siehe "Persistente
+Datenbank"-Abschnitt weiter unten fuer den analogen DB-Weg) muss die
+gleiche Domain zusaetzlich bei Resend verifiziert werden: Resend-Dashboard
+&rarr; „Domains" &rarr; „Add Domain" &rarr; deine Domain eintragen. Liegt
+die Domain bei Cloudflare, verifiziert Resend oft ganz von selbst (aehnliche
+automatische Anbindung wie bei Railway) - sonst zeigt Resend die noetigen
+TXT/CNAME-Records zum manuellen Eintragen in Cloudflare an. Danach
+`RESEND_FROM_EMAIL=<adresse>@<deine-domain>` in Railway Variables setzen.
 
 ## Automatische Deploys (Railway)
 
 Sobald das Projekt einmal verbunden ist, deployed Railway automatisch bei
 jedem Push auf `main` neu - das ist Railway-Standardverhalten fuer
-GitHub-verbundene Projekte, kein weiteres Setup noetig. Die Landing Page auf
-GitHub Pages aktualisiert sich unabhaengig davon fuer sich (siehe oben).
+GitHub-verbundene Projekte, kein weiteres Setup noetig. Da die Landing Page
+mittlerweile direkt in `app.py` laeuft, ist damit auch sie automatisch
+aktuell (kein separater GitHub-Pages-Schritt mehr noetig).
 
 ## Lokaler Test (bereits durchgefuehrt, zum Nachvollziehen)
 
@@ -207,9 +223,11 @@ kurzen Export/Import-Schritt.
   (Deployments &rarr; View Logs). Haeufigste Ursache: der Gunicorn-Startbefehl
   aus `railway.json` wird nicht erkannt - in Railway unter Settings pruefen,
   dass kein anderer Start-Befehl manuell ueberschrieben wurde.
-- **CORS-Fehler im Browser (Landing Page kann Backend nicht erreichen):**
-  `API_BASE_URL` in `ai-automation/index.html` pruefen (Schritt 7) - haeufigster
-  Fehler ist ein vergessenes `https://` oder ein tippfehlerhafter Domainname.
+- **Custom Domain zeigt nichts / Zertifikatsfehler:** DNS-Propagierung kann
+  bis zu einer Stunde dauern (meist aber nur wenige Minuten bei Cloudflare).
+  In Railway unter Settings &rarr; Networking pruefen, ob die Domain als
+  aktiv/verifiziert markiert ist; in Cloudflare unter DNS pruefen, ob der
+  CNAME-Record von Railway wirklich angelegt wurde (siehe Schritt 7).
 - **SQLite-Daten verschwinden nach Redeploy:** siehe Abschnitt "Persistente
   Datenbank: Postgres statt SQLite" oben - das ist die empfohlene Loesung.
   Alternativ (nicht empfohlen, nur als Notloesung) laesst sich auch ein

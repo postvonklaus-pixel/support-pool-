@@ -4,7 +4,7 @@ Ziel: **10 Beta-Signups in 7 Tagen** ueber die Landing Page (`/beta-signup`).
 Alles hier ist Content zum Kopieren/Anpassen - keine Tools, keine Kosten.
 
 > 🔗 **Der Link fuer alle Platzhalter unten ("Link in den Kommentaren" etc.):**
-> `https://postvonklaus-pixel.github.io/support-pool-/ai-automation/`
+> `https://autosocial.cc`
 > (bei LinkedIn bewusst NICHT im Post-Text, sondern im ersten Kommentar -
 > Posts mit externem Link im Text werden vom Algorithmus schlechter
 > ausgespielt; bei Twitter/X ist ein Link im Text dagegen ueblich)
@@ -103,7 +103,7 @@ zu "Beta Access anfordern", da der Schmerzpunkt (Zeitaufwand) am direktesten spu
 1. **(Tag 1)** "6,5h/Woche fuer Social-Media-Content. Das war mein Trigger,
    ein System mit 5 KI-Agenten zu bauen, das den kompletten Workflow
    uebernimmt. Beta ist offen, kostenlos, 10 Plaetze. 🧵
-   https://postvonklaus-pixel.github.io/support-pool-/ai-automation/"
+   https://autosocial.cc"
 
 2. **(Tag 2)** "5 KI-Agenten, 5 Jobs:
    ✍️ Content Creator
@@ -116,17 +116,17 @@ zu "Beta Access anfordern", da der Schmerzpunkt (Zeitaufwand) am direktesten spu
 3. **(Tag 4)** "Beta-Update: erstes Feedback kam rein - danke! Naechster
    Schritt: [Kurz-Learning einfuegen, sobald echtes Feedback vorliegt].
    Noch Plaetze frei fuer die kostenlose Beta 👉
-   https://postvonklaus-pixel.github.io/support-pool-/ai-automation/"
+   https://autosocial.cc"
 
 4. **(Tag 5)** "Fuer wen ist das? Solo-Creator, kleine Agenturen,
    Startup-Founder ohne Marketing-Team. Wenn Social Media bei dir 'nebenbei'
    passieren muss: schau's dir an. Kostenlos in der Beta.
-   https://postvonklaus-pixel.github.io/support-pool-/ai-automation/"
+   https://autosocial.cc"
 
 5. **(Tag 7)** "1 Woche Beta rum. Naechste 10 Plaetze sind offen - wer noch
    rein will, jetzt der beste Zeitpunkt fuer direktes Feedback-Gewicht auf
    die Roadmap. 👇
-   https://postvonklaus-pixel.github.io/support-pool-/ai-automation/"
+   https://autosocial.cc"
 
 ---
 
