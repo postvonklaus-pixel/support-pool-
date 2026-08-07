@@ -17,7 +17,7 @@ import logging
 
 import requests
 
-from config import BACKEND_BASE_URL, MOCK_EMAIL, RESEND_API_KEY, RESEND_FROM_EMAIL
+from config import BACKEND_BASE_URL, MOCK_EMAIL, REPLY_TO_EMAIL, RESEND_API_KEY, RESEND_FROM_EMAIL
 
 logger = logging.getLogger(__name__)
 
@@ -70,10 +70,14 @@ def _send(to_email: str, subject: str, text: str, html: str) -> dict:
         logger.info("[MOCK-EMAIL] An: %s | Betreff: %s\n%s", to_email, subject, text)
         return {"status": "mocked", "to": to_email, "subject": subject}
 
+    payload = {"from": RESEND_FROM_EMAIL, "to": [to_email], "subject": subject, "text": text, "html": html}
+    if REPLY_TO_EMAIL:
+        payload["reply_to"] = [REPLY_TO_EMAIL]
+
     response = requests.post(
         RESEND_API_URL,
         headers={"Authorization": f"Bearer {RESEND_API_KEY}"},
-        json={"from": RESEND_FROM_EMAIL, "to": [to_email], "subject": subject, "text": text, "html": html},
+        json=payload,
         timeout=10,
     )
     response.raise_for_status()

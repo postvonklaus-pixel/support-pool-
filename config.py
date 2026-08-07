@@ -70,6 +70,13 @@ PINECONE_API_KEY = os.getenv("PINECONE_API_KEY", "")
 RESEND_API_KEY = os.getenv("RESEND_API_KEY", "")
 RESEND_FROM_EMAIL = os.getenv("RESEND_FROM_EMAIL", "onboarding@resend.dev")
 
+# Adresse, an die Antworten auf unsere E-Mails gehen (Reply-To-Header) -
+# bewusst getrennt von RESEND_FROM_EMAIL, damit die oeffentlich sichtbare
+# Adresse professionell bleibt, ohne die private Mailbox preiszugeben. Muss
+# via Cloudflare Email Routing (o.ae.) tatsaechlich an ein echtes Postfach
+# weiterleiten, sonst gehen Antworten ins Leere.
+REPLY_TO_EMAIL = os.getenv("REPLY_TO_EMAIL", "support@autosocial.cc")
+
 _PLACEHOLDER_MARKERS = ("dein_", "your_", "changeme", "xxxx", "")
 
 
