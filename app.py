@@ -18,10 +18,8 @@ import secrets
 import threading
 import time
 from datetime import datetime
-from urllib.parse import quote
-
 import schedule
-from flask import Flask, jsonify, redirect, render_template_string, request, session
+from flask import Flask, flash, get_flashed_messages, jsonify, redirect, render_template_string, request, session
 
 import payment
 from agents import build_agents
@@ -673,7 +671,7 @@ def dashboard_view():
         self_service_plans=[p.value for p in SELF_SERVICE_PLANS],
         plan_names={p.value: PLAN_CONFIG[p]["name"] for p in PlanTier},
         plan_prices={p.value: PLAN_CONFIG[p]["price_usd"] for p in PlanTier},
-        flash=request.args.get("flash"),
+        flash=next(iter(get_flashed_messages()), None),
     )
 
 
@@ -705,8 +703,7 @@ def dashboard_upgrade():
     new_plan = request.form.get("plan")
     if new_plan in [p.value for p in SELF_SERVICE_PLANS]:
         result = payment.upgrade_plan(session["user_id"], new_plan)
-        flash = quote(f"Plan gewechselt: {result['old_plan']} -> {result['new_plan']}")
-        return redirect(f"/dashboard?flash={flash}")
+        flash(f"Plan gewechselt: {result['old_plan']} -> {result['new_plan']}")
     return redirect("/dashboard")
 
 
@@ -721,8 +718,8 @@ def dashboard_run_agents():
     user_id = session["user_id"]
     usage = payment.check_plan_limits(user_id)
     if usage["is_read_only"]:
-        flash = quote("Abo abgelaufen - keine neue Aktivität möglich.")
-        return redirect(f"/dashboard?flash={flash}")
+        flash("Abo abgelaufen - keine neue Aktivität möglich.")
+        return redirect("/dashboard")
 
     with get_session() as db_session:
         user = db_session.get(User, user_id)
@@ -751,7 +748,8 @@ def dashboard_run_agents():
         parts.append("1 Wachstumsstrategie erstellt")
 
     summary = "✅ " + ", ".join(parts) + "." if parts else "Durchlauf abgeschlossen - dein Plan schaltet aktuell keinen dieser Schritte frei."
-    return redirect(f"/dashboard?flash={quote(summary)}")
+    flash(summary)
+    return redirect("/dashboard")
 
 
 @app.post("/dashboard/feedback")
@@ -763,7 +761,7 @@ def dashboard_feedback():
     if message:
         with get_session() as db_session:
             db_session.add(Feedback(user_id=session["user_id"], category=category, message=message))
-        return redirect(f"/dashboard?flash={quote('Danke fuer dein Feedback!')}")
+        flash("Danke fuer dein Feedback!")
     return redirect("/dashboard")
 
 
