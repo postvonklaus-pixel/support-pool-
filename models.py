@@ -111,6 +111,8 @@ class User(Base):
     analytics = relationship("Analytics", back_populates="user", cascade="all, delete-orphan")
     payments = relationship("Payment", back_populates="user", cascade="all, delete-orphan")
     feedback_entries = relationship("Feedback", back_populates="user", cascade="all, delete-orphan")
+    engagement_replies = relationship("EngagementReply", back_populates="user", cascade="all, delete-orphan")
+    growth_strategies = relationship("GrowthStrategy", back_populates="user", cascade="all, delete-orphan")
 
     def is_read_only(self) -> bool:
         """Bei abgelaufenem Abo: nur noch Lesezugriff, keine neuen Posts."""
@@ -174,6 +176,54 @@ class Analytics(Base):
 
     def __repr__(self) -> str:
         return f"<Analytics id={self.id} user_id={self.user_id} date={self.date} platform={self.platform}>"
+
+
+class EngagementReply(Base):
+    """Vom Engagement-Agent generierte Antwort auf einen Kommentar oder eine
+    DM (siehe agents/engagement.py) - persistiert, damit sie im Dashboard
+    anzeigbar ist statt nur im Server-Log zu verschwinden."""
+
+    __tablename__ = "engagement_replies"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+
+    platform = Column(String(50), nullable=False)
+    source_type = Column(String(20), nullable=False)  # "comment" oder "dm"
+    source_text = Column(Text, nullable=False)
+    reply_text = Column(Text, nullable=False)
+    is_lead = Column(Boolean, nullable=False, default=False)
+
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    user = relationship("User", back_populates="engagement_replies")
+
+    def __repr__(self) -> str:
+        return f"<EngagementReply id={self.id} user_id={self.user_id} source_type={self.source_type}>"
+
+
+class GrowthStrategy(Base):
+    """Vom Growth-Agent erstellte Wachstumsstrategie inkl. Ziel-Follower und
+    Konkurrenz-Analyse (siehe agents/growth.py) - persistiert, damit sie im
+    Dashboard anzeigbar ist statt nur einmalig zurueckgegeben zu werden."""
+
+    __tablename__ = "growth_strategies"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+
+    platform = Column(String(50), nullable=False)
+    niche = Column(String(100), nullable=False)
+    target_followers = Column(JSON, nullable=False, default=list)
+    competitor_analysis = Column(JSON, nullable=False, default=list)
+    strategy_text = Column(Text, nullable=False)
+
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    user = relationship("User", back_populates="growth_strategies")
+
+    def __repr__(self) -> str:
+        return f"<GrowthStrategy id={self.id} user_id={self.user_id} platform={self.platform}>"
 
 
 class Payment(Base):

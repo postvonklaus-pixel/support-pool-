@@ -36,7 +36,7 @@ from config import (
 )
 from db import get_session, init_db
 from logging_config import setup_logging
-from models import Content, Feedback, FeedbackCategoryEnum, User, enum_value
+from models import Analytics, Content, EngagementReply, Feedback, FeedbackCategoryEnum, GrowthStrategy, User, enum_value
 from mrr import daily_mrr_report, mrr_goal_progress
 from seed import has_users, seed_users
 from workflow import daily_workflow, run_user_pipeline
@@ -575,6 +575,110 @@ DASHBOARD_TEMPLATE = """
   </section>
 
   <section>
+    <h2 class="text-lg font-semibold mb-3">Analytics</h2>
+    {% if analytics %}
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
+        <p class="text-xs text-slate-500">Impressions</p>
+        <p class="text-xl font-bold">{{ analytics.impressions }}</p>
+      </div>
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
+        <p class="text-xs text-slate-500">Reichweite</p>
+        <p class="text-xl font-bold">{{ analytics.reach }}</p>
+      </div>
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
+        <p class="text-xs text-slate-500">Klicks</p>
+        <p class="text-xl font-bold">{{ analytics.clicks }}</p>
+      </div>
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
+        <p class="text-xs text-slate-500">Engagement-Rate</p>
+        <p class="text-xl font-bold">{{ analytics.engagement_rate }}%</p>
+      </div>
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
+        <p class="text-xs text-slate-500">Likes</p>
+        <p class="text-xl font-bold">{{ analytics.likes }}</p>
+      </div>
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
+        <p class="text-xs text-slate-500">Kommentare</p>
+        <p class="text-xl font-bold">{{ analytics.comments }}</p>
+      </div>
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
+        <p class="text-xs text-slate-500">Shares</p>
+        <p class="text-xl font-bold">{{ analytics.shares }}</p>
+      </div>
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
+        <p class="text-xs text-slate-500">Follower-Wachstum</p>
+        <p class="text-xl font-bold">{{ '+' if analytics.follower_growth >= 0 else '' }}{{ analytics.follower_growth }}</p>
+      </div>
+    </div>
+    {% else %}
+    <p class="text-slate-500 text-sm">Noch kein Analytics-Report vorhanden - klick oben auf "Neue Beispiel-Aktivität generieren".</p>
+    {% endif %}
+  </section>
+
+  <section>
+    <h2 class="text-lg font-semibold mb-3">Engagement (generierte Antworten)</h2>
+    {% if engagement_replies %}
+    <div class="space-y-3">
+      {% for r in engagement_replies %}
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
+        <p class="text-xs text-slate-500 mb-1">
+          {{ r.platform }} &middot; {{ 'Kommentar' if r.source_type == 'comment' else 'DM' }}
+          {% if r.is_lead %}<span class="text-amber-400">&middot; 🎯 Lead identifiziert</span>{% endif %}
+        </p>
+        <p class="text-sm text-slate-400 mb-2">„{{ r.source_text }}"</p>
+        <p class="text-sm text-slate-200">→ {{ r.reply_text }}</p>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="text-slate-500 text-sm">Noch keine Engagement-Antworten vorhanden - klick oben auf "Neue Beispiel-Aktivität generieren".</p>
+    {% endif %}
+  </section>
+
+  <section>
+    <h2 class="text-lg font-semibold mb-3">Wachstumsstrategie</h2>
+    {% if growth %}
+    <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-4">
+      <p class="text-sm text-slate-200">{{ growth.strategy_text }}</p>
+      {% if growth.target_followers %}
+      <div>
+        <p class="text-xs text-slate-500 mb-2">Ziel-Follower ({{ growth.platform }})</p>
+        <div class="flex flex-wrap gap-2">
+          {% for t in growth.target_followers %}
+          <span class="bg-slate-800 border border-slate-700 rounded-full px-3 py-1 text-xs">{{ t.handle }} ({{ (t.relevance_score * 100) | round | int }}%)</span>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+      {% if growth.competitor_analysis %}
+      <div>
+        <p class="text-xs text-slate-500 mb-2">Konkurrenz-Analyse</p>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead class="text-slate-500 text-left"><tr>
+              <th class="pr-4 py-1">Account</th><th class="pr-4 py-1">Ø Engagement</th><th class="py-1">Posts/Woche</th>
+            </tr></thead>
+            <tbody>
+              {% for c in growth.competitor_analysis %}
+              <tr class="border-t border-slate-800">
+                <td class="pr-4 py-1">{{ c.handle }}</td>
+                <td class="pr-4 py-1">{{ c.avg_engagement_rate }}%</td>
+                <td class="py-1">{{ c.posting_frequency_per_week }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+    {% else %}
+    <p class="text-slate-500 text-sm">Noch keine Wachstumsstrategie vorhanden - nur im Agent-/Beta-Plan verfuegbar.</p>
+    {% endif %}
+  </section>
+
+  <section>
     <h2 class="text-lg font-semibold mb-3">Feedback geben</h2>
     <form method="post" action="/dashboard/feedback" class="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-3">
       <select name="category" class="bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm">
@@ -657,6 +761,58 @@ def dashboard_view():
             for f in feedback_entries
         ]
 
+        latest_analytics_row = (
+            db_session.query(Analytics)
+            .filter_by(user_id=user_id)
+            .order_by(Analytics.id.desc())
+            .first()
+        )
+        analytics_data = None
+        if latest_analytics_row:
+            analytics_data = {
+                "impressions": latest_analytics_row.impressions,
+                "reach": latest_analytics_row.reach,
+                "clicks": latest_analytics_row.clicks,
+                "likes": latest_analytics_row.likes,
+                "comments": latest_analytics_row.comments,
+                "shares": latest_analytics_row.shares,
+                "engagement_rate": latest_analytics_row.engagement_rate,
+                "follower_growth": latest_analytics_row.follower_growth,
+            }
+
+        engagement_replies = (
+            db_session.query(EngagementReply)
+            .filter_by(user_id=user_id)
+            .order_by(EngagementReply.created_at.desc())
+            .limit(6)
+            .all()
+        )
+        engagement_rows = [
+            {
+                "platform": r.platform,
+                "source_type": r.source_type,
+                "source_text": r.source_text,
+                "reply_text": r.reply_text,
+                "is_lead": r.is_lead,
+            }
+            for r in engagement_replies
+        ]
+
+        latest_growth_row = (
+            db_session.query(GrowthStrategy)
+            .filter_by(user_id=user_id)
+            .order_by(GrowthStrategy.id.desc())
+            .first()
+        )
+        growth_data = None
+        if latest_growth_row:
+            growth_data = {
+                "platform": latest_growth_row.platform,
+                "strategy_text": latest_growth_row.strategy_text,
+                "target_followers": latest_growth_row.target_followers,
+                "competitor_analysis": latest_growth_row.competitor_analysis,
+            }
+
         plan_name = PLAN_CONFIG[PlanTier(user.plan)]["name"]
         user_email = user.email
 
@@ -668,6 +824,9 @@ def dashboard_view():
         usage=usage,
         contents=content_rows,
         feedback_entries=feedback_rows,
+        analytics=analytics_data,
+        engagement_replies=engagement_rows,
+        growth=growth_data,
         self_service_plans=[p.value for p in SELF_SERVICE_PLANS],
         plan_names={p.value: PLAN_CONFIG[p]["name"] for p in PlanTier},
         plan_prices={p.value: PLAN_CONFIG[p]["price_usd"] for p in PlanTier},

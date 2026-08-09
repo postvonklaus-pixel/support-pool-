@@ -12,6 +12,8 @@ import uuid
 from agents.base_agent import BaseAgent
 from agents.content_creator import generate_text
 from config import AGENT_ENGAGEMENT, PLAN_CONFIG, PlanTier
+from db import get_session_for
+from models import EngagementReply
 
 LEAD_KEYWORDS = ("preis", "price", "buchen", "kaufen", "demo", "interessiert", "angebot", "kontakt")
 
@@ -51,19 +53,29 @@ class EngagementAgent(BaseAgent):
             return result
 
         if level in ("full", "full_leads"):
-            for comment in comments:
-                reply = generate_text(f"Antwort auf Kommentar: '{comment['text']}'", platform)
-                self.logger.info("Kommentar beantwortet (content=%s): %s", comment["id"], reply[:60])
-                result["replies_sent"] += 1
+            with get_session_for(user) as session:
+                for comment in comments:
+                    reply = generate_text(f"Antwort auf Kommentar: '{comment['text']}'", platform)
+                    self.logger.info("Kommentar beantwortet (content=%s): %s", comment["id"], reply[:60])
+                    session.add(EngagementReply(
+                        user_id=user.id, platform=platform, source_type="comment",
+                        source_text=comment["text"], reply_text=reply,
+                    ))
+                    result["replies_sent"] += 1
 
-            dms = _fetch_dms(platform)
-            for dm in dms:
-                reply = generate_text(f"Antwort auf DM: '{dm['text']}'", platform)
-                self.logger.info("DM beantwortet (dm=%s): %s", dm["id"], reply[:60])
-                result["replies_sent"] += 1
+                dms = _fetch_dms(platform)
+                for dm in dms:
+                    reply = generate_text(f"Antwort auf DM: '{dm['text']}'", platform)
+                    self.logger.info("DM beantwortet (dm=%s): %s", dm["id"], reply[:60])
+                    is_lead = level == "full_leads" and any(kw in dm["text"].lower() for kw in LEAD_KEYWORDS)
+                    session.add(EngagementReply(
+                        user_id=user.id, platform=platform, source_type="dm",
+                        source_text=dm["text"], reply_text=reply, is_lead=is_lead,
+                    ))
+                    result["replies_sent"] += 1
 
-                if level == "full_leads" and any(kw in dm["text"].lower() for kw in LEAD_KEYWORDS):
-                    result["leads"].append({"dm_id": dm["id"], "text": dm["text"], "platform": platform})
+                    if is_lead:
+                        result["leads"].append({"dm_id": dm["id"], "text": dm["text"], "platform": platform})
 
             if level == "full_leads" and result["leads"]:
                 self.logger.info("Leads identifiziert: %d", len(result["leads"]))

@@ -11,6 +11,8 @@ import uuid
 from agents.base_agent import BaseAgent
 from agents.content_creator import generate_text
 from config import AGENT_GROWTH
+from db import get_session_for
+from models import GrowthStrategy
 
 _MOCK_HANDLES = ["@growth_jane", "@techfounder", "@creator_max", "@marketing_lisa", "@startup_ben"]
 
@@ -51,8 +53,22 @@ class GrowthAgent(BaseAgent):
         )
         strategy = generate_text(strategy_prompt, platform)
 
+        with get_session_for(user) as session:
+            record = GrowthStrategy(
+                user_id=user.id,
+                platform=platform,
+                niche=niche,
+                target_followers=targets,
+                competitor_analysis=competitor_analysis,
+                strategy_text=strategy,
+            )
+            session.add(record)
+            session.flush()
+            record_id = record.id
+
         result = {
             "id": uuid.uuid4().hex[:10],
+            "record_id": record_id,
             "platform": platform,
             "target_followers": targets,
             "competitor_analysis": competitor_analysis,
