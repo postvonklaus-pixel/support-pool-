@@ -876,6 +876,16 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
 @media(prefers-color-scheme:dark){.pc-btn-close{background:rgba(255,255,255,.1)}}
 :root[data-theme="dark"] .pc-btn-close{background:rgba(255,255,255,.1)}
 :root[data-theme="light"] .pc-btn-close{background:rgba(0,0,0,.07)}
+/* Story card tabs */
+.pc-tabs{display:flex;border-bottom:1px solid var(--bdr);background:var(--bg)}
+.pc-tab{flex:1;padding:12px 10px;border:none;background:none;font-family:inherit;font-size:11px;font-weight:800;color:var(--t2);cursor:pointer;border-bottom:2.5px solid transparent;margin-bottom:-1px;text-transform:uppercase;letter-spacing:.07em;transition:color .15s,border-color .15s}
+.pc-tab.active{color:var(--blue);border-bottom-color:var(--blue)}
+/* Story view */
+#pc-story-view{padding:16px 16px 8px;display:none}
+.pc-story-canvas-wrap{display:flex;justify-content:center;align-items:flex-start}
+#pc-story-canvas{max-height:60vh;max-width:100%;width:auto;height:auto;border-radius:18px;display:block;box-shadow:0 8px 32px rgba(0,0,0,.3)}
+.pc-story-hint{font-size:11px;color:var(--t2);text-align:center;margin:10px 0 4px;line-height:1.5}
+.pc-story-actions{display:flex;gap:10px;padding:8px 0 4px}
 
 /* ── ACTION TILE ANIMATIONS ── */
 @keyframes acGlowGold{0%,100%{box-shadow:0 0 0 0 rgba(212,134,10,.0);border-color:rgba(212,134,10,.35)}50%{box-shadow:0 4px 18px 2px rgba(212,134,10,.28);border-color:rgba(212,134,10,.7)}}
@@ -1697,7 +1707,21 @@ textarea.sp-input{border-radius:12px;resize:vertical;min-height:80px;text-transf
         <div class="pc-header-title" id="t-pc-title">Check mein Profil</div>
         <div class="pc-header-sub" id="t-pc-sub">Live-Analyse</div>
       </div>
+      <div class="pc-tabs">
+        <button class="pc-tab active" id="pc-tab-list" onclick="switchPcTab('list')">📋 Check</button>
+        <button class="pc-tab" id="pc-tab-story" onclick="switchPcTab('story')">📸 Story</button>
+      </div>
       <div id="profile-check-body"></div>
+      <div id="pc-story-view">
+        <div class="pc-story-canvas-wrap">
+          <canvas id="pc-story-canvas"></canvas>
+        </div>
+        <div class="pc-story-hint">📱 Bild speichern → direkt auf TikTok Stories teilen</div>
+        <div class="pc-story-actions">
+          <button class="pc-btn pc-btn-copy" onclick="downloadStoryCard()">📥 Bild speichern</button>
+          <button class="pc-btn pc-btn-close" onclick="closeProfileCheck()">Schließen</button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -5480,13 +5504,218 @@ function doLogout() {
 
 // ── PROFILE CHECK ─────────────────────────────────────────────────────────
 function openProfileCheck() {
-  var ov = ge('profile-check-overlay');
-  ov.classList.add('open');
-  renderProfileCheck();
+  ge('profile-check-overlay').classList.add('open');
+  switchPcTab('list');
 }
 
 function closeProfileCheck() {
   ge('profile-check-overlay').classList.remove('open');
+}
+
+function switchPcTab(tab) {
+  var listView = ge('profile-check-body');
+  var storyView = ge('pc-story-view');
+  var tabList = ge('pc-tab-list');
+  var tabStory = ge('pc-tab-story');
+  if (tab === 'story') {
+    if (listView) listView.style.display = 'none';
+    if (storyView) storyView.style.display = 'block';
+    if (tabList) tabList.classList.remove('active');
+    if (tabStory) tabStory.classList.add('active');
+    renderStoryCard();
+  } else {
+    if (listView) listView.style.display = 'block';
+    if (storyView) storyView.style.display = 'none';
+    if (tabList) tabList.classList.add('active');
+    if (tabStory) tabStory.classList.remove('active');
+    renderProfileCheck();
+  }
+}
+
+function pcRoundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x+r, y);
+  ctx.lineTo(x+w-r, y);
+  ctx.arcTo(x+w, y, x+w, y+r, r);
+  ctx.lineTo(x+w, y+h-r);
+  ctx.arcTo(x+w, y+h, x+w-r, y+h, r);
+  ctx.lineTo(x+r, y+h);
+  ctx.arcTo(x, y+h, x, y+h-r, r);
+  ctx.lineTo(x, y+r);
+  ctx.arcTo(x, y, x+r, y, r);
+  ctx.closePath();
+}
+
+function renderStoryCard() {
+  var canvas = ge('pc-story-canvas');
+  if (!canvas) return;
+  var W = 1080, H = 1920;
+  canvas.width = W; canvas.height = H;
+  var ctx = canvas.getContext('2d');
+
+  var lng = L[LANG] || L.de;
+  var u = (DB.members && DB.members[CU]) || {};
+  var stats = u.stats || {};
+  var given = stats.given || 0;
+  var received = stats.received || 0;
+  var balance = given - received;
+  var vids = u.postsTotal || (u.myVideos ? Object.keys(u.myVideos).length : 0) || 0;
+  var weeklyGiven = u.weeklyGiven || 0;
+  var joinedMs = u.joined || Date.now();
+  var memberDays = Math.floor((Date.now() - joinedMs) / 86400000);
+  var activeDays = u.supportDays || [];
+  var activeLast7 = 0;
+  var today = new Date();
+  for (var d = 0; d < 7; d++) {
+    var dd = new Date(today); dd.setDate(dd.getDate() - d);
+    var ds = dd.getFullYear() + '-' + String(dd.getMonth()+1).padStart(2,'0') + '-' + String(dd.getDate()).padStart(2,'0');
+    if (activeDays.indexOf(ds) >= 0) activeLast7++;
+  }
+  var name = u.name || CU || '—';
+  var dateStr = new Date().toLocaleDateString(LANG === 'de' ? 'de-DE' : LANG === 'ja' ? 'ja-JP' : LANG === 'zh' ? 'zh-CN' : LANG === 'ar' ? 'ar-SA' : 'en-US');
+  var score = 0;
+  if (balance >= 0) score++;
+  if (vids > 0) score++;
+  if (given >= 10) score++;
+  if (weeklyGiven >= 3) score++;
+  if (activeLast7 >= 4) score++;
+
+  // ── Background ──
+  var bgGrad = ctx.createLinearGradient(0, 0, 0, H);
+  bgGrad.addColorStop(0, '#08080f');
+  bgGrad.addColorStop(0.5, '#0c0c1e');
+  bgGrad.addColorStop(1, '#080810');
+  ctx.fillStyle = bgGrad; ctx.fillRect(0, 0, W, H);
+  // Glow orbs
+  ctx.save(); ctx.globalAlpha = 0.17;
+  var g1 = ctx.createRadialGradient(880, 190, 0, 880, 190, 560);
+  g1.addColorStop(0, '#5856d6'); g1.addColorStop(1, 'transparent');
+  ctx.fillStyle = g1; ctx.fillRect(0, 0, W, H);
+  var g2 = ctx.createRadialGradient(190, 1720, 0, 190, 1720, 430);
+  g2.addColorStop(0, '#007aff'); g2.addColorStop(1, 'transparent');
+  ctx.fillStyle = g2; ctx.fillRect(0, 0, W, H);
+  ctx.restore();
+
+  // ── Header ──
+  ctx.textAlign = 'center';
+  ctx.font = '700 50px -apple-system,"Helvetica Neue",Arial,sans-serif';
+  ctx.fillStyle = 'rgba(255,255,255,0.28)';
+  ctx.fillText('NOVA SUPPORT POOL', W/2, 90);
+  ctx.strokeStyle = 'rgba(255,255,255,0.1)'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(80, 116); ctx.lineTo(W-80, 116); ctx.stroke();
+
+  // ── Profile ──
+  ctx.font = '130px serif'; ctx.textAlign = 'center'; ctx.fillStyle = 'white';
+  ctx.fillText('🏅', W/2, 285); // 🏅
+
+  ctx.font = '700 90px -apple-system,"Helvetica Neue",Arial,sans-serif';
+  ctx.fillStyle = '#ffffff';
+  var displayName = '@' + name;
+  var nm = ctx.measureText(displayName);
+  if (nm.width > 940) { ctx.font = '700 ' + Math.floor(90 * 940 / nm.width) + 'px -apple-system,"Helvetica Neue",Arial,sans-serif'; }
+  ctx.fillText(displayName, W/2, 415);
+
+  ctx.font = '42px -apple-system,"Helvetica Neue",Arial,sans-serif';
+  ctx.fillStyle = 'rgba(255,255,255,0.48)';
+  ctx.fillText('PROFIL CHECK · ' + dateStr, W/2, 485);
+
+  // ── Stats Grid ──
+  var pad = 60, gap = 28, cardW = (W - pad*2 - gap) / 2, cardH = 255;
+
+  function drawCard(cx, cy, emoji, value, label, col) {
+    var palette = {
+      green:  {bg:'rgba(48,209,88,0.13)',  brd:'rgba(48,209,88,0.42)',  val:'#30d158'},
+      blue:   {bg:'rgba(10,132,255,0.13)', brd:'rgba(10,132,255,0.42)', val:'#0a84ff'},
+      gold:   {bg:'rgba(255,214,10,0.13)', brd:'rgba(255,214,10,0.42)', val:'#ffd60a'},
+      purple: {bg:'rgba(94,92,230,0.13)',  brd:'rgba(94,92,230,0.42)',  val:'#8e8ce4'}
+    };
+    var p = palette[col] || palette.purple;
+    pcRoundRect(ctx, cx, cy, cardW, cardH, 28);
+    ctx.fillStyle = p.bg; ctx.fill();
+    ctx.strokeStyle = p.brd; ctx.lineWidth = 2.5;
+    pcRoundRect(ctx, cx, cy, cardW, cardH, 28); ctx.stroke();
+
+    ctx.font = '70px serif'; ctx.textAlign = 'left'; ctx.fillStyle = 'white';
+    ctx.fillText(emoji, cx+26, cy+88);
+
+    ctx.font = '700 72px -apple-system,"Helvetica Neue",Arial,sans-serif';
+    ctx.fillStyle = p.val; ctx.textAlign = 'right';
+    var vt = String(value);
+    if (ctx.measureText(vt).width > cardW-110) {
+      ctx.font = '700 ' + Math.floor(72*(cardW-110)/ctx.measureText(vt).width) + 'px -apple-system,"Helvetica Neue",Arial,sans-serif';
+    }
+    ctx.fillText(vt, cx+cardW-26, cy+90);
+
+    ctx.font = '32px -apple-system,"Helvetica Neue",Arial,sans-serif';
+    ctx.fillStyle = 'rgba(255,255,255,0.52)'; ctx.textAlign = 'left';
+    var lbl = label, maxW = cardW - 52;
+    while (ctx.measureText(lbl).width > maxW && lbl.length > 1) lbl = lbl.slice(0,-1);
+    if (lbl !== label) lbl += '…';
+    ctx.fillText(lbl, cx+26, cy+155);
+  }
+
+  var cards = [
+    {emoji:'💰', value:(balance>=0?'+':'')+balance, label:lng.profCheckBal||'Guthaben', col:balance>=0?'green':'purple'},
+    {emoji:'📹', value:String(vids), label:lng.profCheckVids||'Videos', col:vids>0?'blue':'purple'},
+    {emoji:'🤝', value:String(given), label:lng.profCheckGiven||'Supports', col:given>=5?'green':'purple'},
+    {emoji:'📅', value:weeklyGiven+'/7', label:lng.profCheckWeek||'Diese Woche', col:weeklyGiven>=1?'gold':'purple'},
+    {emoji:'🔥', value:activeLast7+'/7', label:(lng.profCheckDays||'{n} von 7 Tagen').replace('{n}','').replace(/\s+/g,' ').trim(), col:activeLast7>=5?'gold':activeLast7>=3?'green':'purple'},
+    {emoji:'🗓️', value:memberDays+'d', label:(lng.profCheckSince||'Mitglied seit {n} Tagen').replace('{n}','').replace(/\s+/g,' ').trim(), col:'blue'}
+  ];
+  var startY = 530;
+  for (var i = 0; i < 6; i++) {
+    var ci = i%2, ri = Math.floor(i/2);
+    drawCard(pad + ci*(cardW+gap), startY + ri*(cardH+gap), cards[i].emoji, cards[i].value, cards[i].label, cards[i].col);
+  }
+
+  // ── Score Badge ──
+  var badgeY = startY + 3*(cardH+gap) - gap + 40, badgeH = 148;
+  var bt, bc, bBg, bBrd;
+  if (score>=4) { bt='🏆 TOP PERFORMER'; bc='#ffd60a'; bBg='rgba(255,214,10,0.12)'; bBrd='rgba(255,214,10,0.48)'; }
+  else if (score>=2) { bt='⭐ AKTIV'; bc='#30d158'; bBg='rgba(48,209,88,0.12)'; bBrd='rgba(48,209,88,0.48)'; }
+  else { bt='💡 IN PROGRESS'; bc='#ff9f0a'; bBg='rgba(255,159,10,0.12)'; bBrd='rgba(255,159,10,0.48)'; }
+  pcRoundRect(ctx, 140, badgeY, W-280, badgeH, 30);
+  ctx.fillStyle = bBg; ctx.fill();
+  ctx.strokeStyle = bBrd; ctx.lineWidth = 2.5;
+  pcRoundRect(ctx, 140, badgeY, W-280, badgeH, 30); ctx.stroke();
+  ctx.font = '700 64px -apple-system,"Helvetica Neue",Arial,sans-serif';
+  ctx.fillStyle = bc; ctx.textAlign = 'center';
+  ctx.fillText(bt, W/2, badgeY + badgeH/2 + 22);
+
+  // ── Footer ──
+  var fY = H - 210;
+  ctx.strokeStyle = 'rgba(255,255,255,0.1)'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(80, fY); ctx.lineTo(W-80, fY); ctx.stroke();
+  ctx.font = '38px -apple-system,"Helvetica Neue",Arial,sans-serif';
+  ctx.fillStyle = 'rgba(255,255,255,0.33)'; ctx.textAlign = 'center';
+  ctx.fillText('✅ novapool.official', W/2, fY+68);
+  ctx.font = '33px -apple-system,"Helvetica Neue",Arial,sans-serif';
+  ctx.fillStyle = 'rgba(255,255,255,0.18)';
+  ctx.fillText('NOVA Support Pool · TikTok Community', W/2, fY+122);
+}
+
+function downloadStoryCard() {
+  var canvas = ge('pc-story-canvas');
+  if (!canvas) return;
+  var u = (DB.members && DB.members[CU]) || {};
+  var uname = (u.name || CU || 'profile').replace(/[^a-zA-Z0-9_.-]/g, '_');
+  var fname = 'nova-story-' + uname + '.png';
+  canvas.toBlob(function(blob) {
+    if (!blob) return;
+    if (navigator.share) {
+      var file = new File([blob], fname, {type:'image/png'});
+      navigator.share({files:[file], title:'NOVA Support Pool Story'}).catch(function() { _pcFallbackDL(canvas, fname); });
+    } else {
+      _pcFallbackDL(canvas, fname);
+    }
+  }, 'image/png');
+}
+
+function _pcFallbackDL(canvas, fname) {
+  var a = document.createElement('a');
+  a.href = canvas.toDataURL('image/png');
+  a.download = fname || 'nova-story.png';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
 }
 
 function pcRow(icon, label, val, ok) {
