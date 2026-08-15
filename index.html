@@ -5672,8 +5672,8 @@ function renderStoryCard() {
     {emoji:'📹', value:String(vids), label:lng.profCheckVids||'Videos', col:vids>0?'blue':'purple'},
     {emoji:'🤝', value:String(given), label:lng.profCheckGiven||'Supports', col:given>=5?'green':'purple'},
     {emoji:'📅', value:weeklyGiven+'/7', label:lng.profCheckWeek||'Diese Woche', col:weeklyGiven>=1?'gold':'purple'},
-    {emoji:'🔥', value:activeLast7+'/7', label:(lng.profCheckDays||'{n} von 7 Tagen').replace('{n}','').replace(/\s+/g,' ').trim(), col:activeLast7>=5?'gold':activeLast7>=3?'green':'purple'},
-    {emoji:'🗓️', value:memberDays+'d', label:(lng.profCheckSince||'Mitglied seit {n} Tagen').replace('{n}','').replace(/\s+/g,' ').trim(), col:'blue'}
+    {emoji:'🔥', value:activeLast7+'/7', label:(function(){ var p=(lng.profCheckDays||'{n} von 7 Tagen aktiv').split('{n}'); var sfx=(p[1]||'').replace(/\s+/g,' ').trim(); var pfx=(p[0]||'').replace(/\s+/g,' ').trim(); return sfx||pfx||'Aktiv'; })(), col:activeLast7>=5?'gold':activeLast7>=3?'green':'purple'},
+    {emoji:'🗓️', value:memberDays+'d', label:(function(){ var p=(lng.profCheckSince||'Mitglied seit {n} Tagen').split('{n}'); var pfx=(p[0]||'').replace(/\s+/g,' ').trim(); var sfx=(p[1]||'').replace(/\s+/g,' ').trim(); return (pfx.length>=sfx.length?pfx:sfx)||'Tage'; })(), col:'blue'}
   ];
   var startY = 530;
   for (var i = 0; i < 6; i++) {
