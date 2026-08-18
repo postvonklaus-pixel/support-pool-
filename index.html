@@ -5937,6 +5937,9 @@ function renderDashboard() {
     return true;
   }).length : 0;
   var weeklyGiven = u.weeklyGiven || 0;
+  var unreadNotifs = Object.values(DB.messages||{}).filter(function(m){
+    return m.to===CU && (m.type==='notif'||m.type==='dm'||m.reply) && !m.read;
+  }).length;
 
   // ── translate labels ──
   st('t-db-bal',     l.balance   || 'Guthaben');
@@ -5945,9 +5948,9 @@ function renderDashboard() {
   st('t-db-vids',    l.vids      || 'Videos');
   st('t-db-post',    l.postBtn   || 'Video posten');
   st('t-db-sup',     l.open      || 'Offene Videos');
-  // bell: mirror DM notification badge onto profil tile
-  var _dbBell = ge('db-profil-bell'), _navBadge = ge('nav-notif-badge');
-  if (_dbBell) { if (_navBadge && _navBadge.classList.contains('active')) _dbBell.classList.remove('hidden'); else _dbBell.classList.add('hidden'); }
+  // bell: show when there are unread notifications
+  var _dbBell = ge('db-profil-bell');
+  if (_dbBell) { if (unreadNotifs > 0) _dbBell.classList.remove('hidden'); else _dbBell.classList.add('hidden'); }
   st('t-db-profil',  l.navProfile|| 'Profil');
   st('t-db-set',       l.settings      || 'Einstellungen');
   st('t-myvideos-tile',l.myVidsTile   || '🎞️ Meine Videos');
@@ -6002,9 +6005,9 @@ function renderDashboard() {
 
   // ── Profil tile ──
   var statProfil = ge('db-stat-profil');
-  if (statProfil) statProfil.textContent = weeklyGiven;
+  if (statProfil) statProfil.textContent = unreadNotifs > 0 ? unreadNotifs : '';
   var subProfil  = ge('db-sub-profil');
-  if (subProfil) subProfil.textContent = l.weeklySupLabel || 'Supports diese Woche';
+  if (subProfil) subProfil.textContent = unreadNotifs > 0 ? (l.notifs || '🔔 Benachrichtigungen') : (l.weeklySupLabel || 'Supports diese Woche');
 
   // ── Settings tile ──
   var subSet = ge('db-sub-set');
@@ -6835,6 +6838,7 @@ function renderNotifs() {
   st('notif-count', unread > 0 ? unread : '');
   var badge = ge('nav-notif-badge');
   if (badge) badge.className = 'nav-notif' + (unread > 0 ? ' active' : '');
+  updateDbProfilNotifTile();
   // Animate bell on nav if unread
   var profNav = ge('ni-profile');
   if (profNav) {
@@ -6953,7 +6957,18 @@ function markRead(id) {
 function delNotif(id) {
   var key = Object.keys(DB.messages||{}).find(function(k){ return String(DB.messages[k].id||DB.messages[k].ts) === String(id); });
   if (key) delete DB.messages[key];
-  save(); renderNotifs();
+  save(); renderNotifs(); updateDbProfilNotifTile();
+}
+
+function updateDbProfilNotifTile() {
+  if (!CU) return;
+  var l = L[LANG] || L.de;
+  var cnt = Object.values(DB.messages||{}).filter(function(m){
+    return m.to===CU && (m.type==='notif'||m.type==='dm'||m.reply) && !m.read;
+  }).length;
+  var s = ge('db-stat-profil'); if (s) s.textContent = cnt > 0 ? cnt : '';
+  var sub = ge('db-sub-profil'); if (sub) sub.textContent = cnt > 0 ? (l.notifs || '🔔 Benachrichtigungen') : (l.weeklySupLabel || 'Supports diese Woche');
+  var bell = ge('db-profil-bell'); if (bell) { if (cnt > 0) bell.classList.remove('hidden'); else bell.classList.add('hidden'); }
 }
 
 function updateNotifBadge() {
