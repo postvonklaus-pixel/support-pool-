@@ -1,0 +1,39 @@
+/* ── SETTINGS SCREEN ──────────────────────────────────── */
+.settings-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+.settings-section-title {
+  font-size: var(--text-xs);
+  font-weight: var(--weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.10em;
+  color: var(--text-tertiary);
+  padding: 0 var(--sp-2);
+  margin-bottom: var(--sp-1);
+}
+.settings-card {
+  background: var(--bg-glass);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+}
+.settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  padding: var(--sp-4);
+  transition: background var(--dur-fast);
+}
+.settings-row:hover { background: var(--bg-glass-hover); }
+.settings-row + .settings-row { border-top: 1px solid var(--border-subtle); }
+.settings-row__label { font-size: var(--text-base); font-weight: var(--weight-medium); }
+.settings-row__sub   { font-size: var(--text-xs); color: var(--text-tertiary); margin-top: 2px; }
+.settings-row__right { flex-shrink: 0; color: var(--text-tertiary); }
+
+.settings-danger-zone {
+  background: var(--accent-danger-soft);
+  border-color: rgba(239,68,68,0.2);
+}

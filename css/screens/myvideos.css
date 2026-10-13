@@ -1,0 +1,25 @@
+/* ── MY VIDEOS SCREEN ─────────────────────────────────── */
+.myvideo-card {
+  background: var(--bg-glass);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+.myvideo-card:hover { transform: translateY(-2px); }
+.myvideo-card + .myvideo-card { margin-top: var(--sp-3); }
+.myvideo-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--sp-3) var(--sp-4);
+  border-bottom: 1px solid var(--border-subtle);
+}
+.myvideo-card__body { padding: var(--sp-4); display: flex; flex-direction: column; gap: var(--sp-3); }
+.myvideo-card__footer {
+  display: flex;
+  gap: var(--sp-2);
+  padding: var(--sp-3) var(--sp-4);
+  border-top: 1px solid var(--border-subtle);
+  background: var(--bg-glass);
+}
