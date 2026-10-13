@@ -9,6 +9,7 @@ import { on }         from '../events.js';
 import { toast }      from '../components/toast.js';
 import { writeDB }    from '../firebase.js';
 import { progressRing, streakFlames } from '../components/progress.js';
+import { renderAchievements } from '../features/achievements.js';
 
 const RANKS = [
   { min: 0,   max: 4,   label: 'Neuling',    icon: '🌱', color: '#94a3b8' },
@@ -120,6 +121,15 @@ export function render() {
           <span class="profile-section__title">👑 Elite-Rang erreicht!</span>
         </div>
       </div>`}
+
+      <!-- ── Achievements ── -->
+      <div class="profile-section">
+        <div class="profile-section__head">
+          <span class="profile-section__title">🏅 Achievements</span>
+          <span class="profile-section__sub">${(u.achievements || []).length} / ${14} freigeschaltet</span>
+        </div>
+        ${renderAchievements(cu)}
+      </div>
 
       <!-- ── Actions ── -->
       <div class="profile-section profile-actions">

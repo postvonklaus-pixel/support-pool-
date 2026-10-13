@@ -123,6 +123,8 @@ on('support:copy', (el) => {
   import('./features/support.js').then(m => m.copyComment(el.dataset.comment));
 });
 
+on('support:video-opened', () => {});  // overridden by support.js after load
+
 // ── Notification actions ──────────────────────────────────
 on('notif:del', (el) => {
   import('./features/notifications.js').then(m => m.delNotif(el.dataset.id));

@@ -8,6 +8,7 @@ import { esc, avatarGradient, timeAgo } from '../utils.js';
 import { on }         from '../events.js';
 import { startTimer } from '../components/timer.js';
 import { goalPill, balanceMeter, circularTimer, startCircularTimer } from '../components/progress.js';
+import { trustBadge } from '../features/trust.js';
 
 const R1_NEED = 10;
 const R2_NEED = 10;
@@ -73,9 +74,10 @@ export function render() {
 
 // ── Pool Status Bar ────────────────────────────────────────
 function _poolStatusBar(openCount, todaySupports, u) {
-  const streak = _currentStreak(u);
+  const streak   = _currentStreak(u);
+  const health   = _poolHealth(openCount);
   const activity = openCount > 8 ? 'busy' : openCount > 2 ? 'active' : 'quiet';
-  const actLabel = { busy:'🔴 Überfüllt', active:'🟢 Aktiv', quiet:'🟡 Ruhig' }[activity];
+  const actLabel = { busy:'🔴 Voll', active:'🟢 Aktiv', quiet:'🟡 Ruhig' }[activity];
 
   return `
     <div class="pool-status-bar">
@@ -92,6 +94,21 @@ function _poolStatusBar(openCount, todaySupports, u) {
       <div class="pool-status-item">
         <div class="pool-status-item__val pool-status-item__val--sm">${actLabel}</div>
         <div class="pool-status-item__label">Pool</div>
+      </div>
+      <div class="pool-status-divider"></div>
+      <div class="pool-status-item">
+        <div class="pool-health-ring" title="Pool Health ${health.score}%">
+          <svg width="28" height="28" viewBox="0 0 28 28" aria-hidden="true">
+            <circle cx="14" cy="14" r="11" fill="none" stroke="var(--bg-elevated)" stroke-width="3"/>
+            <circle cx="14" cy="14" r="11" fill="none" stroke="${health.color}" stroke-width="3"
+              stroke-linecap="round"
+              stroke-dasharray="${(health.score / 100) * 69.1} 69.1"
+              stroke-dashoffset="0"
+              transform="rotate(-90 14 14)"/>
+          </svg>
+          <div class="pool-health-ring__val" style="color:${health.color}">${health.score}</div>
+        </div>
+        <div class="pool-status-item__label">Health</div>
       </div>
       ${streak > 0 ? `
       <div class="pool-status-divider"></div>
@@ -127,6 +144,8 @@ function _videoCard(v) {
   const gradient  = avatarGradient(owner);
   const urlShort  = link.replace(/^https?:\/\/(www\.)?/, '').slice(0, 38);
   const isTikTok  = link.includes('tiktok.com');
+  const sentiment = _sentimentBadge(v);
+  const trust     = trustBadge(owner);
 
   return `
     <article class="feed-card${urgent ? ' feed-card--urgent' : ''}" data-vid="${esc(v.id || link)}">
@@ -135,10 +154,13 @@ function _videoCard(v) {
           ${owner.slice(0, 2).toUpperCase()}
         </div>
         <div class="feed-card__owner-info">
-          <div class="feed-card__owner">@${esc(owner)}</div>
+          <div class="feed-card__owner">${trust} @${esc(owner)}</div>
           ${v.postedAt ? `<div class="feed-card__time">${timeAgo(v.postedAt, state.lang)}</div>` : ''}
         </div>
-        <span class="round-pill round-pill--r${round}">R${round}</span>
+        <div class="feed-card__head-right">
+          ${sentiment}
+          <span class="round-pill round-pill--r${round}">R${round}</span>
+        </div>
       </div>
 
       <a class="feed-card__url" href="${esc(link)}" target="_blank" rel="noopener noreferrer" aria-label="Video öffnen">
@@ -311,6 +333,34 @@ function _currentStreak(u) {
     d.setDate(d.getDate() - 1);
   }
   return streak;
+}
+
+function _sentimentBadge(v) {
+  const age = v.postedAt ? Date.now() - v.postedAt : Infinity;
+  const r1  = (v.r1Supporters || []).length;
+  const r1n = v.r1Need || R1_NEED;
+  const slots = r1n - r1;
+
+  if (slots <= 2 && slots > 0) return `<span class="sf-badge sf-badge--urgent">🚨 Fast voll</span>`;
+  if (age < 2 * 60 * 60 * 1000) return `<span class="sf-badge sf-badge--new">✨ Neu</span>`;
+  if (age > 20 * 60 * 60 * 1000) return `<span class="sf-badge sf-badge--old">⏰ Bald</span>`;
+  if (r1 >= r1n * 0.7) return `<span class="sf-badge sf-badge--hot">🔥 Heiß</span>`;
+  return '';
+}
+
+function _poolHealth(openCount) {
+  const members  = Object.keys(state.db.members || {}).length;
+  const activity = Object.values(state.db.members || {}).filter(m => {
+    const today = new Date().toISOString().slice(0, 10);
+    return (m.supportDays || m.activeDays || []).includes(today);
+  }).length;
+
+  const actScore  = members > 0 ? Math.round((activity / members) * 50) : 0;
+  const vidScore  = Math.round(Math.min(openCount, 10) / 10 * 50);
+  const score     = Math.min(100, actScore + vidScore);
+  const color     = score >= 60 ? '#10b981' : score >= 30 ? '#f59e0b' : '#ef4444';
+
+  return { score, color };
 }
 
 function _linkIcon() {
