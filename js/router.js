@@ -6,7 +6,7 @@ import { state, setState } from './state.js';
 import { ge, qsa } from './utils.js';
 
 const SCREENS = ['login','dashboard','home','profile','myvideos','caption','settings','admin','chat'];
-const NAV_MAP  = { home:'ni-feed', myvideos:'ni-meine', chat:'ni-chat', profile:'ni-ich' };
+const NAV_MAP  = { dashboard:'ni-feed', home:'ni-feed', myvideos:'ni-meine', chat:'ni-chat', profile:'ni-ich' };
 
 // Screen module cache
 const _mods = {};
