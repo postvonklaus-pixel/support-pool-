@@ -42,13 +42,14 @@ function _watchDB() {
   // Subscribe for when Firebase populates members
   _unsubDB = subscribe((change) => {
     if (change.path === 'db' && _isDBReady()) {
+      // Save pending value BEFORE _cleanup() nulls it
+      const queued = _pendingVal;
       _cleanup();
       _setLoginReady(true);
-      if (_pendingVal) {
-        const val = _pendingVal;
-        _pendingVal = null;
+      if (queued) {
         const input = ge('login-name-input');
-        if (input) input.value = val;
+        if (input) input.value = queued;
+        _pendingVal = queued;  // restore so _handleNameSubmit can read it
         _handleNameSubmit();
       }
     }

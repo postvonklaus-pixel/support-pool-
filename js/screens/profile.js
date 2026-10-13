@@ -137,7 +137,7 @@ export function render() {
           ✨ ${t('profCheckBtn') || 'Profil-Check'}
         </button>
         <div class="profile-actions-row">
-          <button class="btn btn--ghost btn--full" data-action="modal:settings" style="flex:1">
+          <button class="btn btn--ghost btn--full" data-action="nav:goto" data-screen="settings" style="flex:1">
             ⚙️ ${t('settings') || 'Einstellungen'}
           </button>
           <button class="btn btn--danger" data-action="settings:logout" style="flex:1">

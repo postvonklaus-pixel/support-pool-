@@ -108,6 +108,13 @@ function _registerHandlers() {
     const ok = await confirm('Video löschen?', 'Das Video wird aus dem Pool entfernt.');
     if (!ok) return;
     writeDB(`videos/${vid}`, null);
+    // Keep postsTotal in sync so balance-gating and dashboard counts stay correct
+    const cu = state.currentUser;
+    if (cu) {
+      const u = state.db.members?.[cu] || {};
+      const current = u.postsTotal || 0;
+      if (current > 0) writeDB(`members/${cu}/postsTotal`, current - 1);
+    }
     toast('Video gelöscht', 'success');
     setTimeout(render, 300);
   });

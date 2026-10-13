@@ -15,15 +15,18 @@ let _dmPartner      = null;    // username of open DM thread
 let _skipNextRender = false;   // set after in-place send to skip DB-echo re-render
 
 export function render() {
+  const el = document.getElementById('screen-chat');
+
   // After an in-place bubble append we wrote to DB; the DB listener fires
   // back almost immediately with the same data. Skip that one re-render so
   // the input bar / focus / keyboard stay intact.
-  if (_skipNextRender) {
+  // Only skip when chat is the active screen — stale flags from a previous
+  // visit must not leave the chat blank on re-entry.
+  if (_skipNextRender && el?.classList.contains('active')) {
     _skipNextRender = false;
     return;
   }
-
-  const el = document.getElementById('screen-chat');
+  _skipNextRender = false;
   if (!el) return;
 
   const cu = state.currentUser;

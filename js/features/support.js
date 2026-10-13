@@ -201,9 +201,16 @@ on('support:done', (el) => {
 
   const newSups = [...supporters, cu];
   const dbVidId = _findVideoId(vidId);
+  const r1n     = v.r1Need || 10;
 
   writeDB(`videos/${dbVidId}/${field}`, newSups);
 
+  // Advance to round 2 when R1 is now full
+  if (rnd === 1 && newSups.length >= r1n) {
+    writeDB(`videos/${dbVidId}/round`, 2);
+  }
+
+  // Supporter stats
   const u = state.db.members?.[cu] || {};
   const stats = u.stats || {};
   writeDB(`members/${cu}/stats/given`, (stats.given || 0) + 1);
@@ -213,8 +220,13 @@ on('support:done', (el) => {
   const days  = [...new Set([...(u.supportDays || []), today])];
   writeDB(`members/${cu}/supportDays`, days);
 
-  const owner = v.ownerKey || v.owner;
+  // Increment owner's received counter
+  const owner    = v.ownerKey || v.owner;
   if (owner && owner !== cu) {
+    const ownerData  = state.db.members?.[owner] || {};
+    const ownerStats = ownerData.stats || {};
+    writeDB(`members/${owner}/stats/received`, (ownerStats.received || 0) + 1);
+
     const notifId = `notif_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
     writeDB(`messages/${notifId}`, {
       to: owner, from: cu, type: 'notif',
