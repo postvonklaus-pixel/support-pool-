@@ -8,6 +8,7 @@ import { t }        from '../i18n.js';
 import { esc, timeAgo, avatarGradient } from '../utils.js';
 import { on }       from '../events.js';
 import { writeDB }  from '../firebase.js';
+import { emptyState } from '../components/empty-state.js';
 
 let _chatTab   = 'pool';  // 'pool' | 'dm'
 let _dmPartner = null;    // username of open DM thread
@@ -60,12 +61,10 @@ export function render() {
 function _renderPool(cu, msgs) {
   return `
     <div class="pool-messages" id="pool-messages">
-      ${msgs.length === 0 ? `
-        <div class="chat-empty">
-          <div class="chat-empty__icon">💬</div>
-          <div class="chat-empty__text">Sei der Erste! Schreib eine Nachricht.</div>
-        </div>
-      ` : msgs.map(m => _poolBubble(m, cu)).join('')}
+      ${msgs.length === 0
+        ? emptyState('💬', 'Noch keine Nachrichten', 'Sei der Erste — schreib etwas!', { size: 'sm' })
+        : msgs.map(m => _poolBubble(m, cu)).join('')
+      }
     </div>
     <div class="chat-input-bar">
       <input
@@ -118,10 +117,7 @@ function _renderDMList(cu, threads) {
     });
 
   if (!members.length) {
-    return `<div class="chat-empty" style="margin-top:64px">
-      <div class="chat-empty__icon">👥</div>
-      <div class="chat-empty__text">Keine anderen Mitglieder im Pool</div>
-    </div>`;
+    return emptyState('👥', 'Pool ist leer', 'Noch keine anderen Mitglieder');
   }
 
   return `
@@ -172,12 +168,10 @@ function _renderDMThread(el, cu, partner) {
       </div>
 
       <div class="pool-messages" id="pool-messages" style="flex:1">
-        ${msgs.length === 0 ? `
-          <div class="chat-empty">
-            <div class="chat-empty__icon">✉️</div>
-            <div class="chat-empty__text">Schreib @${esc(name)} eine Nachricht</div>
-          </div>
-        ` : msgs.map(m => _poolBubble(m, cu)).join('')}
+        ${msgs.length === 0
+          ? emptyState('✉️', `Schreib @${esc(name)}`, 'Noch keine Nachrichten in diesem Chat', { size: 'sm' })
+          : msgs.map(m => _poolBubble(m, cu)).join('')
+        }
       </div>
 
       <div class="chat-input-bar">

@@ -9,6 +9,7 @@ import { on }         from '../events.js';
 import { startTimer } from '../components/timer.js';
 import { goalPill, balanceMeter, circularTimer, startCircularTimer } from '../components/progress.js';
 import { trustBadge } from '../features/trust.js';
+import { emptyState } from '../components/empty-state.js';
 
 const R1_NEED = 10;
 const R2_NEED = 10;
@@ -123,11 +124,9 @@ function _poolStatusBar(openCount, todaySupports, u) {
 // ── Feed Tab ───────────────────────────────────────────────
 function _renderFeedTab(videos, cu) {
   if (!videos.length) {
-    return `<div class="empty-state" style="margin-top:48px">
-      <div class="empty-state__icon">🎯</div>
-      <div class="empty-state__title">${t('noOpen') || 'Alles supporten!'}</div>
-      <div class="empty-state__sub">Gerade keine offenen Videos — schau später rein</div>
-    </div>`;
+    return emptyState('🎯', t('noOpen') || 'Pool ist leer!',
+      'Gerade keine offenen Videos — entweder war alles supporten oder schau später rein.',
+      { action: 'post:open', actionLabel: '+ Video posten' });
   }
   return `<div class="feed-list">${videos.map(v => _videoCard(v)).join('')}</div>`;
 }
@@ -236,11 +235,7 @@ function _renderLeaderboardTab(cu) {
     .map(([key, m]) => ({ key, ...m }));
 
   if (!members.length) {
-    return `<div class="empty-state" style="margin-top:48px">
-      <div class="empty-state__icon">🏆</div>
-      <div class="empty-state__title">Noch keine Daten</div>
-      <div class="empty-state__sub">Werde der erste in dieser Woche!</div>
-    </div>`;
+    return emptyState('🏆', 'Noch keine Daten', 'Werde der Erste in dieser Woche!');
   }
 
   const top3   = members.slice(0, 3);

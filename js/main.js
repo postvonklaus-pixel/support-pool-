@@ -10,6 +10,7 @@ import { initFirebase, saveDB } from './firebase.js';
 import { initI18n, setLang } from './i18n.js';
 import { initEvents } from './events.js';
 import { initRouter, goScreen } from './router.js';
+import { initOffline } from './features/offline.js';
 
 // ── Boot sequence ─────────────────────────────────────────
 async function boot() {
@@ -25,6 +26,9 @@ async function boot() {
 
   // 3. Init event delegation
   try { initEvents(); } catch (e) { console.error('[boot] events', e); }
+
+  // 3b. Init offline detection
+  try { initOffline(); } catch (e) { /* non-fatal */ }
 
   // 4. Init router
   try { initRouter(); } catch (e) { console.error('[boot] router', e); }

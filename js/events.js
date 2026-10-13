@@ -183,3 +183,5 @@ on('settings:theme', (el) => {
 on('settings:logout', () => {
   import('./main.js').then(m => m.logout());
 });
+
+on('settings:lang-toggle', () => {});  // overridden by settings.js on load
