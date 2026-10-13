@@ -51,3 +51,33 @@
 .settings-row__label { font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--text-primary); }
 .settings-row__sub   { font-size: var(--text-xs); color: var(--text-secondary); margin-top: 2px; }
 .theme-toggle-row { display: flex; gap: var(--sp-2); }
+
+/* ── Guide inline block ─────────────────────────────────── */
+.settings-guide-card {
+  display: flex; align-items: center; gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  cursor: pointer; border-top: 1px solid var(--border-subtle);
+  transition: background var(--duration-fast);
+}
+.settings-guide-card:hover { background: var(--bg-glass-hover); }
+.settings-guide-card__icon { font-size: 22px; }
+.settings-guide-card__body { flex: 1; }
+.settings-guide-card__title { font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--text-primary); }
+.settings-guide-card__sub   { font-size: var(--text-xs); color: var(--text-tertiary); margin-top: 1px; }
+
+.settings-guide-content { border-top: 1px solid var(--border-subtle); }
+.settings-guide-content.hidden { display: none; }
+.settings-guide-body { padding: var(--space-4); display: flex; flex-direction: column; gap: var(--space-4); }
+.settings-guide-block { }
+.settings-guide-block__title {
+  font-size: var(--text-sm); font-weight: var(--weight-bold);
+  color: var(--text-primary); margin-bottom: var(--space-2);
+}
+.settings-guide-block p { font-size: var(--text-sm); color: var(--text-secondary); line-height: var(--leading-relaxed); }
+.settings-guide-ranks { display: flex; flex-direction: column; gap: var(--space-1); margin-top: var(--space-2); }
+.settings-guide-rank {
+  display: flex; justify-content: space-between;
+  padding: var(--space-2) var(--space-3);
+  background: var(--bg-glass); border-radius: var(--radius-lg);
+  font-size: var(--text-sm); color: var(--text-secondary);
+}

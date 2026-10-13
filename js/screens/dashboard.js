@@ -136,23 +136,14 @@ export function render() {
 
 function _registerHandlers() {
   on('dash:guthaben', () => {
-    import('./home.js').then(m => {
-      goScreen('home');
-      m.setMode && m.setMode('guthaben');
-    });
+    import('./home.js').then(m => { m.setMode?.('balance'); goScreen('home'); });
   });
 
   on('dash:support', () => {
-    import('./home.js').then(m => {
-      goScreen('home');
-      m.setMode && m.setMode('support');
-    });
+    import('./home.js').then(m => { m.setMode?.('feed'); goScreen('home'); });
   });
 
   on('dash:leaderboard', () => {
-    import('./home.js').then(m => {
-      goScreen('home');
-      m.setMode && m.setMode('leaderboard');
-    });
+    import('./home.js').then(m => { m.setMode?.('leaderboard'); goScreen('home'); });
   });
 }

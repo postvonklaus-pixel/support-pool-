@@ -16,7 +16,8 @@ const BAL_CAP = 20;
 let _tab = 'feed'; // 'feed' | 'balance' | 'leaderboard'
 
 export function setMode(m) {
-  _tab = m === 'support' ? 'feed' : m;
+  const MAP = { support:'feed', guthaben:'balance', leaderboard:'leaderboard', feed:'feed', balance:'balance' };
+  _tab = MAP[m] || 'feed';
 }
 
 export function render() {

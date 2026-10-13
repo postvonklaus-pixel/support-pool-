@@ -160,9 +160,9 @@ on('admin:group:toggle', (el) => {
   import('./screens/admin.js').then(m => m.toggleGroupAccordion(el.dataset.group));
 });
 
-// ── Guide ──────────────────────────────────────────────────
+// ── Guide → Settings/FAQ ───────────────────────────────────
 on('guide:open', () => {
-  import('./features/guide.js').then(m => m.openGuide());
+  import('./router.js').then(m => m.goScreen('settings'));
 });
 
 // ── Caption ───────────────────────────────────────────────

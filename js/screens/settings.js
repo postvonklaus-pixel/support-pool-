@@ -88,13 +88,29 @@ export function render() {
         </button>
       </div>
 
+      <!-- Guide / FAQ -->
+      <div class="settings-section">
+        <div class="settings-section__title">Hilfe</div>
+        <div class="settings-guide-card" data-action="guide:inline">
+          <div class="settings-guide-card__icon">📖</div>
+          <div class="settings-guide-card__body">
+            <div class="settings-guide-card__title">NOVA Support Pool — Guide</div>
+            <div class="settings-guide-card__sub">Wie funktioniert der Pool? Regeln, Ränge, Guthaben</div>
+          </div>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </div>
+        <div class="settings-guide-content hidden" id="settings-guide-content">
+          ${_guideHTML()}
+        </div>
+      </div>
+
       <!-- App info -->
       <div class="settings-section">
         <div class="settings-section__title">${t('setSecApp') || 'App'}</div>
         <div class="settings-row">
           <div class="settings-row__left">
             <div class="settings-row__label">NOVA Support Pool</div>
-            <div class="settings-row__sub">v2.0 — Dark Premium Glass</div>
+            <div class="settings-row__sub">v2.0 — Phase 2</div>
           </div>
         </div>
       </div>
@@ -105,7 +121,41 @@ export function render() {
   _registerHandlers();
 }
 
+function _guideHTML() {
+  return `
+    <div class="settings-guide-body">
+      <div class="settings-guide-block">
+        <div class="settings-guide-block__title">🎯 Wie funktioniert's?</div>
+        <p>Der NOVA Support Pool ist eine gegenseitige TikTok-Support-Community. Du kommentierst auf anderen Videos — andere kommentieren auf deinen.</p>
+      </div>
+      <div class="settings-guide-block">
+        <div class="settings-guide-block__title">💰 Guthaben (Balance)</div>
+        <p>Jeder Support den du gibst = +1. Jeder den du bekommst = −1.<br>Balance = Gegeben − Erhalten (max. +20). Negatives Guthaben blockiert neue Posts.</p>
+      </div>
+      <div class="settings-guide-block">
+        <div class="settings-guide-block__title">🎬 Video posten</div>
+        <p>Drücke das <strong>+</strong>-FAB oder "Video posten" und füge deinen TikTok-Link ein. Nach 24h kann ein neues Video gepostet werden.</p>
+      </div>
+      <div class="settings-guide-block">
+        <div class="settings-guide-block__title">🏆 Rang-System</div>
+        <div class="settings-guide-ranks">
+          <div class="settings-guide-rank"><span>🌱 Neuling</span><span>0–4</span></div>
+          <div class="settings-guide-rank"><span>⚡ Aufsteiger</span><span>5–19</span></div>
+          <div class="settings-guide-rank"><span>🔥 Aktiv</span><span>20–49</span></div>
+          <div class="settings-guide-rank"><span>🏆 Veteran</span><span>50–99</span></div>
+          <div class="settings-guide-rank"><span>👑 Elite</span><span>100+</span></div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
 function _registerHandlers() {
+  on('guide:inline', () => {
+    const content = document.getElementById('settings-guide-content');
+    if (content) content.classList.toggle('hidden');
+  });
+
   on('settings:push', () => {
     if (!('Notification' in window)) {
       import('../components/toast.js').then(m => m.toast('Push nicht verfügbar', 'warning'));
