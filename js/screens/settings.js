@@ -88,20 +88,10 @@ export function render() {
         </button>
       </div>
 
-      <!-- Guide / FAQ -->
+      <!-- FAQ Accordion -->
       <div class="settings-section">
-        <div class="settings-section__title">Hilfe</div>
-        <div class="settings-guide-card" data-action="guide:inline">
-          <div class="settings-guide-card__icon">📖</div>
-          <div class="settings-guide-card__body">
-            <div class="settings-guide-card__title">NOVA Support Pool — Guide</div>
-            <div class="settings-guide-card__sub">Wie funktioniert der Pool? Regeln, Ränge, Guthaben</div>
-          </div>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-        </div>
-        <div class="settings-guide-content hidden" id="settings-guide-content">
-          ${_guideHTML()}
-        </div>
+        <div class="settings-section__title">Hilfe & FAQ</div>
+        ${_faqHTML()}
       </div>
 
       <!-- App info -->
@@ -121,39 +111,120 @@ export function render() {
   _registerHandlers();
 }
 
-function _guideHTML() {
-  return `
-    <div class="settings-guide-body">
-      <div class="settings-guide-block">
-        <div class="settings-guide-block__title">🎯 Wie funktioniert's?</div>
-        <p>Der NOVA Support Pool ist eine gegenseitige TikTok-Support-Community. Du kommentierst auf anderen Videos — andere kommentieren auf deinen.</p>
-      </div>
-      <div class="settings-guide-block">
-        <div class="settings-guide-block__title">💰 Guthaben (Balance)</div>
-        <p>Jeder Support den du gibst = +1. Jeder den du bekommst = −1.<br>Balance = Gegeben − Erhalten (max. +20). Negatives Guthaben blockiert neue Posts.</p>
-      </div>
-      <div class="settings-guide-block">
-        <div class="settings-guide-block__title">🎬 Video posten</div>
-        <p>Drücke das <strong>+</strong>-FAB oder "Video posten" und füge deinen TikTok-Link ein. Nach 24h kann ein neues Video gepostet werden.</p>
-      </div>
-      <div class="settings-guide-block">
-        <div class="settings-guide-block__title">🏆 Rang-System</div>
-        <div class="settings-guide-ranks">
-          <div class="settings-guide-rank"><span>🌱 Neuling</span><span>0–4</span></div>
-          <div class="settings-guide-rank"><span>⚡ Aufsteiger</span><span>5–19</span></div>
-          <div class="settings-guide-rank"><span>🔥 Aktiv</span><span>20–49</span></div>
-          <div class="settings-guide-rank"><span>🏆 Veteran</span><span>50–99</span></div>
-          <div class="settings-guide-rank"><span>👑 Elite</span><span>100+</span></div>
-        </div>
-      </div>
+const FAQ = [
+  {
+    cat: '🎯 Grundlagen',
+    items: [
+      {
+        q: 'Was ist der NOVA Support Pool?',
+        a: 'Eine gegenseitige TikTok-Community. Du kommentierst auf Videos anderer Mitglieder — sie kommentieren auf deinen. Kein Algorithmus, nur echte Menschen.',
+      },
+      {
+        q: 'Wie nehme ich am Pool teil?',
+        a: 'Öffne den Feed-Tab und tippe auf „Supporten". Folge dem 3-Schritt-Prozess: Video öffnen, Kommentar kopieren & posten, dann bestätigen.',
+      },
+      {
+        q: 'Muss ich jeden Tag aktiv sein?',
+        a: 'Nein — aber je aktiver du bist, desto mehr Guthaben sammelst du und desto schneller steigst du im Rang auf.',
+      },
+    ],
+  },
+  {
+    cat: '💰 Guthaben',
+    items: [
+      {
+        q: 'Wie berechnet sich das Guthaben?',
+        a: 'Guthaben = Gegeben − Erhalten. Maximum +20. Jeder Support den du gibst +1, jeder den dein Video erhält −1.',
+      },
+      {
+        q: 'Was passiert bei negativem Guthaben?',
+        a: 'Du kannst keine neuen Videos posten, bis dein Guthaben wieder positiv ist. Supporten hilft direkt!',
+      },
+      {
+        q: 'Warum ist das Guthaben bei +20 gedeckelt?',
+        a: 'Damit niemand Guthaben horten kann — der Pool soll aktiv und ausgeglichen bleiben.',
+      },
+    ],
+  },
+  {
+    cat: '🎬 Videos posten',
+    items: [
+      {
+        q: 'Wie poste ich ein Video?',
+        a: 'Tippe auf das + in der Mitte der Navigation oder auf „Video posten" im Dashboard. Füge deinen TikTok-Link ein.',
+      },
+      {
+        q: 'Wie oft kann ich posten?',
+        a: 'Einmal alle 24 Stunden. Der Timer läuft ab dem letzten Post.',
+      },
+      {
+        q: 'Was sind Runden (R1/R2)?',
+        a: 'Jedes Video startet in Runde 1 (R1). Wenn alle Slots voll sind, kommt es in Runde 2 für weitere Supports.',
+      },
+    ],
+  },
+  {
+    cat: '🏆 Ränge',
+    items: [
+      {
+        q: 'Wie funktioniert das Rang-System?',
+        a: `Dein Rang basiert auf der Gesamtzahl gegebener Supports:\n🌱 Neuling (0–4) · ⚡ Aufsteiger (5–19) · 🔥 Aktiv (20–49) · 🏆 Veteran (50–99) · 👑 Elite (100+)`,
+      },
+      {
+        q: 'Was bringt mir ein höherer Rang?',
+        a: 'Sichtbarkeit in der Community, Trust-Badge auf deinen Videos und Zugang zu zukünftigen Rang-Vorteilen.',
+      },
+    ],
+  },
+  {
+    cat: '⚙️ Technisches',
+    items: [
+      {
+        q: 'Kann ich den Chat nutzen?',
+        a: 'Ja! Im Chat-Tab findest du den Pool-Chat (alle) und private DMs mit einzelnen Mitgliedern.',
+      },
+      {
+        q: 'Was sind Achievements?',
+        a: 'Meilensteine, die du beim Supporten, Posten und Streak-Aufbauen automatisch freischaltest. Sichtbar in deinem Profil.',
+      },
+      {
+        q: 'Wie melde ich mich ab?',
+        a: 'Geh zu Einstellungen → Account → Abmelden. Deine Daten bleiben im Pool erhalten.',
+      },
+    ],
+  },
+];
+
+function _faqHTML() {
+  return FAQ.map((cat, ci) => `
+    <div class="faq-category">
+      <div class="faq-category__title">${cat.cat}</div>
+      ${cat.items.map((item, ii) => {
+        const id = `faq-${ci}-${ii}`;
+        return `
+          <div class="faq-item" id="${id}">
+            <button class="faq-item__q" data-action="faq:toggle" data-id="${id}">
+              <span>${item.q}</span>
+              <svg class="faq-item__chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+            <div class="faq-item__a hidden">${item.a.replace(/\n/g, '<br>')}</div>
+          </div>
+        `;
+      }).join('')}
     </div>
-  `;
+  `).join('');
 }
 
 function _registerHandlers() {
-  on('guide:inline', () => {
-    const content = document.getElementById('settings-guide-content');
-    if (content) content.classList.toggle('hidden');
+  on('faq:toggle', (el) => {
+    const id   = el.dataset.id;
+    const item = document.getElementById(id);
+    if (!item) return;
+    const ans  = item.querySelector('.faq-item__a');
+    const chev = item.querySelector('.faq-item__chevron');
+    const open = item.classList.toggle('faq-item--open');
+    if (ans)  ans.classList.toggle('hidden', !open);
+    if (chev) chev.style.transform = open ? 'rotate(180deg)' : '';
   });
 
   on('settings:push', () => {

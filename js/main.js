@@ -132,6 +132,11 @@ export async function loginAs(username) {
   // Save session
   import('./storage.js').then(m => m.saveSession(username));
 
+  // Show onboarding for first-time users
+  import('./features/onboarding.js').then(m => {
+    if (m.shouldShowOnboarding(username)) m.startOnboarding(username);
+  });
+
   return true;
 }
 

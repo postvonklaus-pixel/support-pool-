@@ -1,0 +1,220 @@
+/* ═══════════════════════════════════════════════════════
+   NOVA Support Pool — Onboarding Overlay (Part J)
+   ═══════════════════════════════════════════════════════ */
+
+#onboarding-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  padding: env(safe-area-inset-bottom, 0);
+}
+
+#onboarding-overlay.ob--visible {
+  opacity: 1;
+  pointer-events: all;
+}
+
+/* ── Card ────────────────────────────────────────────────── */
+.ob-card {
+  background: var(--bg-base);
+  border-radius: var(--radius-2xl, 24px) var(--radius-2xl, 24px) 0 0;
+  padding: 32px 24px calc(24px + env(safe-area-inset-bottom, 0));
+  width: 100%;
+  max-width: 480px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-5, 16px);
+  position: relative;
+  max-height: 88vh;
+  overflow-y: auto;
+}
+
+@keyframes ob-slide-up {
+  from { transform: translateY(40px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+.ob-slide-in {
+  animation: ob-slide-up 0.35s cubic-bezier(0.34, 1.3, 0.64, 1) both;
+}
+
+/* ── Skip button ─────────────────────────────────────────── */
+.ob-skip {
+  position: absolute;
+  top: 16px;
+  right: 20px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: var(--text-sm, 0.875rem);
+  color: var(--text-tertiary);
+  padding: 4px 8px;
+}
+
+/* ── Icon ────────────────────────────────────────────────── */
+.ob-icon {
+  font-size: 3rem;
+  line-height: 1;
+  filter: drop-shadow(0 4px 12px rgba(0,0,0,0.15));
+}
+
+/* ── Title ───────────────────────────────────────────────── */
+.ob-title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  text-align: center;
+  line-height: 1.25;
+  margin: 0;
+}
+
+/* ── Body ────────────────────────────────────────────────── */
+.ob-body {
+  width: 100%;
+  font-size: var(--text-sm, 0.875rem);
+  color: var(--text-secondary);
+  line-height: 1.55;
+}
+
+.ob-body p { margin: 0 0 8px; text-align: center; }
+
+.ob-note {
+  background: var(--bg-elevated);
+  border-radius: var(--radius-lg, 12px);
+  padding: 10px 14px;
+  font-size: var(--text-xs, 0.75rem) !important;
+  color: var(--text-secondary) !important;
+  text-align: center !important;
+  margin-top: 8px !important;
+}
+
+/* ── Slide 1: feature list ───────────────────────────────── */
+.ob-feature-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.ob-feature {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--bg-elevated);
+  border-radius: var(--radius-lg, 12px);
+  padding: 10px 14px;
+  font-size: var(--text-sm, 0.875rem);
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.ob-feature > span:first-child { font-size: 1.1rem; flex-shrink: 0; }
+
+/* ── Slide 2: balance demo ───────────────────────────────── */
+.ob-balance-demo {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.ob-bal-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: var(--radius-lg, 12px);
+}
+
+.ob-bal-row--give { background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.2); }
+.ob-bal-row--recv { background: rgba(239, 68, 68, 0.08);  border: 1px solid rgba(239, 68, 68, 0.2);  }
+
+.ob-bal-icon { font-size: 1.4rem; flex-shrink: 0; }
+
+.ob-bal-label {
+  font-size: var(--text-sm, 0.875rem);
+  color: var(--text-secondary);
+  line-height: 1.2;
+}
+
+.ob-bal-val {
+  font-size: 1.1rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.ob-bal-val--plus { color: #10b981; }
+.ob-bal-val--minus { color: #ef4444; }
+
+/* ── Slide 3: ready list ─────────────────────────────────── */
+.ob-ready-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.ob-ready-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: var(--text-sm, 0.875rem);
+  color: var(--text-primary);
+  line-height: 1.4;
+}
+
+.ob-ready-check {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--accent-primary);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 800;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* ── Dots ────────────────────────────────────────────────── */
+.ob-dots {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.ob-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--bg-elevated);
+  border: 1.5px solid var(--text-tertiary);
+  transition: background 0.2s, width 0.2s, border-color 0.2s;
+}
+
+.ob-dot--active {
+  width: 20px;
+  border-radius: 3px;
+  background: var(--accent-primary);
+  border-color: var(--accent-primary);
+}
+
+/* ── Next button ─────────────────────────────────────────── */
+.ob-next {
+  width: 100%;
+  padding: 14px;
+  font-size: 1rem;
+  font-weight: 700;
+}

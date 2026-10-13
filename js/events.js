@@ -167,6 +167,9 @@ on('guide:open', () => {
   import('./router.js').then(m => m.goScreen('settings'));
 });
 
+// ── FAQ accordion (wired in settings.js) ──────────────────
+on('faq:toggle', () => {});
+
 // ── Caption ───────────────────────────────────────────────
 on('caption:generate', () => {
   import('./screens/caption.js').then(m => m.generate());
