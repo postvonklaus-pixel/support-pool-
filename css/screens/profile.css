@@ -163,3 +163,38 @@
 .profile-check-cta__text { flex: 1; }
 .profile-check-cta__title { font-weight: var(--weight-bold); font-size: var(--text-base); }
 .profile-check-cta__sub   { font-size: var(--text-xs); color: var(--text-tertiary); margin-top: 2px; }
+
+/* ── Profile screen new layout ─────────────────────────── */
+.profile-scroll { flex: 1; overflow-y: auto; }
+.profile-hero {
+  display: flex; flex-direction: column; align-items: center;
+  padding: var(--sp-8) var(--sp-4) var(--sp-6);
+  background: linear-gradient(180deg, rgba(124,58,237,.12) 0%, transparent 100%);
+  border-bottom: 1px solid var(--border-subtle);
+}
+.profile-avatar {
+  width: 88px; height: 88px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 28px; font-weight: 800; color: #fff;
+  position: relative; margin-bottom: var(--sp-3);
+}
+.profile-rank-badge {
+  position: absolute; bottom: -4px; right: -4px;
+  background: var(--bg-base); border-radius: var(--radius-full);
+  padding: 2px 6px; font-size: 14px; line-height: 1;
+  border: 2px solid var(--bg-base);
+}
+.profile-name { font-size: var(--text-xl); font-weight: var(--weight-black); font-family: var(--font-display); }
+.profile-since { font-size: var(--text-sm); color: var(--text-secondary); margin-top: var(--sp-1); }
+.profile-stats-row { display: flex; gap: var(--sp-6); margin-top: var(--sp-4); }
+.profile-stat { text-align: center; }
+.profile-stat__num { font-size: var(--text-2xl); font-weight: var(--weight-black); font-family: var(--font-display); color: var(--accent-primary); }
+.profile-stat__label { font-size: var(--text-xs); color: var(--text-secondary); text-transform: uppercase; letter-spacing: .06em; }
+
+.streak-row { display: flex; gap: var(--sp-2); justify-content: center; }
+.streak-dot { display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1; }
+.streak-dot__circle { width: 32px; height: 32px; border-radius: 50%; background: var(--border-subtle); border: 2px solid var(--border-subtle); transition: all .2s; }
+.streak-dot--active .streak-dot__circle { background: var(--gradient-primary); border-color: var(--accent-primary); box-shadow: 0 0 12px rgba(124,58,237,.5); }
+.streak-dot__day { font-size: 10px; color: var(--text-tertiary); text-transform: uppercase; font-weight: var(--weight-medium); }
+
+.notif-hint { font-size: var(--text-xs); color: var(--text-tertiary); margin-bottom: var(--sp-3); }

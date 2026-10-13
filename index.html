@@ -79,7 +79,7 @@
         <!-- Brand -->
         <div class="login-brand">
           <div class="login-brand__logo">NOVA Support Pool</div>
-          <div class="login-brand__sub" id="t-login-sub">Das Premium TikTok Support-Netzwerk</div>
+          <div class="login-brand__sub" id="login-sub">Das Premium TikTok Support-Netzwerk</div>
         </div>
 
         <!-- Glass card -->
@@ -87,24 +87,30 @@
           <!-- Language row -->
           <div class="login-lang-row" id="login-lang-row" role="group" aria-label="Language"></div>
 
-          <!-- Username -->
-          <div class="login-input-wrap">
-            <input
-              class="login-input input"
-              type="text"
-              id="login-username"
-              autocomplete="off"
-              spellcheck="false"
-              placeholder="@username"
-              aria-label="Username"
-              data-action="login:input"
-            >
-            <div class="login-autocomplete" id="login-autocomplete" role="listbox"></div>
+          <!-- Step 1: Name -->
+          <div id="login-name-step">
+            <div class="login-input-wrap">
+              <input
+                class="login-input input"
+                type="text"
+                id="login-name-input"
+                autocomplete="off"
+                spellcheck="false"
+                placeholder="@username"
+                aria-label="Username"
+                data-action="login:input"
+              >
+              <div class="login-autocomplete" id="login-autocomplete" role="listbox"></div>
+            </div>
+            <button class="btn btn--primary btn--full btn--lg" id="login-btn" data-action="login:submit">
+              <span id="login-sub">Einloggen</span>
+            </button>
           </div>
 
-          <!-- PIN section (shown after user selected) -->
-          <div class="login-pin hidden" id="login-pin-section">
-            <div class="login-pin__label" id="t-pin-label">PIN eingeben</div>
+          <!-- Step 2: PIN (shown after user identified) -->
+          <div class="hidden" id="login-pin-step">
+            <div class="login-pin__greet" id="pin-greet"></div>
+            <div class="login-pin__label" id="pin-label">PIN eingeben</div>
             <div class="pin-dots" id="pin-dots">
               <div class="pin-dot" data-pos="0"></div>
               <div class="pin-dot" data-pos="1"></div>
@@ -121,16 +127,12 @@
               <button class="pin-key" data-action="pin:key" data-key="7">7</button>
               <button class="pin-key" data-action="pin:key" data-key="8">8</button>
               <button class="pin-key" data-action="pin:key" data-key="9">9</button>
-              <button class="pin-key pin-key--del" data-action="pin:forgot" style="font-size:var(--text-xs)">Vergessen?</button>
+              <button class="pin-key pin-key--sm" data-action="pin:forgot" id="pin-forgot-link">PIN vergessen?</button>
               <button class="pin-key" data-action="pin:key" data-key="0">0</button>
               <button class="pin-key pin-key--del" data-action="pin:del">⌫</button>
             </div>
           </div>
 
-          <!-- CTA -->
-          <button class="btn btn--primary btn--full btn--lg" id="login-btn" data-action="login:submit">
-            <span id="t-login-btn">Einloggen</span>
-          </button>
         </div>
       </div>
     </section>

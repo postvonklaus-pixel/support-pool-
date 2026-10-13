@@ -503,3 +503,19 @@
 }
 .list-item:hover { background: var(--bg-glass-hover); }
 .list-item + .list-item { margin-top: var(--sp-2); }
+.list-item--unread { border-color: var(--accent-primary); background: rgba(124,58,237,.07); }
+.list-item__icon  { font-size: 24px; flex-shrink: 0; width: 40px; height: 40px; border-radius: 50%; background: var(--bg-glass-active); display: flex; align-items: center; justify-content: center; font-size: 18px; }
+.list-item__body  { flex: 1; min-width: 0; }
+.list-item__title { font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--text-primary); margin-bottom: 2px; }
+.list-item__sub   { font-size: var(--text-xs); color: var(--text-secondary); }
+.list-item__quote { font-size: var(--text-xs); color: var(--text-tertiary); font-style: italic; margin-bottom: 2px; }
+.list-item__time  { font-size: 11px; color: var(--text-tertiary); margin-top: 4px; }
+.list-item__aside { flex-shrink: 0; display: flex; flex-direction: column; align-items: flex-end; gap: var(--sp-1); }
+.list-item__rank  { font-size: 18px; flex-shrink: 0; width: 32px; text-align: center; }
+
+/* ── EMPTY STATE ─────────────────────────────────────────── */
+.empty-state__title { font-size: var(--text-base); font-weight: var(--weight-semibold); color: var(--text-primary); margin-top: var(--sp-2); }
+.empty-state__sub   { font-size: var(--text-sm); color: var(--text-secondary); }
+
+/* ── LEADERBOARD ─────────────────────────────────────────── */
+.lb-list { display: flex; flex-direction: column; gap: var(--sp-2); }

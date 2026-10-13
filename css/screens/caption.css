@@ -33,3 +33,9 @@
   white-space: pre-wrap;
 }
 .caption-result + .caption-result { margin-top: var(--sp-3); }
+
+/* ── Caption new layout ────────────────────────────────── */
+.caption-scroll { flex: 1; overflow-y: auto; padding: var(--sp-4); }
+.chip-row { display: flex; flex-wrap: wrap; gap: var(--sp-2); }
+.chip { padding: 6px 14px; border-radius: var(--radius-full); border: 1px solid var(--border-subtle); background: var(--bg-glass); color: var(--text-secondary); font-size: var(--text-sm); cursor: pointer; transition: all var(--dur-fast); }
+.chip--active { background: var(--accent-primary); border-color: var(--accent-primary); color: #fff; }
