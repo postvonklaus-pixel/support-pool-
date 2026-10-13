@@ -7,11 +7,12 @@ import { t, setLang }         from '../i18n.js';
 import { on }                 from '../events.js';
 import { ge, haptic }         from '../utils.js';
 import { toast }              from '../components/toast.js';
+import { writeDB }            from '../firebase.js';
 import { handlePinKey, handlePinDel, initPinPad, resetPin, shakePin } from '../components/pinpad.js';
 
 const LANG_LIST = ['de','en','id','it','es','tr','ar','zh','ja','pl'];
 
-let _step      = 'name';
+let _step      = 'name';   // 'name' | 'pin' | 'register'
 let _username  = '';
 let _pendingVal = null;   // username queued while DB loads
 let _unsubDB   = null;    // DB-ready subscriber cleanup
@@ -121,11 +122,13 @@ function _renderLangRow() {
 
 // ── Wire handlers ─────────────────────────────────────────
 function _setupHandlers() {
-  on('login:submit', _handleNameSubmit);
-  on('pin:key',      (el) => _handlePinKey(el));
-  on('pin:del',      () => _handlePinDel());
-  on('pin:forgot',   _handleForgot);
-  on('lang:set',     (el) => { setLang(el.dataset.lang); _renderLangRow(); _applyTranslations(); });
+  on('login:submit',      _handleNameSubmit);
+  on('login:register',    _handleRegisterConfirm);
+  on('login:reg:cancel',  _handleRegisterCancel);
+  on('pin:key',           (el) => _handlePinKey(el));
+  on('pin:del',           () => _handlePinDel());
+  on('pin:forgot',        _handleForgot);
+  on('lang:set',          (el) => { setLang(el.dataset.lang); _renderLangRow(); _applyTranslations(); });
 }
 
 // ── Name step ─────────────────────────────────────────────
@@ -147,8 +150,9 @@ function _handleNameSubmit() {
   const members = state.db.members || {};
   const found = Object.keys(members).find(k => k.toLowerCase() === val.toLowerCase());
   if (!found) {
-    toast(t('loginNotFound') || 'Nutzer nicht gefunden', 'error');
-    haptic('error');
+    // Unknown username → offer registration instead of just showing an error
+    _username = val;
+    _showRegisterStep(val);
     return;
   }
 
@@ -179,6 +183,60 @@ function _showPinStep(username, u) {
     maxLen: 4,
     onSubmit: (pin) => _checkPin(pin, u.pin),
   });
+}
+
+// ── Register step ─────────────────────────────────────────
+function _showRegisterStep(username) {
+  _step = 'register';
+  const nameStep = ge('login-name-step');
+  const regStep  = ge('login-register-step');
+  if (nameStep) nameStep.classList.add('hidden');
+  if (regStep)  {
+    regStep.classList.remove('hidden');
+    const label = regStep.querySelector('.login-reg__name');
+    if (label) label.textContent = `@${username}`;
+  }
+}
+
+function _handleRegisterConfirm() {
+  if (_step !== 'register') return;
+  const username = _username;
+  if (!username) return;
+
+  // Validate: letters, numbers, underscore only; 2-24 chars
+  if (!/^[a-zA-Z0-9_]{2,24}$/.test(username)) {
+    toast('Nur Buchstaben, Zahlen und _ (2–24 Zeichen)', 'error');
+    return;
+  }
+
+  const now = Date.now();
+  writeDB(`members/${username}`, {
+    name:       username,
+    role:       'member',
+    status:     'active',
+    lang:       state.lang || 'de',
+    joinedAt:   now,
+    online:     true,
+    stats:      { given: 0, received: 0 },
+    postsTotal: 0,
+  });
+
+  toast(`Willkommen, @${username}! 🎉`, 'success', 3000);
+  // Give Firebase a moment to write, then log in
+  setTimeout(() => {
+    import('../main.js').then(m => m.loginAs(username));
+  }, 800);
+}
+
+function _handleRegisterCancel() {
+  _step = 'name';
+  _username = '';
+  const nameStep = ge('login-name-step');
+  const regStep  = ge('login-register-step');
+  if (regStep)  regStep.classList.add('hidden');
+  if (nameStep) nameStep.classList.remove('hidden');
+  const input = ge('login-name-input');
+  if (input) { input.value = ''; input.focus(); }
 }
 
 // ── PIN step ──────────────────────────────────────────────
@@ -213,8 +271,10 @@ function _reset() {
   _username = '';
   const nameStep = ge('login-name-step');
   const pinStep  = ge('login-pin-step');
+  const regStep  = ge('login-register-step');
   if (nameStep) nameStep.classList.remove('hidden');
   if (pinStep)  pinStep.classList.add('hidden');
+  if (regStep)  regStep.classList.add('hidden');
 
   const input = ge('login-name-input');
   if (input) input.value = '';

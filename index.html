@@ -166,6 +166,24 @@
             </div>
           </div>
 
+          <!-- Step 3: Register (shown when username not found) -->
+          <div class="hidden" id="login-register-step">
+            <div class="login-reg__icon">👋</div>
+            <div class="login-reg__title">Neu hier?</div>
+            <div class="login-reg__sub">
+              <span class="login-reg__name" style="color:var(--accent-primary);font-weight:700"></span>
+              ist noch nicht registriert. Konto jetzt erstellen?
+            </div>
+            <button class="btn btn--primary btn--full btn--lg" style="margin-top:20px"
+              data-action="login:register">
+              ✓ Konto erstellen &amp; einloggen
+            </button>
+            <button class="btn btn--ghost btn--full" style="margin-top:10px"
+              data-action="login:reg:cancel">
+              ← Zurück
+            </button>
+          </div>
+
         </div>
         <div id="nova-ver" style="text-align:center;font-size:10px;opacity:.3;margin-top:10px;letter-spacing:.06em">v7</div>
       </div>
