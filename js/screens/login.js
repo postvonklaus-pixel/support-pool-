@@ -2,23 +2,73 @@
    NOVA Support Pool — Login Screen
    ═══════════════════════════════════════════════════════ */
 
-import { state }           from '../state.js';
-import { t, setLang }      from '../i18n.js';
-import { on }              from '../events.js';
-import { ge, haptic }      from '../utils.js';
-import { toast }           from '../components/toast.js';
+import { state, subscribe }   from '../state.js';
+import { t, setLang }         from '../i18n.js';
+import { on }                 from '../events.js';
+import { ge, haptic }         from '../utils.js';
+import { toast }              from '../components/toast.js';
 import { handlePinKey, handlePinDel, initPinPad, resetPin, shakePin } from '../components/pinpad.js';
 
 const LANG_LIST = ['de','en','id','it','es','tr','ar','zh','ja','pl'];
 
-let _step = 'name';   // 'name' | 'pin'
-let _username = '';
+let _step      = 'name';
+let _username  = '';
+let _pendingVal = null;  // username queued while DB loads
+let _unsubDB   = null;   // DB-ready watcher cleanup fn
 
 export function render() {
+  _cleanup();
   _applyTranslations();
   _renderLangRow();
   _setupHandlers();
   _reset();
+  _watchDB();  // disable submit until Firebase data arrives
+}
+
+// ── DB-ready gate ─────────────────────────────────────────
+function _isDBReady() {
+  return Object.keys(state.db.members || {}).length > 0;
+}
+
+function _watchDB() {
+  if (_isDBReady()) {
+    _setLoginReady(true);
+    return;
+  }
+  _setLoginReady(false);
+  _unsubDB = subscribe((change) => {
+    if (change.path === 'db' && _isDBReady()) {
+      _cleanup();
+      _setLoginReady(true);
+      // Auto-retry if user already typed and hit submit
+      if (_pendingVal) {
+        const val = _pendingVal;
+        _pendingVal = null;
+        const input = ge('login-name-input');
+        if (input) input.value = val;
+        _handleNameSubmit();
+      }
+    }
+  });
+}
+
+function _setLoginReady(ready) {
+  const btn = ge('login-btn');
+  if (!btn) return;
+  if (ready) {
+    btn.disabled = false;
+    btn.style.opacity = '';
+    btn.textContent = t('loginBtn') || 'Einloggen';
+  } else {
+    btn.disabled = true;
+    btn.style.opacity = '0.55';
+    btn.textContent = '⟳ Verbinde...';
+  }
+}
+
+function _cleanup() {
+  if (_unsubDB) { _unsubDB(); _unsubDB = null; }
+  _pendingVal = null;
 }
 
 // ── Translations ──────────────────────────────────────────
@@ -44,9 +94,9 @@ function _renderLangRow() {
   const row = ge('login-lang-row');
   if (!row) return;
   row.innerHTML = LANG_LIST.map(l => {
-    const langData = { de:'🇩🇪',en:'🇬🇧',id:'🇮🇩',it:'🇮🇹',es:'🇪🇸',tr:'🇹🇷',ar:'🇸🇦',zh:'🇨🇳',ja:'🇯🇵',pl:'🇵🇱' };
+    const flags = { de:'🇩🇪',en:'🇬🇧',id:'🇮🇩',it:'🇮🇹',es:'🇪🇸',tr:'🇹🇷',ar:'🇸🇦',zh:'🇨🇳',ja:'🇯🇵',pl:'🇵🇱' };
     const active = l === state.lang ? ' active' : '';
-    return `<button class="lang-pill${active}" data-action="lang:set" data-lang="${l}" aria-label="${l}">${langData[l]}</button>`;
+    return `<button class="lang-pill${active}" data-action="lang:set" data-lang="${l}" aria-label="${l}">${flags[l]}</button>`;
   }).join('');
 }
 
@@ -66,6 +116,15 @@ function _handleNameSubmit() {
   const val = (input?.value || '').trim();
   if (!val) { toast(t('loginNameRequired') || 'Benutzername eingeben', 'warning'); return; }
 
+  // Firebase hasn't loaded yet — queue retry
+  if (!_isDBReady()) {
+    _pendingVal = val;
+    toast(t('loginConnecting') || 'Verbinde mit Server... bitte warten', 'info', 5000);
+    // Ensure watcher is running
+    if (!_unsubDB) _watchDB();
+    return;
+  }
+
   const members = state.db.members || {};
   const found = Object.keys(members).find(k => k.toLowerCase() === val.toLowerCase());
   if (!found) {
@@ -77,7 +136,7 @@ function _handleNameSubmit() {
   _username = found;
   const u = members[found];
 
-  // If no PIN set, log in directly
+  // No PIN → log in directly
   if (!u.pin) {
     import('../main.js').then(m => m.loginAs(_username));
     return;
