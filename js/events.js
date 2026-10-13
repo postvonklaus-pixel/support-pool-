@@ -58,10 +58,15 @@ function handleKeydown(e) {
     import('./components/modal.js').then(m => m.closeTopModal());
   }
   if (e.key === 'Enter') {
-    const target = e.target.closest('[data-action="login:input"]');
-    if (target) {
+    const target = e.target.closest('[data-action]');
+    if (!target) return;
+    const action = target.dataset.action;
+    if (action === 'login:input') {
       e.preventDefault();
       dispatchAction('login:submit', target, e);
+    } else if (action === 'chat:pool:input' || action === 'chat:dm:input') {
+      e.preventDefault();
+      dispatchAction(action, target, e);
     }
   }
 }

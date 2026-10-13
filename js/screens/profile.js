@@ -1,20 +1,20 @@
 /* ═══════════════════════════════════════════════════════
-   NOVA Support Pool — Profile Screen
+   NOVA Support Pool — Profile / Ich Screen  (Part E)
    ═══════════════════════════════════════════════════════ */
 
-import { state }       from '../state.js';
-import { t }           from '../i18n.js';
+import { state }      from '../state.js';
+import { t }          from '../i18n.js';
 import { esc, timeAgo, avatarGradient } from '../utils.js';
-import { on }          from '../events.js';
-import { toast }       from '../components/toast.js';
-import { writeDB }     from '../firebase.js';
+import { on }         from '../events.js';
+import { toast }      from '../components/toast.js';
+import { writeDB }    from '../firebase.js';
 
 const RANKS = [
-  { min: 0,   max: 4,   label: 'Neuling',    stars: '🏆',           color: '#94a3b8' },
-  { min: 5,   max: 19,  label: 'Aufsteiger', stars: '🏆🏆',        color: '#22d3ee' },
-  { min: 20,  max: 49,  label: 'Aktiv',      stars: '🏆🏆🏆',      color: '#7c3aed' },
-  { min: 50,  max: 99,  label: 'Veteran',    stars: '🏆🏆🏆🏆',    color: '#f59e0b' },
-  { min: 100, max: Infinity, label: 'Elite', stars: '🏆🏆🏆🏆🏆', color: '#f43f5e' },
+  { min: 0,   max: 4,   label: 'Neuling',    icon: '🌱', color: '#94a3b8' },
+  { min: 5,   max: 19,  label: 'Aufsteiger', icon: '⚡', color: '#22d3ee' },
+  { min: 20,  max: 49,  label: 'Aktiv',      icon: '🔥', color: '#7c3aed' },
+  { min: 50,  max: 99,  label: 'Veteran',    icon: '🏆', color: '#f59e0b' },
+  { min: 100, max: Infinity, label: 'Elite', icon: '👑', color: '#f43f5e' },
 ];
 
 function rankFor(u) {
@@ -29,63 +29,96 @@ export function render() {
   const cu = state.currentUser;
   if (!cu || !state.db.members?.[cu]) return;
 
-  const u       = state.db.members[cu];
-  const stats   = u.stats || {};
-  const given   = stats.given    || 0;
-  const received= stats.received || 0;
-  const rank    = rankFor(u);
-  const daysIn  = u.joined ? Math.max(0, Math.floor((Date.now() - u.joined) / 86400000)) : 0;
-  const initial = (cu || '?').slice(0, 2).toUpperCase();
-  const gradient= avatarGradient(cu);
-
-  const notifs  = _getNotifs(cu);
-  const unread  = notifs.filter(m => !m.read).length;
-
-  // Build streak dots (last 7 days)
-  const streakDots = _buildStreakDots(u);
+  const u        = state.db.members[cu];
+  const stats    = u.stats || {};
+  const given    = stats.given    || 0;
+  const received = stats.received || 0;
+  const bal      = Math.min(given - received, 20);
+  const rank     = rankFor(u);
+  const daysIn   = u.joined ? Math.max(0, Math.floor((Date.now() - u.joined) / 86400000)) : 0;
+  const initial  = (cu || '?').slice(0, 2).toUpperCase();
+  const gradient = avatarGradient(cu);
+  const notifs   = _getNotifs(cu);
+  const unread   = notifs.filter(m => !m.read).length;
+  const streak   = _currentStreak(u);
+  const nextRank = RANKS[RANKS.indexOf(rank) + 1] || null;
+  const toNext   = nextRank ? nextRank.min - given : 0;
 
   el.innerHTML = `
-    <div class="profile-scroll">
+    <div class="profile-page">
 
-      <!-- Hero -->
+      <!-- ── Hero ── -->
       <div class="profile-hero">
-        <div class="profile-avatar" style="background:${gradient}">${initial}
-          <div class="profile-rank-badge">${rank.stars}</div>
+        <div class="profile-hero__bg" aria-hidden="true"></div>
+        <div class="profile-avatar-wrap">
+          <div class="profile-avatar" style="background:${gradient}">${initial}</div>
+          <div class="profile-rank-badge" title="${rank.label}">${rank.icon}</div>
         </div>
         <div class="profile-name">${esc(u.name || cu)}</div>
-        <div class="profile-since">📅 ${daysIn} ${t('streakDays') || 'Tage'} ${t('inPool') || 'im Support Pool'}</div>
-        <div class="profile-stats-row">
-          <div class="profile-stat">
-            <div class="profile-stat__num">${given}</div>
-            <div class="profile-stat__label">${t('pGiven') || t('given')}</div>
-          </div>
-          <div class="profile-stat">
-            <div class="profile-stat__num">${received}</div>
-            <div class="profile-stat__label">${t('pRecv') || t('recv')}</div>
-          </div>
-          <div class="profile-stat">
-            <div class="profile-stat__num">${u.postsTotal || 0}</div>
-            <div class="profile-stat__label">${t('pVids') || t('vids')}</div>
-          </div>
+        <div class="profile-handle">@${esc(cu)}</div>
+        <div class="profile-rank-label" style="color:${rank.color}">${rank.icon} ${rank.label}</div>
+      </div>
+
+      <!-- ── Stats ── -->
+      <div class="profile-stats-grid">
+        <div class="profile-stat-card">
+          <div class="profile-stat-card__val">${given}</div>
+          <div class="profile-stat-card__label">${t('pGiven') || 'Gegeben'}</div>
+        </div>
+        <div class="profile-stat-card">
+          <div class="profile-stat-card__val">${received}</div>
+          <div class="profile-stat-card__label">${t('pRecv') || 'Erhalten'}</div>
+        </div>
+        <div class="profile-stat-card">
+          <div class="profile-stat-card__val">${u.postsTotal || 0}</div>
+          <div class="profile-stat-card__label">${t('pVids') || 'Videos'}</div>
+        </div>
+        <div class="profile-stat-card">
+          <div class="profile-stat-card__val">${daysIn}</div>
+          <div class="profile-stat-card__label">${t('streakDays') || 'Tage im Pool'}</div>
         </div>
       </div>
 
-      <!-- Streak -->
-      <div class="section">
-        <div class="section-title">🔥 Aktivitäts-Streak</div>
-        <div class="streak-row">${streakDots}</div>
+      <!-- ── Balance Band ── -->
+      <div class="profile-section">
+        <div class="profile-balance-row">
+          <span class="profile-balance-row__label">Guthaben</span>
+          <span class="profile-balance-row__val ${bal > 0 ? 'pos' : bal < 0 ? 'neg' : ''}">${bal > 0 ? '+' : ''}${bal}</span>
+        </div>
       </div>
 
-      <!-- Profile Check CTA -->
-      <div class="section">
+      <!-- ── Streak ── -->
+      <div class="profile-section">
+        <div class="profile-section__head">
+          <span class="profile-section__title">🔥 Aktivitäts-Streak</span>
+          ${streak > 0 ? `<span class="streak-badge">${streak} Tage</span>` : ''}
+        </div>
+        <div class="flame-row">${_buildFlames(u)}</div>
+      </div>
+
+      <!-- ── Rang Fortschritt ── -->
+      ${nextRank ? `
+      <div class="profile-section">
+        <div class="profile-section__head">
+          <span class="profile-section__title">Rang-Fortschritt</span>
+          <span class="profile-section__sub">${toNext} bis ${nextRank.icon} ${nextRank.label}</span>
+        </div>
+        <div class="rank-progress-bar">
+          <div class="rank-progress-bar__fill" style="width:${Math.round(((given - rank.min) / (nextRank.min - rank.min)) * 100)}%"></div>
+        </div>
+      </div>` : `
+      <div class="profile-section">
+        <div class="profile-section__head">
+          <span class="profile-section__title">👑 Elite-Rang erreicht!</span>
+        </div>
+      </div>`}
+
+      <!-- ── Actions ── -->
+      <div class="profile-section profile-actions">
         <button class="btn btn--gold btn--full" data-action="profile:check">
-          ${t('profCheckBtn') || 'Check mein Profil'}
+          ✨ ${t('profCheckBtn') || 'Profil-Check'}
         </button>
-      </div>
-
-      <!-- Settings & Logout -->
-      <div class="section">
-        <div style="display:flex;gap:10px">
+        <div class="profile-actions-row">
           <button class="btn btn--ghost btn--full" data-action="modal:settings" style="flex:1">
             ⚙️ ${t('settings') || 'Einstellungen'}
           </button>
@@ -95,27 +128,46 @@ export function render() {
         </div>
       </div>
 
-      <!-- Notifications -->
-      <div class="section">
-        <div class="section-title">
-          ${t('notifs') || '🔔 Benachrichtigungen'}
-          ${unread > 0 ? `<span class="badge badge--danger" style="margin-left:8px">${unread}</span>` : ''}
+      <!-- ── Benachrichtigungen ── -->
+      <div class="profile-section">
+        <div class="profile-section__head">
+          <span class="profile-section__title">
+            🔔 ${t('notifs') || 'Benachrichtigungen'}
+            ${unread > 0 ? `<span class="notif-badge">${unread}</span>` : ''}
+          </span>
+          <span class="profile-section__sub">Tippe 🗑 zum Löschen</span>
         </div>
-        <div class="notif-hint">${t('notifsHint') || '💡 Benachrichtigungen mit 🗑 löschen'}</div>
         <div id="notif-list">
-          ${_renderNotifList(notifs, cu)}
+          ${_renderNotifs(notifs, cu)}
         </div>
       </div>
 
     </div>
   `;
 
-  // Mark all as read after render
   _markAllRead(cu, notifs);
-
   _registerHandlers();
 }
 
+// ── Streak flames ──────────────────────────────────────────
+function _buildFlames(u) {
+  const days = u.supportDays || u.activeDays || [];
+  const today = new Date();
+  const DAY_NAMES = ['So','Mo','Di','Mi','Do','Fr','Sa'];
+  return Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(today);
+    d.setDate(d.getDate() - (6 - i));
+    const key    = d.toISOString().slice(0, 10);
+    const active = days.includes(key);
+    const label  = DAY_NAMES[d.getDay()];
+    return `<div class="flame-day ${active ? 'flame-day--active' : ''}">
+      <div class="flame-day__icon">🔥</div>
+      <div class="flame-day__label">${label}</div>
+    </div>`;
+  }).join('');
+}
+
+// ── Notifications ──────────────────────────────────────────
 function _getNotifs(cu) {
   return Object.entries(state.db.messages || {})
     .filter(([, m]) => m.to === cu && (m.type === 'notif' || m.type === 'dm' || m.reply))
@@ -124,74 +176,66 @@ function _getNotifs(cu) {
     .slice(0, 30);
 }
 
-function _renderNotifList(notifs, cu) {
+function _renderNotifs(notifs, cu) {
   if (!notifs.length) {
-    return `<div class="empty-state">
-      <div class="empty-state__icon">🔔</div>
-      <div class="empty-state__text">${t('noNotif') || 'Keine Benachrichtigungen'}</div>
+    return `<div class="profile-empty">
+      <div class="profile-empty__icon">🔔</div>
+      <div class="profile-empty__text">${t('noNotif') || 'Keine Benachrichtigungen'}</div>
     </div>`;
   }
   return notifs.map(m => {
-    const mid       = m._id;
-    const fromKey   = m.from || null;
-    const fromName  = fromKey && state.db.members?.[fromKey]
+    const fromKey  = m.from || null;
+    const fromName = fromKey && state.db.members?.[fromKey]
       ? (state.db.members[fromKey].name || fromKey) : (fromKey || '');
-    const msg       = m.message || m.text || '';
-    const quote     = m.inReplyTo || null;
-    const unreadCls = m.read ? '' : ' notif-item--unread';
-
-    return `<div class="list-item${unreadCls}" data-notif-id="${esc(mid)}">
-      <div class="list-item__icon">${m.icon || '📩'}</div>
-      <div class="list-item__body">
-        ${fromKey ? `<div class="list-item__title">@${esc(fromName || fromKey)}</div>` : ''}
-        ${quote   ? `<div class="list-item__quote">↩ "${esc(quote)}"</div>` : ''}
-        <div class="list-item__sub">${esc(msg)}</div>
-        ${m.ts ? `<div class="list-item__time">${timeAgo(m.ts, state.lang)}</div>` : ''}
-        ${fromKey && fromKey !== cu ? `<button class="btn btn--ghost btn--sm" data-action="notif:reply" data-from="${esc(fromKey)}" data-id="${esc(mid)}">↩ @${esc(fromName || fromKey)}</button>` : ''}
+    const msg     = m.message || m.text || '';
+    const unread  = !m.read;
+    return `
+      <div class="notif-card ${unread ? 'notif-card--unread' : ''}" data-notif-id="${esc(m._id)}">
+        <div class="notif-card__icon">${m.icon || '📩'}</div>
+        <div class="notif-card__body">
+          ${fromKey ? `<div class="notif-card__sender">@${esc(fromName || fromKey)}</div>` : ''}
+          ${m.inReplyTo ? `<div class="notif-card__quote">↩ "${esc(m.inReplyTo)}"</div>` : ''}
+          <div class="notif-card__text">${esc(msg)}</div>
+          ${m.ts ? `<div class="notif-card__time">${timeAgo(m.ts, state.lang)}</div>` : ''}
+          ${fromKey && fromKey !== cu ? `
+            <button class="btn btn--ghost btn--sm" style="margin-top:8px"
+              data-action="notif:reply" data-from="${esc(fromKey)}" data-id="${esc(m._id)}">
+              ↩ Antworten
+            </button>
+          ` : ''}
+        </div>
+        <button class="notif-card__del btn btn--icon" aria-label="Löschen"
+          data-action="notif:del" data-id="${esc(m._id)}">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+        </button>
       </div>
-      <button class="btn btn--ghost btn--icon" data-action="notif:del" data-id="${esc(mid)}" aria-label="Delete notification">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
-      </button>
-    </div>`;
+    `;
   }).join('');
 }
 
-function _buildStreakDots(u) {
-  const today = new Date();
-  const dots = [];
-  for (let i = 6; i >= 0; i--) {
-    const d = new Date(today);
-    d.setDate(d.getDate() - i);
-    const key = d.toISOString().slice(0, 10);
-    const active = (u.supportDays || []).includes(key) ||
-                   (u.activeDays  || []).includes(key);
-    const dayLabel = ['So','Mo','Di','Mi','Do','Fr','Sa'][d.getDay()];
-    dots.push(`<div class="streak-dot ${active ? 'streak-dot--active' : ''}">
-      <div class="streak-dot__circle"></div>
-      <div class="streak-dot__day">${dayLabel}</div>
-    </div>`);
-  }
-  return dots.join('');
+function _markAllRead(cu, notifs) {
+  notifs.filter(m => !m.read).forEach(m => writeDB(`messages/${m._id}/read`, true));
 }
 
-function _markAllRead(cu, notifs) {
-  const unread = notifs.filter(m => !m.read);
-  if (!unread.length) return;
-  unread.forEach(m => {
-    writeDB(`messages/${m._id}/read`, true);
-  });
+function _currentStreak(u) {
+  const days = u.supportDays || u.activeDays || [];
+  let streak = 0;
+  const d = new Date();
+  while (days.includes(d.toISOString().slice(0, 10))) {
+    streak++;
+    d.setDate(d.getDate() - 1);
+  }
+  return streak;
 }
 
 function _registerHandlers() {
   on('notif:del', (el) => {
-    const id = el.dataset.id;
+    const id   = el.dataset.id;
     if (!id) return;
-    const item = el.closest('.list-item');
-    if (item) {
-      item.style.opacity = '0';
-      item.style.transform = 'translateX(50px)';
-      item.style.transition = 'all .25s ease';
-      setTimeout(() => item.remove(), 250);
+    const card = el.closest('.notif-card');
+    if (card) {
+      card.style.cssText += 'opacity:0;transform:translateX(48px);transition:all .25s ease';
+      setTimeout(() => card.remove(), 250);
     }
     writeDB(`messages/${id}`, null);
     toast('🗑️ Gelöscht', 'success', 1800);
