@@ -16,7 +16,7 @@ const FIREBASE_CONFIG = {
 
 const DB_PATHS = ['members', 'videos', 'messages', 'settings', 'groups', 'chat'];
 
-// Discovered at runtime: 'sp6' if data lives under /sp6/, '' for root
+// Set at runtime: 'sp6' if data lives under /sp6/, '' for database root
 let _base = 'sp6';
 
 let _db              = null;
@@ -33,43 +33,56 @@ export function initFirebase(onUpdate) {
   try { app = firebase.initializeApp(FIREBASE_CONFIG); }
   catch (e) { app = firebase.app(); }
 
-  _db  = firebase.database(app);
-  _fns = firebase.functions(app);
+  try {
+    _db  = firebase.database(app);
+    _fns = firebase.functions(app);
+  } catch (e) {
+    console.error('[firebase] SDK init failed:', e.message);
+    return Promise.resolve();
+  }
 
   const authReady = _signInAnonymously(app);
-
-  // Resolve once first data arrives; no internal timeout — main.js controls that
   return new Promise(resolve => {
     authReady.then(() => _autoConnect(resolve));
   });
 }
 
-// Try /sp6/ first (new layout), then root (legacy layout).
-// Whichever path returns a members object wins.
-async function _autoConnect(resolve) {
-  for (const base of ['sp6', '']) {
-    try {
-      const ref = _db.ref(base || '/');
-      const snap = await Promise.race([
-        ref.once('value'),
-        new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 4000))
-      ]);
-      const val = snap.val();
-      if (val && val.members && Object.keys(val.members).length > 0) {
-        _base  = base;
-        _dbRef = ref;
-        _dbRef.on('value', s => {
-          if (_usingIndividual) return;
-          if (_onUpdate) _onUpdate(s.val() || {});
-        }, () => { _usingIndividual = true; _subscribeIndividualPaths(); });
-        if (_onUpdate) _onUpdate(val);
-        resolve();
-        return;
-      }
-    } catch (_e) { /* path denied or timed out — try next */ }
-  }
-  // All paths exhausted — resolve without data; login.js 12 s timeout handles UI
-  resolve();
+// Try /sp6/ and root in PARALLEL — first path that returns members wins.
+// No per-path timeout: we let Firebase take as long as it needs.
+// A hard 11 s deadline ensures resolve() is always called before
+// login.js shows the red error button at 12 s.
+function _autoConnect(resolve) {
+  let resolved = false;
+
+  const accept = (val, base) => {
+    if (resolved) return;
+    resolved = true;
+    _base  = base;
+    _dbRef = _db.ref(base || '/');
+    _dbRef.on('value',
+      s  => { if (!_usingIndividual && _onUpdate) _onUpdate(s.val() || {}); },
+      () => { _usingIndividual = true; _subscribeIndividualPaths(); }
+    );
+    if (_onUpdate) _onUpdate(val);
+    resolve();
+  };
+
+  const tryPath = (base) => {
+    _db.ref(base || '/').once('value')
+      .then(snap => {
+        const val = snap.val();
+        if (val && val.members && Object.keys(val.members).length > 0) {
+          accept(val, base);
+        }
+      })
+      .catch(() => {}); // PERMISSION_DENIED or network error — silently skip
+  };
+
+  tryPath('sp6');
+  tryPath('');  // database root (legacy layout)
+
+  // Hard deadline just before login.js shows the error button
+  setTimeout(() => { if (!resolved) resolve(); }, 11000);
 }
 
 // ── Anonymous Auth ────────────────────────────────────────
