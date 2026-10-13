@@ -3,7 +3,8 @@
    ═══════════════════════════════════════════════════════ */
 
 import { state, setState, subscribe } from './state.js';
-import { storage, loadSession, applyTheme, getLang } from './storage.js';
+import { storage, loadSession, getLang } from './storage.js';
+import { initTheme } from './features/theme.js';
 import { ge, toast } from './utils.js';
 import { initFirebase, saveDB } from './firebase.js';
 import { initI18n, setLang } from './i18n.js';
@@ -13,7 +14,7 @@ import { initRouter, goScreen } from './router.js';
 // ── Boot sequence ─────────────────────────────────────────
 async function boot() {
   // 1. Apply saved theme immediately (prevents flash)
-  try { applyTheme(storage.get('theme', 'dark')); } catch (e) { console.error('[boot] theme', e); }
+  try { initTheme(); } catch (e) { console.error('[boot] theme', e); }
 
   // 2. Init i18n
   try {

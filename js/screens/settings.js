@@ -5,7 +5,8 @@
 import { state }       from '../state.js';
 import { t }           from '../i18n.js';
 import { on }          from '../events.js';
-import { storage, setTheme, getTheme } from '../storage.js';
+import { storage }     from '../storage.js';
+import { setTheme, getTheme } from '../features/theme.js';
 
 const LANG_FLAGS = { de:'🇩🇪',en:'🇬🇧',id:'🇮🇩',it:'🇮🇹',es:'🇪🇸',tr:'🇹🇷',ar:'🇸🇦',zh:'🇨🇳',ja:'🇯🇵',pl:'🇵🇱' };
 const LANG_NAMES = { de:'Deutsch',en:'English',id:'Bahasa',it:'Italiano',es:'Español',tr:'Türkçe',ar:'العربية',zh:'中文',ja:'日本語',pl:'Polski' };
@@ -42,14 +43,16 @@ export function render() {
         <div class="settings-section__title">Design</div>
         <div class="settings-row">
           <div class="settings-row__left">
-            <div class="settings-row__label">Dark Mode</div>
+            <div class="settings-row__label">Theme</div>
           </div>
           <div class="settings-row__right">
             <div class="theme-toggle-row">
-              <button class="btn btn--sm ${theme === 'dark' ? 'btn--primary' : 'btn--ghost'}"
-                data-action="settings:theme" data-theme="dark">🌙 Dark</button>
+              <button class="btn btn--sm ${theme === 'auto' ? 'btn--primary' : 'btn--ghost'}"
+                data-action="settings:theme" data-theme="auto">🌗 Auto</button>
               <button class="btn btn--sm ${theme === 'light' ? 'btn--primary' : 'btn--ghost'}"
                 data-action="settings:theme" data-theme="light">☀️ Light</button>
+              <button class="btn btn--sm ${theme === 'dark' ? 'btn--primary' : 'btn--ghost'}"
+                data-action="settings:theme" data-theme="dark">🌙 Dark</button>
             </div>
           </div>
         </div>
@@ -117,8 +120,8 @@ function _registerHandlers() {
   });
 
   on('settings:theme', (el) => {
-    setTheme(el.dataset.theme);
-    render();
+    const mode = el.dataset.theme;
+    if (['auto','light','dark'].includes(mode)) { setTheme(mode); render(); }
   });
 
   on('settings:logout', () => {

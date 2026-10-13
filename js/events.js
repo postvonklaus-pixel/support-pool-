@@ -167,7 +167,7 @@ on('caption:generate', () => {
 
 // ── Settings ──────────────────────────────────────────────
 on('settings:theme', (el) => {
-  import('./storage.js').then(({ setTheme }) => setTheme(el.dataset.theme));
+  import('./features/theme.js').then(({ setTheme }) => setTheme(el.dataset.theme));
 });
 
 on('settings:logout', () => {
