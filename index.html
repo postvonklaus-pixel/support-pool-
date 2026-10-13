@@ -8,16 +8,21 @@
        next load has no SW and no cache — plain network for fresh JS. -->
   <script>
   (function() {
-    var cleaned = false;
-    function done() { if (cleaned) return; cleaned = true; window.location.reload(); }
     if (!('serviceWorker' in navigator)) return;
+    // Remove every SW and wipe every SW cache, then reload once so the
+    // browser fetches all JS fresh from the network (no SW to serve stale code).
     var p1 = navigator.serviceWorker.getRegistrations().then(function(regs) {
       return Promise.all(regs.map(function(r) { return r.unregister(); }));
-    }).then(function(results) { return results.some(Boolean); });
-    var p2 = ('caches' in window) ? caches.keys().then(function(keys) {
-      return Promise.all(keys.map(function(k) { return caches.delete(k); }));
-    }).then(function(results) { return results.some(Boolean); }) : Promise.resolve(false);
-    Promise.all([p1, p2]).then(function(r) { if (r[0] || r[1]) done(); }).catch(function() {});
+    }).then(function(r) { return r.some(Boolean); });
+    var p2 = ('caches' in window) ? caches.keys().then(function(ks) {
+      return Promise.all(ks.map(function(k) { return caches.delete(k); }));
+    }).then(function(r) { return r.some(Boolean); }) : Promise.resolve(false);
+    var reloading = false;
+    function reload() { if (reloading) return; reloading = true; window.location.reload(); }
+    Promise.all([p1, p2]).then(function(r) { if (r[0] || r[1]) reload(); }).catch(function(){});
+    // If a new SW takes control mid-session (e.g. old main.js re-registers one),
+    // trigger a reload so the new SW can serve fresh JS immediately.
+    navigator.serviceWorker.addEventListener('controllerchange', reload);
   })();
   </script>
   <base href="/support-pool-/">
