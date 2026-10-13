@@ -14,15 +14,14 @@ const FIREBASE_CONFIG = {
   appId:             "1:856327571658:web:ba09f7e24f70b28a6f44fa"
 };
 
-// Individual paths to read — fallback when root read is blocked by rules
 const DB_PATHS = ['members', 'videos', 'messages', 'settings', 'groups', 'chat'];
 
 let _db   = null;
 let _fns  = null;
 let _dbRef = null;
 let _onUpdate = null;
-let _partialData = {};         // accumulates data from individual path listeners
-let _usingIndividual = false;  // true when root listener failed
+let _partialData = {};
+let _usingIndividual = false;
 
 export function initFirebase(onUpdate) {
   _onUpdate = onUpdate;
@@ -33,54 +32,80 @@ export function initFirebase(onUpdate) {
   } catch (e) {
     app = firebase.app();
   }
-  _db  = firebase.database(app);
-  _fns = firebase.functions(app);
 
+  _db   = firebase.database(app);
+  _fns  = firebase.functions(app);
   _dbRef = _db.ref('/');
 
-  // Primary: listen on root '/'
-  _dbRef.on('value', snap => {
-    if (_usingIndividual) return; // already fell back
-    const data = snap.val() || {};
-    if (_onUpdate) _onUpdate(data);
-  }, err => {
-    console.error('[firebase] root read blocked (' + (err.code || err.message) + ') — falling back to individual paths');
-    _usingIndividual = true;
-    _subscribeIndividualPaths();
+  // Sign in anonymously so Firebase rules (auth != null) are satisfied.
+  // Resolves immediately if already signed in, or if auth SDK unavailable.
+  const authReady = _signInAnonymously(app);
+
+  // After auth: start continuous root listener
+  authReady.then(() => {
+    _dbRef.on('value', snap => {
+      if (_usingIndividual) return;
+      if (_onUpdate) _onUpdate(snap.val() || {});
+    }, err => {
+      console.error('[firebase] root blocked (' + (err.code || err.message) + ') → trying individual paths');
+      _usingIndividual = true;
+      _subscribeIndividualPaths();
+    });
   });
 
-  // Resolve the boot promise on first data OR after 6 s
-  const dataPromise = new Promise((resolve) => {
-    _dbRef.once('value')
-      .then(snap => {
-        if (!_usingIndividual && _onUpdate) _onUpdate(snap.val() || {});
-        resolve();
-      })
-      .catch(err => {
-        // Root once() also failed — individual paths will handle it
-        console.error('[firebase] root once blocked (' + (err.code || err.message) + ')');
-        if (!_usingIndividual) {
-          _usingIndividual = true;
-          _subscribeIndividualPaths();
-        }
-        resolve();
-      });
+  // Boot promise: resolves on first data or after 6 s
+  const dataPromise = new Promise(resolve => {
+    authReady.then(() => {
+      _dbRef.once('value')
+        .then(snap => { if (_onUpdate) _onUpdate(snap.val() || {}); resolve(); })
+        .catch(err => {
+          console.error('[firebase] root once failed (' + (err.code || err.message) + ')');
+          if (!_usingIndividual) { _usingIndividual = true; _subscribeIndividualPaths(); }
+          resolve();
+        });
+    });
   });
 
   return Promise.race([dataPromise, new Promise(r => setTimeout(r, 6000))]);
 }
 
-// ── Fallback: one listener per path ──────────────────────
+// ── Anonymous Auth ────────────────────────────────────────
+function _signInAnonymously(app) {
+  return new Promise(resolve => {
+    try {
+      const auth = firebase.auth(app);
+      // onAuthStateChanged fires immediately with current user (if any)
+      const unsub = auth.onAuthStateChanged(user => {
+        unsub();
+        if (user) {
+          resolve(); // already authenticated (anonymous or otherwise)
+          return;
+        }
+        auth.signInAnonymously()
+          .then(resolve)
+          .catch(err => {
+            console.warn('[firebase] anon auth failed (' + err.code + ') — proceeding without auth');
+            resolve(); // continue anyway; public rules will allow reads
+          });
+      });
+    } catch (e) {
+      // Auth SDK not loaded or other setup error — proceed without auth
+      console.warn('[firebase] auth unavailable:', e.message);
+      resolve();
+    }
+  });
+}
+
+// ── Fallback: individual path listeners ───────────────────
 function _subscribeIndividualPaths() {
   if (!_db) return;
   _partialData = {};
-
   DB_PATHS.forEach(path => {
     _db.ref(path).on('value', snap => {
       _partialData[path] = snap.val() || {};
       if (_onUpdate) _onUpdate({ ..._partialData });
     }, err => {
-      console.error('[firebase] path /' + path + ' error:', err.code || err.message);
+      console.error('[firebase] /' + path + ' blocked:', err.code || err.message);
     });
   });
 }
