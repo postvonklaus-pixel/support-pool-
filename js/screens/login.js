@@ -13,8 +13,9 @@ const LANG_LIST = ['de','en','id','it','es','tr','ar','zh','ja','pl'];
 
 let _step      = 'name';
 let _username  = '';
-let _pendingVal = null;  // username queued while DB loads
-let _unsubDB   = null;   // DB-ready watcher cleanup fn
+let _pendingVal = null;   // username queued while DB loads
+let _unsubDB   = null;    // DB-ready subscriber cleanup
+let _timeoutId = null;    // fallback timeout handle
 
 export function render() {
   _cleanup();
@@ -22,7 +23,7 @@ export function render() {
   _renderLangRow();
   _setupHandlers();
   _reset();
-  _watchDB();  // disable submit until Firebase data arrives
+  _watchDB();  // gate submit until Firebase data arrives
 }
 
 // ── DB-ready gate ─────────────────────────────────────────
@@ -35,12 +36,13 @@ function _watchDB() {
     _setLoginReady(true);
     return;
   }
-  _setLoginReady(false);
+  _setLoginReady('loading');
+
+  // Subscribe for when Firebase populates members
   _unsubDB = subscribe((change) => {
     if (change.path === 'db' && _isDBReady()) {
       _cleanup();
       _setLoginReady(true);
-      // Auto-retry if user already typed and hit submit
       if (_pendingVal) {
         const val = _pendingVal;
         _pendingVal = null;
@@ -50,24 +52,41 @@ function _watchDB() {
       }
     }
   });
+
+  // Hard timeout — show error state after 12 s so user isn't stuck forever
+  _timeoutId = setTimeout(() => {
+    if (!_isDBReady()) {
+      _cleanup();
+      _setLoginReady('error');
+    }
+  }, 12000);
 }
 
-function _setLoginReady(ready) {
+function _setLoginReady(state) {
   const btn = ge('login-btn');
   if (!btn) return;
-  if (ready) {
+  if (state === true) {
     btn.disabled = false;
     btn.style.opacity = '';
+    btn.style.background = '';
     btn.textContent = t('loginBtn') || 'Einloggen';
-  } else {
+  } else if (state === 'loading') {
     btn.disabled = true;
     btn.style.opacity = '0.55';
     btn.textContent = '⟳ Verbinde...';
+  } else {
+    // error — let user trigger a hard reload
+    btn.disabled = false;
+    btn.style.opacity = '';
+    btn.style.background = 'var(--accent-error, #ef4444)';
+    btn.textContent = '⚠ Keine Verbindung — Tippen zum Reload';
+    btn.onclick = () => location.reload();
   }
 }
 
 function _cleanup() {
-  if (_unsubDB) { _unsubDB(); _unsubDB = null; }
+  if (_unsubDB)   { _unsubDB(); _unsubDB = null; }
+  if (_timeoutId) { clearTimeout(_timeoutId); _timeoutId = null; }
   _pendingVal = null;
 }
 

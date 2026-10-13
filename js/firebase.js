@@ -14,10 +14,15 @@ const FIREBASE_CONFIG = {
   appId:             "1:856327571658:web:ba09f7e24f70b28a6f44fa"
 };
 
+// Individual paths to read — fallback when root read is blocked by rules
+const DB_PATHS = ['members', 'videos', 'messages', 'settings', 'groups', 'chat'];
+
 let _db   = null;
 let _fns  = null;
 let _dbRef = null;
 let _onUpdate = null;
+let _partialData = {};         // accumulates data from individual path listeners
+let _usingIndividual = false;  // true when root listener failed
 
 export function initFirebase(onUpdate) {
   _onUpdate = onUpdate;
@@ -26,7 +31,6 @@ export function initFirebase(onUpdate) {
   try {
     app = firebase.initializeApp(FIREBASE_CONFIG);
   } catch (e) {
-    // Already initialized (e.g., hot-reload)
     app = firebase.app();
   }
   _db  = firebase.database(app);
@@ -34,23 +38,51 @@ export function initFirebase(onUpdate) {
 
   _dbRef = _db.ref('/');
 
-  // Set up continuous listener (non-blocking)
+  // Primary: listen on root '/'
   _dbRef.on('value', snap => {
+    if (_usingIndividual) return; // already fell back
     const data = snap.val() || {};
     if (_onUpdate) _onUpdate(data);
   }, err => {
-    console.error('[firebase] listener error:', err);
+    console.error('[firebase] root read blocked (' + (err.code || err.message) + ') — falling back to individual paths');
+    _usingIndividual = true;
+    _subscribeIndividualPaths();
   });
 
-  // Return a Promise that resolves on first data OR after 6s timeout
+  // Resolve the boot promise on first data OR after 6 s
   const dataPromise = new Promise((resolve) => {
     _dbRef.once('value')
-      .then(snap => { if (_onUpdate) _onUpdate(snap.val() || {}); resolve(); })
-      .catch(err => { console.error('[firebase] once error:', err); resolve(); });
+      .then(snap => {
+        if (!_usingIndividual && _onUpdate) _onUpdate(snap.val() || {});
+        resolve();
+      })
+      .catch(err => {
+        // Root once() also failed — individual paths will handle it
+        console.error('[firebase] root once blocked (' + (err.code || err.message) + ')');
+        if (!_usingIndividual) {
+          _usingIndividual = true;
+          _subscribeIndividualPaths();
+        }
+        resolve();
+      });
   });
-  const timeout = new Promise(resolve => setTimeout(resolve, 6000));
 
-  return Promise.race([dataPromise, timeout]);
+  return Promise.race([dataPromise, new Promise(r => setTimeout(r, 6000))]);
+}
+
+// ── Fallback: one listener per path ──────────────────────
+function _subscribeIndividualPaths() {
+  if (!_db) return;
+  _partialData = {};
+
+  DB_PATHS.forEach(path => {
+    _db.ref(path).on('value', snap => {
+      _partialData[path] = snap.val() || {};
+      if (_onUpdate) _onUpdate({ ..._partialData });
+    }, err => {
+      console.error('[firebase] path /' + path + ' error:', err.code || err.message);
+    });
+  });
 }
 
 // ── Write (debounced) ─────────────────────────────────────
@@ -69,7 +101,7 @@ const _flush = debounce(() => {
   _db.ref('/').update(updates).catch(err => console.error('[firebase] write error:', err));
 }, 300);
 
-// ── Full save (replaces entire DB) ───────────────────────
+// ── Full save ─────────────────────────────────────────────
 export function saveDB(data) {
   if (!_db) return;
   _db.ref('/').set(data).catch(err => console.error('[firebase] save error:', err));
