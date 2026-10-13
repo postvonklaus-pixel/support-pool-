@@ -235,7 +235,7 @@ function _renderLeaderboardTab(cu) {
     .map(([key, m]) => ({ key, ...m }));
 
   if (!members.length) {
-    return emptyState('🏆', 'Noch keine Daten', 'Werde der Erste in dieser Woche!');
+    return emptyState('🏆', t('lbNoData'), t('lbNoDataSub'));
   }
 
   const top3   = members.slice(0, 3);

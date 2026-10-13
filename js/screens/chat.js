@@ -53,11 +53,11 @@ export function render() {
       <div class="chat-tabs">
         <button class="chat-tab ${_chatTab==='pool'?'chat-tab--active':''}"
           data-action="chat:tab" data-tab="pool">
-          Pool
+          ${t('chatTabPool')}
         </button>
         <button class="chat-tab ${_chatTab==='dm'?'chat-tab--active':''}"
           data-action="chat:tab" data-tab="dm">
-          Direkt
+          ${t('chatTabDirect')}
           ${unreadDM > 0 ? `<span class="chat-tab__pip">${unreadDM}</span>` : ''}
         </button>
       </div>
@@ -84,7 +84,7 @@ function _renderPool(cu, msgs) {
   return `
     <div class="pool-messages" id="pool-messages">
       ${msgs.length === 0
-        ? emptyState('💬', 'Noch keine Nachrichten', 'Sei der Erste — schreib etwas!', { size: 'sm' })
+        ? emptyState('💬', t('chatPoolEmpty'), t('chatPoolEmptySub'), { size: 'sm' })
         : msgs.map(m => _poolBubble(m, cu)).join('')
       }
     </div>
@@ -92,7 +92,7 @@ function _renderPool(cu, msgs) {
       <input
         class="chat-input" id="chat-pool-input"
         type="text" maxlength="400"
-        placeholder="Nachricht an den Pool…"
+        placeholder="${t('chatPoolPlaceholder')}"
         data-action="chat:pool:input"
         autocomplete="off"
       >
@@ -139,7 +139,7 @@ function _renderDMList(cu, threads) {
     });
 
   if (!members.length) {
-    return emptyState('👥', 'Pool ist leer', 'Noch keine anderen Mitglieder');
+    return emptyState('👥', t('chatDMListEmpty'), t('chatDMListEmptySub'));
   }
 
   return `
@@ -159,7 +159,7 @@ function _renderDMList(cu, threads) {
           </div>
           <div class="dm-row__body">
             <div class="dm-row__name">${esc(m.name || key)}</div>
-            <div class="dm-row__preview">${esc(lastMsg.slice(0, 48) || 'Tippen zum schreiben…')}</div>
+            <div class="dm-row__preview">${esc(lastMsg.slice(0, 48) || t('chatDMPreview'))}</div>
           </div>
           <div class="dm-row__aside">
             ${lastTs ? `<div class="dm-row__time">${timeAgo(lastTs, state.lang)}</div>` : ''}
@@ -198,7 +198,7 @@ function _renderDMThread(el, cu, partner) {
 
       <div class="pool-messages" id="pool-messages" style="flex:1">
         ${msgs.length === 0
-          ? emptyState('✉️', `Schreib @${esc(name)}`, 'Noch keine Nachrichten in diesem Chat', { size: 'sm' })
+          ? emptyState('✉️', `@${esc(name)}`, t('chatDMEmpty'), { size: 'sm' })
           : msgs.map(m => _poolBubble(m, cu)).join('')
         }
       </div>
@@ -207,7 +207,7 @@ function _renderDMThread(el, cu, partner) {
         <input
           class="chat-input" id="chat-dm-input"
           type="text" maxlength="400"
-          placeholder="@${esc(name)} schreiben…"
+          placeholder="${t('chatDMPlaceholder').replace('{name}', esc(name))}"
           data-action="chat:dm:input"
           autocomplete="off"
         >

@@ -56,41 +56,41 @@ function _buildStep1(vidId, link, pool, owner, slotsLeft, urgent) {
       <!-- Header -->
       <div class="sf-header">
         <div class="sf-header__owner">@${esc(owner)}</div>
-        ${urgent ? `<span class="sf-urgent-badge">⚡ Nur ${slotsLeft} Slot${slotsLeft === 1 ? '' : 's'}!</span>` : ''}
+        ${urgent ? `<span class="sf-urgent-badge">⚡ ${slotsLeft} Slot${slotsLeft === 1 ? '' : 's'}!</span>` : ''}
       </div>
 
       <!-- Step indicators -->
       <div class="sf-steps">
         <div class="sf-step sf-step--active" id="sf-s1">
           <div class="sf-step__dot">1</div>
-          <div class="sf-step__label">Video öffnen</div>
+          <div class="sf-step__label">${t('sfStep1')}</div>
         </div>
         <div class="sf-steps__line"></div>
         <div class="sf-step" id="sf-s2">
           <div class="sf-step__dot">2</div>
-          <div class="sf-step__label">Kommentieren</div>
+          <div class="sf-step__label">${t('sfStep2')}</div>
         </div>
         <div class="sf-steps__line"></div>
         <div class="sf-step" id="sf-s3">
           <div class="sf-step__dot">3</div>
-          <div class="sf-step__label">Bestätigen</div>
+          <div class="sf-step__label">${t('sfStep3')}</div>
         </div>
       </div>
 
       <!-- Step 1: Open video -->
       <div class="sf-body" id="sf-body-1">
-        <p class="sf-inst">Öffne das TikTok-Video, schau es an und komme dann zurück.</p>
+        <p class="sf-inst">${t('sfInst1')}</p>
         <a class="btn btn--primary btn--full sf-open-btn"
            href="${esc(link)}" target="_blank" rel="noopener"
            data-action="support:video-opened" data-vid="${esc(vidId)}">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-          Video auf TikTok öffnen
+          ${t('sfOpenBtn')}
         </a>
       </div>
 
       <!-- Step 2: Choose comment -->
       <div class="sf-body hidden" id="sf-body-2">
-        <p class="sf-inst">Wähle einen Kommentar — er wird in die Zwischenablage kopiert:</p>
+        <p class="sf-inst">${t('sfInst2')}</p>
         <div class="sf-comments">
           ${pool.map((c, i) => `
             <button class="sf-comment-btn" data-action="support:copy" data-comment="${esc(c)}" data-idx="${i}">
@@ -101,22 +101,22 @@ function _buildStep1(vidId, link, pool, owner, slotsLeft, urgent) {
         </div>
         <div class="sf-copy-hint hidden" id="sf-copy-hint">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-          Kopiert! Jetzt auf TikTok einfügen.
+          ${t('sfCopyHint')}
         </div>
       </div>
 
       <!-- Step 3: Confirm -->
       <div class="sf-body hidden" id="sf-body-3">
         <div class="sf-confirm-icon">✅</div>
-        <p class="sf-inst">Hast du den Kommentar auf TikTok abgeschickt?</p>
+        <p class="sf-inst">${t('sfInst3')}</p>
         <button class="btn btn--success btn--full sf-done-btn"
           data-action="support:done" data-vid="${esc(vidId)}">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-          Ja, Support abgeschlossen!
+          ${t('sfDoneBtn')}
         </button>
         <button class="btn btn--ghost btn--full" style="margin-top:8px"
           data-action="support:back">
-          ← Zurück
+          ${t('sfBack')}
         </button>
       </div>
     </div>
@@ -194,7 +194,7 @@ on('support:done', (el) => {
   const supporters = (rnd === 1 ? v.r1Supporters : v.r2Supporters) || [];
 
   if (supporters.map(k => k.toLowerCase()).includes(cuLow)) {
-    toast('Bereits supportet', 'warning');
+    toast(t('sfAlready'), 'warning');
     closeModal('support-modal');
     return;
   }
@@ -237,7 +237,7 @@ on('support:done', (el) => {
 
   closeModal('support-modal');
   confetti();
-  toast('Support gegeben! 🎉', 'success');
+  toast(t('sfSuccess'), 'success');
 
   // Check achievements after a brief delay (so DB write propagates to state)
   setTimeout(() => checkAchievements(cu), 600);

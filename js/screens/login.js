@@ -81,7 +81,7 @@ function _setLoginReady(state) {
     btn.disabled = false;
     btn.style.opacity = '';
     btn.style.background = 'var(--accent-error, #ef4444)';
-    btn.textContent = '⚠ Keine Verbindung — Tippen zum Reload';
+    btn.textContent = t('loginNoConn');
     btn.onclick = () => location.reload();
   }
 }
