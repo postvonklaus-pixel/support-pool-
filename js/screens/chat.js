@@ -10,15 +10,31 @@ import { on }       from '../events.js';
 import { writeDB }  from '../firebase.js';
 import { emptyState } from '../components/empty-state.js';
 
-let _chatTab   = 'pool';  // 'pool' | 'dm'
-let _dmPartner = null;    // username of open DM thread
+let _chatTab        = 'pool';  // 'pool' | 'dm'
+let _dmPartner      = null;    // username of open DM thread
+let _skipNextRender = false;   // set after in-place send to skip DB-echo re-render
 
 export function render() {
+  // After an in-place bubble append we wrote to DB; the DB listener fires
+  // back almost immediately with the same data. Skip that one re-render so
+  // the input bar / focus / keyboard stay intact.
+  if (_skipNextRender) {
+    _skipNextRender = false;
+    return;
+  }
+
   const el = document.getElementById('screen-chat');
   if (!el) return;
 
   const cu = state.currentUser;
   if (!cu) return;
+
+  // Save scroll position and input value so a DB-triggered re-render
+  // (e.g. another member posts) doesn't reset them unexpectedly.
+  const prevInput     = document.getElementById('chat-pool-input')?.value ||
+                        document.getElementById('chat-dm-input')?.value || '';
+  const msgsBox       = document.getElementById('pool-messages');
+  const atBottom      = !msgsBox || msgsBox.scrollTop + msgsBox.clientHeight >= msgsBox.scrollHeight - 40;
 
   if (_dmPartner) {
     _renderDMThread(el, cu, _dmPartner);
@@ -52,8 +68,11 @@ export function render() {
   _registerHandlers(cu);
 
   if (_chatTab === 'pool') {
-    _scrollToBottom();
-    _focusInput();
+    // Restore input text typed before the DB-triggered re-render
+    const inp = document.getElementById('chat-pool-input');
+    if (inp && prevInput) inp.value = prevInput;
+    // Scroll to bottom only if we were already there
+    if (atBottom) _scrollToBottom();
   }
 }
 
@@ -235,8 +254,9 @@ function _sendPool(cu) {
   input.value = '';
   const msgId = `${Date.now()}_${cu}`;
   const msg   = { from: cu, text, ts: Date.now() };
+  // Skip the DB-echo re-render so the keyboard / input bar stay intact
+  _skipNextRender = true;
   writeDB(`chat/pool/messages/${msgId}`, msg);
-  // Append bubble in-place — no full re-render so input stays focused
   const msgs = document.getElementById('pool-messages');
   if (msgs) {
     const empty = msgs.querySelector('.empty-state');
@@ -255,8 +275,8 @@ function _sendDM(cu, partner) {
   const roomKey = [cu, partner].sort().join('__');
   const msgId   = `${Date.now()}_${cu}`;
   const msg     = { from: cu, to: partner, text, ts: Date.now() };
+  _skipNextRender = true;
   writeDB(`chat/dm/${roomKey}/messages/${msgId}`, msg);
-  // Append bubble in-place
   const msgs = document.getElementById('pool-messages');
   if (msgs) {
     const empty = msgs.querySelector('.empty-state');

@@ -268,7 +268,9 @@
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  padding: var(--sp-4);
+  /* No padding here — iOS WebKit resolves flex-child width:100% against
+     the border-box (ignoring padding), so the card overflows. Use margin
+     on the child instead so the width is constrained explicitly. */
   opacity: 0;
   pointer-events: none;
   transition: opacity var(--dur-base) var(--ease-out);
@@ -278,8 +280,11 @@
   pointer-events: all;
 }
 .modal {
-  width: 100%;
+  /* calc(100vw - 2×16px) is reliable on iOS; width:100% inside a padded flex
+     container can exceed the viewport in Safari due to a long-standing bug. */
+  width: calc(100vw - 2 * var(--sp-4));
   max-width: var(--max-w);
+  margin: 0 var(--sp-4) var(--sp-4);
   max-height: 90vh;
   background: var(--bg-elevated);
   border: 1px solid var(--border-default);
