@@ -83,6 +83,18 @@ export function render() {
         </button>
       </div>
 
+      <!-- Settings & Logout -->
+      <div class="section">
+        <div style="display:flex;gap:10px">
+          <button class="btn btn--ghost btn--full" data-action="modal:settings" style="flex:1">
+            ⚙️ ${t('settings') || 'Einstellungen'}
+          </button>
+          <button class="btn btn--danger" data-action="settings:logout" style="flex:1">
+            ${t('logout') || 'Abmelden'}
+          </button>
+        </div>
+      </div>
+
       <!-- Notifications -->
       <div class="section">
         <div class="section-title">
