@@ -20,16 +20,18 @@ const COMMENTS = {
   es: ['¡Buen video! ¡Sigue así! 🔥','¡Contenido increíble! 💪','¡Buen trabajo! 👍','¡Muy útil! ⭐','¡Vídeo genial! 🎉'],
 };
 
-let _copied = false;
+let _copied      = false;
 let _videoOpened = false;
+let _videoLink   = '';   // saved so copyComment can re-open TikTok
 
 export function handleSupport(vidId) {
   if (!vidId) return;
   const v = _findVideo(vidId);
   if (!v) { toast('Video nicht gefunden', 'error'); return; }
 
-  _copied = false;
+  _copied      = false;
   _videoOpened = false;
+  _videoLink   = v.link || v.url || '';
 
   const cu   = state.currentUser;
   const link = v.link || v.url || '#';
@@ -123,26 +125,31 @@ function _buildStep1(vidId, link, pool, owner, slotsLeft, urgent) {
 
 export function copyComment(comment) {
   if (!comment) return;
-  navigator.clipboard?.writeText(comment)
-    .then(() => {
-      _copied = true;
-      _advanceToStep3();
-      const hint = document.getElementById('sf-copy-hint');
-      if (hint) hint.classList.remove('hidden');
 
-      // Highlight copied button
-      const btns = document.querySelectorAll('.sf-comment-btn');
-      btns.forEach(b => {
-        if (b.dataset.comment === comment) {
-          b.classList.add('sf-comment-btn--copied');
-          b.querySelector('.sf-comment-btn__icon').textContent = '✅';
-        }
-      });
-    })
+  const _afterCopy = () => {
+    _copied = true;
+    // Re-open TikTok so user can paste the comment immediately
+    if (_videoLink && _videoLink !== '#') {
+      window.open(_videoLink, '_blank', 'noopener,noreferrer');
+    }
+    _advanceToStep3();
+    const hint = document.getElementById('sf-copy-hint');
+    if (hint) hint.classList.remove('hidden');
+    const btns = document.querySelectorAll('.sf-comment-btn');
+    btns.forEach(b => {
+      if (b.dataset.comment === comment) {
+        b.classList.add('sf-comment-btn--copied');
+        b.querySelector('.sf-comment-btn__icon').textContent = '✅';
+      }
+    });
+  };
+
+  navigator.clipboard?.writeText(comment)
+    .then(_afterCopy)
     .catch(() => {
-      toast(comment, 'info', 6000);
-      _copied = true;
-      _advanceToStep3();
+      // Clipboard API blocked — show comment text so user can copy manually
+      toast('📋 ' + comment, 'info', 8000);
+      _afterCopy();
     });
 }
 
@@ -154,11 +161,15 @@ function _advanceToStep3() {
 }
 
 on('support:video-opened', (el) => {
+  // events.js calls e.preventDefault() on all data-action clicks, which
+  // blocks the <a href> from navigating. Open the link manually instead.
+  const link = el.getAttribute('href') || el.dataset.link;
+  if (link && link !== '#') window.open(link, '_blank', 'noopener,noreferrer');
+
   _videoOpened = true;
   _setStep(1, 2);
   const s2 = document.getElementById('sf-s2');
   if (s2) s2.classList.add('sf-step--active');
-  // Mark step 1 done
   const s1 = document.getElementById('sf-s1');
   if (s1) s1.classList.add('sf-step--done');
 });

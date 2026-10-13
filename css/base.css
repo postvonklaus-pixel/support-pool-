@@ -63,10 +63,10 @@ button, input, textarea, select {
 }
 
 /* Prevent iOS Safari from auto-zooming the page when an input is focused.
-   Safari zooms when font-size < 16px; force 16px on all text fields.
-   Visual size is still controlled by padding/height, not font-size alone. */
+   Safari zooms when font-size < 16px. !important is necessary here because
+   component CSS (class selectors, higher specificity) would otherwise win. */
 input, textarea, select {
-  font-size: 16px;
+  font-size: 16px !important;
 }
 
 button { cursor: pointer; }
