@@ -14,61 +14,62 @@ const FIREBASE_CONFIG = {
   appId:             "1:856327571658:web:ba09f7e24f70b28a6f44fa"
 };
 
-// All data lives under /sp6/ — rules only grant access to this path
-const BASE_PATH = 'sp6';
-
 const DB_PATHS = ['members', 'videos', 'messages', 'settings', 'groups', 'chat'];
 
-let _db   = null;
-let _fns  = null;
-let _dbRef = null;
-let _onUpdate = null;
-let _partialData = {};
+// Discovered at runtime: 'sp6' if data lives under /sp6/, '' for root
+let _base = 'sp6';
+
+let _db              = null;
+let _fns             = null;
+let _dbRef           = null;
+let _onUpdate        = null;
+let _partialData     = {};
 let _usingIndividual = false;
 
 export function initFirebase(onUpdate) {
   _onUpdate = onUpdate;
 
   let app;
-  try {
-    app = firebase.initializeApp(FIREBASE_CONFIG);
-  } catch (e) {
-    app = firebase.app();
-  }
+  try { app = firebase.initializeApp(FIREBASE_CONFIG); }
+  catch (e) { app = firebase.app(); }
 
-  _db    = firebase.database(app);
-  _fns   = firebase.functions(app);
-  _dbRef = _db.ref(BASE_PATH);  // read/write from sp6, not root
+  _db  = firebase.database(app);
+  _fns = firebase.functions(app);
 
-  // Sign in anonymously so auth != null rules are satisfied
   const authReady = _signInAnonymously(app);
 
-  // After auth: continuous listener on /sp6
-  authReady.then(() => {
-    _dbRef.on('value', snap => {
-      if (_usingIndividual) return;
-      if (_onUpdate) _onUpdate(snap.val() || {});
-    }, err => {
-      console.error('[firebase] sp6 blocked (' + (err.code || err.message) + ') → individual paths');
-      _usingIndividual = true;
-      _subscribeIndividualPaths();
-    });
+  // Resolve once first data arrives; no internal timeout — main.js controls that
+  return new Promise(resolve => {
+    authReady.then(() => _autoConnect(resolve));
   });
+}
 
-  // Boot promise: first data or 6 s timeout
-  const dataPromise = new Promise(resolve => {
-    authReady.then(() => {
-      _dbRef.once('value')
-        .then(snap => { if (_onUpdate) _onUpdate(snap.val() || {}); resolve(); })
-        .catch(err => {
-          console.error('[firebase] sp6 once failed (' + (err.code || err.message) + ')');
-          if (!_usingIndividual) { _usingIndividual = true; _subscribeIndividualPaths(); }
-          resolve();
-        });
-    });
-  });
-
-  return Promise.race([dataPromise, new Promise(r => setTimeout(r, 6000))]);
+// Try /sp6/ first (new layout), then root (legacy layout).
+// Whichever path returns a members object wins.
+async function _autoConnect(resolve) {
+  for (const base of ['sp6', '']) {
+    try {
+      const ref = _db.ref(base || '/');
+      const snap = await Promise.race([
+        ref.once('value'),
+        new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 4000))
+      ]);
+      const val = snap.val();
+      if (val && val.members && Object.keys(val.members).length > 0) {
+        _base  = base;
+        _dbRef = ref;
+        _dbRef.on('value', s => {
+          if (_usingIndividual) return;
+          if (_onUpdate) _onUpdate(s.val() || {});
+        }, () => { _usingIndividual = true; _subscribeIndividualPaths(); });
+        if (_onUpdate) _onUpdate(val);
+        resolve();
+        return;
+      }
+    } catch (_e) { /* path denied or timed out — try next */ }
+  }
+  // All paths exhausted — resolve without data; login.js 12 s timeout handles UI
+  resolve();
 }
 
 // ── Anonymous Auth ────────────────────────────────────────
@@ -90,21 +91,22 @@ function _signInAnonymously(app) {
   });
 }
 
-// ── Fallback: individual path listeners under /sp6 ────────
+// ── Fallback: individual path listeners ───────────────────
 function _subscribeIndividualPaths() {
   if (!_db) return;
   _partialData = {};
+  const pfx = _base ? _base + '/' : '';
   DB_PATHS.forEach(path => {
-    _db.ref(BASE_PATH + '/' + path).on('value', snap => {
+    _db.ref(pfx + path).on('value', snap => {
       _partialData[path] = snap.val() || {};
       if (_onUpdate) _onUpdate({ ..._partialData });
     }, err => {
-      console.error('[firebase] /' + BASE_PATH + '/' + path + ' blocked:', err.code || err.message);
+      console.error('[firebase]', pfx + path, 'blocked:', err.code || err.message);
     });
   });
 }
 
-// ── Write (debounced) — paths are relative to BASE_PATH ───
+// ── Write (debounced) ─────────────────────────────────────
 const _pendingWrites = new Map();
 
 export function writeDB(path, value) {
@@ -117,14 +119,15 @@ const _flush = debounce(() => {
   const updates = {};
   _pendingWrites.forEach((val, path) => { updates[path] = val; });
   _pendingWrites.clear();
-  // update() keys are relative to the ref, so this writes to sp6/<path>
-  _db.ref(BASE_PATH).update(updates).catch(err => console.error('[firebase] write error:', err));
+  _db.ref(_base || '/').update(updates)
+    .catch(err => console.error('[firebase] write error:', err));
 }, 300);
 
-// ── Full save under BASE_PATH ─────────────────────────────
+// ── Full save ─────────────────────────────────────────────
 export function saveDB(data) {
   if (!_db) return;
-  _db.ref(BASE_PATH).set(data).catch(err => console.error('[firebase] save error:', err));
+  _db.ref(_base || '/').set(data)
+    .catch(err => console.error('[firebase] save error:', err));
 }
 
 // ── Call Firebase Function ────────────────────────────────
@@ -135,17 +138,19 @@ export async function callFn(name, payload) {
   return res.data;
 }
 
-// ── Read once — path relative to BASE_PATH ────────────────
+// ── Read once ─────────────────────────────────────────────
 export async function readOnce(path) {
   if (!_db) return null;
-  const snap = await _db.ref(BASE_PATH + '/' + path).once('value');
+  const pfx = _base ? _base + '/' : '';
+  const snap = await _db.ref(pfx + path).once('value');
   return snap.val();
 }
 
 // ── Presence ──────────────────────────────────────────────
 export function setPresence(username, online) {
   if (!_db || !username) return;
-  const ref = _db.ref(BASE_PATH + '/members/' + username + '/online');
+  const pfx = _base ? _base + '/' : '';
+  const ref  = _db.ref(pfx + 'members/' + username + '/online');
   if (online) {
     ref.set(true);
     ref.onDisconnect().set(false);
