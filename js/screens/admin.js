@@ -341,6 +341,13 @@ function _registerHandlers() {
     const ok = await confirm(`@${key} entfernen?`, 'Der Account wird auf inaktiv gesetzt.');
     if (!ok) return;
     writeDB(`members/${key}/status`, 'inactive');
+    // Remove kicked member from all group arrays so counts stay accurate
+    Object.entries(state.db.groups || {}).forEach(([gid, g]) => {
+      const members = g.members || [];
+      if (members.includes(key)) {
+        writeDB(`groups/${gid}/members`, members.filter(m => m !== key));
+      }
+    });
     toast(`@${key} entfernt`, 'success');
     setTimeout(render, 300);
   });

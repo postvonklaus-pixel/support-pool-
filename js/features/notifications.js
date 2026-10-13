@@ -45,8 +45,18 @@ on('notif:reply:send', (el) => {
   const cu = state.currentUser;
   if (!cu) return;
 
-  const id = `dm_${Date.now()}_${Math.random().toString(36).slice(2,6)}`;
-  writeDB(`messages/${id}`, {
+  // Write to the DM chat path — same structure chat.js uses — so the
+  // message appears in the Chat → Direkt thread instead of disappearing
+  // into the notification inbox.
+  const roomKey = [cu, toKey].sort().join('__');
+  const msgId   = `${Date.now()}_${cu}`;
+  writeDB(`chat/dm/${roomKey}/messages/${msgId}`, {
+    from: cu, to: toKey, text, ts: Date.now(),
+  });
+
+  // Also write a notification badge so the recipient sees the DM pip
+  const notifId = `dm_${Date.now()}_${Math.random().toString(36).slice(2,6)}`;
+  writeDB(`messages/${notifId}`, {
     to: toKey, from: cu, type: 'dm',
     icon: '✉️', message: text,
     ts: Date.now(), read: false,

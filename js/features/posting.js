@@ -72,6 +72,15 @@ on('post:submit', () => {
   const cu = state.currentUser;
   if (!cu) return;
 
+  // Duplicate URL check — same link already in the pool
+  const duplicate = Object.values(state.db.videos || {}).find(
+    v => (v.link || v.url || '').trim() === url && v.status !== 'done' && v.status !== 'expired'
+  );
+  if (duplicate) {
+    if (err) { err.textContent = 'Dieses Video ist bereits im Pool'; err.style.display = ''; }
+    return;
+  }
+
   const id = `vid_${Date.now()}_${Math.random().toString(36).slice(2,6)}`;
   const u  = state.db.members?.[cu] || {};
 

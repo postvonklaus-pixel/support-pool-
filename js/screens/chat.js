@@ -178,6 +178,13 @@ function _renderDMThread(el, cu, partner) {
   const grad    = avatarGradient(partner);
   const msgs    = _dmMessages(cu, partner);
 
+  // Mark all incoming unread messages as read so the DM pip clears
+  const roomKey = [cu, partner].sort().join('__');
+  const raw = state.db.chat?.dm?.[roomKey]?.messages || {};
+  Object.entries(raw)
+    .filter(([, m]) => m.from !== cu && !m.read)
+    .forEach(([id]) => writeDB(`chat/dm/${roomKey}/messages/${id}/read`, true));
+
   el.innerHTML = `
     <div class="chat-layout">
       <div class="chat-dm-header">
