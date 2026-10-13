@@ -216,6 +216,44 @@
 <!-- ── App Entry Point ──────────────────────────────────── -->
 <script type="module" src="js/main.js"></script>
 
+<!-- ── SW update prompt: tell waiting SW to activate, then reload ──────
+     index.html is always network-first, so this script is always fresh.
+     It handles iOS Safari's refusal to honour skipWaiting on its own. -->
+<script>
+(function() {
+  if (!('serviceWorker' in navigator)) return;
+
+  // When a new SW is waiting, kick it to activate now
+  function skipWaiting(reg) {
+    if (reg && reg.waiting) {
+      reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+    }
+  }
+
+  navigator.serviceWorker.ready.then(function(reg) {
+    // Already a SW waiting (fast revisit case)
+    skipWaiting(reg);
+
+    // Watch for a new SW installing during this session
+    reg.addEventListener('updatefound', function() {
+      var sw = reg.installing;
+      if (!sw) return;
+      sw.addEventListener('statechange', function() {
+        if (sw.state === 'installed') skipWaiting(reg);
+      });
+    });
+  });
+
+  // When the controller changes (new SW took over), reload once to get fresh JS
+  var reloading = false;
+  navigator.serviceWorker.addEventListener('controllerchange', function() {
+    if (reloading) return;
+    reloading = true;
+    window.location.reload();
+  });
+})();
+</script>
+
 <!-- ── Hard fallback: if splash still visible after 4s, force-show app ── -->
 <script>
 (function() {

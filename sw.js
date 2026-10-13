@@ -1,12 +1,11 @@
 /* ═══════════════════════════════════════════════════════
-   NOVA Support Pool — Service Worker v4
-   Network-first for HTML + JS; cache-first for CSS/images.
-   Bump CACHE version here to bust all old caches.
+   NOVA Support Pool — Service Worker v5
+   Network-first for HTML + JS; cache-first for CSS.
+   Responds to SKIP_WAITING message from the page.
    ═══════════════════════════════════════════════════════ */
 
-const CACHE = 'nova-v4';
+const CACHE = 'nova-v5';
 
-// Pre-cache only truly static assets (CSS). JS is always network-first.
 const STATIC_CSS = [
   '/support-pool-/css/tokens.css',
   '/support-pool-/css/base.css',
@@ -38,14 +37,20 @@ self.addEventListener('activate', e => {
   );
 });
 
+// Page sends SKIP_WAITING when it detects a waiting SW (iOS Safari workaround)
+self.addEventListener('message', e => {
+  if (e.data && e.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+});
+
 self.addEventListener('fetch', e => {
   const url = new URL(e.request.url);
 
-  // Skip non-GET and cross-origin (Firebase, fonts, CDN)
   if (e.request.method !== 'GET') return;
   if (!url.origin.includes('github.io') && !url.origin.includes('localhost')) return;
 
-  // HTML and JS: always network-first so fixes deploy immediately
+  // HTML + JS: network-first so every push reaches users immediately
   if (
     url.pathname.endsWith('/') ||
     url.pathname.endsWith('.html') ||
@@ -62,7 +67,7 @@ self.addEventListener('fetch', e => {
     return;
   }
 
-  // CSS and other static assets: stale-while-revalidate
+  // CSS and other assets: stale-while-revalidate
   e.respondWith(
     caches.match(e.request).then(cached => {
       const fresh = fetch(e.request).then(res => {
