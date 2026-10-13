@@ -8,6 +8,7 @@ import { esc, timeAgo, avatarGradient } from '../utils.js';
 import { on }         from '../events.js';
 import { toast }      from '../components/toast.js';
 import { writeDB }    from '../firebase.js';
+import { progressRing, streakFlames } from '../components/progress.js';
 
 const RANKS = [
   { min: 0,   max: 4,   label: 'Neuling',    icon: '🌱', color: '#94a3b8' },
@@ -62,12 +63,10 @@ export function render() {
       <!-- ── Stats ── -->
       <div class="profile-stats-grid">
         <div class="profile-stat-card">
-          <div class="profile-stat-card__val">${given}</div>
-          <div class="profile-stat-card__label">${t('pGiven') || 'Gegeben'}</div>
+          ${progressRing(given, Math.max(given, nextRank?.min || given, 10), { label: t('pGiven') || 'Gegeben', size: 72, color: rank.color })}
         </div>
         <div class="profile-stat-card">
-          <div class="profile-stat-card__val">${received}</div>
-          <div class="profile-stat-card__label">${t('pRecv') || 'Erhalten'}</div>
+          ${progressRing(received, Math.max(received, given, 10), { label: t('pRecv') || 'Erhalten', size: 72, color: 'var(--accent-secondary, #7c3aed)' })}
         </div>
         <div class="profile-stat-card">
           <div class="profile-stat-card__val">${u.postsTotal || 0}</div>
@@ -93,7 +92,7 @@ export function render() {
           <span class="profile-section__title">🔥 Aktivitäts-Streak</span>
           ${streak > 0 ? `<span class="streak-badge">${streak} Tage</span>` : ''}
         </div>
-        <div class="flame-row">${_buildFlames(u)}</div>
+        ${streakFlames(u.supportDays || u.activeDays || [])}
       </div>
 
       <!-- ── Rang Fortschritt ── -->
@@ -103,8 +102,17 @@ export function render() {
           <span class="profile-section__title">Rang-Fortschritt</span>
           <span class="profile-section__sub">${toNext} bis ${nextRank.icon} ${nextRank.label}</span>
         </div>
-        <div class="rank-progress-bar">
-          <div class="rank-progress-bar__fill" style="width:${Math.round(((given - rank.min) / (nextRank.min - rank.min)) * 100)}%"></div>
+        <div class="profile-rank-progress-row">
+          ${progressRing(given - rank.min, nextRank.min - rank.min, {
+            label: 'XP',
+            size: 56,
+            stroke: 5,
+            color: nextRank.color,
+          })}
+          <div class="rank-progress-bar" style="flex:1">
+            <div class="rank-progress-bar__fill" style="width:${Math.round(((given - rank.min) / (nextRank.min - rank.min)) * 100)}%"></div>
+          </div>
+          <div class="profile-rank-next">${nextRank.icon}</div>
         </div>
       </div>` : `
       <div class="profile-section">
@@ -147,24 +155,6 @@ export function render() {
 
   _markAllRead(cu, notifs);
   _registerHandlers();
-}
-
-// ── Streak flames ──────────────────────────────────────────
-function _buildFlames(u) {
-  const days = u.supportDays || u.activeDays || [];
-  const today = new Date();
-  const DAY_NAMES = ['So','Mo','Di','Mi','Do','Fr','Sa'];
-  return Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(today);
-    d.setDate(d.getDate() - (6 - i));
-    const key    = d.toISOString().slice(0, 10);
-    const active = days.includes(key);
-    const label  = DAY_NAMES[d.getDay()];
-    return `<div class="flame-day ${active ? 'flame-day--active' : ''}">
-      <div class="flame-day__icon">🔥</div>
-      <div class="flame-day__label">${label}</div>
-    </div>`;
-  }).join('');
 }
 
 // ── Notifications ──────────────────────────────────────────

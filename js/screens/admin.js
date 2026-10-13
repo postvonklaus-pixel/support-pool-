@@ -9,6 +9,7 @@ import { on }      from '../events.js';
 import { writeDB } from '../firebase.js';
 import { toast }   from '../components/toast.js';
 import { confirm } from '../components/modal.js';
+import { progressRing } from '../components/progress.js';
 
 const TABS = ['overview', 'members', 'videos', 'broadcast', 'groups'];
 let _tab = 'overview';
@@ -82,6 +83,9 @@ function _renderOverview() {
     .sort((a, b) => (b.weeklyGiven||0) - (a.weeklyGiven||0))
     .slice(0, 3);
 
+  const doneVids = allVids.filter(v => v.status === 'done').length;
+  const donePct  = allVids.length > 0 ? Math.round(doneVids / allVids.length * 100) : 0;
+
   return `
     <div class="admin-overview">
       <div class="admin-stat-grid">
@@ -91,6 +95,12 @@ function _renderOverview() {
         ${_kpi('📊', weeklyTotal, 'Woche ges.')}
         ${_kpi('🏠', groups, 'Gruppen')}
         ${_kpi('💬', totalMsg, 'Nachrichten')}
+      </div>
+
+      <div class="admin-rings-row">
+        ${progressRing(online, Math.max(active, 1), { label: 'Online', size: 64, color: 'var(--success, #10b981)' })}
+        ${progressRing(doneVids, Math.max(allVids.length, 1), { label: 'Videos', size: 64, color: 'var(--accent-primary)' })}
+        ${progressRing(weeklyTotal, Math.max(weeklyTotal, active * 5, 1), { label: 'Woche', size: 64, color: 'var(--accent-warning, #f59e0b)' })}
       </div>
 
       ${topThisWeek.length ? `

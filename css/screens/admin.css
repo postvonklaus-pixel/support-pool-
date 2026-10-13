@@ -228,3 +228,14 @@
 }
 .admin-group-card__name { font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--text-primary); }
 .admin-group-card__meta { display: flex; gap: var(--space-3); font-size: var(--text-xs); color: var(--text-tertiary); }
+
+/* ── Admin Overview Rings (Part H) ─────────────────────────── */
+.admin-rings-row {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: var(--space-4, 12px) 0;
+  background: var(--bg-elevated);
+  border-radius: var(--radius-lg, 12px);
+  margin-bottom: var(--space-4, 12px);
+}

@@ -276,3 +276,16 @@
 }
 .profile-empty__icon { font-size: 36px; opacity: 0.4; }
 .profile-empty__text { font-size: var(--text-sm); color: var(--text-tertiary); }
+
+/* ── Rank Progress Row (Part H) ────────────────────────────── */
+.profile-rank-progress-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4, 12px);
+  margin-top: var(--space-2, 6px);
+}
+
+.profile-rank-next {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}

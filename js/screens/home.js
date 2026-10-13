@@ -7,6 +7,7 @@ import { t }          from '../i18n.js';
 import { esc, avatarGradient, timeAgo } from '../utils.js';
 import { on }         from '../events.js';
 import { startTimer } from '../components/timer.js';
+import { goalPill, balanceMeter, circularTimer, startCircularTimer } from '../components/progress.js';
 
 const R1_NEED = 10;
 const R2_NEED = 10;
@@ -66,9 +67,7 @@ export function render() {
   _registerHandlers();
 
   if (_tab === 'balance' && u.lastPost && (Date.now() - u.lastPost) < R1_MS) {
-    startTimer('post-cooldown', u.lastPost + R1_MS, {
-      el: document.getElementById('home-countdown'),
-    });
+    startCircularTimer('home-ctimer');
   }
 }
 
@@ -151,12 +150,9 @@ function _videoCard(v) {
       <div class="feed-card__progress">
         <div class="feed-card__prog-header">
           <span class="feed-card__prog-label">
-            ${urgent ? `<span style="color:var(--accent-danger)">⚡ Nur noch ${slotsLeft}!</span>` : `${r1} von ${r1n} Supports`}
+            ${urgent ? `<span style="color:var(--accent-danger)">⚡ Nur noch ${slotsLeft}!</span>` : 'Supports'}
           </span>
-          <span class="feed-card__prog-pct">${pct}%</span>
-        </div>
-        <div class="feed-prog-bar">
-          <div class="feed-prog-bar__fill${urgent ? ' feed-prog-bar__fill--urgent' : ''}" style="width:${pct}%"></div>
+          ${goalPill(r1, r1n, 'Slots', { urgent })}
         </div>
       </div>
 
@@ -179,17 +175,7 @@ function _renderBalanceTab(given, recv, bal, u) {
     <div class="balance-wrap">
       <div class="balance-card card--glass">
         <div class="balance-card__label">${t('balance') || 'Guthaben'}</div>
-        <div class="balance-card__val balance-card__val--${balClass}">${bal > 0 ? '+' : ''}${bal}</div>
-        <div class="balance-meter">
-          <div class="balance-meter__track">
-            <div class="balance-meter__fill balance-meter__fill--${balClass}" style="width:${balPct}%"></div>
-          </div>
-          <div class="balance-meter__labels">
-            <span>–${BAL_CAP}</span>
-            <span>0</span>
-            <span>+${BAL_CAP}</span>
-          </div>
-        </div>
+        ${balanceMeter(bal, BAL_CAP)}
       </div>
 
       <div class="balance-stats">
@@ -207,7 +193,7 @@ function _renderBalanceTab(given, recv, bal, u) {
       ${cooldown ? `
         <div class="balance-cooldown">
           <div class="balance-cooldown__label">⏳ Nächstes Post möglich in</div>
-          <div class="balance-cooldown__timer" id="home-countdown">--:--:--</div>
+          ${circularTimer(u.lastPost + R1_MS - Date.now(), R1_MS, { id: 'home-ctimer', size: 64, stroke: 5 })}
         </div>
       ` : `
         <button class="btn btn--primary btn--full" data-action="post:open" style="margin-top:8px">
