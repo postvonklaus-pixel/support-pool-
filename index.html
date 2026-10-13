@@ -215,5 +215,37 @@
 <!-- ── App Entry Point ──────────────────────────────────── -->
 <script type="module" src="js/main.js"></script>
 
+<!-- ── Hard fallback: if splash still visible after 4s, force-show app ── -->
+<script>
+(function() {
+  // Attach immediately; fires even if module loading is slow
+  window.addEventListener('load', function() {
+    setTimeout(function() {
+      var loading = document.getElementById('app-loading');
+      var app     = document.getElementById('app');
+      if (loading && loading.parentNode) {
+        loading.style.opacity = '0';
+        loading.style.pointerEvents = 'none';
+        setTimeout(function() { if (loading.parentNode) loading.parentNode.removeChild(loading); }, 300);
+      }
+      if (app) app.style.display = 'flex';
+      // If no screen is active yet, activate login
+      var loginScreen = document.getElementById('screen-login');
+      var hasActive   = document.querySelector('.screen.active');
+      if (loginScreen && !hasActive) {
+        loginScreen.classList.add('active');
+      }
+    }, 4000);
+  });
+  // Also fire on DOMContentLoaded in case load never fires
+  document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(function() {
+      var app = document.getElementById('app');
+      if (app && app.style.display === 'none') app.style.display = 'flex';
+    }, 5000);
+  });
+})();
+</script>
+
 </body>
 </html>

@@ -19,23 +19,38 @@ let _fns  = null;
 let _dbRef = null;
 let _onUpdate = null;
 
-export async function initFirebase(onUpdate) {
+export function initFirebase(onUpdate) {
   _onUpdate = onUpdate;
-  const app = firebase.initializeApp(FIREBASE_CONFIG);
+
+  let app;
+  try {
+    app = firebase.initializeApp(FIREBASE_CONFIG);
+  } catch (e) {
+    // Already initialized (e.g., hot-reload)
+    app = firebase.app();
+  }
   _db  = firebase.database(app);
   _fns = firebase.functions(app);
 
   _dbRef = _db.ref('/');
+
+  // Set up continuous listener (non-blocking)
   _dbRef.on('value', snap => {
     const data = snap.val() || {};
     if (_onUpdate) _onUpdate(data);
+  }, err => {
+    console.error('[firebase] listener error:', err);
   });
 
-  return new Promise((resolve, reject) => {
+  // Return a Promise that resolves on first data OR after 6s timeout
+  const dataPromise = new Promise((resolve) => {
     _dbRef.once('value')
-      .then(snap => { _onUpdate && _onUpdate(snap.val() || {}); resolve(); })
-      .catch(reject);
+      .then(snap => { if (_onUpdate) _onUpdate(snap.val() || {}); resolve(); })
+      .catch(err => { console.error('[firebase] once error:', err); resolve(); });
   });
+  const timeout = new Promise(resolve => setTimeout(resolve, 6000));
+
+  return Promise.race([dataPromise, timeout]);
 }
 
 // ── Write (debounced) ─────────────────────────────────────

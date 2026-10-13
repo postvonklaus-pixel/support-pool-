@@ -13,51 +13,67 @@ import { initRouter, goScreen } from './router.js';
 // ── Boot sequence ─────────────────────────────────────────
 async function boot() {
   // 1. Apply saved theme immediately (prevents flash)
-  applyTheme(storage.get('theme', 'dark'));
+  try { applyTheme(storage.get('theme', 'dark')); } catch (e) { console.error('[boot] theme', e); }
 
-  // 2. Init i18n — default or saved lang
-  const savedLang = getLang();
-  await initI18n(savedLang);
-  setState('lang', savedLang);
+  // 2. Init i18n
+  try {
+    const savedLang = getLang();
+    initI18n(savedLang);
+    setState('lang', savedLang);
+  } catch (e) { console.error('[boot] i18n', e); }
 
-  // 3. Init event delegation (must be early)
-  initEvents();
+  // 3. Init event delegation
+  try { initEvents(); } catch (e) { console.error('[boot] events', e); }
 
   // 4. Init router
-  initRouter();
+  try { initRouter(); } catch (e) { console.error('[boot] router', e); }
 
-  // 5. Connect to Firebase
-  let dbReady = false;
-  try {
-    await initFirebase(onDBUpdate);
-    dbReady = true;
-  } catch (err) {
-    console.error('[boot] Firebase error:', err);
-    toast('Verbindungsfehler — Offline-Modus', 'error');
-  }
-
-  // 6. Show app, hide loading
-  const loading = ge('app-loading');
-  const app     = ge('app');
-  if (loading) {
-    loading.classList.add('fade-out');
-    loading.addEventListener('transitionend', () => loading.remove(), { once: true });
-  }
-  if (app) app.style.display = '';
-
-  // 7. Try to restore session
+  // 5. Show app + login screen IMMEDIATELY (do not wait for Firebase)
+  _showApp();
   const savedUser = loadSession();
-  if (savedUser && state.db.members && state.db.members[savedUser]) {
-    await loginAs(savedUser);
+  // Show login right away; Firebase will update the screen once it connects
+  if (!savedUser) {
+    goScreen('login');
   } else {
+    // Show login while we wait for Firebase; it'll redirect after DB loads
     goScreen('login');
   }
 
-  // 8. Start periodic render tick (15s) for timers, live data
+  // 6. Connect to Firebase in the background (non-blocking, max 8s)
+  const fbTimeout = new Promise((_, reject) =>
+    setTimeout(() => reject(new Error('Firebase timeout')), 8000)
+  );
+  try {
+    await Promise.race([initFirebase(onDBUpdate), fbTimeout]);
+    // If session exists and DB is now loaded, redirect to dashboard
+    if (savedUser && state.db.members?.[savedUser]) {
+      await loginAs(savedUser);
+    }
+  } catch (err) {
+    console.error('[boot] Firebase error (non-fatal):', err);
+    import('./components/toast.js').then(m => m.toast('Offline-Modus — bitte reload', 'warning', 5000));
+  }
+
+  // 7. Start periodic render tick (15s)
   setInterval(tick, 15000);
 }
 
+function _showApp() {
+  const loading = ge('app-loading');
+  const app     = ge('app');
+  if (app) app.style.display = 'flex';
+  if (loading) {
+    loading.classList.add('fade-out');
+    // Belt-and-suspenders: remove after transition OR after 600ms, whichever first
+    const remove = () => { try { loading.remove(); } catch {} };
+    loading.addEventListener('transitionend', remove, { once: true });
+    setTimeout(remove, 600);
+  }
+}
+
 // ── Firebase DB update handler ────────────────────────────
+let _dbFirstLoad = true;
+
 function onDBUpdate(snapshot) {
   const data = snapshot || {};
   state.db.groups   = data.groups   || {};
@@ -68,9 +84,17 @@ function onDBUpdate(snapshot) {
   state.db.settings = data.settings || {};
 
   // Notify all subscribers
-  import('./state.js').then(({ setState }) => {
-    setState('db', state.db);
-  });
+  setState('db', state.db);
+
+  // On first load: if we have a valid session, redirect to dashboard
+  if (_dbFirstLoad) {
+    _dbFirstLoad = false;
+    const savedUser = loadSession();
+    if (savedUser && state.db.members?.[savedUser] && state.ui.activeScreen === 'login') {
+      loginAs(savedUser);
+      return;
+    }
+  }
 
   // Re-render active screen
   tick();

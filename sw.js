@@ -1,12 +1,13 @@
 /* ═══════════════════════════════════════════════════════
-   NOVA Support Pool — Service Worker
-   Cache-first for static assets, network-first for data
+   NOVA Support Pool — Service Worker v3
+   Network-first for HTML; cache-first for static assets.
+   Bump CACHE version here to bust all old caches.
    ═══════════════════════════════════════════════════════ */
 
-const CACHE = 'nova-v2';
+const CACHE = 'nova-v3';
+
+// Only cache files we KNOW exist. Icons are excluded until they're added.
 const STATIC = [
-  '/support-pool-/',
-  '/support-pool-/index.html',
   '/support-pool-/css/tokens.css',
   '/support-pool-/css/base.css',
   '/support-pool-/css/components.css',
@@ -27,37 +28,52 @@ const STATIC = [
   '/support-pool-/js/i18n.js',
   '/support-pool-/js/router.js',
   '/support-pool-/js/events.js',
-  '/support-pool-/manifest.json',
-  '/support-pool-/icons/icon-192.png',
-  '/support-pool-/icons/icon-512.png',
 ];
 
 self.addEventListener('install', e => {
+  // Cache static assets; skip waiting so the new SW activates immediately.
+  // Use individual catch so one missing file doesn't abort the whole install.
   e.waitUntil(
-    caches.open(CACHE).then(c => c.addAll(STATIC)).then(() => self.skipWaiting())
+    caches.open(CACHE)
+      .then(c => Promise.allSettled(STATIC.map(url => c.add(url))))
+      .then(() => self.skipWaiting())
   );
 });
 
 self.addEventListener('activate', e => {
+  // Delete all old caches
   e.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
-    ).then(() => self.clients.claim())
+    caches.keys()
+      .then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))
+      .then(() => self.clients.claim())
   );
 });
 
 self.addEventListener('fetch', e => {
   const url = new URL(e.request.url);
-  // Skip non-GET and Firebase requests
+
+  // Skip non-GET and third-party requests (Firebase, fonts, CDN)
   if (e.request.method !== 'GET') return;
+  if (!url.origin.includes('github.io') && !url.origin.includes('localhost')) return;
   if (url.hostname.includes('firebase') || url.hostname.includes('googleapis')) return;
 
+  // HTML: always network-first so the app always boots fresh
+  if (url.pathname.endsWith('/') || url.pathname.endsWith('.html')) {
+    e.respondWith(
+      fetch(e.request)
+        .then(res => { caches.open(CACHE).then(c => c.put(e.request, res.clone())); return res; })
+        .catch(() => caches.match(e.request))
+    );
+    return;
+  }
+
+  // Static assets: cache-first, update cache in background
   e.respondWith(
     caches.match(e.request).then(cached => {
       const fresh = fetch(e.request).then(res => {
         if (res.ok) caches.open(CACHE).then(c => c.put(e.request, res.clone()));
         return res;
-      }).catch(() => cached);
+      });
       return cached || fresh;
     })
   );
@@ -71,9 +87,8 @@ self.addEventListener('push', e => {
     self.registration.showNotification(data.title || 'NOVA Support Pool', {
       body: data.body || '',
       icon: '/support-pool-/icons/icon-192.png',
-      badge: '/support-pool-/icons/favicon-32x32.png',
       tag: data.tag || 'nova',
-      data: data,
+      data,
     })
   );
 });
