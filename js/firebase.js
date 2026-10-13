@@ -14,6 +14,9 @@ const FIREBASE_CONFIG = {
   appId:             "1:856327571658:web:ba09f7e24f70b28a6f44fa"
 };
 
+// All data lives under /sp6/ — rules only grant access to this path
+const BASE_PATH = 'sp6';
+
 const DB_PATHS = ['members', 'videos', 'messages', 'settings', 'groups', 'chat'];
 
 let _db   = null;
@@ -33,33 +36,32 @@ export function initFirebase(onUpdate) {
     app = firebase.app();
   }
 
-  _db   = firebase.database(app);
-  _fns  = firebase.functions(app);
-  _dbRef = _db.ref('/');
+  _db    = firebase.database(app);
+  _fns   = firebase.functions(app);
+  _dbRef = _db.ref(BASE_PATH);  // read/write from sp6, not root
 
-  // Sign in anonymously so Firebase rules (auth != null) are satisfied.
-  // Resolves immediately if already signed in, or if auth SDK unavailable.
+  // Sign in anonymously so auth != null rules are satisfied
   const authReady = _signInAnonymously(app);
 
-  // After auth: start continuous root listener
+  // After auth: continuous listener on /sp6
   authReady.then(() => {
     _dbRef.on('value', snap => {
       if (_usingIndividual) return;
       if (_onUpdate) _onUpdate(snap.val() || {});
     }, err => {
-      console.error('[firebase] root blocked (' + (err.code || err.message) + ') → trying individual paths');
+      console.error('[firebase] sp6 blocked (' + (err.code || err.message) + ') → individual paths');
       _usingIndividual = true;
       _subscribeIndividualPaths();
     });
   });
 
-  // Boot promise: resolves on first data or after 6 s
+  // Boot promise: first data or 6 s timeout
   const dataPromise = new Promise(resolve => {
     authReady.then(() => {
       _dbRef.once('value')
         .then(snap => { if (_onUpdate) _onUpdate(snap.val() || {}); resolve(); })
         .catch(err => {
-          console.error('[firebase] root once failed (' + (err.code || err.message) + ')');
+          console.error('[firebase] sp6 once failed (' + (err.code || err.message) + ')');
           if (!_usingIndividual) { _usingIndividual = true; _subscribeIndividualPaths(); }
           resolve();
         });
@@ -74,43 +76,35 @@ function _signInAnonymously(app) {
   return new Promise(resolve => {
     try {
       const auth = firebase.auth(app);
-      // onAuthStateChanged fires immediately with current user (if any)
       const unsub = auth.onAuthStateChanged(user => {
         unsub();
-        if (user) {
-          resolve(); // already authenticated (anonymous or otherwise)
-          return;
-        }
+        if (user) { resolve(); return; }
         auth.signInAnonymously()
           .then(resolve)
-          .catch(err => {
-            console.warn('[firebase] anon auth failed (' + err.code + ') — proceeding without auth');
-            resolve(); // continue anyway; public rules will allow reads
-          });
+          .catch(err => { console.warn('[firebase] anon auth failed (' + err.code + ')'); resolve(); });
       });
     } catch (e) {
-      // Auth SDK not loaded or other setup error — proceed without auth
       console.warn('[firebase] auth unavailable:', e.message);
       resolve();
     }
   });
 }
 
-// ── Fallback: individual path listeners ───────────────────
+// ── Fallback: individual path listeners under /sp6 ────────
 function _subscribeIndividualPaths() {
   if (!_db) return;
   _partialData = {};
   DB_PATHS.forEach(path => {
-    _db.ref(path).on('value', snap => {
+    _db.ref(BASE_PATH + '/' + path).on('value', snap => {
       _partialData[path] = snap.val() || {};
       if (_onUpdate) _onUpdate({ ..._partialData });
     }, err => {
-      console.error('[firebase] /' + path + ' blocked:', err.code || err.message);
+      console.error('[firebase] /' + BASE_PATH + '/' + path + ' blocked:', err.code || err.message);
     });
   });
 }
 
-// ── Write (debounced) ─────────────────────────────────────
+// ── Write (debounced) — paths are relative to BASE_PATH ───
 const _pendingWrites = new Map();
 
 export function writeDB(path, value) {
@@ -123,13 +117,14 @@ const _flush = debounce(() => {
   const updates = {};
   _pendingWrites.forEach((val, path) => { updates[path] = val; });
   _pendingWrites.clear();
-  _db.ref('/').update(updates).catch(err => console.error('[firebase] write error:', err));
+  // update() keys are relative to the ref, so this writes to sp6/<path>
+  _db.ref(BASE_PATH).update(updates).catch(err => console.error('[firebase] write error:', err));
 }, 300);
 
-// ── Full save ─────────────────────────────────────────────
+// ── Full save under BASE_PATH ─────────────────────────────
 export function saveDB(data) {
   if (!_db) return;
-  _db.ref('/').set(data).catch(err => console.error('[firebase] save error:', err));
+  _db.ref(BASE_PATH).set(data).catch(err => console.error('[firebase] save error:', err));
 }
 
 // ── Call Firebase Function ────────────────────────────────
@@ -140,17 +135,17 @@ export async function callFn(name, payload) {
   return res.data;
 }
 
-// ── Read once ─────────────────────────────────────────────
+// ── Read once — path relative to BASE_PATH ────────────────
 export async function readOnce(path) {
   if (!_db) return null;
-  const snap = await _db.ref(path).once('value');
+  const snap = await _db.ref(BASE_PATH + '/' + path).once('value');
   return snap.val();
 }
 
-// ── Presence ─────────────────────────────────────────────
+// ── Presence ──────────────────────────────────────────────
 export function setPresence(username, online) {
   if (!_db || !username) return;
-  const ref = _db.ref(`members/${username}/online`);
+  const ref = _db.ref(BASE_PATH + '/members/' + username + '/online');
   if (online) {
     ref.set(true);
     ref.onDisconnect().set(false);
