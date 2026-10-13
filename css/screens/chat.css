@@ -3,7 +3,8 @@
    ══════════════════════════════════════════════════════════ */
 
 /* ── Layout ───────────────────────────────────────────────── */
-#screen-chat { display: flex; flex-direction: column; overflow: hidden; }
+/* display controlled by .screen / .screen.active — never override here */
+#screen-chat.active { overflow: hidden; padding-bottom: 0; }
 
 .chat-layout {
   display: flex;

@@ -232,21 +232,39 @@ function _sendPool(cu) {
   const input = document.getElementById('chat-pool-input');
   const text  = input?.value?.trim();
   if (!text) return;
+  input.value = '';
   const msgId = `${Date.now()}_${cu}`;
-  writeDB(`chat/pool/messages/${msgId}`, { from: cu, text, ts: Date.now() });
-  if (input) input.value = '';
-  setTimeout(() => { render(); _scrollToBottom(); }, 50);
+  const msg   = { from: cu, text, ts: Date.now() };
+  writeDB(`chat/pool/messages/${msgId}`, msg);
+  // Append bubble in-place — no full re-render so input stays focused
+  const msgs = document.getElementById('pool-messages');
+  if (msgs) {
+    const empty = msgs.querySelector('.empty-state');
+    if (empty) empty.remove();
+    msgs.insertAdjacentHTML('beforeend', _poolBubble(msg, cu));
+  }
+  _scrollToBottom();
+  input.focus();
 }
 
 function _sendDM(cu, partner) {
-  const input   = document.getElementById('chat-dm-input');
-  const text    = input?.value?.trim();
+  const input = document.getElementById('chat-dm-input');
+  const text  = input?.value?.trim();
   if (!text || !partner) return;
+  input.value = '';
   const roomKey = [cu, partner].sort().join('__');
   const msgId   = `${Date.now()}_${cu}`;
-  writeDB(`chat/dm/${roomKey}/messages/${msgId}`, { from: cu, to: partner, text, ts: Date.now() });
-  if (input) input.value = '';
-  setTimeout(() => { _renderDMThread(document.getElementById('screen-chat'), cu, partner); }, 50);
+  const msg     = { from: cu, to: partner, text, ts: Date.now() };
+  writeDB(`chat/dm/${roomKey}/messages/${msgId}`, msg);
+  // Append bubble in-place
+  const msgs = document.getElementById('pool-messages');
+  if (msgs) {
+    const empty = msgs.querySelector('.empty-state');
+    if (empty) empty.remove();
+    msgs.insertAdjacentHTML('beforeend', _poolBubble(msg, cu));
+  }
+  _scrollToBottom();
+  input.focus();
 }
 
 function _scrollToBottom() {
