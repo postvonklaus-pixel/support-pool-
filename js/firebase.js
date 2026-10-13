@@ -7,7 +7,7 @@ import { debounce } from './utils.js';
 const FIREBASE_CONFIG = {
   apiKey:            "AIzaSyCqJmrJOVbfY7t5pxCQXZSSMbH0nwVAjMs",
   authDomain:        "nova-support-pool.firebaseapp.com",
-  databaseURL:       "https://nova-support-pool-default-rtdb.europe-west1.firebasedatabase.app",
+  databaseURL:       "https://support-pool-default-rtdb.asia-southeast1.firebasedatabase.app",
   projectId:         "nova-support-pool",
   storageBucket:     "nova-support-pool.appspot.com",
   messagingSenderId: "856327571658",
