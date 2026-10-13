@@ -39,8 +39,8 @@ export function render() {
       ${!myVids.length ? `
         <div class="empty-state">
           <div class="empty-state__icon">🎬</div>
-          <div class="empty-state__title">${t('noMy') || 'Noch kein Video gepostet'}</div>
-          <div class="empty-state__sub">Poste dein erstes Video!</div>
+          <div class="empty-state__title">${t('noMy')}</div>
+          <div class="empty-state__sub">${t('mvFirstSub')}</div>
           <button class="btn btn--primary" data-action="post:open" style="margin-top:16px">
             ${t('postBtn') || 'Video posten'}
           </button>
@@ -67,7 +67,7 @@ function _vidCard(v) {
         🔗 ${esc(link.replace(/^https?:\/\/(www\.)?/, '').slice(0,40))}
       </a>
       <span class="badge ${isDone ? 'badge--success' : 'badge--primary'}">
-        ${isDone ? '✓ Done' : `R${v.round || 1}`}
+        ${isDone ? t('mvDone') : `R${v.round || 1}`}
       </span>
     </div>
     <div class="myvid-card__progress">
@@ -81,10 +81,10 @@ function _vidCard(v) {
     </div>` : ''}
     <div class="myvid-card__actions">
       <button class="btn btn--ghost btn--sm" data-action="myvid:copy" data-link="${esc(link)}">
-        📋 Kopieren
+        📋 ${t('mvCopy')}
       </button>
       ${!isDone ? `<button class="btn btn--danger btn--sm" data-action="myvid:delete" data-vid-id="${esc(v.id || '')}">
-        🗑 Löschen
+        🗑 ${t('mvDelete')}
       </button>` : ''}
     </div>
   </div>`;
@@ -96,7 +96,7 @@ function _registerHandlers() {
     if (!link) return;
     try {
       await navigator.clipboard.writeText(link);
-      toast('Link kopiert! 📋', 'success', 1800);
+      toast(t('mvCopied'), 'success', 1800);
     } catch {
       toast(link, 'info', 5000);
     }
@@ -105,7 +105,7 @@ function _registerHandlers() {
   on('myvid:delete', async (el) => {
     const vid = el.dataset.vidId;
     if (!vid) return;
-    const ok = await confirm('Video löschen?', 'Das Video wird aus dem Pool entfernt.');
+    const ok = await confirm(t('mvDelTitle'), t('mvDelBody'));
     if (!ok) return;
     writeDB(`videos/${vid}`, null);
     // Keep postsTotal in sync so balance-gating and dashboard counts stay correct
@@ -115,7 +115,7 @@ function _registerHandlers() {
       const current = u.postsTotal || 0;
       if (current > 0) writeDB(`members/${cu}/postsTotal`, current - 1);
     }
-    toast('Video gelöscht', 'success');
+    toast(t('mvDeleted'), 'success');
     setTimeout(render, 300);
   });
 }

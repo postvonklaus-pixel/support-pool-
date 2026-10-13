@@ -78,23 +78,23 @@ function _poolStatusBar(openCount, todaySupports, u) {
   const streak   = _currentStreak(u);
   const health   = _poolHealth(openCount);
   const activity = openCount > 8 ? 'busy' : openCount > 2 ? 'active' : 'quiet';
-  const actLabel = { busy:'🔴 Voll', active:'🟢 Aktiv', quiet:'🟡 Ruhig' }[activity];
+  const actLabel = { busy: t('poolBusy'), active: t('poolActive'), quiet: t('poolQuiet') }[activity];
 
   return `
     <div class="pool-status-bar">
       <div class="pool-status-item">
         <div class="pool-status-item__val">${openCount}</div>
-        <div class="pool-status-item__label">offen</div>
+        <div class="pool-status-item__label">${t('statOpen')}</div>
       </div>
       <div class="pool-status-divider"></div>
       <div class="pool-status-item">
         <div class="pool-status-item__val">${todaySupports}</div>
-        <div class="pool-status-item__label">heute</div>
+        <div class="pool-status-item__label">${t('statToday')}</div>
       </div>
       <div class="pool-status-divider"></div>
       <div class="pool-status-item">
         <div class="pool-status-item__val pool-status-item__val--sm">${actLabel}</div>
-        <div class="pool-status-item__label">Pool</div>
+        <div class="pool-status-item__label">${t('statPool')}</div>
       </div>
       <div class="pool-status-divider"></div>
       <div class="pool-status-item">
@@ -109,13 +109,13 @@ function _poolStatusBar(openCount, todaySupports, u) {
           </svg>
           <div class="pool-health-ring__val" style="color:${health.color}">${health.score}</div>
         </div>
-        <div class="pool-status-item__label">Health</div>
+        <div class="pool-status-item__label">${t('statHealth')}</div>
       </div>
       ${streak > 0 ? `
       <div class="pool-status-divider"></div>
       <div class="pool-status-item">
         <div class="pool-status-item__val pool-status-item__val--flame">🔥${streak}</div>
-        <div class="pool-status-item__label">Streak</div>
+        <div class="pool-status-item__label">${t('statStreak')}</div>
       </div>` : ''}
     </div>
   `;
@@ -124,9 +124,8 @@ function _poolStatusBar(openCount, todaySupports, u) {
 // ── Feed Tab ───────────────────────────────────────────────
 function _renderFeedTab(videos, cu) {
   if (!videos.length) {
-    return emptyState('🎯', t('noOpen') || 'Pool ist leer!',
-      'Gerade keine offenen Videos — entweder war alles supporten oder schau später rein.',
-      { action: 'post:open', actionLabel: '+ Video posten' });
+    return emptyState('🎯', t('noOpen'), t('noOpenSub'),
+      { action: 'post:open', actionLabel: `+ ${t('postBtn')}` });
   }
   return `<div class="feed-list">${videos.map(v => _videoCard(v)).join('')}</div>`;
 }
@@ -171,7 +170,7 @@ function _videoCard(v) {
       <div class="feed-card__progress">
         <div class="feed-card__prog-header">
           <span class="feed-card__prog-label">
-            ${urgent ? `<span style="color:var(--accent-danger)">⚡ Nur noch ${slotsLeft}!</span>` : 'Supports'}
+            ${urgent ? `<span style="color:var(--accent-danger)">${t('feedUrgent').replace('{n}', slotsLeft)}</span>` : 'Supports'}
           </span>
           ${goalPill(r1, r1n, 'Slots', { urgent })}
         </div>
@@ -180,7 +179,7 @@ function _videoCard(v) {
       <button class="btn btn--primary btn--full feed-card__cta"
         data-action="support:open" data-vid="${esc(v.id || link)}">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-        ${t('supportBtn') || 'Supporten'}
+        ${t('supportBtn')}
       </button>
     </article>
   `;
@@ -213,7 +212,7 @@ function _renderBalanceTab(given, recv, bal, u) {
 
       ${cooldown ? `
         <div class="balance-cooldown">
-          <div class="balance-cooldown__label">⏳ Nächstes Post möglich in</div>
+          <div class="balance-cooldown__label">${t('cooldownLabel')}</div>
           ${circularTimer(u.lastPost + R1_MS - Date.now(), R1_MS, { id: 'home-ctimer', size: 64, stroke: 5 })}
         </div>
       ` : `
@@ -249,7 +248,7 @@ function _renderLeaderboardTab(cu) {
   return `
     <div class="lb-wrap">
       <div class="lb-header">
-        <div class="lb-header__title">Top-Supporter der Woche</div>
+        <div class="lb-header__title">${t('lbTitle')}</div>
       </div>
 
       ${top3.length >= 2 ? `
@@ -275,7 +274,7 @@ function _renderLeaderboardTab(cu) {
           return `<div class="lb-row${isMe ? ' lb-row--me' : ''}">
             <div class="lb-row__rank">${i + 4}</div>
             <div class="lb-row__avatar" style="background:${grad}">${(m.name || m.key || '?').slice(0,2).toUpperCase()}</div>
-            <div class="lb-row__name">${esc(m.name || m.key || '?')}${isMe ? ' <span class="lb-row__you">Du</span>' : ''}</div>
+            <div class="lb-row__name">${esc(m.name || m.key || '?')}${isMe ? ` <span class="lb-row__you">${t('lbYou')}</span>` : ''}</div>
             <div class="lb-row__score">${m.weeklyGiven || 0}</div>
           </div>`;
         }).join('')}
@@ -336,10 +335,10 @@ function _sentimentBadge(v) {
   const r1n = v.r1Need || R1_NEED;
   const slots = r1n - r1;
 
-  if (slots <= 2 && slots > 0) return `<span class="sf-badge sf-badge--urgent">🚨 Fast voll</span>`;
-  if (age < 2 * 60 * 60 * 1000) return `<span class="sf-badge sf-badge--new">✨ Neu</span>`;
-  if (age > 20 * 60 * 60 * 1000) return `<span class="sf-badge sf-badge--old">⏰ Bald</span>`;
-  if (r1 >= r1n * 0.7) return `<span class="sf-badge sf-badge--hot">🔥 Heiß</span>`;
+  if (slots <= 2 && slots > 0) return `<span class="sf-badge sf-badge--urgent">${t('badgeFull')}</span>`;
+  if (age < 2 * 60 * 60 * 1000) return `<span class="sf-badge sf-badge--new">${t('badgeNew')}</span>`;
+  if (age > 20 * 60 * 60 * 1000) return `<span class="sf-badge sf-badge--old">${t('badgeOld')}</span>`;
+  if (r1 >= r1n * 0.7) return `<span class="sf-badge sf-badge--hot">${t('badgeHot')}</span>`;
   return '';
 }
 
