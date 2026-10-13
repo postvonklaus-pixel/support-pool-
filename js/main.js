@@ -177,12 +177,8 @@ function tick() {
   import('./router.js').then(m => m.renderActive());
 }
 
-// ── Service Worker registration ───────────────────────────
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('sw.js').catch(() => {});
-  });
-}
+// Service Worker intentionally not registered — index.html nuke script
+// deregisters any existing SW so JS is always served fresh from the network.
 
 // ── Expose globals needed by firebase callbacks ───────────
 window._nova = { loginAs, logout, state, saveDB };

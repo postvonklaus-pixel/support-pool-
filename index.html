@@ -2,6 +2,24 @@
 <html lang="de" dir="ltr">
 <head>
   <meta charset="UTF-8">
+  <!-- SW NUKE: runs before any other script; index.html is always network-first
+       so this is always the latest version even when a stale SW is active.
+       Unregisters every SW + wipes every cache, then reloads once so the
+       next load has no SW and no cache — plain network for fresh JS. -->
+  <script>
+  (function() {
+    var cleaned = false;
+    function done() { if (cleaned) return; cleaned = true; window.location.reload(); }
+    if (!('serviceWorker' in navigator)) return;
+    var p1 = navigator.serviceWorker.getRegistrations().then(function(regs) {
+      return Promise.all(regs.map(function(r) { return r.unregister(); }));
+    }).then(function(results) { return results.some(Boolean); });
+    var p2 = ('caches' in window) ? caches.keys().then(function(keys) {
+      return Promise.all(keys.map(function(k) { return caches.delete(k); }));
+    }).then(function(results) { return results.some(Boolean); }) : Promise.resolve(false);
+    Promise.all([p1, p2]).then(function(r) { if (r[0] || r[1]) done(); }).catch(function() {});
+  })();
+  </script>
   <base href="/support-pool-/">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="theme-color" content="#0a0a14">
@@ -215,44 +233,6 @@
 
 <!-- ── App Entry Point ──────────────────────────────────── -->
 <script type="module" src="js/main.js"></script>
-
-<!-- ── SW update prompt: tell waiting SW to activate, then reload ──────
-     index.html is always network-first, so this script is always fresh.
-     It handles iOS Safari's refusal to honour skipWaiting on its own. -->
-<script>
-(function() {
-  if (!('serviceWorker' in navigator)) return;
-
-  // When a new SW is waiting, kick it to activate now
-  function skipWaiting(reg) {
-    if (reg && reg.waiting) {
-      reg.waiting.postMessage({ type: 'SKIP_WAITING' });
-    }
-  }
-
-  navigator.serviceWorker.ready.then(function(reg) {
-    // Already a SW waiting (fast revisit case)
-    skipWaiting(reg);
-
-    // Watch for a new SW installing during this session
-    reg.addEventListener('updatefound', function() {
-      var sw = reg.installing;
-      if (!sw) return;
-      sw.addEventListener('statechange', function() {
-        if (sw.state === 'installed') skipWaiting(reg);
-      });
-    });
-  });
-
-  // When the controller changes (new SW took over), reload once to get fresh JS
-  var reloading = false;
-  navigator.serviceWorker.addEventListener('controllerchange', function() {
-    if (reloading) return;
-    reloading = true;
-    window.location.reload();
-  });
-})();
-</script>
 
 <!-- ── Hard fallback: if splash still visible after 4s, force-show app ── -->
 <script>
