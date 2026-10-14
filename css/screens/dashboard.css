@@ -193,8 +193,25 @@
               box-shadow var(--dur-fast) var(--ease-out);
   min-height: 0;
 }
-.dash-tile:hover  { box-shadow: var(--shadow-lg); }
+.dash-tile:hover  { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
 .dash-tile:active { transform: scale(0.97); box-shadow: var(--shadow-md); }
+
+/* Stagger entrance */
+@keyframes tile-in {
+  from { opacity: 0; transform: translateY(10px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0)    scale(1); }
+}
+.dash-tile {
+  animation: tile-in 0.32s var(--ease-out) both;
+}
+.dash-tile:nth-child(1) { animation-delay: 0ms; }
+.dash-tile:nth-child(2) { animation-delay: 50ms; }
+.dash-tile:nth-child(3) { animation-delay: 100ms; }
+.dash-tile:nth-child(4) { animation-delay: 150ms; }
+.dash-tile:nth-child(5) { animation-delay: 180ms; }
+.dash-tile:nth-child(6) { animation-delay: 210ms; }
+.dash-tile:nth-child(7) { animation-delay: 240ms; }
+.dash-tile:nth-child(8) { animation-delay: 270ms; }
 
 /* ── Tile color variants ────────────────────────────────── */
 .dash-tile--support  { background: linear-gradient(135deg,rgba(6,182,212,.15),rgba(6,182,212,.05));  border-color:rgba(6,182,212,.3); }
@@ -226,6 +243,13 @@
 .dash-tile__ic--pink       { background: rgba(236,72,153,.85); }
 .dash-tile__ic--gray       { background: rgba(100,116,139,.7); }
 .dash-tile__ic--darkviolet { background: rgba(76,29,149,.9); }
+
+/* Icon float (2s loop, ±2px) */
+@keyframes icon-float {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-2px); }
+}
+.dash-tile__ic { animation: icon-float 2s ease-in-out infinite; }
 
 /* ── Tile content ───────────────────────────────────────── */
 .dash-tile__value {
