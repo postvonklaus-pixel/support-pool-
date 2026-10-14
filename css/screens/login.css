@@ -405,3 +405,25 @@
 .login-reg__icon  { text-align: center; font-size: 40px; margin-bottom: 12px; }
 .login-reg__title { text-align: center; font-size: 22px; font-weight: 700; color: #fff; margin-bottom: 8px; }
 .login-reg__sub   { text-align: center; font-size: 14px; color: rgba(255,255,255,.58); line-height: 1.5; margin-bottom: 8px; }
+
+/* ── PIN FORGOT / RESET CARD ──────────────────────────────── */
+.pin-forgot-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+  padding: 8px 0 4px;
+}
+.pin-forgot-card__icon { font-size: 40px; line-height: 1; }
+.pin-forgot-card__title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #fff;
+}
+.pin-forgot-card__sub {
+  font-size: 14px;
+  color: rgba(255,255,255,.65);
+  line-height: 1.5;
+}
+.pin-forgot-card .btn { width: 100%; }

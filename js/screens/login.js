@@ -380,7 +380,38 @@ function _checkPin(entered, stored) {
   }
 }
 function _handleForgot() {
-  toast(t('pinForgotMsg') || 'Bitte Admin kontaktieren 👋', 'info', 4000);
+  const pinStep = ge('login-pin-step');
+  if (!pinStep) return;
+
+  // Replace PIN pad with reset confirmation
+  pinStep.innerHTML = `
+    <div class="pin-forgot-card">
+      <div class="pin-forgot-card__icon">🔑</div>
+      <div class="pin-forgot-card__title">PIN zurücksetzen</div>
+      <div class="pin-forgot-card__sub">
+        Der PIN für <strong>@${_username}</strong> wird entfernt.<br>
+        Du wirst danach direkt eingeloggt.
+      </div>
+      <button class="btn btn--danger btn--full" id="pin-reset-confirm">
+        🔓 PIN entfernen &amp; einloggen
+      </button>
+      <button class="btn btn--ghost btn--full" id="pin-reset-cancel" style="margin-top:8px">
+        Abbrechen
+      </button>
+    </div>
+  `;
+
+  ge('pin-reset-confirm')?.addEventListener('click', () => {
+    import('../firebase.js').then(({ writeDB }) => {
+      writeDB(`members/${_username}/memberPin`, null);
+      import('../main.js').then(m => m.loginAs(_username));
+    });
+  });
+
+  ge('pin-reset-cancel')?.addEventListener('click', () => {
+    const u = state.db.members?.[_username] || {};
+    _showPinStep(_username, u);
+  });
 }
 
 // ── Reset ─────────────────────────────────────────────────
