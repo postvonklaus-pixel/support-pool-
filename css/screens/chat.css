@@ -129,9 +129,8 @@
   border-radius: var(--radius-xl);
   font-size: var(--text-sm);
   line-height: var(--leading-snug);
-  word-break: normal;
-  overflow-wrap: break-word;
-  word-wrap: break-word;
+  word-break: break-word;
+  overflow-wrap: anywhere;
   white-space: pre-wrap;
   max-width: min(280px, 72vw);
 }

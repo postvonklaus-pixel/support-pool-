@@ -3,16 +3,10 @@
    Badge: blue checkmark for active power users
    ═══════════════════════════════════════════════════════ */
 
-/**
- * Returns true if user qualifies for verified badge:
- * - postsTotal >= 50
- * - AND active on 5+ of last 7 days (weeklyActive >= 5)
- */
+/** Returns true when user has posted 50+ videos total (verified badge). */
 export function isVerified(u) {
   if (!u) return false;
-  if ((u.postsTotal || 0) < 50) return false;
-  if ((u.weeklyActive || 0) < 5) return false;
-  return true;
+  return (u.postsTotal || 0) >= 50;
 }
 
 /** SVG checkmark badge, inline */

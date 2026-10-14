@@ -13,8 +13,9 @@ import { progressRing } from '../components/progress.js';
 import { renderFairnessMeter } from '../features/fairnessMeter.js';
 
 const TABS = ['overview', 'members', 'videos', 'broadcast', 'groups'];
-let _tab = 'overview';
+let _tab          = 'overview';
 let _memberSearch = '';
+let _skipBcEcho   = false; // skip one re-render after bc:save to preserve focus
 
 // ── Admin auth guard ───────────────────────────────────────
 function _isAdmin(cu) {
@@ -28,6 +29,10 @@ function _isAdmin(cu) {
 }
 
 export function render() {
+  // Skip echo-render triggered by bc:save so textarea keeps focus
+  if (_skipBcEcho && _tab === 'broadcast') { _skipBcEcho = false; return; }
+  _skipBcEcho = false;
+
   const el = document.getElementById('screen-admin');
   if (!el) return;
 
@@ -387,16 +392,31 @@ function _registerHandlers() {
   });
 
   on('admin:bc:save', () => {
-    const text = document.getElementById('broadcast-text')?.value || '';
+    const ta = document.getElementById('broadcast-text');
+    const text = ta?.value || '';
+    _skipBcEcho = true;
     writeDB('settings/broadcast', text);
     toast('Gespeichert ✓', 'success');
   });
 
   on('admin:bc:toggle', () => {
     const active = state.db.settings?.broadcastActive || false;
-    writeDB('settings/broadcastActive', !active);
-    toast(!active ? 'Broadcast aktiv ✓' : 'Broadcast deaktiviert', 'success');
-    setTimeout(render, 300);
+    const next   = !active;
+    writeDB('settings/broadcastActive', next);
+    toast(next ? 'Broadcast aktiv ✓' : 'Broadcast deaktiviert', 'success');
+    // Update toggle button + status in-place — avoids nuking the textarea
+    const btn = document.querySelector('[data-action="admin:bc:toggle"]');
+    const status = document.querySelector('.admin-bc-status');
+    if (btn) {
+      btn.className = `btn btn--sm ${next ? 'btn--danger' : 'btn--secondary'}`;
+      btn.textContent = next ? '⏹ Deaktivieren' : '▶ Aktivieren';
+    }
+    if (status) {
+      status.className = `admin-bc-status ${next ? 'admin-bc-status--on' : ''}`;
+      status.textContent = next
+        ? '🟢 Broadcast ist aktiv und wird allen angezeigt'
+        : '⚪ Broadcast ist deaktiviert';
+    }
   });
 
   on('admin:week:reset', async () => {
