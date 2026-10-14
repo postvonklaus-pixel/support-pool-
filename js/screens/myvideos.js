@@ -133,16 +133,20 @@ function _vidCard(v) {
   const r1n  = v.r1Need || R1_NEED;
   const pct1 = Math.min(100, Math.round((r1 / r1n) * 100));
   const pct2 = Math.min(100, Math.round((r2 / R2_NEED) * 100));
-  const isDone = v.status === 'done';
+  const isDone      = v.status === 'done';
+  const isScheduled = v.status === 'scheduled' && (v.scheduledFor || 0) > Date.now();
   const link = v.link || v.url || '#';
+  const schedLabel = isScheduled
+    ? new Date(v.scheduledFor).toLocaleString('de-DE', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' })
+    : null;
 
   return `<div class="card card--glass myvid-card" data-vid-id="${esc(v.id || '')}">
     <div class="myvid-card__header">
       <a href="${esc(link)}" target="_blank" rel="noopener" class="myvid-card__link">
         🔗 ${esc(link.replace(/^https?:\/\/(www\.)?/, '').slice(0,40))}
       </a>
-      <span class="badge ${isDone ? 'badge--success' : 'badge--primary'}">
-        ${isDone ? t('mvDone') : `R${v.round || 1}`}
+      <span class="badge ${isDone ? 'badge--success' : isScheduled ? 'badge--warning' : 'badge--primary'}">
+        ${isDone ? t('mvDone') : isScheduled ? `⏰ ${schedLabel}` : `R${v.round || 1}`}
       </span>
     </div>
     <div class="myvid-card__progress">

@@ -39,6 +39,10 @@ export function openPostModal() {
     return;
   }
 
+  // Min time = now+1h, max = now+7d (for scheduling picker)
+  const minDt = new Date(Date.now() + 3600000).toISOString().slice(0, 16);
+  const maxDt = new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 16);
+
   openModal({
     id: 'post-modal',
     title: '🎬 Video posten',
@@ -50,14 +54,36 @@ export function openPostModal() {
         <input id="post-url-input" class="input input--lg" type="url" placeholder="https://www.tiktok.com/..." autocomplete="off">
       </div>
       <div id="post-url-error" style="color:var(--danger);font-size:12px;margin-top:6px;display:none"></div>
+
+      <!-- Scheduling toggle -->
+      <div class="post-schedule-row" style="margin-top:14px">
+        <label class="post-schedule-row__label">
+          <input type="checkbox" id="post-schedule-toggle"> ⏰ Später veröffentlichen
+        </label>
+      </div>
+      <div id="post-schedule-picker" style="display:none;margin-top:10px">
+        <input type="datetime-local" id="post-schedule-dt" class="input"
+          min="${minDt}" max="${maxDt}" style="width:100%">
+        <div style="font-size:11px;color:var(--text-tertiary);margin-top:4px">
+          Video erscheint erst zum gewählten Zeitpunkt im Feed
+        </div>
+      </div>
+
       <button class="btn btn--primary btn--full" data-action="post:submit" style="margin-top:16px">
         ✓ Posten
       </button>
     `,
   });
 
-  // Focus input after modal renders
-  setTimeout(() => document.getElementById('post-url-input')?.focus(), 150);
+  // Toggle scheduling picker
+  setTimeout(() => {
+    const toggle = document.getElementById('post-schedule-toggle');
+    const picker = document.getElementById('post-schedule-picker');
+    toggle?.addEventListener('change', () => {
+      picker.style.display = toggle.checked ? '' : 'none';
+    });
+    document.getElementById('post-url-input')?.focus();
+  }, 150);
 }
 
 on('post:submit', () => {
@@ -82,21 +108,35 @@ on('post:submit', () => {
     return;
   }
 
-  const id = `vid_${Date.now()}_${Math.random().toString(36).slice(2,6)}`;
-  const u  = state.db.members?.[cu] || {};
+  const id  = `vid_${Date.now()}_${Math.random().toString(36).slice(2,6)}`;
+  const u   = state.db.members?.[cu] || {};
+  const now = Date.now();
+
+  // Scheduling
+  const schedToggle = document.getElementById('post-schedule-toggle');
+  const schedDt     = document.getElementById('post-schedule-dt');
+  const isScheduled = schedToggle?.checked && schedDt?.value;
+  const scheduledFor = isScheduled ? new Date(schedDt.value).getTime() : null;
 
   writeDB(`videos/${id}`, {
     id, link: url, owner: cu, ownerKey: cu.toLowerCase(),
-    status: 'open', round: 1,
+    status: isScheduled ? 'scheduled' : 'open',
+    round: 1,
     r1Supporters: [], r2Supporters: [],
     r1Need: R1_NEED,
-    postedAt: Date.now(),
+    postedAt: now,
+    ...(scheduledFor ? { scheduledFor } : {}),
   });
 
-  writeDB(`members/${cu}/lastPost`,    Date.now());
-  writeDB(`members/${cu}/postsTotal`,  (u.postsTotal || 0) + 1);
+  writeDB(`members/${cu}/lastPost`,   now);
+  writeDB(`members/${cu}/postsTotal`, (u.postsTotal || 0) + 1);
 
   closeModal('post-modal');
-  toast('Video gepostet! 🎉', 'success');
+  if (isScheduled) {
+    const dt = new Date(scheduledFor).toLocaleString('de-DE', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
+    toast(`Geplant für ${dt} ⏰`, 'success', 4000);
+  } else {
+    toast('Video gepostet! 🎉', 'success');
+  }
   setTimeout(() => goScreen('myvideos'), 800);
 });

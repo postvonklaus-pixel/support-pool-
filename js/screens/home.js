@@ -341,6 +341,7 @@ function _renderLeaderboardTab(cu) {
 function _openVideos(myKey) {
   return Object.values(state.db.videos || {}).filter(v => {
     if (v.status === 'done' || v.status === 'expired') return false;
+    if (v.status === 'scheduled' && (v.scheduledFor || 0) > Date.now()) return false;
     if ((v.ownerKey || v.owner || '').toLowerCase() === myKey) return false;
     const r1 = (v.r1Supporters || []).map(k => k.toLowerCase());
     const r2 = (v.r2Supporters || []).map(k => k.toLowerCase());
