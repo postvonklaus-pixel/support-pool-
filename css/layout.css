@@ -280,6 +280,18 @@
 #broadcast-banner.visible { display: block; }
 
 /* ── SAFE AREA INSETS (iPhone X+) ────────────────────── */
+@supports (padding-top: env(safe-area-inset-top)) {
+  /* Push header content below the iOS status bar */
+  #app-header {
+    padding-top: env(safe-area-inset-top);
+    height: calc(var(--header-height) + env(safe-area-inset-top));
+  }
+  /* Login screen has no header — shift its content down instead */
+  .screen--login {
+    padding-top: env(safe-area-inset-top);
+  }
+}
+
 @supports (padding-bottom: env(safe-area-inset-bottom)) {
   #app-nav { padding-bottom: env(safe-area-inset-bottom); height: calc(var(--nav-height) + env(safe-area-inset-bottom)); }
   .screen  { padding-bottom: calc(var(--nav-height) + env(safe-area-inset-bottom) + var(--sp-4)); }
