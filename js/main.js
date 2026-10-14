@@ -188,6 +188,9 @@ function checkBroadcast() {
 // ── Tick (periodic render refresh) ───────────────────────
 function tick() {
   if (!state.currentUser) return;
+  // Do not re-render while user is actively typing — prevents FAQ/broadcast/input loss
+  const active = document.activeElement;
+  if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA')) return;
   import('./router.js').then(m => m.renderActive());
 }
 

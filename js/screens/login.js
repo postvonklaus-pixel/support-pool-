@@ -264,6 +264,16 @@ function _handleNameSubmit() {
   _username = found;
   const u = members[found];
 
+  // Security gate: admin-role users must be in settings.admins and active
+  if (u.role === 'admin') {
+    const admins = state.db.settings?.admins;
+    if (!u.status || u.status !== 'active' ||
+        (Array.isArray(admins) && !admins.includes(found))) {
+      toast(t('loginDenied') || 'Zugriff verweigert', 'error');
+      return;
+    }
+  }
+
   if (!u.pin) {
     import('../main.js').then(m => m.loginAs(_username));
     return;

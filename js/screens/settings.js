@@ -12,6 +12,10 @@ import { trustLevel }  from '../features/trust.js';
 const LANG_FLAGS = { de:'🇩🇪',en:'🇬🇧',id:'🇮🇩',it:'🇮🇹',es:'🇪🇸',tr:'🇹🇷',ar:'🇸🇦',zh:'🇨🇳',ja:'🇯🇵',pl:'🇵🇱' };
 const LANG_NAMES = { de:'Deutsch',en:'English',id:'Bahasa',it:'Italiano',es:'Español',tr:'Türkçe',ar:'العربية',zh:'中文',ja:'日本語',pl:'Polski' };
 
+// Persist open/close state across DB-triggered re-renders
+let _langOpen   = false;
+let _openFaqIds = new Set();
+
 export function render() {
   const el = document.getElementById('screen-settings');
   if (!el) return;
@@ -160,7 +164,26 @@ export function render() {
     </div>
   `;
 
+  _restoreState();
   _registerHandlers();
+}
+
+function _restoreState() {
+  if (_langOpen) {
+    const panel = document.getElementById('settings-lang-panel');
+    const chev  = document.getElementById('lang-chevron');
+    if (panel) panel.classList.remove('hidden');
+    if (chev)  chev.style.transform = 'rotate(180deg)';
+  }
+  _openFaqIds.forEach(id => {
+    const item = document.getElementById(id);
+    if (!item) return;
+    item.classList.add('faq-item--open');
+    const ans  = item.querySelector('.faq-item__a');
+    const chev = item.querySelector('.faq-item__chevron');
+    if (ans)  ans.classList.remove('hidden');
+    if (chev) chev.style.transform = 'rotate(180deg)';
+  });
 }
 
 // ── FAQ Data ───────────────────────────────────────────────
@@ -202,8 +225,9 @@ function _registerHandlers() {
     const panel = document.getElementById('settings-lang-panel');
     const chev  = document.getElementById('lang-chevron');
     if (!panel) return;
-    const open = panel.classList.toggle('hidden');
-    if (chev) chev.style.transform = open ? '' : 'rotate(180deg)';
+    const isHidden = panel.classList.toggle('hidden');
+    _langOpen = !isHidden;
+    if (chev) chev.style.transform = _langOpen ? 'rotate(180deg)' : '';
   });
 
   on('faq:toggle', (el) => {
@@ -215,6 +239,7 @@ function _registerHandlers() {
     const open = item.classList.toggle('faq-item--open');
     if (ans)  ans.classList.toggle('hidden', !open);
     if (chev) chev.style.transform = open ? 'rotate(180deg)' : '';
+    if (open) _openFaqIds.add(id); else _openFaqIds.delete(id);
   });
 
   on('settings:push', () => {

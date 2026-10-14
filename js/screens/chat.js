@@ -298,10 +298,10 @@ function _sendDM(cu, partner) {
 }
 
 function _scrollToBottom() {
-  setTimeout(() => {
+  requestAnimationFrame(() => requestAnimationFrame(() => {
     const box = document.getElementById('pool-messages');
     if (box) box.scrollTop = box.scrollHeight;
-  }, 20);
+  }));
 }
 
 function _focusInput() {

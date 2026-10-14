@@ -15,12 +15,23 @@ const TABS = ['overview', 'members', 'videos', 'broadcast', 'groups'];
 let _tab = 'overview';
 let _memberSearch = '';
 
+// ── Admin auth guard ───────────────────────────────────────
+function _isAdmin(cu) {
+  if (!cu) return false;
+  const u = state.db.members?.[cu];
+  if (!u || u.role !== 'admin' || u.status !== 'active') return false;
+  const admins = state.db.settings?.admins;
+  // If settings.admins list exists, cu must be in it
+  if (Array.isArray(admins) && !admins.includes(cu)) return false;
+  return true;
+}
+
 export function render() {
   const el = document.getElementById('screen-admin');
   if (!el) return;
 
   const cu = state.currentUser;
-  if (!cu || state.db.members?.[cu]?.role !== 'admin') {
+  if (!_isAdmin(cu)) {
     el.innerHTML = `
       <div class="admin-denied">
         <div class="admin-denied__icon">🔒</div>

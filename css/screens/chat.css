@@ -111,6 +111,8 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
+  min-width: 0;
+  max-width: 100%;
 }
 .bubble-row--me .bubble-col { align-items: flex-end; }
 
@@ -127,8 +129,11 @@
   border-radius: var(--radius-xl);
   font-size: var(--text-sm);
   line-height: var(--leading-snug);
-  word-break: break-word;
-  max-width: 280px;
+  word-break: normal;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+  max-width: min(280px, 72vw);
 }
 .bubble--them {
   background: var(--bg-elevated);

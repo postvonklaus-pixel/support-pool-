@@ -48,11 +48,11 @@ export function toast(msg, type = '', duration = 2800) {
   const el = document.createElement('div');
   el.style.cssText = `
     display:flex;align-items:center;gap:10px;padding:12px 18px;
-    background:var(--surface-2,rgba(30,20,60,0.96));
+    background:var(--bg-elevated);
     border:1px solid ${color}44;border-left:3px solid ${color};
     border-radius:12px;backdrop-filter:blur(16px);
-    color:var(--text-primary,#fff);font-size:14px;line-height:1.4;
-    box-shadow:0 8px 32px rgba(0,0,0,0.4);pointer-events:auto;
+    color:var(--text-primary);font-size:14px;line-height:1.4;
+    box-shadow:var(--shadow-lg);pointer-events:auto;
     opacity:0;transform:translateY(12px) scale(0.95);
     transition:opacity 0.25s ease,transform 0.25s ease;
     max-width:100%;word-break:break-word;
