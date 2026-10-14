@@ -54,15 +54,15 @@ export function render() {
           <div class="myvids-how-card">
             <div class="myvids-how-step">
               <div class="myvids-how-step__num">1</div>
-              <div class="myvids-how-step__text">Video-URL posten</div>
+              <div class="myvids-how-step__text">${t('howStep1')}</div>
             </div>
             <div class="myvids-how-step">
               <div class="myvids-how-step__num">2</div>
-              <div class="myvids-how-step__text">Andere supporten dich</div>
+              <div class="myvids-how-step__text">${t('howStep2')}</div>
             </div>
             <div class="myvids-how-step">
               <div class="myvids-how-step__num">3</div>
-              <div class="myvids-how-step__text">Du supportest zurück</div>
+              <div class="myvids-how-step__text">${t('howStep3')}</div>
             </div>
           </div>
         </div>
@@ -88,9 +88,9 @@ function _renderStatusCard(vids) {
         ${progressRing(r1, r1n, { label: `${pct}%`, size: 80, stroke: 7, color: 'var(--accent-primary)' })}
       </div>
       <div class="myvid-status-card__body">
-        <div class="myvid-status-card__title">🎬 Aktives Video · R${active.round || 1}</div>
+        <div class="myvid-status-card__title">🎬 ${t('activeVid')} · R${active.round || 1}</div>
         <div class="myvid-status-card__link">${esc(link.replace(/^https?:\/\/(www\.)?/,'').slice(0,36))}</div>
-        <div class="myvid-status-card__prog">${r1} von ${r1n} Supports erhalten</div>
+        <div class="myvid-status-card__prog">${r1} ${t('notifFrom')} ${r1n} ${t('statusCardSup')}</div>
       </div>
     </div>`;
 }
@@ -111,16 +111,16 @@ function _renderNotifSection(notifs, cu) {
     <div class="myvid-notif-section">
       <div class="myvid-notif-section__head">
         <span class="myvid-notif-section__title">
-          🔔 Benachrichtigungen${unread > 0 ? ` <span class="notif-pip">${unread}</span>` : ''}
+          🔔 ${t('notifs')}${unread > 0 ? ` <span class="notif-pip">${unread}</span>` : ''}
         </span>
-        <button class="btn btn--ghost btn--sm" data-action="myvid:notif:clear">Alle löschen</button>
+        <button class="btn btn--ghost btn--sm" data-action="myvid:notif:clear">${t('notifsDelAll')}</button>
       </div>
       ${notifs.map(n => `
         <div class="myvid-notif-item${n.read ? '' : ' myvid-notif-item--unread'}" data-notif-id="${esc(n._id)}">
           <div class="myvid-notif-item__icon">💬</div>
           <div class="myvid-notif-item__body">
             <div class="myvid-notif-item__text">${esc(n.text || n.body || '...')}</div>
-            <div class="myvid-notif-item__meta">von @${esc(n.from || n.sender || '?')} · ${timeAgo(n.ts)}</div>
+            <div class="myvid-notif-item__meta">${t('notifFrom')} @${esc(n.from || n.sender || '?')} · ${timeAgo(n.ts)}</div>
           </div>
         </div>
       `).join('')}
@@ -179,7 +179,7 @@ function _registerHandlers() {
         writeDB(`messages/${id}/read`, true);
       }
     });
-    toast('Benachrichtigungen gelesen ✓', 'success');
+    toast(t('notifsCleared'), 'success');
     setTimeout(render, 300);
   });
 

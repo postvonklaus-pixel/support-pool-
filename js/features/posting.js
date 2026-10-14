@@ -45,10 +45,10 @@ export function openPostModal() {
 
   openModal({
     id: 'post-modal',
-    title: '🎬 Video posten',
+    title: `🎬 ${t('postBtn')}`,
     body: `
       <p style="color:var(--text-secondary);font-size:13px;margin-bottom:16px">
-        TikTok-Video-Link einfügen:
+        ${t('postModalSub')}
       </p>
       <div class="input-wrap">
         <input id="post-url-input" class="input input--lg" type="url" placeholder="https://www.tiktok.com/..." autocomplete="off">
@@ -58,19 +58,19 @@ export function openPostModal() {
       <!-- Scheduling toggle -->
       <div class="post-schedule-row" style="margin-top:14px">
         <label class="post-schedule-row__label">
-          <input type="checkbox" id="post-schedule-toggle"> ⏰ Später veröffentlichen
+          <input type="checkbox" id="post-schedule-toggle"> ${t('postSchedLabel')}
         </label>
       </div>
       <div id="post-schedule-picker" style="display:none;margin-top:10px">
         <input type="datetime-local" id="post-schedule-dt" class="input"
           min="${minDt}" max="${maxDt}" style="width:100%">
         <div style="font-size:11px;color:var(--text-tertiary);margin-top:4px">
-          Video erscheint erst zum gewählten Zeitpunkt im Feed
+          ${t('postSchedHint')}
         </div>
       </div>
 
       <button class="btn btn--primary btn--full" data-action="post:submit" style="margin-top:16px">
-        ✓ Posten
+        ${t('postSubmit')}
       </button>
     `,
   });
@@ -92,7 +92,7 @@ on('post:submit', () => {
   const err   = document.getElementById('post-url-error');
 
   if (!url || !url.includes('tiktok.com')) {
-    if (err) { err.textContent = 'Bitte gültigen TikTok-Link eingeben'; err.style.display = ''; }
+    if (err) { err.textContent = t('postErrLink'); err.style.display = ''; }
     return;
   }
 
@@ -104,7 +104,7 @@ on('post:submit', () => {
     v => (v.link || v.url || '').trim() === url && v.status !== 'done' && v.status !== 'expired'
   );
   if (duplicate) {
-    if (err) { err.textContent = 'Dieses Video ist bereits im Pool'; err.style.display = ''; }
+    if (err) { err.textContent = t('postErrDup'); err.style.display = ''; }
     return;
   }
 
@@ -134,9 +134,9 @@ on('post:submit', () => {
   closeModal('post-modal');
   if (isScheduled) {
     const dt = new Date(scheduledFor).toLocaleString('de-DE', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
-    toast(`Geplant für ${dt} ⏰`, 'success', 4000);
+    toast(`${t('postScheduledFor')} ${dt} ⏰`, 'success', 4000);
   } else {
-    toast('Video gepostet! 🎉', 'success');
+    toast(t('postPosted'), 'success');
   }
   setTimeout(() => goScreen('myvideos'), 800);
 });

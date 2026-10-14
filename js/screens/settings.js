@@ -78,7 +78,7 @@ export function render() {
         <div class="settings-user-card__stats">
           <div class="settings-user-card__stat">
             <div class="settings-user-card__stat-val">${given}</div>
-            <div class="settings-user-card__stat-label">gegeben</div>
+            <div class="settings-user-card__stat-label">${(t('pGiven') || 'Gegeben').toLowerCase()}</div>
           </div>
           <div class="settings-user-card__stat-div"></div>
           <div class="settings-user-card__stat">
@@ -90,20 +90,20 @@ export function render() {
 
       <!-- ── Design ──────────────────────────────────────── -->
       <div class="settings-group">
-        <div class="settings-group__label">Design</div>
+        <div class="settings-group__label">${t('settingsDesign')}</div>
         <div class="settings-group__card">
           <div class="settings-row-item">
             <div class="settings-row-item__icon">🎨</div>
             <div class="settings-row-item__body">
-              <div class="settings-row-item__label">Theme</div>
+              <div class="settings-row-item__label">${t('themeLabel') || 'Theme'}</div>
             </div>
             <div class="settings-theme-seg">
               <button class="seg-btn seg-btn--lbl ${theme==='light'?'seg-btn--active':''}"
-                data-action="settings:theme" data-theme="light" aria-label="Hell">☀️ Hell</button>
+                data-action="settings:theme" data-theme="light">${t('themeLight')}</button>
               <button class="seg-btn seg-btn--lbl ${theme==='dark'?'seg-btn--active':''}"
-                data-action="settings:theme" data-theme="dark" aria-label="Dunkel">🌙 Dunkel</button>
+                data-action="settings:theme" data-theme="dark">${t('themeDark')}</button>
               <button class="seg-btn seg-btn--lbl ${theme==='auto'?'seg-btn--active':''}"
-                data-action="settings:theme" data-theme="auto" aria-label="Auto">🔄 Auto</button>
+                data-action="settings:theme" data-theme="auto">${t('themeAuto')}</button>
             </div>
           </div>
         </div>
@@ -111,12 +111,12 @@ export function render() {
 
       <!-- ── Sprache ─────────────────────────────────────── -->
       <div class="settings-group">
-        <div class="settings-group__label">Sprache</div>
+        <div class="settings-group__label">${t('settingsLangLabel')}</div>
         <div class="settings-group__card">
           <div class="settings-row-item settings-row-item--tap" data-action="settings:lang-toggle">
             <div class="settings-row-item__icon">🌍</div>
             <div class="settings-row-item__body">
-              <div class="settings-row-item__label">Sprache wählen</div>
+              <div class="settings-row-item__label">${t('settingsLangChoose')}</div>
               <div class="settings-row-item__sub">${LANG_FLAGS[state.lang] || '🌍'} ${LANG_NAMES[state.lang] || state.lang}</div>
             </div>
             <svg class="settings-chevron" id="lang-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
@@ -153,12 +153,12 @@ export function render() {
 
       <!-- ── Account ─────────────────────────────────────── -->
       <div class="settings-group">
-        <div class="settings-group__label">Account</div>
+        <div class="settings-group__label">${t('settingsAccount')}</div>
         <div class="settings-group__card">
           <div class="settings-row-item">
             <div class="settings-row-item__icon">👤</div>
             <div class="settings-row-item__body">
-              <div class="settings-row-item__label">Angemeldet als</div>
+              <div class="settings-row-item__label">${t('settingsLoggedAs')}</div>
               <div class="settings-row-item__sub">@${esc(cu || '–')}</div>
             </div>
           </div>
@@ -166,8 +166,8 @@ export function render() {
           <div class="settings-row-item settings-row-item--tap" data-action="settings:pin">
             <div class="settings-row-item__icon">🔑</div>
             <div class="settings-row-item__body">
-              <div class="settings-row-item__label">PIN-Schutz</div>
-              <div class="settings-row-item__sub">${u.memberPin ? '● Aktiv — Tap zum Ändern/Deaktivieren' : 'Tap zum Einrichten'}</div>
+              <div class="settings-row-item__label">${t('pinProtect') || 'PIN-Schutz'}</div>
+              <div class="settings-row-item__sub">${u.memberPin ? t('pinActiveSub') : t('pinSetupHint')}</div>
             </div>
             ${_chevSVG}
           </div>
@@ -184,7 +184,7 @@ export function render() {
 
       <!-- ── FAQ Accordion ───────────────────────────────── -->
       <div class="settings-group">
-        <div class="settings-group__label">Hilfe & FAQ</div>
+        <div class="settings-group__label">${t('settingsHelp')}</div>
         <div class="settings-group__card">
           ${_faqHTML()}
         </div>
@@ -205,8 +205,8 @@ export function render() {
           <div class="settings-row-item settings-row-item--tap" data-action="settings:homescreen">
             <div class="settings-row-item__icon">📱</div>
             <div class="settings-row-item__body">
-              <div class="settings-row-item__label">Zum Homescreen</div>
-              <div class="settings-row-item__sub">Als App installieren</div>
+              <div class="settings-row-item__label">${t('hsTitle')}</div>
+              <div class="settings-row-item__sub">${t('hsSub')}</div>
             </div>
             ${_chevSVG}
           </div>
@@ -214,7 +214,7 @@ export function render() {
           <div class="settings-row-item settings-row-item--tap" data-action="settings:privacy">
             <div class="settings-row-item__icon">🔒</div>
             <div class="settings-row-item__body">
-              <div class="settings-row-item__label">Datenschutz</div>
+              <div class="settings-row-item__label">${t('privTitle')}</div>
             </div>
             ${_chevSVG}
           </div>
@@ -304,13 +304,13 @@ function _registerHandlers() {
 
   on('settings:push', () => {
     if (!('Notification' in window)) {
-      import('../components/toast.js').then(m => m.toast('Push nicht verfügbar', 'warning'));
+      import('../components/toast.js').then(m => m.toast(t('pushNotAvail'), 'warning'));
       return;
     }
     Notification.requestPermission().then(perm => {
       import('../components/toast.js').then(({ toast }) => {
-        if (perm === 'granted') toast('Push aktiviert! 🔔', 'success');
-        else toast('Push nicht erlaubt', 'warning');
+        if (perm === 'granted') toast(t('pushEnabled'), 'success');
+        else toast(t('pushDenied'), 'warning');
       });
     });
   });
@@ -331,10 +331,10 @@ function _registerHandlers() {
       openModal({
         id: 'pin-choose-modal',
         title: '🔑 PIN-Schutz',
-        body: `<p style="color:var(--text-secondary);font-size:var(--text-sm);margin-bottom:16px">Was möchtest du tun?</p>`,
+        body: `<p style="color:var(--text-secondary);font-size:var(--text-sm);margin-bottom:16px">${t('pinChooseSub')}</p>`,
         actions: [
-          { label: 'PIN ändern', cmd: 'change', class: 'btn--primary' },
-          { label: 'PIN deaktivieren', cmd: 'disable', class: 'btn--danger' },
+          { label: t('pinChangeLbl'), cmd: 'change', class: 'btn--primary' },
+          { label: t('pinDisableLbl'), cmd: 'disable', class: 'btn--danger' },
         ],
       });
       on('modal:action', (el) => {
@@ -358,9 +358,9 @@ function _registerHandlers() {
 function _openPinModal(flow) {
   _pinBuf = ''; _pinStep = 'new'; _pinFirst = ''; _pinFlow = flow;
   const labels = {
-    set:     { title: 'PIN einrichten',   sub: 'Neuen 4-stelligen PIN wählen' },
-    change:  { title: 'PIN ändern',       sub: 'Neuen 4-stelligen PIN wählen' },
-    disable: { title: 'PIN deaktivieren', sub: 'Aktuellen PIN eingeben' },
+    set:     { title: t('pinSetupTitle'),   sub: t('pinNewSub') },
+    change:  { title: t('pinChangeTitle'),  sub: t('pinNewSub') },
+    disable: { title: t('pinDisableTitle'), sub: t('pinCurrentSub') },
   };
   const { title, sub } = labels[flow] || labels.set;
   openModal({ id: 'settings-pin', title: `🔑 ${title}`, body: _pinBody(sub) });
@@ -421,10 +421,10 @@ function _confirmPin() {
     if (btoa(_pinBuf) === (u.memberPin || '')) {
       writeDB(`members/${cu}/memberPin`, null);
       closeModal('settings-pin');
-      toast('🔓 PIN deaktiviert', 'success');
+      toast(t('pinDeactivated'), 'success');
       render();
     } else {
-      _setPinErr('❌ Falscher PIN'); _pinBuf = ''; _updatePinDots();
+      _setPinErr(t('pinWrongErr')); _pinBuf = ''; _updatePinDots();
     }
     return;
   }
@@ -433,20 +433,20 @@ function _confirmPin() {
     _pinFirst = _pinBuf; _pinBuf = ''; _pinStep = 'confirm';
     _updatePinDots();
     const sub = document.getElementById('pin-modal-sub');
-    if (sub) sub.textContent = 'PIN bestätigen';
+    if (sub) sub.textContent = t('pinConfirmSub');
     _setPinErr('');
   } else {
     if (_pinBuf === _pinFirst) {
       writeDB(`members/${cu}/memberPin`, btoa(_pinBuf));
       closeModal('settings-pin');
-      toast('✅ PIN gespeichert', 'success');
+      toast(t('pinSaved'), 'success');
       render();
     } else {
-      _setPinErr('❌ Nicht übereinstimmend');
+      _setPinErr(t('pinMismatch'));
       _pinBuf = ''; _pinFirst = ''; _pinStep = 'new';
       _updatePinDots();
       const sub = document.getElementById('pin-modal-sub');
-      if (sub) sub.textContent = 'Neuen 4-stelligen PIN wählen';
+      if (sub) sub.textContent = t('pinNewSub');
     }
   }
 }
@@ -485,7 +485,7 @@ function _openHomescreenModal() {
 
   openModal({
     id: 'homescreen-modal',
-    title: '📱 Zum Homescreen',
+    title: `📱 ${t('hsTitle')}`,
     body: block('🍎', 'iPhone / iPad (Safari)', ios) + block('🤖', 'Android (Chrome)', and_),
   });
 }

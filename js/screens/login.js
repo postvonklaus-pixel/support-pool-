@@ -387,16 +387,15 @@ function _handleForgot() {
   pinStep.innerHTML = `
     <div class="pin-forgot-card">
       <div class="pin-forgot-card__icon">🔑</div>
-      <div class="pin-forgot-card__title">PIN zurücksetzen</div>
+      <div class="pin-forgot-card__title">${t('pinResetTitle')}</div>
       <div class="pin-forgot-card__sub">
-        Der PIN für <strong>@${_username}</strong> wird entfernt.<br>
-        Du wirst danach direkt eingeloggt.
+        <strong>@${_username}</strong><br>${t('pinResetSub')}
       </div>
       <button class="btn btn--danger btn--full" id="pin-reset-confirm">
-        🔓 PIN entfernen &amp; einloggen
+        ${t('pinResetConfirmBtn')}
       </button>
       <button class="btn btn--ghost btn--full" id="pin-reset-cancel" style="margin-top:8px">
-        Abbrechen
+        ${t('cancel')}
       </button>
     </div>
   `;

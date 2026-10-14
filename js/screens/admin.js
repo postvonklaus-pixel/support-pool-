@@ -44,8 +44,8 @@ export function render() {
     el.innerHTML = `
       <div class="admin-denied">
         <div class="admin-denied__icon">🔒</div>
-        <div class="admin-denied__title">Kein Zugriff</div>
-        <div class="admin-denied__sub">Nur Admins können diesen Bereich sehen</div>
+        <div class="admin-denied__title">${t('adminDenied')}</div>
+        <div class="admin-denied__sub">${t('adminDeniedSub')}</div>
       </div>`;
     return;
   }
@@ -86,8 +86,13 @@ export function toggleGroupAccordion(groupId) {
 
 // ── Tab labels ─────────────────────────────────────────────
 function _tabLabel(tab) {
-  return { overview:'Übersicht', members:'Mitglieder', videos:'Videos',
-           broadcast:'Broadcast', groups:'Gruppen' }[tab] || tab;
+  return {
+    overview:  t('adminTabOverview'),
+    members:   t('adminTabMembers'),
+    videos:    t('videos') || 'Videos',
+    broadcast: t('adminTabBroadcast'),
+    groups:    t('adminTabGroups'),
+  }[tab] || tab;
 }
 
 // ── Overview ───────────────────────────────────────────────
@@ -112,12 +117,12 @@ function _renderOverview() {
   return `
     <div class="admin-overview">
       <div class="admin-stat-grid">
-        ${_kpi('👥', active, 'Mitglieder')}
+        ${_kpi('👥', active, t('adminTabMembers'))}
         ${_kpi('🟢', online, 'Online')}
-        ${_kpi('🎯', openVids, 'Offen')}
-        ${_kpi('📊', weeklyTotal, 'Woche ges.')}
-        ${_kpi('🏠', groups, 'Gruppen')}
-        ${_kpi('💬', totalMsg, 'Nachrichten')}
+        ${_kpi('🎯', openVids, t('adminKpiOpen'))}
+        ${_kpi('📊', weeklyTotal, t('adminKpiWeekly'))}
+        ${_kpi('🏠', groups, t('adminTabGroups'))}
+        ${_kpi('💬', totalMsg, t('adminKpiMessages'))}
       </div>
 
       <div class="admin-rings-row">
@@ -128,7 +133,7 @@ function _renderOverview() {
 
       ${topThisWeek.length ? `
       <div class="admin-section">
-        <div class="admin-section__title">🏆 Top diese Woche</div>
+        <div class="admin-section__title">🏆 ${t('adminTopWeek')}</div>
         ${topThisWeek.map((m, i) => {
           const medals = ['🥇','🥈','🥉'];
           const grad = avatarGradient(m.name || '?');
@@ -146,7 +151,7 @@ function _renderOverview() {
       </div>
 
       <div class="admin-section">
-        <div class="admin-section__title">💬 Kommentar-Vorlagen</div>
+        <div class="admin-section__title">💬 ${t('adminTmplTitle')}</div>
         <div class="tmpl-grid">
           ${getTemplates(state.lang || 'de').slice(0, 6).map((text, i) => `
             <button class="tmpl-chip" data-action="tmpl:copy" data-text="${esc(text)}">${esc(text)}</button>
@@ -155,11 +160,11 @@ function _renderOverview() {
       </div>
 
       <div class="admin-section">
-        <div class="admin-section__title">⚡ Schnellaktionen</div>
+        <div class="admin-section__title">⚡ ${t('adminActionsTitle')}</div>
         <div class="admin-actions-row">
-          <button class="btn btn--ghost btn--sm" data-action="admin:week:reset">🔄 Woche reset</button>
-          <button class="btn btn--ghost btn--sm" data-action="admin:vid:cleanup">🧹 Expired bereinigen</button>
-          <button class="btn btn--ghost btn--sm" data-action="admin:week:recap">📊 Wochenrückblick</button>
+          <button class="btn btn--ghost btn--sm" data-action="admin:week:reset">🔄 ${t('adminWeekResetBtn')}</button>
+          <button class="btn btn--ghost btn--sm" data-action="admin:vid:cleanup">🧹 ${t('adminExpiredBtn')}</button>
+          <button class="btn btn--ghost btn--sm" data-action="admin:week:recap">📊 ${t('adminRecapBtn')}</button>
         </div>
       </div>
     </div>
@@ -204,7 +209,7 @@ function _renderMembers() {
     <div class="admin-search-bar">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
       <input class="admin-search-input" id="admin-member-search"
-        placeholder="Mitglied suchen…" value="${esc(_memberSearch)}"
+        placeholder="${t('adminSearchPH')}" value="${esc(_memberSearch)}"
         data-action="admin:member:search">
     </div>
     <div class="admin-member-list">
@@ -225,7 +230,7 @@ function _renderMembers() {
       ${ungrouped.length ? `
         <div class="admin-group" data-gid="__ungrouped">
           <div class="admin-group__header" data-action="admin:group:toggle" data-group="__ungrouped">
-            <span class="admin-group__name">Ohne Gruppe</span>
+            <span class="admin-group__name">${t('adminNoGroup')}</span>
             <span class="badge">${ungrouped.length}</span>
             <svg class="admin-group__chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
           </div>
@@ -233,7 +238,7 @@ function _renderMembers() {
             ${ungrouped.map(([k, m]) => _adminMemberRow(k, m)).join('')}
           </div>
         </div>` : ''}
-      ${!filtered.length ? `<div class="admin-empty">Keine Ergebnisse für "${esc(_memberSearch)}"</div>` : ''}
+      ${!filtered.length ? `<div class="admin-empty">${t('adminNoResult')} "${esc(_memberSearch)}"</div>` : ''}
     </div>
   `;
 }
@@ -279,7 +284,7 @@ function _renderVideos() {
     .sort(([,a],[,b]) => (b.postedAt||b.ts||0) - (a.postedAt||a.ts||0))
     .slice(0, 40);
 
-  if (!videos.length) return `<div class="admin-empty">Keine Videos</div>`;
+  if (!videos.length) return `<div class="admin-empty">${t('adminNoVideos')}</div>`;
 
   return `<div class="admin-video-list">
     ${videos.map(([id, v]) => {
@@ -321,17 +326,17 @@ function _renderBroadcast() {
 
   return `
     <div class="admin-broadcast">
-      <div class="admin-section__title">📢 Broadcast-Nachricht</div>
+      <div class="admin-section__title">📢 ${t('adminBcTitle')}</div>
       <textarea id="broadcast-text" class="admin-textarea" rows="4"
-        placeholder="Nachricht an alle Mitglieder…">${esc(cur)}</textarea>
+        placeholder="${t('adminBcPH')}">${esc(cur)}</textarea>
       <div class="admin-bc-controls">
-        <button class="btn btn--primary btn--sm" data-action="admin:bc:save">💾 Speichern</button>
+        <button class="btn btn--primary btn--sm" data-action="admin:bc:save">💾 ${t('adminBcSave')}</button>
         <button class="btn btn--sm ${active?'btn--danger':'btn--secondary'}" data-action="admin:bc:toggle">
-          ${active ? '⏹ Deaktivieren' : '▶ Aktivieren'}
+          ${active ? `⏹ ${t('adminBcDisable')}` : `▶ ${t('adminBcEnable')}`}
         </button>
       </div>
       <div class="admin-bc-status ${active?'admin-bc-status--on':''}">
-        ${active ? '🟢 Broadcast ist aktiv und wird allen angezeigt' : '⚪ Broadcast ist deaktiviert'}
+        ${active ? `🟢 ${t('adminBcActiveMsg')}` : `⚪ ${t('adminBcInactiveMsg')}`}
       </div>
     </div>
   `;
@@ -342,7 +347,7 @@ function _renderGroups() {
   const groups = Object.values(state.db.groups || {})
     .sort((a, b) => (a.number||0) - (b.number||0));
 
-  if (!groups.length) return `<div class="admin-empty">Keine Gruppen konfiguriert</div>`;
+  if (!groups.length) return `<div class="admin-empty">${t('adminNoGroups')}</div>`;
 
   return `<div class="admin-groups-list">
     ${groups.map(g => {
@@ -350,7 +355,7 @@ function _renderGroups() {
       return `<div class="admin-group-card">
         <div class="admin-group-card__head">
           <div class="admin-group-card__name">${esc(g.name)}</div>
-          <span class="badge badge--primary">${memberCount} Mitglieder</span>
+          <span class="badge badge--primary">${memberCount} ${t('adminTabMembers')}</span>
         </div>
         <div class="admin-group-card__meta">
           ${g.id ? `<span class="admin-group-card__id">ID: ${esc(g.id)}</span>` : ''}
@@ -384,7 +389,7 @@ function _registerHandlers() {
   on('admin:member:kick', async (el) => {
     const key = el.dataset.key;
     if (!key) return;
-    const ok = await confirm(`@${key} entfernen?`, 'Der Account wird auf inaktiv gesetzt.');
+    const ok = await confirm(`@${key} entfernen?`, t('adminKickSub'));
     if (!ok) return;
     writeDB(`members/${key}/status`, 'inactive');
     // Remove kicked member from all group arrays so counts stay accurate
@@ -401,10 +406,10 @@ function _registerHandlers() {
   on('admin:vid:delete', async (el) => {
     const id = el.dataset.vidId;
     if (!id) return;
-    const ok = await confirm('Video löschen?', 'Das Video wird endgültig entfernt.');
+    const ok = await confirm(t('adminVidDelConfirm'), t('adminVidDelSub'));
     if (!ok) return;
     writeDB(`videos/${id}`, null);
-    toast('Video gelöscht', 'success');
+    toast(t('adminVidDeleted'), 'success');
     setTimeout(render, 300);
   });
 
@@ -412,7 +417,7 @@ function _registerHandlers() {
     const id = el.dataset.vidId;
     if (!id) return;
     writeDB(`videos/${id}/status`, 'done');
-    toast('Video als Done markiert ✓', 'success');
+    toast(t('adminVidDone'), 'success');
     setTimeout(render, 300);
   });
 
@@ -421,26 +426,26 @@ function _registerHandlers() {
     const text = ta?.value || '';
     _skipBcEcho = true;
     writeDB('settings/broadcast', text);
-    toast('Gespeichert ✓', 'success');
+    toast(t('adminBcSaved'), 'success');
   });
 
   on('admin:bc:toggle', () => {
     const active = state.db.settings?.broadcastActive || false;
     const next   = !active;
     writeDB('settings/broadcastActive', next);
-    toast(next ? 'Broadcast aktiv ✓' : 'Broadcast deaktiviert', 'success');
+    toast(next ? t('adminBcActiveToast') : t('adminBcDeactiveToast'), 'success');
     // Update toggle button + status in-place — avoids nuking the textarea
     const btn = document.querySelector('[data-action="admin:bc:toggle"]');
     const status = document.querySelector('.admin-bc-status');
     if (btn) {
       btn.className = `btn btn--sm ${next ? 'btn--danger' : 'btn--secondary'}`;
-      btn.textContent = next ? '⏹ Deaktivieren' : '▶ Aktivieren';
+      btn.textContent = next ? `⏹ ${t('adminBcDisable')}` : `▶ ${t('adminBcEnable')}`;
     }
     if (status) {
       status.className = `admin-bc-status ${next ? 'admin-bc-status--on' : ''}`;
       status.textContent = next
-        ? '🟢 Broadcast ist aktiv und wird allen angezeigt'
-        : '⚪ Broadcast ist deaktiviert';
+        ? `🟢 ${t('adminBcActiveMsg')}`
+        : `⚪ ${t('adminBcInactiveMsg')}`;
     }
   });
 
@@ -469,41 +474,41 @@ function _registerHandlers() {
       title: '📊 Wochenrückblick',
       body: `
         <div class="recap-stats">
-          <div class="recap-stat"><div class="recap-stat__val">${totalWeekly}</div><div class="recap-stat__label">Supports gesamt</div></div>
-          <div class="recap-stat"><div class="recap-stat__val">${newVids}</div><div class="recap-stat__label">Neue Videos</div></div>
-          <div class="recap-stat"><div class="recap-stat__val">${avgPerMember}</div><div class="recap-stat__label">Ø pro Mitglied</div></div>
-          <div class="recap-stat"><div class="recap-stat__val">${members.length}</div><div class="recap-stat__label">Aktive Mitglieder</div></div>
+          <div class="recap-stat"><div class="recap-stat__val">${totalWeekly}</div><div class="recap-stat__label">${t('adminRecapTotalSup')}</div></div>
+          <div class="recap-stat"><div class="recap-stat__val">${newVids}</div><div class="recap-stat__label">${t('adminRecapNewVids')}</div></div>
+          <div class="recap-stat"><div class="recap-stat__val">${avgPerMember}</div><div class="recap-stat__label">${t('adminRecapAvg')}</div></div>
+          <div class="recap-stat"><div class="recap-stat__val">${members.length}</div><div class="recap-stat__label">${t('adminRecapActiveMembers')}</div></div>
         </div>
-        <div class="admin-section__title" style="margin:16px 0 8px">🏆 Top diese Woche</div>
-        ${rows || '<div style="color:var(--text-tertiary);font-size:13px">Noch keine Aktivität diese Woche</div>'}
+        <div class="admin-section__title" style="margin:16px 0 8px">🏆 ${t('adminRecapTopWeek')}</div>
+        ${rows || `<div style="color:var(--text-tertiary);font-size:13px">${t('adminRecapNoActivity')}</div>`}
       `,
     });
   });
 
   on('tmpl:copy', (el) => {
     const text = el.dataset.text || '';
-    navigator.clipboard?.writeText(text).then(() => toast('Kopiert ✓', 'success'))
+    navigator.clipboard?.writeText(text).then(() => toast(t('adminTmplCopied'), 'success'))
       .catch(() => toast(text, 'info'));
   });
 
   on('admin:week:reset', async () => {
-    const ok = await confirm('Wochenzähler zurücksetzen?', 'weeklyGiven aller Mitglieder wird auf 0 gesetzt.');
+    const ok = await confirm(t('adminWeekResetConfirm'), 'weeklyGiven aller Mitglieder wird auf 0 gesetzt.');
     if (!ok) return;
     const members = state.db.members || {};
     const updates = {};
     Object.keys(members).forEach(k => { updates[`members/${k}/weeklyGiven`] = 0; });
     Object.entries(updates).forEach(([p, v]) => writeDB(p, v));
-    toast('Woche zurückgesetzt ✓', 'success');
+    toast(t('adminWeekResetDone'), 'success');
   });
 
   on('admin:vid:cleanup', async () => {
-    const ok = await confirm('Expired Videos bereinigen?', 'Alle Videos mit Status "expired" werden gelöscht.');
+    const ok = await confirm(t('adminExpiredConfirm'), 'Alle Videos mit Status "expired" werden gelöscht.');
     if (!ok) return;
     const vids = state.db.videos || {};
     Object.entries(vids).forEach(([id, v]) => {
       if (v.status === 'expired') writeDB(`videos/${id}`, null);
     });
-    toast('Expired Videos bereinigt ✓', 'success');
+    toast(t('adminExpiredDone'), 'success');
     setTimeout(render, 300);
   });
 
@@ -526,11 +531,11 @@ function _registerHandlers() {
             <span>Saldo: <strong class="${balCls}">${(given-recv)>=0?'+':''}${given-recv}</strong></span>
           </div>
           <div class="bal-adj__row">
-            <label class="bal-adj__label">Gegeben setzen</label>
+            <label class="bal-adj__label">${t('adminBalGivenLbl')}</label>
             <input type="number" id="bal-given" value="${given}" min="0" class="bal-adj__input">
           </div>
           <div class="bal-adj__row">
-            <label class="bal-adj__label">Erhalten setzen</label>
+            <label class="bal-adj__label">${t('adminBalRecvLbl')}</label>
             <input type="number" id="bal-recv" value="${recv}" min="0" class="bal-adj__input">
           </div>
         </div>`,
@@ -575,7 +580,7 @@ function _registerHandlers() {
     _adminViewAs      = null;
     const bar = document.getElementById('admin-view-bar');
     if (bar) bar.remove();
-    toast('Zurück im Admin-Modus', 'success');
+    toast(t('adminViewBackToast'), 'success');
     import('../router.js').then(m => m.goScreen('admin'));
   });
 }
@@ -594,7 +599,7 @@ function _syncViewBar() {
   const bar = document.createElement('div');
   bar.id        = 'admin-view-bar';
   bar.className = 'admin-view-bar';
-  bar.innerHTML = `<span>👁 Ansicht als <strong>@${esc(state.currentUser)}</strong></span>
-    <button class="btn btn--sm btn--danger admin-view-bar__btn" data-action="admin:view-back">↩ Zurück zu Admin</button>`;
+  bar.innerHTML = `<span>${t('adminViewBarLabel')} <strong>@${esc(state.currentUser)}</strong></span>
+    <button class="btn btn--sm btn--danger admin-view-bar__btn" data-action="admin:view-back">${t('adminViewBackBtn')}</button>`;
   document.body.appendChild(bar);
 }
