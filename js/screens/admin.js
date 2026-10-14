@@ -10,6 +10,7 @@ import { writeDB } from '../firebase.js';
 import { toast }   from '../components/toast.js';
 import { confirm } from '../components/modal.js';
 import { progressRing } from '../components/progress.js';
+import { renderFairnessMeter } from '../features/fairnessMeter.js';
 
 const TABS = ['overview', 'members', 'videos', 'broadcast', 'groups'];
 let _tab = 'overview';
@@ -128,6 +129,10 @@ function _renderOverview() {
           </div>`;
         }).join('')}
       </div>` : ''}
+
+      <div class="admin-section">
+        ${renderFairnessMeter()}
+      </div>
 
       <div class="admin-section">
         <div class="admin-section__title">⚡ Schnellaktionen</div>

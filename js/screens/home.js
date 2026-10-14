@@ -10,6 +10,8 @@ import { startTimer } from '../components/timer.js';
 import { goalPill, balanceMeter, circularTimer, startCircularTimer } from '../components/progress.js';
 import { trustBadge } from '../features/trust.js';
 import { emptyState } from '../components/empty-state.js';
+import { isVerified, VERIFIED_BADGE } from '../features/verification.js';
+import { isSupportLocked } from '../features/supportLock.js';
 
 const R1_NEED = 10;
 const R2_NEED = 10;
@@ -123,36 +125,52 @@ function _poolStatusBar(openCount, todaySupports, u) {
 
 // ── Feed Tab ───────────────────────────────────────────────
 function _renderFeedTab(videos, cu) {
+  const locked = isSupportLocked(cu);
   if (!videos.length) {
     return emptyState('🎯', t('noOpen'), t('noOpenSub'),
-      { action: 'post:open', actionLabel: `+ ${t('postBtn')}` });
+      { action: 'post:open', actionLabel: `+ ${t('postBtn')}` })
+      + _successStoriesSection();
   }
-  return `<div class="feed-list">${videos.map(v => _videoCard(v)).join('')}</div>`;
+  return `<div class="feed-list">${videos.map(v => _videoCard(v, locked)).join('')}</div>`
+    + _successStoriesSection();
 }
 
-function _videoCard(v) {
+function _videoCard(v, locked = false) {
   const r1    = (v.r1Supporters || []).length;
   const r1n   = v.r1Need || R1_NEED;
-  const pct   = Math.min(100, Math.round((r1 / r1n) * 100));
   const owner = v.ownerKey || v.owner || '?';
   const link  = v.link || v.url || '#';
   const round = v.round || 1;
   const slotsLeft = r1n - r1;
   const urgent    = slotsLeft <= 3 && slotsLeft > 0;
+  const boost     = slotsLeft === 1;
   const gradient  = avatarGradient(owner);
   const urlShort  = link.replace(/^https?:\/\/(www\.)?/, '').slice(0, 38);
   const isTikTok  = link.includes('tiktok.com');
   const sentiment = _sentimentBadge(v);
   const trust     = trustBadge(owner);
+  const ownerUser = state.db.members?.[owner] || state.db.members?.[owner.toLowerCase()];
+  const verBadge  = ownerUser && isVerified(ownerUser) ? VERIFIED_BADGE : '';
+
+  const cardClass = [
+    'feed-card',
+    boost  ? 'feed-card--boost'  : '',
+    urgent && !boost ? 'feed-card--urgent' : '',
+  ].filter(Boolean).join(' ');
+
+  const ctaDisabled = locked ? 'disabled aria-disabled="true"' : '';
+  const ctaClass    = locked ? 'btn btn--ghost btn--full feed-card__cta feed-card__cta--locked'
+                              : 'btn btn--primary btn--full feed-card__cta';
 
   return `
-    <article class="feed-card${urgent ? ' feed-card--urgent' : ''}" data-vid="${esc(v.id || link)}">
+    <article class="${cardClass}" data-vid="${esc(v.id || link)}">
+      ${boost ? `<div class="boost-banner" aria-label="Fast fertig">⚡ FAST DONE — 1 Support fehlt!</div>` : ''}
       <div class="feed-card__head">
         <div class="feed-card__avatar" style="background:${gradient}" aria-hidden="true">
           ${owner.slice(0, 2).toUpperCase()}
         </div>
         <div class="feed-card__owner-info">
-          <div class="feed-card__owner">${trust} @${esc(owner)}</div>
+          <div class="feed-card__owner">${trust}${verBadge} @${esc(owner)}</div>
           ${v.postedAt ? `<div class="feed-card__time">${timeAgo(v.postedAt, state.lang)}</div>` : ''}
         </div>
         <div class="feed-card__head-right">
@@ -176,12 +194,48 @@ function _videoCard(v) {
         </div>
       </div>
 
-      <button class="btn btn--primary btn--full feed-card__cta"
-        data-action="support:open" data-vid="${esc(v.id || link)}">
+      ${locked ? `<div class="feed-lock-hint">${t('supportLocked') || '🔒 Erst Video posten, dann supporten'}</div>` : ''}
+
+      <button class="${ctaClass}" ${ctaDisabled}
+        data-action="${locked ? '' : 'support:open'}" data-vid="${esc(v.id || link)}">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-        ${t('supportBtn')}
+        ${locked ? (t('supportLockedBtn') || 'Support gesperrt') : t('supportBtn')}
       </button>
     </article>
+  `;
+}
+
+// ── Success Stories (B3.3) ─────────────────────────────────
+function _successStoriesSection() {
+  const done = Object.values(state.db.videos || {})
+    .filter(v => v.status === 'done')
+    .sort((a, b) => (b.doneAt || b.postedAt || 0) - (a.doneAt || a.postedAt || 0))
+    .slice(0, 5);
+
+  if (!done.length) return '';
+
+  return `
+    <div class="success-stories">
+      <div class="success-stories__title">🏆 ${t('successTitle') || 'Erfolgsgeschichten'}</div>
+      ${done.map(v => {
+        const owner    = v.ownerKey || v.owner || '?';
+        const link     = v.link || v.url || '#';
+        const urlShort = link.replace(/^https?:\/\/(www\.)?/, '').slice(0, 32);
+        const gradient = avatarGradient(owner);
+        const ownerU   = state.db.members?.[owner] || state.db.members?.[owner.toLowerCase()];
+        const vBadge   = ownerU && isVerified(ownerU) ? VERIFIED_BADGE : '';
+        return `<div class="success-card">
+          <div class="success-card__avatar" style="background:${gradient}" aria-hidden="true">
+            ${owner.slice(0, 2).toUpperCase()}
+          </div>
+          <div class="success-card__body">
+            <div class="success-card__owner">${vBadge} @${esc(owner)}</div>
+            <a class="success-card__url" href="${esc(link)}" target="_blank" rel="noopener">${esc(urlShort)}…</a>
+          </div>
+          <div class="success-card__trophy" aria-hidden="true">🏆</div>
+        </div>`;
+      }).join('')}
+    </div>
   `;
 }
 

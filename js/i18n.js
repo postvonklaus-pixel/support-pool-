@@ -105,6 +105,9 @@ const LANGS = {
     cooldownLabel:'⏳ Nächstes Post möglich in',
     lbYou:'Du',
     badgeNew:'✨ Neu', badgeOld:'⏰ Bald', badgeHot:'🔥 Heiß', badgeFull:'🚨 Fast voll',
+    successTitle:'Erfolgsgeschichten',
+    supportLocked:'🔒 Erst Video posten, dann supporten',
+    supportLockedBtn:'Support gesperrt',
     // My Videos
     mvCopy:'Kopieren', mvDelete:'Löschen', mvDone:'✓ Fertig',
     mvDelTitle:'Video löschen?', mvDelBody:'Das Video wird aus dem Pool entfernt.',
@@ -221,6 +224,9 @@ const LANGS = {
     cooldownLabel:'⏳ Next post possible in',
     lbYou:'You',
     badgeNew:'✨ New', badgeOld:'⏰ Soon', badgeHot:'🔥 Hot', badgeFull:'🚨 Almost full',
+    successTitle:'Success Stories',
+    supportLocked:'🔒 Post your video first to support others',
+    supportLockedBtn:'Support locked',
     // My Videos
     mvCopy:'Copy', mvDelete:'Delete', mvDone:'✓ Done',
     mvDelTitle:'Delete video?', mvDelBody:'The video will be removed from the pool.',
