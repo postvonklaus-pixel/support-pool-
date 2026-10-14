@@ -214,7 +214,7 @@ function tick() {
   // Do not re-render while user is actively typing — prevents FAQ/broadcast/input loss
   const active = document.activeElement;
   if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA')) return;
-  import('./router.js').then(m => m.renderActive());
+  import('./router.js').then(m => m.renderActive({ debounce: true }));
 }
 
 // Service Worker intentionally not registered — index.html nuke script

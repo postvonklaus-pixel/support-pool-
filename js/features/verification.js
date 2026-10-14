@@ -3,10 +3,15 @@
    Badge: blue checkmark for active power users
    ═══════════════════════════════════════════════════════ */
 
-/** Returns true when user has posted 50+ videos total (verified badge). */
+/** Returns true when user has posted 50+ videos AND was active 5+ of the last 7 days. */
 export function isVerified(u) {
   if (!u) return false;
-  return (u.postsTotal || 0) >= 50;
+  if ((u.postsTotal || 0) < 50) return false;
+  const days = u.supportDays;
+  if (!Array.isArray(days) || days.length === 0) return false;
+  const cutoff = Date.now() - 7 * 24 * 60 * 60 * 1000;
+  const activeDays = days.filter(d => d >= cutoff).length;
+  return activeDays >= 5;
 }
 
 /** SVG checkmark badge, inline */

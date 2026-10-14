@@ -13,6 +13,12 @@ import { emptyState } from '../components/empty-state.js';
 let _chatTab        = 'pool';  // 'pool' | 'dm'
 let _dmPartner      = null;    // username of open DM thread
 let _skipNextRender = false;   // set after in-place send to skip DB-echo re-render
+let _renderTimer    = null;    // debounce handle for DB-triggered re-renders
+
+export function scheduleRender() {
+  clearTimeout(_renderTimer);
+  _renderTimer = setTimeout(render, 120);
+}
 
 export function render() {
   const el = document.getElementById('screen-chat');

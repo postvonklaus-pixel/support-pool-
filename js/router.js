@@ -42,15 +42,20 @@ export async function goScreen(id) {
   await renderScreen(id);
 }
 
-export async function renderActive() {
+export async function renderActive({ debounce = false } = {}) {
   const id = state.ui.activeScreen;
-  if (id) await renderScreen(id);
+  if (id) await renderScreen(id, { debounce });
 }
 
-async function renderScreen(id) {
+async function renderScreen(id, { debounce = false } = {}) {
   try {
     const mod = await loadScreenMod(id);
-    if (mod && typeof mod.render === 'function') mod.render();
+    if (!mod) return;
+    if (debounce && typeof mod.scheduleRender === 'function') {
+      mod.scheduleRender();
+    } else if (typeof mod.render === 'function') {
+      mod.render();
+    }
   } catch (e) {
     console.error(`[router] render ${id} failed:`, e);
   }

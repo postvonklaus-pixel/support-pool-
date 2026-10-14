@@ -270,7 +270,7 @@
 #broadcast-banner {
   padding: var(--sp-3) var(--sp-4);
   background: var(--gradient-primary);
-  color: #fff;
+  color: #fff;  /* intentional: always on dark gradient bg */
   font-size: var(--text-sm);
   font-weight: var(--weight-medium);
   text-align: center;
@@ -278,6 +278,12 @@
   animation: fade-in var(--dur-slow) var(--ease-out);
 }
 #broadcast-banner.visible { display: block; }
+/* Soft variant (elevated bg, adapts to theme) */
+#broadcast-banner.broadcast-banner--soft {
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-subtle);
+}
 
 /* ── SAFE AREA INSETS (iPhone X+) ────────────────────── */
 @supports (padding-top: env(safe-area-inset-top)) {

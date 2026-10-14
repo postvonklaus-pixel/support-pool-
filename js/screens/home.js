@@ -141,7 +141,11 @@ function _videoCard(v, locked = false) {
   const owner = v.ownerKey || v.owner || '?';
   const link  = v.link || v.url || '#';
   const round = v.round || 1;
-  const slotsLeft = r1n - r1;
+  const r2    = (v.r2Supporters || []).length;
+  const r2n   = R2_NEED;
+  const activeR1Slots = r1n - r1;
+  const activeR2Slots = r2n - r2;
+  const slotsLeft = round >= 2 ? activeR2Slots : activeR1Slots;
   const urgent    = slotsLeft <= 3 && slotsLeft > 0;
   const boost     = slotsLeft === 1;
   const gradient  = avatarGradient(owner);
