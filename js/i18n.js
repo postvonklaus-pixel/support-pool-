@@ -120,6 +120,8 @@ const LANGS = {
     achFirst:'Erster Support!', achStreak3:'3-Tage Streak', achStreak7:'7-Tage Streak',
     achStreak30:'30-Tage Streak', achFirstVid:'Erstes Video', achBal10:'Guthaben +10',
     achEarlyBird:'Frühaufsteher', achNightOwl:'Nachteule',
+    loginPH:'TikTok @username', free:'100% kostenlos', instantAccess:'Sofort starten',
+    beOneOfFirst:'Sei einer der Ersten', nowPushing:'{n} pushen gerade',
   },
   en: {
     flag:'🇬🇧', name:'English',
@@ -234,6 +236,8 @@ const LANGS = {
     achFirst:'First Support!', achStreak3:'3-Day Streak', achStreak7:'7-Day Streak',
     achStreak30:'30-Day Streak', achFirstVid:'First Video', achBal10:'Balance +10',
     achEarlyBird:'Early Bird', achNightOwl:'Night Owl',
+    loginPH:'TikTok @username', free:'100% free', instantAccess:'Start instantly',
+    beOneOfFirst:'Be one of the first', nowPushing:'{n} pushing right now',
   },
   id: {
     flag:'🇮🇩', name:'Indonesia',
@@ -366,6 +370,8 @@ const LANGS = {
     achFirst:'Support Pertama!', achStreak3:'Streak 3 Hari', achStreak7:'Streak 7 Hari',
     achStreak30:'Streak 30 Hari', achFirstVid:'Video Pertama', achBal10:'Saldo +10',
     achEarlyBird:'Burung Awal', achNightOwl:'Burung Hantu',
+    loginPH:'TikTok @username', free:'100% gratis', instantAccess:'Mulai sekarang',
+    beOneOfFirst:'Jadilah yang pertama', nowPushing:'{n} mendukung sekarang',
   },
   it: {
     flag:'🇮🇹', name:'Italiano',
@@ -465,6 +471,8 @@ const LANGS = {
     achFirst:'Primo Supporto!', achStreak3:'Serie 3 Giorni', achStreak7:'Serie 7 Giorni',
     achStreak30:'Serie 30 Giorni', achFirstVid:'Primo Video', achBal10:'Saldo +10',
     achEarlyBird:'Mattiniero', achNightOwl:'Nottambulo',
+    loginPH:'TikTok @username', free:'100% gratuito', instantAccess:'Inizia subito',
+    beOneOfFirst:'Sii uno dei primi', nowPushing:'{n} stanno supportando',
   },
   es: {
     flag:'🇪🇸', name:'Español',
@@ -564,6 +572,8 @@ const LANGS = {
     achFirst:'¡Primer Apoyo!', achStreak3:'Racha 3 Días', achStreak7:'Racha 7 Días',
     achStreak30:'Racha 30 Días', achFirstVid:'Primer Video', achBal10:'Balance +10',
     achEarlyBird:'Madrugador', achNightOwl:'Noctámbulo',
+    loginPH:'TikTok @usuario', free:'100% gratis', instantAccess:'Empezar ahora',
+    beOneOfFirst:'Sé uno de los primeros', nowPushing:'{n} apoyando ahora',
   },
   tr: {
     flag:'🇹🇷', name:'Türkçe',
@@ -663,6 +673,8 @@ const LANGS = {
     achFirst:'İlk Destek!', achStreak3:'3 Günlük Seri', achStreak7:'7 Günlük Seri',
     achStreak30:'30 Günlük Seri', achFirstVid:'İlk Video', achBal10:'Bakiye +10',
     achEarlyBird:'Erken Kalkan', achNightOwl:'Gece Kuşu',
+    loginPH:'TikTok @kullanıcı', free:'%100 ücretsiz', instantAccess:'Hemen başla',
+    beOneOfFirst:'İlklerden biri ol', nowPushing:'{n} şu an destekliyor',
   },
   ar: {
     flag:'🇸🇦', name:'العربية', dir:'rtl',
@@ -762,6 +774,8 @@ const LANGS = {
     achFirst:'أول دعم!', achStreak3:'سلسلة 3 أيام', achStreak7:'سلسلة 7 أيام',
     achStreak30:'سلسلة 30 يوم', achFirstVid:'أول فيديو', achBal10:'رصيد +10',
     achEarlyBird:'الطائر المبكر', achNightOwl:'بومة الليل',
+    loginPH:'TikTok @اسم_المستخدم', free:'مجاني 100٪', instantAccess:'ابدأ الآن',
+    beOneOfFirst:'كن من الأوائل', nowPushing:'{n} يدعمون الآن',
   },
   zh: {
     flag:'🇨🇳', name:'中文',
@@ -861,6 +875,8 @@ const LANGS = {
     achFirst:'第一次支持！', achStreak3:'3天连续', achStreak7:'7天连续',
     achStreak30:'30天连续', achFirstVid:'第一个视频', achBal10:'余额+10',
     achEarlyBird:'早起鸟', achNightOwl:'夜猫子',
+    loginPH:'TikTok @用户名', free:'完全免费', instantAccess:'立即开始',
+    beOneOfFirst:'成为首批成员', nowPushing:'{n}人正在支持',
   },
   ja: {
     flag:'🇯🇵', name:'日本語',
@@ -960,6 +976,8 @@ const LANGS = {
     achFirst:'初めてのサポート！', achStreak3:'3日連続', achStreak7:'7日連続',
     achStreak30:'30日連続', achFirstVid:'初めての動画', achBal10:'残高+10',
     achEarlyBird:'早起き', achNightOwl:'夜型',
+    loginPH:'TikTok @ユーザー名', free:'完全無料', instantAccess:'今すぐ開始',
+    beOneOfFirst:'最初のメンバーになろう', nowPushing:'{n}人がサポート中',
   },
   pl: {
     flag:'🇵🇱', name:'Polski',
@@ -1059,6 +1077,8 @@ const LANGS = {
     achFirst:'Pierwsze Wsparcie!', achStreak3:'Seria 3 Dni', achStreak7:'Seria 7 Dni',
     achStreak30:'Seria 30 Dni', achFirstVid:'Pierwszy Film', achBal10:'Saldo +10',
     achEarlyBird:'Ranny Ptaszek', achNightOwl:'Nocna Sowa',
+    loginPH:'TikTok @użytkownik', free:'100% bezpłatnie', instantAccess:'Zacznij teraz',
+    beOneOfFirst:'Bądź jednym z pierwszych', nowPushing:'{n} wspiera teraz',
   }
 };
 

@@ -104,40 +104,48 @@
 
     <!-- LOGIN -->
     <section id="screen-login" class="screen screen--login" role="main">
-      <div class="login-hero" aria-hidden="true"></div>
+      <div class="login-aurora" aria-hidden="true"></div>
       <div class="login-wrap">
-        <!-- Live stats -->
-        <div class="login-stats" id="login-stats"></div>
+
+        <!-- Live pill -->
+        <div class="login-live-pill" id="login-live-pill">
+          <span class="login-live-dot"></span>
+          <span id="login-live-text">LIVE</span>
+        </div>
 
         <!-- Brand -->
         <div class="login-brand">
-          <div class="login-brand__logo">NOVA Support Pool</div>
-          <div class="login-brand__sub" id="login-sub">Das Premium TikTok Support-Netzwerk</div>
+          <h1 class="login-brand__logo">NOVA Support Pool</h1>
+          <p class="login-brand__sub" id="login-tagline">Das Premium TikTok Support-Netzwerk</p>
         </div>
+
+        <!-- Stats row -->
+        <p class="login-stat-row" id="login-stat-row">&nbsp;</p>
 
         <!-- Glass card -->
         <div class="login-card">
-          <!-- Language row -->
-          <div class="login-lang-row" id="login-lang-row" role="group" aria-label="Language"></div>
+          <!-- Language grid (5 × 2) -->
+          <div class="login-lang-grid" id="login-lang-row" role="group" aria-label="Language"></div>
 
           <!-- Step 1: Name -->
           <div id="login-name-step">
             <div class="login-input-wrap">
+              <span class="login-input-icon" aria-hidden="true">@</span>
               <input
-                class="login-input input"
+                class="login-input"
                 type="text"
                 id="login-name-input"
                 autocomplete="off"
                 spellcheck="false"
-                placeholder="@username"
+                placeholder="TikTok @username"
                 aria-label="Username"
-                data-action="login:input"
               >
               <div class="login-autocomplete" id="login-autocomplete" role="listbox"></div>
             </div>
-            <button class="btn btn--primary btn--full btn--lg" id="login-btn" data-action="login:submit">
-              <span id="login-sub">Einloggen</span>
+            <button class="login-btn" id="login-btn" data-action="login:submit">
+              Einloggen →
             </button>
+            <p class="login-hint" id="login-sub">100% kostenlos · Sofort starten</p>
           </div>
 
           <!-- Step 2: PIN (shown after user identified) -->
@@ -185,7 +193,13 @@
           </div>
 
         </div>
-        <div id="nova-ver" style="text-align:center;font-size:10px;opacity:.3;margin-top:10px;letter-spacing:.06em">v7</div>
+
+        <!-- Social proof -->
+        <div class="login-social" id="login-social">
+          <div class="login-social__avatars" id="login-social-avatars"></div>
+          <span class="login-social__text" id="login-social-text"></span>
+        </div>
+
       </div>
     </section>
 
