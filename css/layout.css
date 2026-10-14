@@ -268,12 +268,13 @@
 
 /* ── BROADCAST BANNER ─────────────────────────────────── */
 #broadcast-banner {
-  padding: var(--sp-3) var(--sp-4);
-  background: var(--gradient-primary);
-  color: #fff;  /* intentional: always on dark gradient bg */
+  padding: var(--sp-2) var(--sp-4);
+  background: linear-gradient(90deg, rgba(124,58,237,.15) 0%, rgba(6,182,212,.12) 100%);
+  color: var(--text-primary);
   font-size: var(--text-sm);
   font-weight: var(--weight-medium);
   text-align: center;
+  border-bottom: 1.5px solid rgba(124,58,237,.35);
   display: none;
   animation: fade-in var(--dur-slow) var(--ease-out);
 }

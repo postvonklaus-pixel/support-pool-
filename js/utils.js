@@ -139,6 +139,23 @@ export function throttle(fn, ms = 100) {
   };
 }
 
+// ── Firebase key encoding ─────────────────────────────────
+export function fbEnc(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/\./g, '%2E')
+    .replace(/\$/g, '%24')
+    .replace(/#/g, '%23')
+    .replace(/\[/g, '%5B')
+    .replace(/\]/g, '%5D')
+    .replace(/\//g, '%2F');
+}
+
+export function fbDec(key) {
+  if (!key) return '';
+  try { return decodeURIComponent(String(key)); } catch { return String(key); }
+}
+
 // ── Gradient avatar color ─────────────────────────────────
 const AVATAR_GRADIENTS = [
   'linear-gradient(135deg, #7c3aed 0%, #06b6d4 100%)',

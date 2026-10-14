@@ -5,7 +5,7 @@
 import { state, subscribe }   from '../state.js';
 import { t, setLang }         from '../i18n.js';
 import { on }                 from '../events.js';
-import { ge, haptic }         from '../utils.js';
+import { ge, haptic, fbEnc, fbDec, copyToClipboard } from '../utils.js';
 import { toast }              from '../components/toast.js';
 import { writeDB }            from '../firebase.js';
 import { avatarGradient }     from '../utils.js';
@@ -25,6 +25,7 @@ export function render() {
   _renderLangRow();
   _renderStats();
   _renderSocialProof();
+  _renderLoginBroadcast();
   _setupHandlers();
   _reset();
   _watchDB();
@@ -51,6 +52,7 @@ function _watchDB() {
       _setLoginReady(true);
       _renderStats();
       _renderSocialProof();
+      _renderLoginBroadcast();
       if (queued) {
         const input = ge('login-name-input');
         if (input) input.value = queued;
@@ -79,7 +81,7 @@ function _setLoginReady(s) {
   } else if (s === 'loading') {
     btn.disabled = true;
     btn.style.opacity = '0.55';
-    btn.textContent = '⟳ Verbinde...';
+    btn.textContent = t('loginLoading') || '⟳ Verbinde...';
   } else {
     btn.disabled = false;
     btn.style.opacity = '';
@@ -93,6 +95,41 @@ function _cleanup() {
   if (_unsubDB)   { _unsubDB(); _unsubDB = null; }
   if (_timeoutId) { clearTimeout(_timeoutId); _timeoutId = null; }
   _pendingVal = null;
+}
+
+// ── Login broadcast banner ────────────────────────────────
+function _renderLoginBroadcast() {
+  const el = ge('login-broadcast');
+  if (!el) return;
+  const settings = state.db.settings || {};
+  const text = settings.broadcast || '';
+  const active = settings.broadcastActive;
+  if (!text || !active) { el.classList.add('hidden'); return; }
+
+  // Check 24h dismiss via localStorage hash
+  try {
+    const hash = btoa(text).slice(0, 16);
+    const dismissed = localStorage.getItem('sp_bc_dim');
+    if (dismissed === hash) { el.classList.add('hidden'); return; }
+  } catch {}
+
+  el.classList.remove('hidden');
+  el.innerHTML = `
+    <span class="login-bc__icon">📢</span>
+    <span class="login-bc__text">${text.replace(/</g,'&lt;')}</span>
+    <button class="login-bc__btn" id="login-bc-copy" aria-label="${t('broadcastCopy')}">📋</button>
+    <button class="login-bc__btn login-bc__btn--close" id="login-bc-close" aria-label="✕">✕</button>
+  `;
+
+  ge('login-bc-copy')?.addEventListener('click', async () => {
+    await copyToClipboard(text);
+    import('../components/toast.js').then(m => m.toast(t('broadcastCopy'), 'success', 1500));
+  });
+  ge('login-bc-close')?.addEventListener('click', () => {
+    try { localStorage.setItem('sp_bc_dim', btoa(text).slice(0, 16)); } catch {}
+    el.classList.add('hidden');
+    import('../components/toast.js').then(m => m.toast(t('broadcastDismissed'), 'info', 1800));
+  });
 }
 
 // ── Live stats from Firebase ──────────────────────────────
@@ -110,7 +147,7 @@ function _renderStats() {
   if (row && memberCount > 0) {
     row.innerHTML =
       `<strong>${totalSupports || 0}</strong> ${t('statPool') || 'Supports'} · ` +
-      `<strong>${memberCount}</strong> ${t('navProfile') === 'Profil' ? 'Mitglieder' : 'Members'} · ` +
+      `<strong>${memberCount}</strong> ${t('statMembers') || 'Mitglieder'} · ` +
       `<strong>${liveVideos}</strong> Live`;
   }
 
@@ -118,11 +155,11 @@ function _renderStats() {
   const pillText = ge('login-live-text');
   if (pillText) {
     if (memberCount <= 2) {
-      pillText.textContent = '🚀 NOVA POOL STARTET';
+      pillText.textContent = t('loginPillStart') || '🚀 NOVA POOL STARTET';
     } else if (memberCount < 10) {
-      pillText.textContent = `${memberCount} CREATORS · JOIN`;
+      pillText.textContent = `${memberCount} ${t('loginPillJoin') || 'CREATORS · JOIN'}`;
     } else {
-      pillText.textContent = `${memberCount} CREATORS · LIVE`;
+      pillText.textContent = `${memberCount} ${t('loginPillLive') || 'CREATORS · LIVE'}`;
     }
   }
 }
@@ -165,11 +202,6 @@ function _applyTranslations() {
 
   const pinForgot = ge('pin-forgot-link');
   if (pinForgot) pinForgot.textContent = t('pinForgot');
-}
-
-// ── Firebase key decode (%..-encoding) ───────────────────
-function fbDec(key) {
-  try { return decodeURIComponent(key); } catch { return key; }
 }
 
 // ── Language row (Twemoji SVG flags) ─────────────────────
@@ -271,7 +303,10 @@ function _handleNameSubmit() {
   }
 
   const members = state.db.members || {};
-  const found = Object.keys(members).find(k => k.toLowerCase() === val.toLowerCase());
+  const valEnc = fbEnc(val);
+  const found = Object.keys(members).find(k =>
+    k.toLowerCase() === val.toLowerCase() || k.toLowerCase() === valEnc.toLowerCase()
+  );
   if (!found) {
     _username = val;
     _showRegisterStep(val);
@@ -328,13 +363,14 @@ function _handleRegisterConfirm() {
   const username = _username;
   if (!username) return;
 
-  if (!/^[a-zA-Z0-9_]{2,24}$/.test(username)) {
-    toast('Nur Buchstaben, Zahlen und _ (2–24 Zeichen)', 'error');
+  if (!/^[a-zA-Z0-9_.]{2,24}$/.test(username)) {
+    toast(t('loginUsernameFormat') || 'Nur Buchstaben, Zahlen, _ und . (2–24 Zeichen)', 'error');
     return;
   }
 
   const now = Date.now();
-  writeDB(`members/${username}`, {
+  const key = fbEnc(username);
+  writeDB(`members/${key}`, {
     name:       username,
     role:       'member',
     status:     'active',
@@ -345,9 +381,9 @@ function _handleRegisterConfirm() {
     postsTotal: 0,
   });
 
-  toast(`Willkommen, @${username}! 🎉`, 'success', 3000);
+  toast(t('loginWelcome') || `Willkommen, @${username}! 🎉`, 'success', 3000);
   setTimeout(() => {
-    import('../main.js').then(m => m.loginAs(username));
+    import('../main.js').then(m => m.loginAs(key));
   }, 800);
 }
 
