@@ -246,12 +246,36 @@ export function drawStoryCanvas() {
 export function downloadStoryCard() {
   drawStoryCanvas();
   const canvas = document.getElementById('pc-story-canvas');
-  if (!canvas) return;
-  const link = document.createElement('a');
-  link.download = 'nova-profile-story.png';
-  link.href     = canvas.toDataURL('image/png');
-  link.click();
-  toast('Story-Bild gespeichert! 📱', 'success');
+  if (!canvas) { toast('Canvas nicht gefunden', 'error'); return; }
+
+  canvas.toBlob(async (blob) => {
+    if (!blob) { toast('Fehler beim Erstellen', 'error'); return; }
+
+    // Web Share API with file (iOS 15+, Android Chrome) — opens native share sheet
+    if (navigator.canShare) {
+      const file = new File([blob], 'nova-story.png', { type: 'image/png' });
+      if (navigator.canShare({ files: [file] })) {
+        try {
+          await navigator.share({ files: [file], title: 'NOVA Support Pool Story' });
+          toast('Teilen-Sheet geöffnet 📱', 'success');
+          return;
+        } catch (e) {
+          if (e.name === 'AbortError') return; // user cancelled — no error needed
+        }
+      }
+    }
+
+    // Fallback: blob-URL download (Desktop / Android ohne Share API)
+    const url  = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.download = 'nova-profile-story.png';
+    link.href     = url;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+    toast('Story heruntergeladen! 📱', 'success');
+  }, 'image/png');
 }
 
 // Tab switch
