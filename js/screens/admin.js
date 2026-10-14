@@ -159,6 +159,7 @@ function _renderOverview() {
         <div class="admin-actions-row">
           <button class="btn btn--ghost btn--sm" data-action="admin:week:reset">🔄 Woche reset</button>
           <button class="btn btn--ghost btn--sm" data-action="admin:vid:cleanup">🧹 Expired bereinigen</button>
+          <button class="btn btn--ghost btn--sm" data-action="admin:week:recap">📊 Wochenrückblick</button>
         </div>
       </div>
     </div>
@@ -441,6 +442,42 @@ function _registerHandlers() {
         ? '🟢 Broadcast ist aktiv und wird allen angezeigt'
         : '⚪ Broadcast ist deaktiviert';
     }
+  });
+
+  on('admin:week:recap', () => {
+    const members = Object.entries(state.db.members || {})
+      .filter(([, m]) => m.status === 'active' && m.role !== 'admin');
+    const totalWeekly = members.reduce((s, [, m]) => s + (m.weeklyGiven || 0), 0);
+    const top = [...members]
+      .sort(([, a], [, b]) => (b.weeklyGiven || 0) - (a.weeklyGiven || 0))
+      .slice(0, 5);
+    const vids = Object.values(state.db.videos || {});
+    const weekAgo = Date.now() - 7 * 86400000;
+    const newVids = vids.filter(v => (v.postedAt || v.ts || 0) > weekAgo).length;
+    const avgPerMember = members.length ? (totalWeekly / members.length).toFixed(1) : 0;
+
+    const medals = ['🥇','🥈','🥉','4️⃣','5️⃣'];
+    const rows = top.map(([k, m], i) => `
+      <div class="admin-recap-row">
+        <span class="admin-recap-row__medal">${medals[i]}</span>
+        <span class="admin-recap-row__name">@${esc(k)}</span>
+        <span class="admin-recap-row__val">${m.weeklyGiven || 0} Supports</span>
+      </div>`).join('');
+
+    openModal({
+      id: 'week-recap-modal',
+      title: '📊 Wochenrückblick',
+      body: `
+        <div class="recap-stats">
+          <div class="recap-stat"><div class="recap-stat__val">${totalWeekly}</div><div class="recap-stat__label">Supports gesamt</div></div>
+          <div class="recap-stat"><div class="recap-stat__val">${newVids}</div><div class="recap-stat__label">Neue Videos</div></div>
+          <div class="recap-stat"><div class="recap-stat__val">${avgPerMember}</div><div class="recap-stat__label">Ø pro Mitglied</div></div>
+          <div class="recap-stat"><div class="recap-stat__val">${members.length}</div><div class="recap-stat__label">Aktive Mitglieder</div></div>
+        </div>
+        <div class="admin-section__title" style="margin:16px 0 8px">🏆 Top diese Woche</div>
+        ${rows || '<div style="color:var(--text-tertiary);font-size:13px">Noch keine Aktivität diese Woche</div>'}
+      `,
+    });
   });
 
   on('tmpl:copy', (el) => {

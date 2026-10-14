@@ -4,11 +4,12 @@
 
 import { state }    from '../state.js';
 import { t }        from '../i18n.js';
-import { esc }      from '../utils.js';
+import { esc, timeAgo } from '../utils.js';
 import { on }       from '../events.js';
 import { writeDB }  from '../firebase.js';
 import { toast }    from '../components/toast.js';
 import { confirm }  from '../components/modal.js';
+import { progressRing } from '../components/progress.js';
 
 const R1_NEED = 10;
 const R2_NEED = 10;
@@ -35,8 +36,13 @@ export function render() {
         </button>` : ''}
     </div>`;
 
+  const notifs = _getNotifs(cu);
+  const unread = notifs.filter(n => !n.read).length;
+
   el.innerHTML = header + `
     <div class="myvids-scroll">
+      ${_renderStatusCard(myVids)}
+      ${notifs.length ? _renderNotifSection(notifs, cu) : ''}
       ${!myVids.length ? `
         <div class="myvids-empty-hero">
           <div class="myvids-empty-hero__icon">🎬</div>
@@ -65,6 +71,60 @@ export function render() {
   `;
 
   _registerHandlers();
+}
+
+// ── Status-Card (B2.3) ─────────────────────────────────────
+function _renderStatusCard(vids) {
+  const active = vids.find(v => v.status !== 'done' && v.status !== 'expired');
+  if (!active) return '';
+  const r1  = (active.r1Supporters || []).length;
+  const r1n = active.r1Need || R1_NEED;
+  const pct = Math.min(100, Math.round((r1 / r1n) * 100));
+  const link = active.link || active.url || '#';
+
+  return `
+    <div class="myvid-status-card card--glass">
+      <div class="myvid-status-card__ring">
+        ${progressRing(r1, r1n, { label: `${pct}%`, size: 80, stroke: 7, color: 'var(--accent-primary)' })}
+      </div>
+      <div class="myvid-status-card__body">
+        <div class="myvid-status-card__title">🎬 Aktives Video · R${active.round || 1}</div>
+        <div class="myvid-status-card__link">${esc(link.replace(/^https?:\/\/(www\.)?/,'').slice(0,36))}</div>
+        <div class="myvid-status-card__prog">${r1} von ${r1n} Supports erhalten</div>
+      </div>
+    </div>`;
+}
+
+// ── Notifications (B2.3) ──────────────────────────────────
+function _getNotifs(cu) {
+  const msgs = state.db.messages || {};
+  return Object.entries(msgs)
+    .filter(([, m]) => m.to === cu || m.recipient === cu)
+    .sort(([, a], [, b]) => (b.ts || 0) - (a.ts || 0))
+    .slice(0, 10)
+    .map(([id, m]) => ({ ...m, _id: id }));
+}
+
+function _renderNotifSection(notifs, cu) {
+  const unread = notifs.filter(n => !n.read).length;
+  return `
+    <div class="myvid-notif-section">
+      <div class="myvid-notif-section__head">
+        <span class="myvid-notif-section__title">
+          🔔 Benachrichtigungen${unread > 0 ? ` <span class="notif-pip">${unread}</span>` : ''}
+        </span>
+        <button class="btn btn--ghost btn--sm" data-action="myvid:notif:clear">Alle löschen</button>
+      </div>
+      ${notifs.map(n => `
+        <div class="myvid-notif-item${n.read ? '' : ' myvid-notif-item--unread'}" data-notif-id="${esc(n._id)}">
+          <div class="myvid-notif-item__icon">💬</div>
+          <div class="myvid-notif-item__body">
+            <div class="myvid-notif-item__text">${esc(n.text || n.body || '...')}</div>
+            <div class="myvid-notif-item__meta">von @${esc(n.from || n.sender || '?')} · ${timeAgo(n.ts)}</div>
+          </div>
+        </div>
+      `).join('')}
+    </div>`;
 }
 
 function _vidCard(v) {
@@ -106,6 +166,19 @@ function _vidCard(v) {
 }
 
 function _registerHandlers() {
+  on('myvid:notif:clear', () => {
+    const cu = state.currentUser;
+    if (!cu) return;
+    const msgs = state.db.messages || {};
+    Object.entries(msgs).forEach(([id, m]) => {
+      if ((m.to === cu || m.recipient === cu) && !m.read) {
+        writeDB(`messages/${id}/read`, true);
+      }
+    });
+    toast('Benachrichtigungen gelesen ✓', 'success');
+    setTimeout(render, 300);
+  });
+
   on('myvid:copy', async (el) => {
     const link = el.dataset.link;
     if (!link) return;

@@ -129,18 +129,15 @@ function _buildCheckHTML(cu, u, given, recv, bal, balGood, vids, wGiven, memberD
 
 function _buildStoryHTML(cu, u, given, activeLast7, memberDays) {
   const hint = t('storyHint') || '📱 Bild speichern → TikTok Stories teilen';
+  // Draw after modal DOM settles
+  setTimeout(() => drawStoryCanvas(), 80);
   return `
     <p style="color:var(--text-secondary);font-size:13px;margin-bottom:16px">${esc(hint)}</p>
-    <canvas id="pc-story-canvas" width="540" height="960"
+    <canvas id="pc-story-canvas" width="1080" height="1920"
       style="width:100%;border-radius:16px;border:1px solid var(--border-subtle);display:block;margin-bottom:16px"></canvas>
     <button class="btn btn--gold btn--full" data-action="story:save">
       📥 ${t('storySave') || 'Bild speichern'}
     </button>
-    <script>
-      requestAnimationFrame(() => {
-        import('./js/features/profileCheck.js').then(m => m.drawStoryCanvas());
-      });
-    </script>
   `;
 }
 
@@ -164,7 +161,7 @@ export function drawStoryCanvas() {
     if (supportDays.includes(d.toISOString().slice(0, 10))) activeLast7++;
   }
 
-  const W = 540, H = 960;
+  const W = 1080, H = 1920;
   canvas.width  = W;
   canvas.height = H;
   const ctx = canvas.getContext('2d');
@@ -181,12 +178,12 @@ export function drawStoryCanvas() {
   ctx.fillStyle = 'rgba(255,255,255,0.08)';
   for (let i = 0; i < 80; i++) {
     ctx.beginPath();
-    ctx.arc(Math.random()*W, Math.random()*H, Math.random()*1.5+0.5, 0, Math.PI*2);
+    ctx.arc(Math.random()*W, Math.random()*H, Math.random()*3+1, 0, Math.PI*2);
     ctx.fill();
   }
 
   // Glow circle
-  const grd = ctx.createRadialGradient(W/2, H*0.38, 0, W/2, H*0.38, 260);
+  const grd = ctx.createRadialGradient(W/2, H*0.38, 0, W/2, H*0.38, 520);
   grd.addColorStop(0, 'rgba(124,58,237,0.35)');
   grd.addColorStop(1, 'rgba(6,182,212,0)');
   ctx.fillStyle = grd;
@@ -198,25 +195,25 @@ export function drawStoryCanvas() {
   // Avatar circle
   const cx = W/2, cy = H*0.32;
   ctx.beginPath();
-  ctx.arc(cx, cy, 76, 0, Math.PI*2);
-  const avGrd = ctx.createLinearGradient(cx-76, cy-76, cx+76, cy+76);
+  ctx.arc(cx, cy, 152, 0, Math.PI*2);
+  const avGrd = ctx.createLinearGradient(cx-152, cy-152, cx+152, cy+152);
   avGrd.addColorStop(0, '#7c3aed');
   avGrd.addColorStop(1, '#06b6d4');
   ctx.fillStyle = avGrd;
   ctx.fill();
-  ctx.font = 'bold 48px Inter, sans-serif';
+  ctx.font = 'bold 96px Inter, sans-serif';
   ctx.fillStyle = '#fff';
   ctx.fillText((cu || '?').slice(0,2).toUpperCase(), cx, cy);
 
   // Username
-  ctx.font = 'bold 32px Inter, sans-serif';
+  ctx.font = 'bold 64px Inter, sans-serif';
   ctx.fillStyle = '#ffffff';
-  ctx.fillText('@' + (u.name || cu || ''), cx, H*0.32 + 110);
+  ctx.fillText('@' + (u.name || cu || ''), cx, H*0.32 + 220);
 
   // NOVA label
-  ctx.font = '600 18px Inter, sans-serif';
+  ctx.font = '600 36px Inter, sans-serif';
   ctx.fillStyle = '#7c3aed';
-  ctx.fillText('NOVA Support Pool', cx, H*0.32 + 148);
+  ctx.fillText('NOVA Support Pool', cx, H*0.32 + 296);
 
   // Stats
   const stats2 = [
@@ -230,20 +227,20 @@ export function drawStoryCanvas() {
   const sy   = H * 0.62;
   stats2.forEach((s, i) => {
     const x = cw * i + cw / 2;
-    const grd2 = ctx.createLinearGradient(x-40, sy, x+40, sy);
+    const grd2 = ctx.createLinearGradient(x-80, sy, x+80, sy);
     grd2.addColorStop(0, '#7c3aed'); grd2.addColorStop(1, '#06b6d4');
-    ctx.font = 'bold 36px Inter, sans-serif';
+    ctx.font = 'bold 72px Inter, sans-serif';
     ctx.fillStyle = grd2;
     ctx.fillText(s.v, x, sy);
-    ctx.font = '400 15px Inter, sans-serif';
+    ctx.font = '400 30px Inter, sans-serif';
     ctx.fillStyle = 'rgba(255,255,255,0.55)';
-    ctx.fillText(s.l, x, sy + 44);
+    ctx.fillText(s.l, x, sy + 88);
   });
 
   // Footer
-  ctx.font = '400 14px Inter, sans-serif';
+  ctx.font = '400 28px Inter, sans-serif';
   ctx.fillStyle = 'rgba(255,255,255,0.35)';
-  ctx.fillText('novapool.official · TikTok Community', W/2, H - 48);
+  ctx.fillText('novapool.official · TikTok Community', W/2, H - 96);
 }
 
 export function downloadStoryCard() {
@@ -256,6 +253,12 @@ export function downloadStoryCard() {
   link.click();
   toast('Story-Bild gespeichert! 📱', 'success');
 }
+
+// Tab switch
+on('profile:tab', (el) => switchTab(el.dataset.tab));
+
+// Story save
+on('story:save', () => downloadStoryCard());
 
 // Copy text summary
 on('profile:check:copy', () => {
