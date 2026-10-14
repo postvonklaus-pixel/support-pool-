@@ -291,7 +291,7 @@ function _handleNameSubmit() {
     }
   }
 
-  if (!u.pin) {
+  if (!u.memberPin) {
     import('../main.js').then(m => m.loginAs(_username));
     return;
   }
@@ -308,7 +308,7 @@ function _showPinStep(username, u) {
   const greet = ge('pin-greet');
   if (greet) greet.textContent = `Hey ${username} 👋`;
 
-  initPinPad({ maxLen: 4, onSubmit: (pin) => _checkPin(pin, u.pin) });
+  initPinPad({ maxLen: 4, onSubmit: (pin) => _checkPin(pin, u.memberPin) });
 }
 
 // ── Register step ─────────────────────────────────────────
@@ -370,7 +370,7 @@ function _handlePinDel() {
   handlePinDel(4);
 }
 function _checkPin(entered, stored) {
-  if (entered === String(stored)) {
+  if (btoa(entered) === stored) {
     haptic('success');
     import('../main.js').then(m => m.loginAs(_username));
   } else {

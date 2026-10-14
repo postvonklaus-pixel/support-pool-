@@ -525,11 +525,11 @@ function _registerHandlers() {
   on('admin:member:view-as', (el) => {
     const key = el.dataset.key;
     if (!key || key === state.currentUser) return;
-    _adminViewAs     = state.currentUser;
+    _adminViewAs      = state.currentUser;
     state.currentUser = key;
     _syncViewBar();
     toast(`👁 Ansicht als @${key}`, 'info');
-    import('../main.js').then(m => m.navigateTo?.('home'));
+    import('../router.js').then(m => m.goScreen('home'));
   });
 
   on('admin:view-back', () => {
@@ -539,7 +539,7 @@ function _registerHandlers() {
     const bar = document.getElementById('admin-view-bar');
     if (bar) bar.remove();
     toast('Zurück im Admin-Modus', 'success');
-    import('../main.js').then(m => m.navigateTo?.('admin'));
+    import('../router.js').then(m => m.goScreen('admin'));
   });
 }
 
