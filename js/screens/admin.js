@@ -8,14 +8,17 @@ import { esc, avatarGradient, timeAgo } from '../utils.js';
 import { on }      from '../events.js';
 import { writeDB } from '../firebase.js';
 import { toast }   from '../components/toast.js';
-import { confirm } from '../components/modal.js';
+import { confirm, openModal, closeModal } from '../components/modal.js';
+import { getTemplates } from '../features/adminTemplates.js';
 import { progressRing } from '../components/progress.js';
 import { renderFairnessMeter } from '../features/fairnessMeter.js';
 
 const TABS = ['overview', 'members', 'videos', 'broadcast', 'groups'];
 let _tab          = 'overview';
 let _memberSearch = '';
-let _skipBcEcho   = false; // skip one re-render after bc:save to preserve focus
+let _skipBcEcho   = false;
+let _balAdjKey    = null;  // key of member being balance-adjusted
+let _adminViewAs  = null;  // original admin key during impersonation
 
 // ── Admin auth guard ───────────────────────────────────────
 function _isAdmin(cu) {
@@ -46,6 +49,9 @@ export function render() {
       </div>`;
     return;
   }
+
+  // Impersonation back bar (injected into body, persists across screens)
+  _syncViewBar();
 
   el.innerHTML = `
     <div class="admin-tab-bar">
@@ -137,6 +143,15 @@ function _renderOverview() {
 
       <div class="admin-section">
         ${renderFairnessMeter()}
+      </div>
+
+      <div class="admin-section">
+        <div class="admin-section__title">💬 Kommentar-Vorlagen</div>
+        <div class="tmpl-grid">
+          ${getTemplates(state.lang || 'de').slice(0, 6).map((text, i) => `
+            <button class="tmpl-chip" data-action="tmpl:copy" data-text="${esc(text)}">${esc(text)}</button>
+          `).join('')}
+        </div>
       </div>
 
       <div class="admin-section">
@@ -239,11 +254,20 @@ function _adminMemberRow(key, m) {
       <div class="admin-member-row__meta">G:${m.stats?.given||0} · R:${m.stats?.received||0} · W:${m.weeklyGiven||0}</div>
     </div>
     <div class="admin-member-row__bal admin-member-row__bal--${balCls}">${bal > 0 ? '+' : ''}${bal}</div>
-    <button class="btn btn--ghost btn--icon btn--sm admin-member-row__menu"
-      data-action="admin:member:kick" data-key="${esc(key)}" title="Entfernen"
-      aria-label="Mitglied entfernen">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-    </button>
+    <div class="admin-member-row__actions">
+      <button class="btn btn--ghost btn--icon btn--sm"
+        data-action="admin:member:balance" data-key="${esc(key)}" title="Balance anpassen" aria-label="Balance">
+        ⚖️
+      </button>
+      <button class="btn btn--ghost btn--icon btn--sm"
+        data-action="admin:member:view-as" data-key="${esc(key)}" title="Als Mitglied anzeigen" aria-label="Ansehen">
+        👁
+      </button>
+      <button class="btn btn--ghost btn--icon btn--sm"
+        data-action="admin:member:kick" data-key="${esc(key)}" title="Entfernen" aria-label="Entfernen">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
   </div>`;
 }
 
@@ -419,6 +443,12 @@ function _registerHandlers() {
     }
   });
 
+  on('tmpl:copy', (el) => {
+    const text = el.dataset.text || '';
+    navigator.clipboard?.writeText(text).then(() => toast('Kopiert ✓', 'success'))
+      .catch(() => toast(text, 'info'));
+  });
+
   on('admin:week:reset', async () => {
     const ok = await confirm('Wochenzähler zurücksetzen?', 'weeklyGiven aller Mitglieder wird auf 0 gesetzt.');
     if (!ok) return;
@@ -439,10 +469,95 @@ function _registerHandlers() {
     toast('Expired Videos bereinigt ✓', 'success');
     setTimeout(render, 300);
   });
+
+  on('admin:member:balance', (el) => {
+    const key = el.dataset.key;
+    if (!key) return;
+    _balAdjKey = key;
+    const m     = state.db.members?.[key] || {};
+    const given = m.stats?.given    || 0;
+    const recv  = m.stats?.received || 0;
+    const balCls = (given - recv) >= 0 ? 'pos' : 'neg';
+    openModal({
+      id:    'bal-adj-modal',
+      title: `⚖️ Balance: @${esc(key)}`,
+      body: `
+        <div class="bal-adj">
+          <div class="bal-adj__stats">
+            <span>Gegeben: <strong>${given}</strong></span>
+            <span>Erhalten: <strong>${recv}</strong></span>
+            <span>Saldo: <strong class="${balCls}">${(given-recv)>=0?'+':''}${given-recv}</strong></span>
+          </div>
+          <div class="bal-adj__row">
+            <label class="bal-adj__label">Gegeben setzen</label>
+            <input type="number" id="bal-given" value="${given}" min="0" class="bal-adj__input">
+          </div>
+          <div class="bal-adj__row">
+            <label class="bal-adj__label">Erhalten setzen</label>
+            <input type="number" id="bal-recv" value="${recv}" min="0" class="bal-adj__input">
+          </div>
+        </div>`,
+      actions: [
+        { label: '💾 Speichern',    cmd: 'save',    class: 'btn--primary' },
+        { label: '🔄 Reset (0/0)',  cmd: 'autofix', class: 'btn--secondary' },
+      ],
+    });
+    on('modal:action', (btn) => {
+      if (btn.dataset.modal !== 'bal-adj-modal') return;
+      if (btn.dataset.cmd === 'save') {
+        const g = parseInt(document.getElementById('bal-given')?.value  || '0', 10);
+        const r = parseInt(document.getElementById('bal-recv')?.value   || '0', 10);
+        writeDB(`members/${_balAdjKey}/stats/given`,    g);
+        writeDB(`members/${_balAdjKey}/stats/received`, r);
+        closeModal('bal-adj-modal');
+        toast(`Balance für @${_balAdjKey} angepasst ✓`, 'success');
+        setTimeout(render, 300);
+      } else if (btn.dataset.cmd === 'autofix') {
+        writeDB(`members/${_balAdjKey}/stats/given`,    0);
+        writeDB(`members/${_balAdjKey}/stats/received`, 0);
+        closeModal('bal-adj-modal');
+        toast(`Balance für @${_balAdjKey} zurückgesetzt ✓`, 'success');
+        setTimeout(render, 300);
+      }
+    });
+  });
+
+  on('admin:member:view-as', (el) => {
+    const key = el.dataset.key;
+    if (!key || key === state.currentUser) return;
+    _adminViewAs     = state.currentUser;
+    state.currentUser = key;
+    _syncViewBar();
+    toast(`👁 Ansicht als @${key}`, 'info');
+    import('../main.js').then(m => m.navigateTo?.('home'));
+  });
+
+  on('admin:view-back', () => {
+    if (!_adminViewAs) return;
+    state.currentUser = _adminViewAs;
+    _adminViewAs      = null;
+    const bar = document.getElementById('admin-view-bar');
+    if (bar) bar.remove();
+    toast('Zurück im Admin-Modus', 'success');
+    import('../main.js').then(m => m.navigateTo?.('admin'));
+  });
 }
 
 let _renderTimer = null;
 function _debounceRender() {
   clearTimeout(_renderTimer);
   _renderTimer = setTimeout(render, 200);
+}
+
+// ── Impersonation bar ──────────────────────────────────────
+function _syncViewBar() {
+  const existing = document.getElementById('admin-view-bar');
+  if (!_adminViewAs) { if (existing) existing.remove(); return; }
+  if (existing) return; // already present
+  const bar = document.createElement('div');
+  bar.id        = 'admin-view-bar';
+  bar.className = 'admin-view-bar';
+  bar.innerHTML = `<span>👁 Ansicht als <strong>@${esc(state.currentUser)}</strong></span>
+    <button class="btn btn--sm btn--danger admin-view-bar__btn" data-action="admin:view-back">↩ Zurück zu Admin</button>`;
+  document.body.appendChild(bar);
 }

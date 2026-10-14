@@ -6,8 +6,11 @@ import { state }       from '../state.js';
 import { t }           from '../i18n.js';
 import { esc, avatarGradient } from '../utils.js';
 import { on }          from '../events.js';
+import { writeDB }     from '../firebase.js';
 import { setTheme, getTheme } from '../features/theme.js';
 import { trustLevel }  from '../features/trust.js';
+import { openModal, closeModal } from '../components/modal.js';
+import { toast }       from '../components/toast.js';
 
 const LANG_FLAGS = { de:'🇩🇪',en:'🇬🇧',id:'🇮🇩',it:'🇮🇹',es:'🇪🇸',tr:'🇹🇷',ar:'🇸🇦',zh:'🇨🇳',ja:'🇯🇵',pl:'🇵🇱' };
 const LANG_NAMES = { de:'Deutsch',en:'English',id:'Bahasa',it:'Italiano',es:'Español',tr:'Türkçe',ar:'العربية',zh:'中文',ja:'日本語',pl:'Polski' };
@@ -15,6 +18,37 @@ const LANG_NAMES = { de:'Deutsch',en:'English',id:'Bahasa',it:'Italiano',es:'Esp
 // Persist open/close state across DB-triggered re-renders
 let _langOpen   = false;
 let _openFaqIds = new Set();
+
+// PIN flow state
+let _pinBuf   = '';
+let _pinStep  = 'new';   // 'new' | 'confirm'
+let _pinFirst = '';
+let _pinFlow  = 'set';   // 'set' | 'change' | 'disable'
+const PIN_LEN = 4;
+
+// ── Privacy content ────────────────────────────────────────
+const PRIVACY = {
+  de: { title: '🔒 Datenschutz', sections: [
+    ['Verantwortlicher',        'Diese App wird privat betrieben. Es gibt keinen kommerziellen Hintergrund.'],
+    ['Gespeicherte Daten',      'Dein TikTok-Nutzername, Support-Statistiken (gegeben/erhalten), Gruppenname und Aktivitätsdaten werden in einer Firebase-Datenbank gespeichert.'],
+    ['Datenspeicherung',        'Alle Daten liegen in Google Firebase. Es gibt keine Weitergabe an Dritte.'],
+    ['Lokale Speicherung',      'Anmeldung, Spracheinstellung und Theme werden im localStorage deines Browsers gespeichert.'],
+    ['Deine Rechte',            'Du kannst jederzeit die Löschung deines Accounts beantragen — wende dich an den Admin.'],
+    ['Push-Benachrichtigungen', 'Push-Benachrichtigungen sind freiwillig. Du kannst sie im Browser jederzeit deaktivieren.'],
+    ['Haftungsausschluss',      'Diese App ist kein offizielles TikTok-Produkt und steht in keiner Verbindung zu TikTok Ltd.'],
+  ]},
+  en: { title: '🔒 Privacy Policy', sections: [
+    ['Responsible Party',    'This app is privately operated with no commercial background.'],
+    ['Stored Data',          'Your TikTok username, support stats (given/received), group and activity data are stored in Firebase.'],
+    ['Data Storage',         'All data is stored in Google Firebase. No third parties have access.'],
+    ['Local Storage',        'Your login session, language and theme are stored in browser localStorage.'],
+    ['Your Rights',          'You can request deletion of your account at any time — contact the admin.'],
+    ['Push Notifications',   'Push notifications are optional and can be disabled in your browser at any time.'],
+    ['Disclaimer',           'This app is not an official TikTok product and has no connection to TikTok Ltd.'],
+  ]},
+};
+
+const _chevSVG = `<svg class="settings-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>`;
 
 export function render() {
   const el = document.getElementById('screen-settings');
@@ -64,12 +98,12 @@ export function render() {
               <div class="settings-row-item__label">Theme</div>
             </div>
             <div class="settings-theme-seg">
-              <button class="seg-btn ${theme==='auto'?'seg-btn--active':''}"
-                data-action="settings:theme" data-theme="auto" aria-label="Auto">🌗</button>
-              <button class="seg-btn ${theme==='light'?'seg-btn--active':''}"
-                data-action="settings:theme" data-theme="light" aria-label="Hell">☀️</button>
-              <button class="seg-btn ${theme==='dark'?'seg-btn--active':''}"
-                data-action="settings:theme" data-theme="dark" aria-label="Dunkel">🌙</button>
+              <button class="seg-btn seg-btn--lbl ${theme==='light'?'seg-btn--active':''}"
+                data-action="settings:theme" data-theme="light" aria-label="Hell">☀️ Hell</button>
+              <button class="seg-btn seg-btn--lbl ${theme==='dark'?'seg-btn--active':''}"
+                data-action="settings:theme" data-theme="dark" aria-label="Dunkel">🌙 Dunkel</button>
+              <button class="seg-btn seg-btn--lbl ${theme==='auto'?'seg-btn--active':''}"
+                data-action="settings:theme" data-theme="auto" aria-label="Auto">🔄 Auto</button>
             </div>
           </div>
         </div>
@@ -129,12 +163,21 @@ export function render() {
             </div>
           </div>
           <div class="settings-group__divider"></div>
+          <div class="settings-row-item settings-row-item--tap" data-action="settings:pin">
+            <div class="settings-row-item__icon">🔑</div>
+            <div class="settings-row-item__body">
+              <div class="settings-row-item__label">PIN-Schutz</div>
+              <div class="settings-row-item__sub">${u.memberPin ? '● Aktiv — Tap zum Ändern/Deaktivieren' : 'Tap zum Einrichten'}</div>
+            </div>
+            ${_chevSVG}
+          </div>
+          <div class="settings-group__divider"></div>
           <div class="settings-row-item settings-row-item--tap settings-row-item--danger" data-action="settings:logout">
             <div class="settings-row-item__icon">🚪</div>
             <div class="settings-row-item__body">
               <div class="settings-row-item__label">${t('logout') || 'Abmelden'}</div>
             </div>
-            <svg class="settings-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            ${_chevSVG}
           </div>
         </div>
       </div>
@@ -155,8 +198,25 @@ export function render() {
             <div class="settings-row-item__icon">✨</div>
             <div class="settings-row-item__body">
               <div class="settings-row-item__label">NOVA Support Pool</div>
-              <div class="settings-row-item__sub">v2.0 — Phase 2</div>
+              <div class="settings-row-item__sub">v2.5 — Phase 2.5</div>
             </div>
+          </div>
+          <div class="settings-group__divider"></div>
+          <div class="settings-row-item settings-row-item--tap" data-action="settings:homescreen">
+            <div class="settings-row-item__icon">📱</div>
+            <div class="settings-row-item__body">
+              <div class="settings-row-item__label">Zum Homescreen</div>
+              <div class="settings-row-item__sub">Als App installieren</div>
+            </div>
+            ${_chevSVG}
+          </div>
+          <div class="settings-group__divider"></div>
+          <div class="settings-row-item settings-row-item--tap" data-action="settings:privacy">
+            <div class="settings-row-item__icon">🔒</div>
+            <div class="settings-row-item__body">
+              <div class="settings-row-item__label">Datenschutz</div>
+            </div>
+            ${_chevSVG}
           </div>
         </div>
       </div>
@@ -262,5 +322,170 @@ function _registerHandlers() {
 
   on('settings:logout', () => {
     import('../main.js').then(m => m.logout());
+  });
+
+  on('settings:pin', () => {
+    const u = state.db.members?.[state.currentUser] || {};
+    if (u.memberPin) {
+      // Already has PIN — offer change or disable
+      openModal({
+        id: 'pin-choose-modal',
+        title: '🔑 PIN-Schutz',
+        body: `<p style="color:var(--text-secondary);font-size:var(--text-sm);margin-bottom:16px">Was möchtest du tun?</p>`,
+        actions: [
+          { label: 'PIN ändern', cmd: 'change', class: 'btn--primary' },
+          { label: 'PIN deaktivieren', cmd: 'disable', class: 'btn--danger' },
+        ],
+      });
+      on('modal:action', (el) => {
+        if (el.dataset.modal !== 'pin-choose-modal') return;
+        closeModal('pin-choose-modal');
+        _openPinModal(el.dataset.cmd === 'disable' ? 'disable' : 'change');
+      });
+    } else {
+      _openPinModal('set');
+    }
+  });
+
+  on('settings:privacy', () => _openPrivacyModal());
+  on('settings:homescreen', () => _openHomescreenModal());
+  on('pin:key', (el) => _handlePinKey(el));
+  on('pin:del', () => _handlePinDel());
+}
+
+// ── PIN Flow ──────────────────────────────────────────────
+
+function _openPinModal(flow) {
+  _pinBuf = ''; _pinStep = 'new'; _pinFirst = ''; _pinFlow = flow;
+  const labels = {
+    set:     { title: 'PIN einrichten',   sub: 'Neuen 4-stelligen PIN wählen' },
+    change:  { title: 'PIN ändern',       sub: 'Neuen 4-stelligen PIN wählen' },
+    disable: { title: 'PIN deaktivieren', sub: 'Aktuellen PIN eingeben' },
+  };
+  const { title, sub } = labels[flow] || labels.set;
+  openModal({ id: 'settings-pin', title: `🔑 ${title}`, body: _pinBody(sub) });
+}
+
+function _pinBody(sub) {
+  const keys = [1,2,3,4,5,6,7,8,9];
+  return `
+    <div class="pin-modal">
+      <div class="pin-modal__sub" id="pin-modal-sub">${esc(sub)}</div>
+      <div class="pin-modal__dots" id="pin-dots">
+        ${Array.from({length: PIN_LEN}, () => '<span class="pin-dot"></span>').join('')}
+      </div>
+      <div class="pin-modal__err" id="pin-err"></div>
+      <div class="pin-modal__grid">
+        ${keys.map(n => `<button class="btn pin-key" data-action="pin:key" data-key="${n}">${n}</button>`).join('')}
+        <button class="btn pin-key pin-key--ghost" data-action="pin:del">⌫</button>
+        <button class="btn pin-key" data-action="pin:key" data-key="0">0</button>
+        <div></div>
+      </div>
+    </div>
+  `;
+}
+
+function _updatePinDots() {
+  const c = document.getElementById('pin-dots');
+  if (!c) return;
+  c.innerHTML = Array.from({length: PIN_LEN}, (_, i) =>
+    `<span class="pin-dot${i < _pinBuf.length ? ' pin-dot--filled' : ''}"></span>`
+  ).join('');
+}
+
+function _setPinErr(msg) {
+  const e = document.getElementById('pin-err');
+  if (e) e.textContent = msg;
+}
+
+function _handlePinKey(el) {
+  const key = el.dataset.key;
+  if (!key || _pinBuf.length >= PIN_LEN) return;
+  _pinBuf += key;
+  _updatePinDots();
+  _setPinErr('');
+  if (_pinBuf.length === PIN_LEN) setTimeout(_confirmPin, 150);
+}
+
+function _handlePinDel() {
+  _pinBuf = _pinBuf.slice(0, -1);
+  _updatePinDots();
+}
+
+function _confirmPin() {
+  if (_pinBuf.length < PIN_LEN) return;
+  const cu = state.currentUser;
+  const u  = state.db.members?.[cu] || {};
+
+  if (_pinFlow === 'disable') {
+    if (btoa(_pinBuf) === (u.memberPin || '')) {
+      writeDB(`members/${cu}/memberPin`, null);
+      closeModal('settings-pin');
+      toast('🔓 PIN deaktiviert', 'success');
+      render();
+    } else {
+      _setPinErr('❌ Falscher PIN'); _pinBuf = ''; _updatePinDots();
+    }
+    return;
+  }
+
+  if (_pinStep === 'new') {
+    _pinFirst = _pinBuf; _pinBuf = ''; _pinStep = 'confirm';
+    _updatePinDots();
+    const sub = document.getElementById('pin-modal-sub');
+    if (sub) sub.textContent = 'PIN bestätigen';
+    _setPinErr('');
+  } else {
+    if (_pinBuf === _pinFirst) {
+      writeDB(`members/${cu}/memberPin`, btoa(_pinBuf));
+      closeModal('settings-pin');
+      toast('✅ PIN gespeichert', 'success');
+      render();
+    } else {
+      _setPinErr('❌ Nicht übereinstimmend');
+      _pinBuf = ''; _pinFirst = ''; _pinStep = 'new';
+      _updatePinDots();
+      const sub = document.getElementById('pin-modal-sub');
+      if (sub) sub.textContent = 'Neuen 4-stelligen PIN wählen';
+    }
+  }
+}
+
+// ── Privacy Modal ─────────────────────────────────────────
+
+function _openPrivacyModal() {
+  const lang = state.lang || 'de';
+  const p    = PRIVACY[lang] || PRIVACY.de;
+  const body = p.sections.map(([h, t]) =>
+    `<div class="priv-section"><div class="priv-section__h">${esc(h)}</div><div class="priv-section__p">${esc(t)}</div></div>`
+  ).join('');
+  openModal({ id: 'privacy-modal', title: p.title, body: `<div class="priv-body">${body}</div>` });
+}
+
+// ── Homescreen Guide Modal ────────────────────────────────
+
+function _openHomescreenModal() {
+  const ios = [
+    'Seite in <strong>Safari</strong> öffnen',
+    'Teilen-Symbol <strong>□↑</strong> antippen',
+    '→ <strong>„Zum Home-Bildschirm"</strong> wählen',
+    '→ <strong>„Hinzufügen"</strong> bestätigen',
+  ];
+  const and_ = [
+    'Seite in <strong>Chrome</strong> öffnen',
+    'Menü <strong>⋮</strong> oben rechts antippen',
+    '→ <strong>„App installieren"</strong> oder <strong>„Zum Startbildschirm"</strong>',
+    '→ <strong>„Hinzufügen"</strong> bestätigen',
+  ];
+  const block = (emoji, title, steps) =>
+    `<div class="hs-block">
+      <div class="hs-block__title">${emoji} ${title}</div>
+      <ol class="hs-block__steps">${steps.map(s => `<li>${s}</li>`).join('')}</ol>
+    </div>`;
+
+  openModal({
+    id: 'homescreen-modal',
+    title: '📱 Zum Homescreen',
+    body: block('🍎', 'iPhone / iPad (Safari)', ios) + block('🤖', 'Android (Chrome)', and_),
   });
 }

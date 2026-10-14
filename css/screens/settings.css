@@ -295,3 +295,137 @@
 .settings-row__label { font-size: var(--text-sm); font-weight: 600; color: var(--text-primary); }
 .settings-row__sub { font-size: var(--text-xs); color: var(--text-tertiary); margin-top: 2px; }
 .theme-toggle-row { display: flex; gap: 4px; }
+
+/* ── Labeled theme segment buttons (B2.7) ─────────────────── */
+.seg-btn--lbl {
+  width: auto;
+  padding: 0 10px;
+  font-size: var(--text-xs, 0.75rem);
+  font-weight: 600;
+  gap: 3px;
+  white-space: nowrap;
+}
+
+/* ── PIN modal (B2.7) ──────────────────────────────────────── */
+.pin-modal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4, 12px);
+  padding: var(--space-2, 6px) 0 var(--space-3, 8px);
+}
+
+.pin-modal__sub {
+  font-size: var(--text-sm, 0.875rem);
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.pin-modal__dots {
+  display: flex;
+  gap: 14px;
+}
+
+.pin-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid var(--border-default, rgba(128,128,128,0.3));
+  background: transparent;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.pin-dot--filled {
+  background: var(--accent-primary);
+  border-color: var(--accent-primary);
+}
+
+.pin-modal__err {
+  min-height: 18px;
+  font-size: var(--text-xs, 0.75rem);
+  color: #ef4444;
+  text-align: center;
+}
+
+.pin-modal__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  width: 216px;
+}
+
+.pin-key {
+  height: 56px;
+  font-size: 1.25rem;
+  font-weight: 700;
+  border-radius: var(--radius-lg, 12px);
+  border: 1.5px solid var(--border-subtle, rgba(128,128,128,0.15));
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: background 0.12s, transform 0.1s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.pin-key:active { transform: scale(0.92); background: var(--bg-glass); }
+
+.pin-key--ghost {
+  background: transparent;
+  border-color: transparent;
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+}
+
+/* ── Privacy modal (B2.7) ──────────────────────────────────── */
+.priv-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 60vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-right: 2px;
+}
+
+.priv-section {}
+
+.priv-section__h {
+  font-size: var(--text-sm, 0.875rem);
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 3px;
+}
+
+.priv-section__p {
+  font-size: var(--text-xs, 0.75rem);
+  color: var(--text-secondary);
+  line-height: 1.55;
+}
+
+/* ── Homescreen guide modal (B2.7) ─────────────────────────── */
+.hs-block {
+  margin-bottom: 16px;
+}
+
+.hs-block:last-child { margin-bottom: 0; }
+
+.hs-block__title {
+  font-size: var(--text-sm, 0.875rem);
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.hs-block__steps {
+  padding-left: 18px;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.hs-block__steps li {
+  font-size: var(--text-sm, 0.875rem);
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
