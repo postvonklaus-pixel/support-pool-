@@ -8,6 +8,7 @@ import { writeDB } from '../firebase.js';
 import { toast }   from '../components/toast.js';
 import { openModal, closeModal } from '../components/modal.js';
 import { on }      from '../events.js';
+import { goScreen } from '../router.js';
 
 const R1_MS   = 24 * 60 * 60 * 1000;
 const R1_NEED = 10;
@@ -97,4 +98,5 @@ on('post:submit', () => {
 
   closeModal('post-modal');
   toast('Video gepostet! 🎉', 'success');
+  setTimeout(() => goScreen('myvideos'), 800);
 });
