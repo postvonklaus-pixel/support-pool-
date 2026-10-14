@@ -26,24 +26,39 @@ export function render() {
     (v.ownerKey || v.owner || '').toLowerCase() === myKey
   ).sort((a, b) => (b.postedAt || b.ts || 0) - (a.postedAt || a.ts || 0));
 
-  el.innerHTML = `
+  const header = `
     <div class="page-header">
       <div class="page-header__title">${t('myVidsTile') || '🎞️ Meine Videos'}</div>
-    </div>
-    <div class="myvids-scroll">
-      <div style="display:flex;justify-content:flex-end;margin-bottom:12px">
+      ${myVids.length > 0 ? `
         <button class="btn btn--primary btn--sm" data-action="post:open">
           + ${t('postBtn') || 'Video posten'}
-        </button>
-      </div>
+        </button>` : ''}
+    </div>`;
+
+  el.innerHTML = header + `
+    <div class="myvids-scroll">
       ${!myVids.length ? `
-        <div class="empty-state">
-          <div class="empty-state__icon">🎬</div>
-          <div class="empty-state__title">${t('noMy')}</div>
-          <div class="empty-state__sub">${t('mvFirstSub')}</div>
-          <button class="btn btn--primary" data-action="post:open" style="margin-top:16px">
-            ${t('postBtn') || 'Video posten'}
+        <div class="myvids-empty-hero">
+          <div class="myvids-empty-hero__icon">🎬</div>
+          <div class="myvids-empty-hero__title">${t('noMy') || 'Noch kein Video gepostet'}</div>
+          <div class="myvids-empty-hero__sub">${t('mvFirstSub') || 'Poste dein erstes Video!'}</div>
+          <button class="btn btn--primary myvids-empty-hero__btn" data-action="post:open">
+            🎬 ${t('postBtn') || 'Erstes Video posten'}
           </button>
+          <div class="myvids-how-card">
+            <div class="myvids-how-step">
+              <div class="myvids-how-step__num">1</div>
+              <div class="myvids-how-step__text">Video-URL posten</div>
+            </div>
+            <div class="myvids-how-step">
+              <div class="myvids-how-step__num">2</div>
+              <div class="myvids-how-step__text">Andere supporten dich</div>
+            </div>
+            <div class="myvids-how-step">
+              <div class="myvids-how-step__num">3</div>
+              <div class="myvids-how-step__text">Du supportest zurück</div>
+            </div>
+          </div>
         </div>
       ` : myVids.map(v => _vidCard(v)).join('')}
     </div>

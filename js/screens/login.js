@@ -139,8 +139,9 @@ function _renderSocialProof() {
 
   const shown = keys.slice(0, 3);
   avatarsEl.innerHTML = shown.map(m => {
-    const hue = (m.charCodeAt(0) * 7 + m.charCodeAt(1 % m.length) * 13) % 360;
-    return `<div class="login-social__avatar" style="background:hsl(${hue},65%,42%)">${m.slice(0,2).toUpperCase()}</div>`;
+    const display = fbDec(m);
+    const hue = (m.charCodeAt(0) * 7 + (m.charCodeAt(1) || 0) * 13) % 360;
+    return `<div class="login-social__avatar" style="background:hsl(${hue},65%,42%)">${display.slice(0,2).toUpperCase()}</div>`;
   }).join('');
 
   textEl.textContent = count < 5
@@ -166,14 +167,29 @@ function _applyTranslations() {
   if (pinForgot) pinForgot.textContent = t('pinForgot');
 }
 
-// ── Language row ──────────────────────────────────────────
+// ── Firebase key decode (%..-encoding) ───────────────────
+function fbDec(key) {
+  try { return decodeURIComponent(key); } catch { return key; }
+}
+
+// ── Language row (Twemoji SVG flags) ─────────────────────
+const _TWEMOJI_BASE = 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg';
+const _TWEMOJI_CP = {
+  de:'1f1e9-1f1ea', en:'1f1ec-1f1e7', id:'1f1ee-1f1e9',
+  it:'1f1ee-1f1f9', es:'1f1ea-1f1f8', tr:'1f1f9-1f1f7',
+  ar:'1f1f8-1f1e6', zh:'1f1e8-1f1f3', ja:'1f1ef-1f1f5', pl:'1f1f5-1f1f1'
+};
+
 function _renderLangRow() {
   const row = ge('login-lang-row');
   if (!row) return;
-  const flags = { de:'🇩🇪',en:'🇬🇧',id:'🇮🇩',it:'🇮🇹',es:'🇪🇸',tr:'🇹🇷',ar:'🇸🇦',zh:'🇨🇳',ja:'🇯🇵',pl:'🇵🇱' };
   row.innerHTML = LANG_LIST.map(l => {
     const active = l === state.lang ? ' active' : '';
-    return `<button class="lang-pill${active}" data-action="lang:set" data-lang="${l}" aria-label="${l}">${flags[l]}</button>`;
+    const cp = _TWEMOJI_CP[l];
+    const flagImg = cp
+      ? `<img src="${_TWEMOJI_BASE}/${cp}.svg" width="24" height="24" alt="${l}" loading="lazy">`
+      : l.toUpperCase();
+    return `<button class="lang-pill${active}" data-action="lang:set" data-lang="${l}" aria-label="${l}">${flagImg}</button>`;
   }).join('');
 }
 
@@ -230,10 +246,11 @@ function _renderAutocomplete(query) {
   if (!matches.length) { ac.classList.remove('open'); return; }
 
   ac.innerHTML = matches.map(m => {
+    const display = fbDec(m);
     const hue = (m.charCodeAt(0) * 7 + (m.charCodeAt(1) || 0) * 13) % 360;
     return `<div class="login-ac-item" data-action="login:ac-select" data-username="${m}">
-      <div class="login-ac-item__avatar" style="background:hsl(${hue},65%,42%)">${m.slice(0,2).toUpperCase()}</div>
-      <span>@${m}</span>
+      <div class="login-ac-item__avatar" style="background:hsl(${hue},65%,42%)">${display.slice(0,2).toUpperCase()}</div>
+      <span>@${display}</span>
     </div>`;
   }).join('');
   ac.classList.add('open');
