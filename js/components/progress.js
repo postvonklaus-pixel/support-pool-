@@ -2,6 +2,8 @@
    NOVA Support Pool — Progress Visualization Components
    ═══════════════════════════════════════════════════════ */
 
+import { t } from '../i18n.js';
+
 const TAU = 2 * Math.PI;
 
 // ── Progress Ring (SVG donut) ──────────────────────────────
@@ -104,7 +106,9 @@ export function streakFlames(activeDays = [], { showLabels = true } = {}) {
     d.setDate(today.getDate() - (6 - i));
     const key    = d.toISOString().slice(0, 10);
     const active = activeDays.includes(key);
-    const label  = ['Mo','Di','Mi','Do','Fr','Sa','So'][d.getDay() === 0 ? 6 : d.getDay() - 1];
+    const _wd    = t('weekDays');
+    const _days  = Array.isArray(_wd) ? _wd : ['Mo','Di','Mi','Do','Fr','Sa','So'];
+    const label  = _days[d.getDay() === 0 ? 6 : d.getDay() - 1];
     return { key, active, label, isToday: i === 6 };
   });
 

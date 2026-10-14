@@ -115,11 +115,15 @@ export async function loginAs(username) {
 
   setState('currentUser', username);
 
-  // Set user's preferred lang
-  if (u.lang) {
-    await setLang(u.lang);
-    setState('lang', u.lang);
+  // Language priority: explicit login-screen selection > DB stored value > 'de'
+  const selected = state.userSelectedLang;
+  const targetLang = selected || u.lang || 'de';
+  if (selected && selected !== u.lang) {
+    import('./firebase.js').then(m => m.writeDB(`members/${username}/lang`, selected));
   }
+  setState('userSelectedLang', null);
+  await setLang(targetLang);
+  setState('lang', targetLang);
 
   // Show chrome
   const header = ge('app-header');

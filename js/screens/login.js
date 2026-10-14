@@ -129,7 +129,13 @@ function _setupHandlers() {
   on('pin:key',           (el) => _handlePinKey(el));
   on('pin:del',           () => _handlePinDel());
   on('pin:forgot',        _handleForgot);
-  on('lang:set',          (el) => { setLang(el.dataset.lang); _renderLangRow(); _applyTranslations(); });
+  on('lang:set',          (el) => {
+    const lang = el.dataset.lang;
+    setLang(lang);
+    import('../state.js').then(({ setState }) => setState('userSelectedLang', lang));
+    _renderLangRow();
+    _applyTranslations();
+  });
 }
 
 // ── Name step ─────────────────────────────────────────────

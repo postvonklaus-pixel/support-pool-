@@ -11,17 +11,19 @@ import { writeDB }    from '../firebase.js';
 import { progressRing, streakFlames } from '../components/progress.js';
 import { renderAchievements } from '../features/achievements.js';
 
-const RANKS = [
-  { min: 0,   max: 4,   label: 'Neuling',    icon: '🌱', color: '#94a3b8' },
-  { min: 5,   max: 19,  label: 'Aufsteiger', icon: '⚡', color: '#22d3ee' },
-  { min: 20,  max: 49,  label: 'Aktiv',      icon: '🔥', color: '#7c3aed' },
-  { min: 50,  max: 99,  label: 'Veteran',    icon: '🏆', color: '#f59e0b' },
-  { min: 100, max: Infinity, label: 'Elite', icon: '👑', color: '#f43f5e' },
-];
+function _ranks() {
+  return [
+    { min: 0,   max: 4,   label: t('rankLabel0'), icon: '🌱', color: '#94a3b8' },
+    { min: 5,   max: 19,  label: t('rankLabel1'), icon: '⚡', color: '#22d3ee' },
+    { min: 20,  max: 49,  label: t('rankLabel2'), icon: '🔥', color: '#7c3aed' },
+    { min: 50,  max: 99,  label: t('rankLabel3'), icon: '🏆', color: '#f59e0b' },
+    { min: 100, max: Infinity, label: t('rankLabel4'), icon: '👑', color: '#f43f5e' },
+  ];
+}
 
-function rankFor(u) {
+function rankFor(u, ranks) {
   const given = u.stats?.given || 0;
-  return RANKS.find(r => given >= r.min && given <= r.max) || RANKS[0];
+  return ranks.find(r => given >= r.min && given <= r.max) || ranks[0];
 }
 
 export function render() {
@@ -36,14 +38,15 @@ export function render() {
   const given    = stats.given    || 0;
   const received = stats.received || 0;
   const bal      = Math.min(given - received, 20);
-  const rank     = rankFor(u);
+  const ranks    = _ranks();
+  const rank     = rankFor(u, ranks);
   const daysIn   = u.joined ? Math.max(0, Math.floor((Date.now() - u.joined) / 86400000)) : 0;
   const initial  = (cu || '?').slice(0, 2).toUpperCase();
   const gradient = avatarGradient(cu);
   const notifs   = _getNotifs(cu);
   const unread   = notifs.filter(m => !m.read).length;
   const streak   = _currentStreak(u);
-  const nextRank = RANKS[RANKS.indexOf(rank) + 1] || null;
+  const nextRank = ranks[ranks.indexOf(rank) + 1] || null;
   const toNext   = nextRank ? nextRank.min - given : 0;
 
   el.innerHTML = `
@@ -64,25 +67,25 @@ export function render() {
       <!-- ── Stats ── -->
       <div class="profile-stats-grid">
         <div class="profile-stat-card">
-          ${progressRing(given, Math.max(given, nextRank?.min || given, 10), { label: t('pGiven') || 'Gegeben', size: 72, color: rank.color })}
+          ${progressRing(given, Math.max(given, nextRank?.min || given, 10), { label: t('pGiven'), size: 72, color: rank.color })}
         </div>
         <div class="profile-stat-card">
-          ${progressRing(received, Math.max(received, given, 10), { label: t('pRecv') || 'Erhalten', size: 72, color: 'var(--accent-secondary, #7c3aed)' })}
+          ${progressRing(received, Math.max(received, given, 10), { label: t('pRecv'), size: 72, color: 'var(--accent-secondary, #7c3aed)' })}
         </div>
         <div class="profile-stat-card">
           <div class="profile-stat-card__val">${u.postsTotal || 0}</div>
-          <div class="profile-stat-card__label">${t('pVids') || 'Videos'}</div>
+          <div class="profile-stat-card__label">${t('pVids')}</div>
         </div>
         <div class="profile-stat-card">
           <div class="profile-stat-card__val">${daysIn}</div>
-          <div class="profile-stat-card__label">${t('streakDays') || 'Tage im Pool'}</div>
+          <div class="profile-stat-card__label">${t('streakDays')}</div>
         </div>
       </div>
 
       <!-- ── Balance Band ── -->
       <div class="profile-section">
         <div class="profile-balance-row">
-          <span class="profile-balance-row__label">Guthaben</span>
+          <span class="profile-balance-row__label">${t('balance')}</span>
           <span class="profile-balance-row__val ${bal > 0 ? 'pos' : bal < 0 ? 'neg' : ''}">${bal > 0 ? '+' : ''}${bal}</span>
         </div>
       </div>
@@ -90,8 +93,8 @@ export function render() {
       <!-- ── Streak ── -->
       <div class="profile-section">
         <div class="profile-section__head">
-          <span class="profile-section__title">🔥 Aktivitäts-Streak</span>
-          ${streak > 0 ? `<span class="streak-badge">${streak} Tage</span>` : ''}
+          <span class="profile-section__title">${t('actStreak')}</span>
+          ${streak > 0 ? `<span class="streak-badge">${t('streakDayBadge').replace('{n}', streak)}</span>` : ''}
         </div>
         ${streakFlames(u.supportDays || u.activeDays || [])}
       </div>
@@ -100,8 +103,8 @@ export function render() {
       ${nextRank ? `
       <div class="profile-section">
         <div class="profile-section__head">
-          <span class="profile-section__title">Rang-Fortschritt</span>
-          <span class="profile-section__sub">${toNext} bis ${nextRank.icon} ${nextRank.label}</span>
+          <span class="profile-section__title">${t('rankProgress')}</span>
+          <span class="profile-section__sub">${toNext} → ${nextRank.icon} ${nextRank.label}</span>
         </div>
         <div class="profile-rank-progress-row">
           ${progressRing(given - rank.min, nextRank.min - rank.min, {
@@ -118,15 +121,15 @@ export function render() {
       </div>` : `
       <div class="profile-section">
         <div class="profile-section__head">
-          <span class="profile-section__title">👑 Elite-Rang erreicht!</span>
+          <span class="profile-section__title">${t('rankEliteReached')}</span>
         </div>
       </div>`}
 
       <!-- ── Achievements ── -->
       <div class="profile-section">
         <div class="profile-section__head">
-          <span class="profile-section__title">🏅 Achievements</span>
-          <span class="profile-section__sub">${(u.achievements || []).length} / ${14} freigeschaltet</span>
+          <span class="profile-section__title">${t('achievTitle')}</span>
+          <span class="profile-section__sub">${t('achievUnlocked').replace('{n}', (u.achievements || []).length)}</span>
         </div>
         ${renderAchievements(cu)}
       </div>
@@ -153,7 +156,7 @@ export function render() {
             🔔 ${t('notifs') || 'Benachrichtigungen'}
             ${unread > 0 ? `<span class="notif-badge">${unread}</span>` : ''}
           </span>
-          <span class="profile-section__sub">Tippe 🗑 zum Löschen</span>
+          <span class="profile-section__sub">${t('notifsTapDel')}</span>
         </div>
         <div id="notif-list">
           ${_renderNotifs(notifs, cu)}
@@ -200,7 +203,7 @@ function _renderNotifs(notifs, cu) {
           ${fromKey && fromKey !== cu ? `
             <button class="btn btn--ghost btn--sm" style="margin-top:8px"
               data-action="notif:reply" data-from="${esc(fromKey)}" data-id="${esc(m._id)}">
-              ↩ Antworten
+              ${t('replyBtn')}
             </button>
           ` : ''}
         </div>
@@ -238,7 +241,7 @@ function _registerHandlers() {
       setTimeout(() => card.remove(), 250);
     }
     writeDB(`messages/${id}`, null);
-    toast('🗑️ Gelöscht', 'success', 1800);
+    toast(t('deletedMsg'), 'success', 1800);
   });
 
   on('notif:reply', (el) => {
