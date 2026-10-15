@@ -95,13 +95,13 @@ function _renderPool(cu, msgs) {
       }
     </div>
     <div class="chat-input-bar">
-      <input
+      <textarea
         class="chat-input" id="chat-pool-input"
-        type="text" maxlength="400"
+        rows="1" maxlength="400"
         placeholder="${t('chatPoolPlaceholder')}"
         data-action="chat:pool:input"
         autocomplete="off"
-      >
+      ></textarea>
       <button class="chat-send-btn" data-action="chat:pool:send" aria-label="Senden">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
       </button>
@@ -116,15 +116,16 @@ function _poolBubble(m, cu) {
   const grad   = avatarGradient(m.from || '');
   const initials = (m.from || '?').slice(0, 2).toUpperCase();
 
+  const textHtml = esc(m.text || '').replace(/\n/g, '<br>');
   return `
     <div class="bubble-row ${isMe ? 'bubble-row--me' : ''}">
       ${!isMe ? `<div class="bubble-avatar" style="background:${grad}" title="@${esc(m.from || '')}">${initials}</div>` : ''}
       <div class="bubble-col">
-        ${!isMe ? `<div class="bubble-sender">@${esc(name)}</div>` : ''}
+        ${!isMe ? `<div class="bubble-meta"><span class="bubble-username">@${esc(name)}</span><span class="bubble-time-inline">${m.ts ? timeAgo(m.ts, state.lang) : ''}</span></div>` : ''}
         <div class="bubble ${isMe ? 'bubble--me' : 'bubble--them'}">
-          ${esc(m.text || '')}
+          ${textHtml}
         </div>
-        <div class="bubble-time">${m.ts ? timeAgo(m.ts, state.lang) : ''}</div>
+        ${isMe ? `<div class="bubble-time">${m.ts ? timeAgo(m.ts, state.lang) : ''}</div>` : ''}
       </div>
     </div>
   `;
@@ -210,13 +211,13 @@ function _renderDMThread(el, cu, partner) {
       </div>
 
       <div class="chat-input-bar">
-        <input
+        <textarea
           class="chat-input" id="chat-dm-input"
-          type="text" maxlength="400"
+          rows="1" maxlength="400"
           placeholder="${t('chatDMPlaceholder').replace('{name}', esc(name))}"
           data-action="chat:dm:input"
           autocomplete="off"
-        >
+        ></textarea>
         <button class="chat-send-btn" data-action="chat:dm:send" aria-label="Senden">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
         </button>
@@ -268,6 +269,7 @@ function _sendPool(cu) {
   const text  = input?.value?.trim();
   if (!text) return;
   input.value = '';
+  input.style.height = '';
   const msgId = `${Date.now()}_${cu}`;
   const msg   = { from: cu, text, ts: Date.now() };
   // Skip the DB-echo re-render so the keyboard / input bar stay intact
@@ -288,6 +290,7 @@ function _sendDM(cu, partner) {
   const text  = input?.value?.trim();
   if (!text || !partner) return;
   input.value = '';
+  input.style.height = '';
   const roomKey = [cu, partner].sort().join('__');
   const msgId   = `${Date.now()}_${cu}`;
   const msg     = { from: cu, to: partner, text, ts: Date.now() };
@@ -301,6 +304,12 @@ function _sendDM(cu, partner) {
   }
   _scrollToBottom();
   input.focus();
+}
+
+function _autoResize(el) {
+  if (!el) return;
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 96) + 'px';
 }
 
 function _scrollToBottom() {
@@ -325,7 +334,12 @@ function _registerHandlers(cu) {
   on('chat:pool:send', () => _sendPool(cu));
 
   on('chat:pool:input', (el, e) => {
-    if (e.type === 'keydown' && e.key === 'Enter') _sendPool(cu);
+    if (e.type === 'keydown' && e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      _sendPool(cu);
+    } else if (e.type === 'input') {
+      _autoResize(el);
+    }
   });
 
   on('chat:dm:open', (el) => {
@@ -341,6 +355,11 @@ function _registerHandlers(cu) {
   on('chat:dm:send', () => _sendDM(cu, _dmPartner));
 
   on('chat:dm:input', (el, e) => {
-    if (e.type === 'keydown' && e.key === 'Enter') _sendDM(cu, _dmPartner);
+    if (e.type === 'keydown' && e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      _sendDM(cu, _dmPartner);
+    } else if (e.type === 'input') {
+      _autoResize(el);
+    }
   });
 }

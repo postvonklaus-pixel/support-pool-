@@ -116,6 +116,22 @@
 }
 .bubble-row--me .bubble-col { align-items: flex-end; }
 
+.bubble-meta {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-bottom: 2px;
+}
+.bubble-username {
+  font-size: 11px;
+  font-weight: var(--weight-semibold);
+  color: var(--accent-primary);
+}
+.bubble-time-inline {
+  font-size: 10px;
+  color: var(--text-tertiary);
+}
+
 .bubble-sender {
   font-size: 10px;
   font-weight: var(--weight-semibold);
@@ -155,7 +171,7 @@
 /* ── Chat input ───────────────────────────────────────────── */
 .chat-input-bar {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   gap: var(--space-2);
   padding: var(--space-3) var(--space-4);
   padding-bottom: max(var(--space-3), env(safe-area-inset-bottom));
@@ -165,14 +181,21 @@
 }
 .chat-input {
   flex: 1;
-  height: 40px;
-  padding: 0 var(--space-4);
+  min-height: 40px;
+  max-height: 96px;
+  padding: 10px var(--space-4);
   background: var(--bg-glass);
   border: 1px solid var(--border-default);
-  border-radius: var(--radius-full);
+  border-radius: 20px;
   font-size: var(--text-sm);
+  font-family: inherit;
   color: var(--text-primary);
   outline: none;
+  resize: none;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  line-height: 1.4;
   transition: border-color var(--duration-fast);
 }
 .chat-input::placeholder { color: var(--text-tertiary); }

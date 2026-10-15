@@ -134,9 +134,12 @@ export function render() {
         </div>
       </div>
 
+      <!-- ── Ankündigungen ─────────────────────────────────── -->
+      ${_renderBroadcastSection(cu)}
+
       <!-- ── Benachrichtigungen ──────────────────────────── -->
       <div class="settings-group">
-        <div class="settings-group__label">Benachrichtigungen</div>
+        <div class="settings-group__label">${t('broadcastLabel') || 'Ankündigungen'}</div>
         <div class="settings-group__card">
           <div class="settings-row-item">
             <div class="settings-row-item__icon">🔔</div>
@@ -266,6 +269,40 @@ const FAQ = [
     a: 'Account → Abmelden (oben). Deine Daten im Pool bleiben erhalten.' },
 ];
 
+function _renderBroadcastSection(cu) {
+  const settings = state.db.settings || {};
+  const text = settings.broadcast || '';
+  const active = settings.broadcastActive;
+  const isAdmin = state.db.members?.[cu]?.role === 'admin';
+  const memberCount = Object.values(state.db.members || {}).filter(m => m.status === 'active').length;
+
+  return `
+    <div class="settings-group">
+      <div class="settings-group__label">${t('broadcastLabel') || 'Ankündigungen'}</div>
+      <div class="settings-group__card">
+        ${text && active ? `
+          <div class="settings-broadcast-box">
+            <span class="settings-broadcast-box__icon">📢</span>
+            <span class="settings-broadcast-box__text">${text.replace(/</g,'&lt;')}</span>
+            <button class="btn btn--sm btn--ghost" data-action="settings:bc:copy" data-text="${text.replace(/"/g,'&quot;')}">
+              ${t('broadcastCopy') || 'Kopieren'}
+            </button>
+          </div>
+          ${isAdmin ? `<div class="settings-broadcast-box__meta">Sichtbar für ${memberCount} Mitglieder</div>` : ''}
+        ` : `
+          <div class="settings-row-item">
+            <div class="settings-row-item__icon">📢</div>
+            <div class="settings-row-item__body">
+              <div class="settings-row-item__label">${t('broadcastLabel') || 'Ankündigungen'}</div>
+              <div class="settings-row-item__sub" style="color:var(--text-tertiary)">Keine aktive Ankündigung</div>
+            </div>
+          </div>
+        `}
+      </div>
+    </div>
+  `;
+}
+
 function _faqHTML() {
   return FAQ.map((item, i) => `
     <div class="faq-item${i > 0 ? '' : ''}" id="faq-k-${i}">
@@ -300,6 +337,15 @@ function _registerHandlers() {
     if (ans)  ans.classList.toggle('hidden', !open);
     if (chev) chev.style.transform = open ? 'rotate(180deg)' : '';
     if (open) _openFaqIds.add(id); else _openFaqIds.delete(id);
+  });
+
+  on('settings:bc:copy', (el) => {
+    const text = el.dataset.text || '';
+    import('../utils.js').then(({ copyToClipboard }) =>
+      copyToClipboard(text).then(() =>
+        import('../components/toast.js').then(m => m.toast(t('broadcastCopy') || 'Kopiert', 'success', 1500))
+      )
+    );
   });
 
   on('settings:push', () => {

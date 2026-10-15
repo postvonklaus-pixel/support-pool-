@@ -9,11 +9,11 @@ import { on }      from '../events.js';
 import { writeDB } from '../firebase.js';
 import { toast }   from '../components/toast.js';
 import { confirm, openModal, closeModal } from '../components/modal.js';
-import { getTemplates } from '../features/adminTemplates.js';
+import { getTemplates, TEMPLATES } from '../features/adminTemplates.js';
 import { progressRing } from '../components/progress.js';
 import { renderFairnessMeter } from '../features/fairnessMeter.js';
 
-const TABS = ['overview', 'members', 'videos', 'broadcast', 'groups'];
+const TABS = ['overview', 'members', 'templates', 'videos', 'broadcast', 'groups'];
 let _tab          = 'overview';
 let _memberSearch = '';
 let _skipBcEcho   = false;
@@ -63,11 +63,12 @@ export function render() {
       `).join('')}
     </div>
     <div class="admin-content">
-      ${_tab === 'overview'  ? _renderOverview()  : ''}
-      ${_tab === 'members'   ? _renderMembers()   : ''}
-      ${_tab === 'videos'    ? _renderVideos()    : ''}
-      ${_tab === 'broadcast' ? _renderBroadcast() : ''}
-      ${_tab === 'groups'    ? _renderGroups()    : ''}
+      ${_tab === 'overview'   ? _renderOverview()   : ''}
+      ${_tab === 'members'    ? _renderMembers()    : ''}
+      ${_tab === 'templates'  ? _renderTemplates()  : ''}
+      ${_tab === 'videos'     ? _renderVideos()     : ''}
+      ${_tab === 'broadcast'  ? _renderBroadcast()  : ''}
+      ${_tab === 'groups'     ? _renderGroups()     : ''}
     </div>
   `;
 
@@ -87,11 +88,12 @@ export function toggleGroupAccordion(groupId) {
 // ── Tab labels ─────────────────────────────────────────────
 function _tabLabel(tab) {
   return {
-    overview:  t('adminTabOverview'),
-    members:   t('adminTabMembers'),
-    videos:    t('videos') || 'Videos',
-    broadcast: t('adminTabBroadcast'),
-    groups:    t('adminTabGroups'),
+    overview:   t('adminTabOverview'),
+    members:    t('adminTabMembers'),
+    templates:  t('adminTabTemplates') || 'Kommentare',
+    videos:     t('videos') || 'Videos',
+    broadcast:  t('adminTabBroadcast'),
+    groups:     t('adminTabGroups'),
   }[tab] || tab;
 }
 
@@ -151,15 +153,6 @@ function _renderOverview() {
       </div>
 
       <div class="admin-section">
-        <div class="admin-section__title">💬 ${t('adminTmplTitle')}</div>
-        <div class="tmpl-grid">
-          ${getTemplates(state.lang || 'de').slice(0, 6).map((text, i) => `
-            <button class="tmpl-chip" data-action="tmpl:copy" data-text="${esc(text)}">${esc(text)}</button>
-          `).join('')}
-        </div>
-      </div>
-
-      <div class="admin-section">
         <div class="admin-section__title">⚡ ${t('adminActionsTitle')}</div>
         <div class="admin-actions-row">
           <button class="btn btn--ghost btn--sm" data-action="admin:week:reset">🔄 ${t('adminWeekResetBtn')}</button>
@@ -177,6 +170,44 @@ function _kpi(icon, val, label) {
     <div class="admin-kpi__val">${val}</div>
     <div class="admin-kpi__label">${label}</div>
   </div>`;
+}
+
+// ── Template Generator ─────────────────────────────────────
+function _renderTemplates() {
+  const lang      = state.lang || 'de';
+  const defaults  = TEMPLATES[lang] || TEMPLATES.de;
+  const custom    = state.db.settings?.tplLibrary || {};
+  const curIdx    = state.db.settings?.tplIdx ?? 0;
+
+  const rows = defaults.map((def, i) => {
+    const text       = custom[i] ?? def;
+    const isCustom   = custom[i] !== undefined && custom[i] !== def;
+    const isCurrent  = i === (curIdx % defaults.length);
+    return `
+      <div class="tpl-row ${isCurrent ? 'tpl-row--active' : ''}">
+        <div class="tpl-row__body">
+          <div class="tpl-row__meta">
+            <span class="tpl-row__idx">${i + 1}</span>
+            ${isCurrent  ? `<span class="tpl-tag tpl-tag--cur">🔄 ${t('tplCurrent')}</span>` : ''}
+            ${isCustom   ? `<span class="tpl-tag tpl-tag--custom">✏️ ${t('tplCustomized')}</span>` : ''}
+          </div>
+          <div class="tpl-row__text">${esc(text)}</div>
+        </div>
+        <button class="btn btn--ghost btn--sm tpl-edit-btn"
+          data-action="tpl:edit" data-idx="${i}">${t('tplEdit')}</button>
+      </div>
+    `;
+  }).join('');
+
+  return `
+    <div class="admin-tpl-wrap">
+      <div class="admin-section__title" style="padding:0 0 var(--sp-2)">
+        💬 ${t('tplGeneratorTitle')}
+        <span class="admin-kpi-sub">${t('tplGeneratorSub')}</span>
+      </div>
+      <div class="tpl-list">${rows}</div>
+    </div>
+  `;
 }
 
 // ── Members ────────────────────────────────────────────────
@@ -489,6 +520,89 @@ function _registerHandlers() {
     const text = el.dataset.text || '';
     navigator.clipboard?.writeText(text).then(() => toast(t('adminTmplCopied'), 'success'))
       .catch(() => toast(text, 'info'));
+  });
+
+  on('tpl:edit', (el) => {
+    const idx      = parseInt(el.dataset.idx, 10);
+    const lang     = state.lang || 'de';
+    const defaults = TEMPLATES[lang] || TEMPLATES.de;
+    const custom   = state.db.settings?.tplLibrary || {};
+    const current  = custom[idx] ?? defaults[idx] ?? '';
+    const PHKEYS   = ['{gruppe}','{name}','{member}','{date}','{time}'];
+    const PHEX     = { '{gruppe}':'1', '{name}':'maxpower', '{member}':'boostsquad',
+                       '{date}': new Date().toLocaleDateString('de'), '{time}': new Date().toLocaleTimeString('de',{hour:'2-digit',minute:'2-digit'}) };
+
+    function makePreview(text) {
+      let p = esc(text);
+      PHKEYS.forEach(k => { p = p.replace(new RegExp(k.replace(/[{}]/g,'\\$&'),'g'), `<span class="tpl-ph">${PHEX[k]}</span>`); });
+      return p.replace(/\n/g,'<br>');
+    }
+
+    openModal({
+      id: 'tpl-editor-modal',
+      title: `✏️ ${t('tplEdit')} #${idx+1}`,
+      body: `
+        <textarea id="tpl-ta" class="tpl-textarea" rows="6">${esc(current)}</textarea>
+        <div class="tpl-ph-bar">
+          ${PHKEYS.map(k => `<button class="tpl-ph-pill" data-action="tpl:ins" data-ph="${k}">${k}</button>`).join('')}
+        </div>
+        <div class="tpl-preview-label">${t('tplPreview')}</div>
+        <div class="tpl-preview-box" id="tpl-preview">${makePreview(current)}</div>
+        <div class="tpl-modal-actions">
+          <button class="btn btn--ghost btn--sm" data-action="tpl:reset-one" data-idx="${idx}">↩️ ${t('tplReset')}</button>
+          <button class="btn btn--primary" data-action="tpl:save" data-idx="${idx}">${t('tplSave')}</button>
+        </div>
+      `,
+    });
+
+    // Live preview update
+    requestAnimationFrame(() => {
+      const ta = document.getElementById('tpl-ta');
+      if (ta) ta.addEventListener('input', () => {
+        const pv = document.getElementById('tpl-preview');
+        if (pv) pv.innerHTML = makePreview(ta.value);
+      });
+    });
+  });
+
+  on('tpl:ins', (el) => {
+    const ta = document.getElementById('tpl-ta');
+    const ph = el.dataset.ph || '';
+    if (!ta || !ph) return;
+    const s = ta.selectionStart, e = ta.selectionEnd;
+    ta.value = ta.value.slice(0, s) + ph + ta.value.slice(e);
+    ta.selectionStart = ta.selectionEnd = s + ph.length;
+    ta.focus();
+    const pv = document.getElementById('tpl-preview');
+    if (pv) {
+      const PHKEYS = ['{gruppe}','{name}','{member}','{date}','{time}'];
+      const PHEX = { '{gruppe}':'1', '{name}':'maxpower', '{member}':'boostsquad',
+        '{date}': new Date().toLocaleDateString('de'), '{time}': new Date().toLocaleTimeString('de',{hour:'2-digit',minute:'2-digit'}) };
+      let p = ta.value.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+      PHKEYS.forEach(k => { p = p.replace(new RegExp(k.replace(/[{}]/g,'\\$&'),'g'), `<span class="tpl-ph">${PHEX[k]}</span>`); });
+      pv.innerHTML = p.replace(/\n/g,'<br>');
+    }
+  });
+
+  on('tpl:save', (el) => {
+    const idx = parseInt(el.dataset.idx, 10);
+    const ta  = document.getElementById('tpl-ta');
+    if (!ta) return;
+    const text = ta.value;
+    writeDB(`settings/tplLibrary/${idx}`, text);
+    closeModal();
+    toast(`✅ ${t('tplSaved')}`, 'success');
+    setTimeout(render, 200);
+  });
+
+  on('tpl:reset-one', async (el) => {
+    const idx = parseInt(el.dataset.idx, 10);
+    const ok  = await confirm(t('tplReset') + '?', '');
+    if (!ok) return;
+    writeDB(`settings/tplLibrary/${idx}`, null);
+    closeModal();
+    toast(`↩️ ${t('tplResetDone')}`, 'success');
+    setTimeout(render, 200);
   });
 
   on('admin:week:reset', async () => {

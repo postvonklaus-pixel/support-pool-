@@ -11,14 +11,13 @@ import { openModal, closeModal } from '../components/modal.js';
 import { confetti } from '../components/confetti.js';
 import { on }      from '../events.js';
 import { checkAchievements } from './achievements.js';
+import { TEMPLATES } from './adminTemplates.js';
 
-const COMMENTS = {
-  de: ['Super Video! Weiter so! 🔥','Tolles Content, macht weiter! 💪','Guter Inhalt, danke fürs Teilen! 👍','Sehr hilfreich, weiter so! ⭐','Klasse Video! 🎉','Hammer Content! 💯','Sehr gute Arbeit! 👏'],
-  en: ['Great video! Keep it up! 🔥','Awesome content! 💪','Good stuff, thanks for sharing! 👍','Very helpful, keep going! ⭐','Love this video! 🎉','Incredible work! 💯','Amazing content! 👏'],
-  id: ['Video yang bagus! Teruskan! 🔥','Konten keren banget! 💪','Bagus, terima kasih! 👍','Sangat membantu! ⭐','Video keren! 🎉'],
-  tr: ['Harika video! Devam et! 🔥','Müthiş içerik! 💪','Teşekkürler! 👍','Çok faydalı! ⭐','Süper video! 🎉'],
-  es: ['¡Buen video! ¡Sigue así! 🔥','¡Contenido increíble! 💪','¡Buen trabajo! 👍','¡Muy útil! ⭐','¡Vídeo genial! 🎉'],
-};
+function _getCommentPool(lang) {
+  const custom   = state.db.settings?.tplLibrary || {};
+  const defaults = TEMPLATES[lang] || TEMPLATES.de;
+  return defaults.map((def, i) => custom[i] ?? def);
+}
 
 let _copied      = false;
 let _videoOpened = false;
@@ -36,7 +35,7 @@ export function handleSupport(vidId) {
   const cu   = state.currentUser;
   const link = v.link || v.url || '#';
   const lang = state.lang;
-  const pool = COMMENTS[lang] || COMMENTS.de;
+  const pool = _getCommentPool(lang);
   const owner = v.ownerKey || v.owner || '?';
   const r1    = (v.r1Supporters || []).length;
   const r1n   = v.r1Need || 10;
