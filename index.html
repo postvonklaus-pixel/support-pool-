@@ -102,56 +102,107 @@
   <!-- Screen Container -->
   <main id="screen-container">
 
-    <!-- LOGIN -->
+    <!-- LOGIN · Obsidian Minimal -->
     <section id="screen-login" class="screen screen--login" role="main">
-      <div class="login-aurora" aria-hidden="true"></div>
-      <div class="login-wrap">
 
-        <!-- Broadcast banner (login-specific) -->
-        <div id="login-broadcast" class="login-broadcast hidden" role="alert"></div>
+      <!-- Background layer -->
+      <div class="login-bg" aria-hidden="true">
+        <div class="login-orb-1"></div>
+        <div class="login-orb-2"></div>
+      </div>
 
-        <!-- Live pill -->
-        <div class="login-live-pill" id="login-live-pill">
-          <span class="login-live-dot"></span>
-          <span id="login-live-text">LIVE</span>
-        </div>
+      <!-- Fixed top bar -->
+      <header class="login-topbar">
+        <div class="login-top-logo">NOVA</div>
+        <button class="login-lang-btn" id="login-lang-btn" data-action="login:lang-open">
+          🌐 DE ▾
+        </button>
+      </header>
 
-        <!-- Brand -->
-        <div class="login-brand">
-          <h1 class="login-brand__logo">NOVA Support Pool</h1>
-          <p class="login-brand__sub" id="login-tagline">Das Premium TikTok Support-Netzwerk</p>
-        </div>
-
-        <!-- Stats row -->
-        <p class="login-stat-row" id="login-stat-row">&nbsp;</p>
-
-        <!-- Glass card -->
+      <!-- Scrollable main area -->
+      <div class="login-main">
         <div class="login-card">
-          <!-- Language grid (5 × 2) -->
-          <div class="login-lang-grid" id="login-lang-row" role="group" aria-label="Language"></div>
+
+          <!-- Broadcast banner -->
+          <div id="login-broadcast" class="login-broadcast hidden" role="alert"></div>
+
+          <!-- Eyebrow -->
+          <div class="login-eyebrow" id="login-eyebrow">DEIN POOL · LIVE</div>
+
+          <!-- Logo (with fallback) -->
+          <img class="login-logo" id="login-logo"
+               src="images/login-logo.png"
+               alt="NOVA Support Pool"
+               onerror="this.style.display='none';document.getElementById('login-logo-fb').style.display='block'">
+          <div class="login-logo-fallback" id="login-logo-fb">NOVA</div>
+
+          <!-- Subtitle -->
+          <div class="login-subtitle">SUPPORT POOL</div>
+
+          <!-- Divider -->
+          <div class="login-divider"></div>
+
+          <!-- Headline -->
+          <div class="login-h1">Willkommen, Creator</div>
+          <div class="login-h2">Dein TikTok-Wachstum beginnt hier.</div>
+
+          <!-- Live row -->
+          <div class="login-live-row">
+            <div class="login-avatars" id="login-live-avatars">
+              <div class="login-av" style="background:hsl(280,65%,42%)">
+                <img src="images/avatar-1.png" alt=""
+                     onerror="this.remove()">
+              </div>
+              <div class="login-av" style="background:hsl(200,65%,42%)">
+                <img src="images/avatar-2.png" alt=""
+                     onerror="this.remove()">
+              </div>
+              <div class="login-av" style="background:hsl(160,65%,42%)">
+                <img src="images/avatar-3.png" alt=""
+                     onerror="this.remove()">
+              </div>
+              <div class="login-av" style="background:hsl(30,65%,42%)">
+                <img src="images/avatar-4.png" alt=""
+                     onerror="this.remove()">
+              </div>
+            </div>
+            <div class="login-live-text">
+              <span class="login-live-dot"></span>
+              <span id="login-live-count">...</span>
+            </div>
+          </div>
 
           <!-- Step 1: Name -->
           <div id="login-name-step">
             <div class="login-input-wrap">
-              <span class="login-input-icon" aria-hidden="true">@</span>
+              <div class="login-at-icon" aria-hidden="true">@</div>
               <input
                 class="login-input"
                 type="text"
                 id="login-name-input"
                 autocomplete="off"
+                autocorrect="off"
+                autocapitalize="off"
                 spellcheck="false"
-                placeholder="TikTok @username"
+                placeholder="TikTok Username"
                 aria-label="Username"
               >
               <div class="login-autocomplete" id="login-autocomplete" role="listbox"></div>
             </div>
             <button class="login-btn" id="login-btn" data-action="login:submit">
-              Einloggen →
+              <span id="login-btn-label">Pool betreten</span>
+              <span aria-hidden="true">→</span>
             </button>
-            <p class="login-hint" id="login-sub">100% kostenlos · Sofort starten</p>
+            <div class="login-micro">
+              <span>✓ <b>Sofort</b></span>
+              <span>·</span>
+              <span>✓ <b>Kostenlos</b></span>
+              <span>·</span>
+              <span>✓ <b>Sicher</b></span>
+            </div>
           </div>
 
-          <!-- Step 2: PIN (shown after user identified) -->
+          <!-- Step 2: PIN (static HTML, preserved) -->
           <div class="hidden" id="login-pin-step">
             <div class="login-pin__greet" id="pin-greet"></div>
             <div class="login-pin__label" id="pin-label">PIN eingeben</div>
@@ -177,12 +228,12 @@
             </div>
           </div>
 
-          <!-- Step 3: Register (shown when username not found) -->
+          <!-- Step 3: Register (static HTML, preserved) -->
           <div class="hidden" id="login-register-step">
             <div class="login-reg__icon">👋</div>
             <div class="login-reg__title">Neu hier?</div>
             <div class="login-reg__sub">
-              <span class="login-reg__name" style="color:var(--accent-primary);font-weight:700"></span>
+              <span class="login-reg__name" style="color:var(--login-accent);font-weight:700"></span>
               ist noch nicht registriert. Konto jetzt erstellen?
             </div>
             <button class="btn btn--primary btn--full btn--lg" style="margin-top:20px"
@@ -197,13 +248,22 @@
 
         </div>
 
-        <!-- Social proof -->
-        <div class="login-social" id="login-social">
-          <div class="login-social__avatars" id="login-social-avatars"></div>
-          <span class="login-social__text" id="login-social-text"></span>
-        </div>
-
+        <div class="login-footer">© 2025 NOVA SUPPORT POOL</div>
       </div>
+
+      <!-- Language modal (slide-up) -->
+      <div class="login-lang-modal" id="login-lang-modal" style="display:none"
+           role="dialog" aria-modal="true" aria-label="Sprache wählen">
+        <div class="login-lang-modal-content" id="login-lang-modal-content">
+          <div class="login-lang-modal-header">
+            <div class="login-lang-modal-title">Sprache wählen</div>
+            <button class="login-lang-modal-close" data-action="login:lang-close"
+                    aria-label="Schließen">✕</button>
+          </div>
+          <div class="login-lang-modal-list" id="login-lang-modal-list"></div>
+        </div>
+      </div>
+
     </section>
 
     <!-- DASHBOARD -->

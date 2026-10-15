@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════
-   NOVA Support Pool — Login Screen
+   NOVA Support Pool — Login Screen · Obsidian Minimal
    ═══════════════════════════════════════════════════════ */
 
 import { state, subscribe }   from '../state.js';
@@ -8,30 +8,41 @@ import { on }                 from '../events.js';
 import { ge, haptic, fbEnc, fbDec, copyToClipboard } from '../utils.js';
 import { toast }              from '../components/toast.js';
 import { writeDB }            from '../firebase.js';
-import { avatarGradient }     from '../utils.js';
 import { handlePinKey, handlePinDel, initPinPad, resetPin, shakePin } from '../components/pinpad.js';
 
 const LANG_LIST = ['de','en','id','it','es','tr','ar','zh','ja','pl'];
 
-let _step      = 'name';   // 'name' | 'pin' | 'register'
-let _username  = '';
-let _pendingVal = null;
-let _unsubDB   = null;
-let _timeoutId = null;
+const _LANG_META = {
+  de: { flag: '🇩🇪', name: 'Deutsch' },
+  en: { flag: '🇬🇧', name: 'English' },
+  id: { flag: '🇮🇩', name: 'Bahasa Indonesia' },
+  it: { flag: '🇮🇹', name: 'Italiano' },
+  es: { flag: '🇪🇸', name: 'Español' },
+  tr: { flag: '🇹🇷', name: 'Türkçe' },
+  ar: { flag: '🇸🇦', name: 'العربية' },
+  zh: { flag: '🇨🇳', name: '中文' },
+  ja: { flag: '🇯🇵', name: '日本語' },
+  pl: { flag: '🇵🇱', name: 'Polski' },
+};
 
+let _step       = 'name';
+let _username   = '';
+let _pendingVal = null;
+let _unsubDB    = null;
+let _timeoutId  = null;
+
+// ── Main render ───────────────────────────────────────
 export function render() {
   _cleanup();
-  _applyTranslations();
-  _renderLangRow();
+  _updateLangBtn();
   _renderStats();
-  _renderSocialProof();
   _renderLoginBroadcast();
   _setupHandlers();
   _reset();
   _watchDB();
 }
 
-// ── DB-ready gate ─────────────────────────────────────────
+// ── DB-ready gate ─────────────────────────────────────
 function _isDBReady() {
   return Object.keys(state.db.members || {}).length > 0;
 }
@@ -40,7 +51,7 @@ function _watchDB() {
   if (_isDBReady()) {
     _setLoginReady(true);
     _renderStats();
-    _renderSocialProof();
+    _renderLoginBroadcast();
     return;
   }
   _setLoginReady('loading');
@@ -51,7 +62,6 @@ function _watchDB() {
       _cleanup();
       _setLoginReady(true);
       _renderStats();
-      _renderSocialProof();
       _renderLoginBroadcast();
       if (queued) {
         const input = ge('login-name-input');
@@ -71,22 +81,25 @@ function _watchDB() {
 }
 
 function _setLoginReady(s) {
-  const btn = ge('login-btn');
+  const btn   = ge('login-btn');
+  const label = ge('login-btn-label');
   if (!btn) return;
   if (s === true) {
     btn.disabled = false;
     btn.style.opacity = '';
     btn.style.background = '';
-    btn.textContent = `${t('loginBtn') || 'Einloggen'} →`;
+    btn.style.color = '';
+    if (label) label.textContent = t('loginBtn') || 'Pool betreten';
   } else if (s === 'loading') {
     btn.disabled = true;
     btn.style.opacity = '0.55';
-    btn.textContent = t('loginLoading') || '⟳ Verbinde...';
+    if (label) label.textContent = t('loginLoading') || '⟳ Verbinde...';
   } else {
     btn.disabled = false;
     btn.style.opacity = '';
-    btn.style.background = 'var(--accent-error, #ef4444)';
-    btn.textContent = t('loginNoConn');
+    btn.style.background = 'var(--login-danger)';
+    btn.style.color = '#fff';
+    if (label) label.textContent = t('loginNoConn') || 'Keine Verbindung — Reload';
     btn.onclick = () => location.reload();
   }
 }
@@ -97,20 +110,38 @@ function _cleanup() {
   _pendingVal = null;
 }
 
-// ── Login broadcast banner ────────────────────────────────
+// ── Live stats (eyebrow + live-count) ────────────────
+function _renderStats() {
+  const members  = state.db.members  || {};
+  const memberCount = Object.keys(members).length;
+
+  const countEl = ge('login-live-count');
+  if (countEl) {
+    countEl.textContent = memberCount > 0
+      ? `${memberCount} ${t('statMembers') || 'Mitglieder aktiv'}`
+      : '...';
+  }
+
+  const eyebrow = ge('login-eyebrow');
+  if (eyebrow) {
+    eyebrow.textContent = memberCount >= 3
+      ? `${t('eyebrowLive') || 'DEIN POOL'} · LIVE`
+      : `${t('eyebrowStart') || 'DEIN POOL'} · STARTET`;
+  }
+}
+
+// ── Broadcast banner ──────────────────────────────────
 function _renderLoginBroadcast() {
   const el = ge('login-broadcast');
   if (!el) return;
   const settings = state.db.settings || {};
-  const text = settings.broadcast || '';
+  const text   = settings.broadcast || '';
   const active = settings.broadcastActive;
   if (!text || !active) { el.classList.add('hidden'); return; }
 
-  // Check 24h dismiss via localStorage hash
   try {
     const hash = btoa(text).slice(0, 16);
-    const dismissed = localStorage.getItem('sp_bc_dim');
-    if (dismissed === hash) { el.classList.add('hidden'); return; }
+    if (localStorage.getItem('sp_bc_dim') === hash) { el.classList.add('hidden'); return; }
   } catch {}
 
   el.classList.remove('hidden');
@@ -132,116 +163,65 @@ function _renderLoginBroadcast() {
   });
 }
 
-// ── Live stats from Firebase ──────────────────────────────
-function _renderStats() {
-  const members  = state.db.members  || {};
-  const videos   = state.db.videos   || {};
-  const settings = state.db.settings || {};
+// ── Language button & modal ───────────────────────────
+function _updateLangBtn() {
+  const btn = ge('login-lang-btn');
+  if (!btn) return;
+  const meta = _LANG_META[state.lang] || _LANG_META['de'];
+  btn.textContent = `${meta.flag} ${state.lang.toUpperCase()} ▾`;
+}
 
-  const memberCount   = Object.keys(members).length;
-  const liveVideos    = Object.values(videos).filter(v => v.status === 'open').length;
-  const totalSupports = settings.totalSupports || 0;
-
-  // Stats row
-  const row = ge('login-stat-row');
-  if (row && memberCount > 0) {
-    row.innerHTML =
-      `<strong>${totalSupports || 0}</strong> ${t('statPool') || 'Supports'} · ` +
-      `<strong>${memberCount}</strong> ${t('statMembers') || 'Mitglieder'} · ` +
-      `<strong>${liveVideos}</strong> Live`;
-  }
-
-  // Live pill text
-  const pillText = ge('login-live-text');
-  if (pillText) {
-    if (memberCount <= 2) {
-      pillText.textContent = t('loginPillStart') || '🚀 NOVA POOL STARTET';
-    } else if (memberCount < 10) {
-      pillText.textContent = `${memberCount} ${t('loginPillJoin') || 'CREATORS · JOIN'}`;
-    } else {
-      pillText.textContent = `${memberCount} ${t('loginPillLive') || 'CREATORS · LIVE'}`;
-    }
+function _toggleLangModal(open) {
+  const modal = ge('login-lang-modal');
+  if (!modal) return;
+  if (open === undefined) open = modal.style.display === 'none' || modal.style.display === '';
+  if (open) {
+    _renderLangModal();
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+  } else {
+    modal.style.display = 'none';
+    document.body.style.overflow = '';
   }
 }
 
-// ── Social proof ──────────────────────────────────────────
-function _renderSocialProof() {
-  const members  = state.db.members || {};
-  const keys     = Object.keys(members);
-  const count    = keys.length;
-
-  const avatarsEl = ge('login-social-avatars');
-  const textEl    = ge('login-social-text');
-  if (!avatarsEl || !textEl) return;
-
-  const shown = keys.slice(0, 3);
-  avatarsEl.innerHTML = shown.map(m => {
-    const display = fbDec(m);
-    const hue = (m.charCodeAt(0) * 7 + (m.charCodeAt(1) || 0) * 13) % 360;
-    return `<div class="login-social__avatar" style="background:hsl(${hue},65%,42%)">${display.slice(0,2).toUpperCase()}</div>`;
-  }).join('');
-
-  textEl.textContent = count < 5
-    ? (t('beOneOfFirst') || 'Sei einer der Ersten')
-    : (t('nowPushing') || '{n} pushen gerade').replace('{n}', count);
-}
-
-// ── Translations ──────────────────────────────────────────
-function _applyTranslations() {
-  const tagline = ge('login-tagline');
-  if (tagline) tagline.textContent = t('loginSub') || 'Das Premium TikTok Support-Netzwerk';
-
-  const hint = ge('login-sub');
-  if (hint) hint.textContent = `${t('free') || '100% kostenlos'} · ${t('instantAccess') || 'Sofort starten'}`;
-
-  const nameInput = ge('login-name-input');
-  if (nameInput) nameInput.placeholder = t('loginPH') || 'TikTok @username';
-
-  const pinLabel = ge('pin-label');
-  if (pinLabel) pinLabel.textContent = t('pinLabel');
-
-  const pinForgot = ge('pin-forgot-link');
-  if (pinForgot) pinForgot.textContent = t('pinForgot');
-}
-
-// ── Language row (Twemoji SVG flags) ─────────────────────
-const _TWEMOJI_BASE = 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg';
-const _TWEMOJI_CP = {
-  de:'1f1e9-1f1ea', en:'1f1ec-1f1e7', id:'1f1ee-1f1e9',
-  it:'1f1ee-1f1f9', es:'1f1ea-1f1f8', tr:'1f1f9-1f1f7',
-  ar:'1f1f8-1f1e6', zh:'1f1e8-1f1f3', ja:'1f1ef-1f1f5', pl:'1f1f5-1f1f1'
-};
-
-function _renderLangRow() {
-  const row = ge('login-lang-row');
-  if (!row) return;
-  row.innerHTML = LANG_LIST.map(l => {
-    const active = l === state.lang ? ' active' : '';
-    const cp = _TWEMOJI_CP[l];
-    const flagImg = cp
-      ? `<img src="${_TWEMOJI_BASE}/${cp}.svg" width="24" height="24" alt="${l}" loading="lazy">`
-      : l.toUpperCase();
-    return `<button class="lang-pill${active}" data-action="lang:set" data-lang="${l}" aria-label="${l}">${flagImg}</button>`;
+function _renderLangModal() {
+  const list = ge('login-lang-modal-list');
+  if (!list) return;
+  list.innerHTML = LANG_LIST.map(l => {
+    const meta    = _LANG_META[l];
+    const isActive = l === state.lang;
+    return `<button class="login-lang-item${isActive ? ' active' : ''}"
+              data-action="login:lang-select" data-lang="${l}">
+      <span class="login-lang-item__flag">${meta.flag}</span>
+      <span>${meta.name}</span>
+      ${isActive ? '<span class="login-lang-item__check">✓</span>' : ''}
+    </button>`;
   }).join('');
 }
 
-// ── Wire handlers ─────────────────────────────────────────
+// ── Wire handlers ─────────────────────────────────────
 function _setupHandlers() {
   on('login:submit',      _handleNameSubmit);
   on('login:register',    _handleRegisterConfirm);
   on('login:reg:cancel',  _handleRegisterCancel);
   on('pin:key',           (el) => _handlePinKey(el));
-  on('pin:del',           () => _handlePinDel());
+  on('pin:del',           ()   => _handlePinDel());
   on('pin:forgot',        _handleForgot);
-  on('lang:set',          (el) => {
+
+  on('login:lang-open',  ()   => _toggleLangModal(true));
+  on('login:lang-close', ()   => _toggleLangModal(false));
+
+  on('login:lang-select', (el) => {
     const lang = el.dataset.lang;
+    if (!lang) return;
     setLang(lang);
     import('../state.js').then(({ setState }) => setState('userSelectedLang', lang));
-    _renderLangRow();
-    _applyTranslations();
+    _toggleLangModal(false);
+    _updateLangBtn();
     _renderStats();
-    _renderSocialProof();
   });
+
   on('login:ac-select', (el) => {
     const username = el.dataset.username;
     if (!username) return;
@@ -252,12 +232,20 @@ function _setupHandlers() {
     _handleNameSubmit();
   });
 
-  // Autocomplete on input
+  // Close modal when clicking backdrop
+  const modal = ge('login-lang-modal');
+  if (modal) {
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) _toggleLangModal(false);
+    });
+  }
+
+  // Autocomplete
   const input = ge('login-name-input');
   if (input) {
-    input.addEventListener('input', (e) => _renderAutocomplete(e.target.value));
+    input.addEventListener('input',   (e) => _renderAutocomplete(e.target.value));
     input.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') { e.preventDefault(); _handleNameSubmit(); }
+      if (e.key === 'Enter')  { e.preventDefault(); _handleNameSubmit(); }
       if (e.key === 'Escape') ge('login-autocomplete')?.classList.remove('open');
     });
     input.addEventListener('blur', () => {
@@ -266,7 +254,7 @@ function _setupHandlers() {
   }
 }
 
-// ── Autocomplete ──────────────────────────────────────────
+// ── Autocomplete ──────────────────────────────────────
 function _renderAutocomplete(query) {
   const ac = ge('login-autocomplete');
   if (!ac) return;
@@ -288,7 +276,7 @@ function _renderAutocomplete(query) {
   ac.classList.add('open');
 }
 
-// ── Name step ─────────────────────────────────────────────
+// ── Name step ─────────────────────────────────────────
 function _handleNameSubmit() {
   if (_step !== 'name') return;
   const input = ge('login-name-input');
@@ -303,10 +291,11 @@ function _handleNameSubmit() {
   }
 
   const members = state.db.members || {};
-  const valEnc = fbEnc(val);
-  const found = Object.keys(members).find(k =>
+  const valEnc  = fbEnc(val);
+  const found   = Object.keys(members).find(k =>
     k.toLowerCase() === val.toLowerCase() || k.toLowerCase() === valEnc.toLowerCase()
   );
+
   if (!found) {
     _username = val;
     _showRegisterStep(val);
@@ -316,7 +305,6 @@ function _handleNameSubmit() {
   _username = found;
   const u = members[found];
 
-  // Security gate: admin-role users must be in settings.admins and active
   if (u.role === 'admin') {
     const admins = state.db.settings?.admins;
     if (!u.status || u.status !== 'active' ||
@@ -346,7 +334,7 @@ function _showPinStep(username, u) {
   initPinPad({ maxLen: 4, onSubmit: (pin) => _checkPin(pin, u.memberPin) });
 }
 
-// ── Register step ─────────────────────────────────────────
+// ── Register step ─────────────────────────────────────
 function _showRegisterStep(username) {
   _step = 'register';
   ge('login-name-step')?.classList.add('hidden');
@@ -382,9 +370,7 @@ function _handleRegisterConfirm() {
   });
 
   toast(t('loginWelcome') || `Willkommen, @${username}! 🎉`, 'success', 3000);
-  setTimeout(() => {
-    import('../main.js').then(m => m.loginAs(key));
-  }, 800);
+  setTimeout(() => import('../main.js').then(m => m.loginAs(key)), 800);
 }
 
 function _handleRegisterCancel() {
@@ -396,7 +382,7 @@ function _handleRegisterCancel() {
   if (input) { input.value = ''; input.focus(); }
 }
 
-// ── PIN step ──────────────────────────────────────────────
+// ── PIN step ──────────────────────────────────────────
 function _handlePinKey(el) {
   if (_step !== 'pin') return;
   handlePinKey(el, 4);
@@ -418,8 +404,6 @@ function _checkPin(entered, stored) {
 function _handleForgot() {
   const pinStep = ge('login-pin-step');
   if (!pinStep) return;
-
-  // Replace PIN pad with reset confirmation
   pinStep.innerHTML = `
     <div class="pin-forgot-card">
       <div class="pin-forgot-card__icon">🔑</div>
@@ -435,21 +419,19 @@ function _handleForgot() {
       </button>
     </div>
   `;
-
   ge('pin-reset-confirm')?.addEventListener('click', () => {
     import('../firebase.js').then(({ writeDB }) => {
       writeDB(`members/${_username}/memberPin`, null);
       import('../main.js').then(m => m.loginAs(_username));
     });
   });
-
   ge('pin-reset-cancel')?.addEventListener('click', () => {
     const u = state.db.members?.[_username] || {};
     _showPinStep(_username, u);
   });
 }
 
-// ── Reset ─────────────────────────────────────────────────
+// ── Reset ─────────────────────────────────────────────
 function _reset() {
   _step = 'name';
   _username = '';
