@@ -250,11 +250,11 @@ function _restoreState() {
 }
 
 // ── FAQ Data ───────────────────────────────────────────────
-const FAQ = [
+const _FAQ_DE = [
   { q: 'Was ist der NOVA Support Pool?',
     a: 'Eine gegenseitige TikTok-Community. Du kommentierst auf Videos anderer — sie auf deinen. Kein Algorithmus, nur echte Menschen.' },
   { q: 'Wie berechnet sich das Guthaben?',
-    a: 'Guthaben = Gegeben − Erhalten (max. +20). Support geben = +1, Video erhalten = −1. Negatives Guthaben sperrt neue Posts.' },
+    a: 'Guthaben = Gegeben minus Erhalten (max. +20). Support geben = +1, Video erhalten = −1. Negatives Guthaben sperrt neue Posts.' },
   { q: 'Wie oft kann ich ein Video posten?',
     a: 'Einmal alle 24 Stunden. Der Cooldown startet beim letzten Post.' },
   { q: 'Was sind Runden (R1/R2)?',
@@ -268,6 +268,7 @@ const FAQ = [
   { q: 'Wie melde ich mich ab?',
     a: 'Account → Abmelden (oben). Deine Daten im Pool bleiben erhalten.' },
 ];
+function _getFAQ() { return t('faqItems') || _FAQ_DE; }
 
 function _renderBroadcastSection(cu) {
   const settings = state.db.settings || {};
@@ -304,7 +305,7 @@ function _renderBroadcastSection(cu) {
 }
 
 function _faqHTML() {
-  return FAQ.map((item, i) => `
+  return _getFAQ().map((item, i) => `
     <div class="faq-item${i > 0 ? '' : ''}" id="faq-k-${i}">
       ${i > 0 ? '<div class="settings-group__divider"></div>' : ''}
       <button class="faq-item__q" data-action="faq:toggle" data-id="faq-k-${i}">

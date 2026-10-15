@@ -211,6 +211,12 @@ on('support:done', (el) => {
     writeDB(`videos/${dbVidId}/round`, 2);
   }
 
+  // Optimistic local state update so feed re-renders immediately
+  if (state.db.videos?.[dbVidId]) {
+    state.db.videos[dbVidId][field] = newSups;
+    if (rnd === 1 && newSups.length >= r1n) state.db.videos[dbVidId].round = 2;
+  }
+
   // Supporter stats
   const u = state.db.members?.[cu] || {};
   const stats = u.stats || {};
@@ -239,6 +245,9 @@ on('support:done', (el) => {
   closeModal('support-modal');
   confetti();
   toast(t('sfSuccess'), 'success');
+
+  // Re-render feed immediately with the optimistic state update
+  import('../router.js').then(m => m.renderActive());
 
   // Check achievements after a brief delay (so DB write propagates to state)
   setTimeout(() => checkAchievements(cu), 600);
