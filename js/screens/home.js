@@ -12,6 +12,7 @@ import { trustBadge } from '../features/trust.js';
 import { emptyState } from '../components/empty-state.js';
 import { isVerified, VERIFIED_BADGE } from '../features/verification.js';
 import { isSupportLocked } from '../features/supportLock.js';
+import { getNextFridayWIB } from '../utils.js';
 
 const R1_NEED = 10;
 const R2_NEED = 10;
@@ -45,6 +46,7 @@ export function render() {
 
   el.innerHTML = `
     ${_poolStatusBar(openVideos.length, todaySupports, u)}
+    <div class="weekly-reset-chip" id="home-weekly-chip">${_weeklyCountdownText()}</div>
 
     <div class="home-tabs" role="tablist">
       <button class="home-tab ${_tab==='feed'?'home-tab--active':''}"
@@ -70,6 +72,7 @@ export function render() {
   `;
 
   _registerHandlers();
+  _startWeeklyChipTimer();
 
   if (_tab === 'balance' && u.lastPost && (Date.now() - u.lastPost) < R1_MS) {
     startCircularTimer('home-ctimer');
@@ -429,4 +432,25 @@ function _registerHandlers() {
     _tab = el.dataset.tab || 'feed';
     render();
   });
+}
+
+let _weeklyTimer = null;
+
+function _weeklyCountdownText() {
+  const diff  = getNextFridayWIB() - Date.now();
+  const days  = Math.floor(diff / 86400000);
+  const hours = Math.floor((diff % 86400000) / 3600000);
+  const mins  = Math.floor((diff % 3600000) / 60000);
+  const rem   = t('remaining') || 'noch';
+  const when  = t('weeklyResetWhen') || 'Fr 00:00 WIB';
+  return `🔄 ${t('weeklyResetLabel') || 'Wochen-Reset'}: ${when} · ${rem} ${days}d ${hours}h ${mins}m`;
+}
+
+function _startWeeklyChipTimer() {
+  clearInterval(_weeklyTimer);
+  _weeklyTimer = setInterval(() => {
+    const chip = document.getElementById('home-weekly-chip');
+    if (!chip) { clearInterval(_weeklyTimer); return; }
+    chip.textContent = _weeklyCountdownText();
+  }, 60000);
 }

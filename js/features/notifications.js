@@ -8,6 +8,33 @@ import { toast }   from '../components/toast.js';
 import { openModal, closeModal } from '../components/modal.js';
 import { esc }     from '../utils.js';
 import { on }      from '../events.js';
+import { getAllLangs } from '../i18n.js';
+
+export function addNotif(to, icon, _text, subtype, data) {
+  const id = `n${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+  const msg = { id, to, icon, type: 'notif', read: false, ts: Date.now() };
+  if (subtype) msg.subtype = subtype;
+  if (data)    Object.assign(msg, data);
+  writeDB(`messages/${id}`, msg);
+}
+
+export function renderNotification(notif, userLang) {
+  const langs = getAllLangs();
+  const lang  = userLang || state.lang || 'de';
+  const dict  = langs[lang] || langs.de;
+  const de    = langs.de;
+  const tr    = (k) => dict[k] || de[k] || k;
+  if (notif.msgKey) {
+    let text = tr(notif.msgKey);
+    if (notif.params) {
+      Object.entries(notif.params).forEach(([k, v]) => {
+        text = text.replace(`{${k}}`, v);
+      });
+    }
+    return text;
+  }
+  return notif.message || notif.text || '';
+}
 
 export function delNotif(id) {
   if (!id) return;

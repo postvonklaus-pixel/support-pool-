@@ -27,6 +27,25 @@
 /* ── My Videos new layout ──────────────────────────────── */
 .myvids-scroll { flex: 1; overflow-y: auto; padding: var(--sp-4); }
 
+/* ── Overflow / wackeln Fix ────────────────────────────── */
+.myvideos-content {
+  overflow-x: hidden !important;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+.myvids-scroll {
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+.video-card, .my-video-card, .myvideo-card {
+  overflow-x: hidden;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+.my-video-card *, .myvideo-card * { max-width: 100%; }
+
 /* ── Empty hero (single CTA, no repeats) ─────────────── */
 .myvids-empty-hero {
   display: flex; flex-direction: column; align-items: center;

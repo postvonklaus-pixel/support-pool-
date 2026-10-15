@@ -12,6 +12,8 @@ import { confetti } from '../components/confetti.js';
 import { on }      from '../events.js';
 import { checkAchievements } from './achievements.js';
 import { TEMPLATES } from './adminTemplates.js';
+import { addNotif } from './notifications.js';
+import { fbDec } from '../utils.js';
 
 function _getCommentPool(lang) {
   const custom   = state.db.settings?.tplLibrary || {};
@@ -226,11 +228,11 @@ on('support:done', (el) => {
     const ownerStats = ownerData.stats || {};
     writeDB(`members/${owner}/stats/received`, (ownerStats.received || 0) + 1);
 
-    const notifId = `notif_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
-    writeDB(`messages/${notifId}`, {
-      to: owner, from: cu, type: 'notif',
-      icon: '💬', message: `@${cu} hat dein Video supportet! 💪`,
-      ts: Date.now(), read: false,
+    const senderName = state.db.members?.[cu]?.name || fbDec(cu);
+    addNotif(owner, '💬', '', 'support', {
+      from: cu,
+      msgKey: 'supportMsg',
+      params: { from: senderName },
     });
   }
 

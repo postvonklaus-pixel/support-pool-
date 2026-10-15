@@ -5,7 +5,7 @@
 import { state, setState, subscribe } from './state.js';
 import { storage, loadSession, getLang } from './storage.js';
 import { initTheme } from './features/theme.js';
-import { ge, toast } from './utils.js';
+import { ge, toast, getLastFridayWIB } from './utils.js';
 import { initFirebase, saveDB, writeDB } from './firebase.js';
 import { initI18n, setLang } from './i18n.js';
 import { initEvents } from './events.js';
@@ -151,20 +151,11 @@ export async function loginAs(username) {
   return true;
 }
 
-// ── Auto Weekly Reset ─────────────────────────────────────
-function _getWeekStart() {
-  const now = new Date();
-  const diff = now.getDay() === 0 ? 6 : now.getDay() - 1; // days since Monday
-  const mon  = new Date(now);
-  mon.setDate(now.getDate() - diff);
-  mon.setHours(0, 0, 0, 0);
-  return mon.getTime();
-}
-
+// ── Auto Weekly Reset (Friday 00:00 WIB) ─────────────────
 function _checkAutoWeekReset() {
-  const lastReset = state.db.settings?.lastWeeklyReset || 0;
-  const weekStart = _getWeekStart();
-  if (lastReset >= weekStart) return; // already reset this week
+  const lastReset  = state.db.settings?.lastWeeklyReset || 0;
+  const lastFriday = getLastFridayWIB();
+  if (lastReset >= lastFriday) return;
 
   const members = state.db.members || {};
   Object.keys(members).forEach(k => writeDB(`members/${k}/weeklyGiven`, 0));

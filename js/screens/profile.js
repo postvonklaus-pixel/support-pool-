@@ -4,7 +4,8 @@
 
 import { state }      from '../state.js';
 import { t }          from '../i18n.js';
-import { esc, timeAgo, avatarGradient } from '../utils.js';
+import { esc, timeAgo, avatarGradient, getNextFridayWIB } from '../utils.js';
+import { renderNotification } from '../features/notifications.js';
 import { on }         from '../events.js';
 import { toast }      from '../components/toast.js';
 import { writeDB }    from '../firebase.js';
@@ -63,6 +64,7 @@ export function render() {
         <div class="profile-name">${esc(u.name || cu)}</div>
         <div class="profile-handle">@${esc(cu)}</div>
         <div class="profile-rank-label" style="color:${rank.color}">${rank.icon} ${rank.label}</div>
+        <div class="profile-weekly-chip" id="profile-weekly-chip">${_weeklyChipText()}</div>
       </div>
 
       <!-- ── Stats ── -->
@@ -191,7 +193,8 @@ function _renderNotifs(notifs, cu) {
     const fromKey  = m.from || null;
     const fromName = fromKey && state.db.members?.[fromKey]
       ? (state.db.members[fromKey].name || fromKey) : (fromKey || '');
-    const msg     = m.message || m.text || '';
+    const userLang = state.db.members?.[cu]?.lang || state.lang;
+    const msg     = renderNotification(m, userLang);
     const unread  = !m.read;
     return `
       <div class="notif-card ${unread ? 'notif-card--unread' : ''}" data-notif-id="${esc(m._id)}">
@@ -250,4 +253,14 @@ function _registerHandlers() {
     if (!fromKey) return;
     import('../features/notifications.js').then(m => m.openReply(fromKey));
   });
+}
+
+function _weeklyChipText() {
+  const diff  = getNextFridayWIB() - Date.now();
+  const days  = Math.floor(diff / 86400000);
+  const hours = Math.floor((diff % 86400000) / 3600000);
+  const mins  = Math.floor((diff % 3600000) / 60000);
+  const rem   = t('remaining') || 'noch';
+  const when  = t('weeklyResetWhen') || 'Fr 00:00 WIB';
+  return `🔄 ${t('weeklyResetLabel') || 'Wochen-Reset'}: ${when} · ${rem} ${days}d ${hours}h ${mins}m`;
 }

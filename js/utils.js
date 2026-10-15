@@ -198,3 +198,24 @@ export function safeJSON(str, fallback = null) {
 export function uid(prefix = 'n') {
   return `${prefix}${Date.now()}_${(Math.random() * 99999 | 0)}`;
 }
+
+// ── WIB Weekly Reset helpers (UTC+7, reset on Friday 00:00) ──
+const WIB_OFFSET_MS = 7 * 3600000;
+
+export function getLastFridayWIB() {
+  const nowWIB  = Date.now() + WIB_OFFSET_MS;
+  const d       = new Date(nowWIB);
+  const dow     = d.getUTCDay(); // 0=Sun … 5=Fri … 6=Sat
+  const daysSinceFri = (dow + 7 - 5) % 7; // days since last Friday
+  const midnightWIB  = nowWIB
+    - daysSinceFri * 86400000
+    - d.getUTCHours()   * 3600000
+    - d.getUTCMinutes() * 60000
+    - d.getUTCSeconds() * 1000
+    - d.getUTCMilliseconds();
+  return midnightWIB - WIB_OFFSET_MS; // back to UTC ms
+}
+
+export function getNextFridayWIB() {
+  return getLastFridayWIB() + 7 * 86400000;
+}
