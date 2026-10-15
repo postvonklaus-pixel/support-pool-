@@ -35,7 +35,7 @@ let _timeoutId  = null;
 export function render() {
   _cleanup();
   _updateLangBtn();
-  _renderStats();
+  _updateTexts();
   _renderLoginBroadcast();
   _setupHandlers();
   _reset();
@@ -89,7 +89,7 @@ function _setLoginReady(s) {
     btn.style.opacity = '';
     btn.style.background = '';
     btn.style.color = '';
-    if (label) label.textContent = t('loginBtn') || 'Pool betreten';
+    if (label) label.textContent = t('loginBtnEnter') || t('loginBtn') || 'Pool betreten';
   } else if (s === 'loading') {
     btn.disabled = true;
     btn.style.opacity = '0.55';
@@ -117,17 +117,41 @@ function _renderStats() {
 
   const countEl = ge('login-live-count');
   if (countEl) {
+    const tpl = t('loginLiveMembers') || '{n} Mitglieder aktiv';
     countEl.textContent = memberCount > 0
-      ? `${memberCount} ${t('statMembers') || 'Mitglieder aktiv'}`
+      ? tpl.replace('{n}', memberCount)
       : '...';
   }
 
   const eyebrow = ge('login-eyebrow');
   if (eyebrow) {
     eyebrow.textContent = memberCount >= 3
-      ? `${t('eyebrowLive') || 'DEIN POOL'} · LIVE`
-      : `${t('eyebrowStart') || 'DEIN POOL'} · STARTET`;
+      ? t('loginEyebrowLive') || 'Mitglieder · Live'
+      : t('loginEyebrowStart') || 'Dein Pool startet';
   }
+}
+
+// ── Update all i18n texts on the login screen ────────
+function _updateTexts() {
+  const set = (id, val) => { const e = ge(id); if (e) e.textContent = val; };
+
+  set('login-h1',           t('loginH1')           || 'Willkommen, Creator');
+  set('login-h2',           t('loginH2')           || 'Dein TikTok-Wachstum beginnt hier.');
+  set('login-micro-instant',t('loginMicroInstant') || 'Sofort');
+  set('login-micro-free',   t('loginMicroFree')    || 'Kostenlos');
+  set('login-micro-secure', t('loginMicroSecure')  || 'Sicher');
+  set('login-footer-privacy',t('loginFooterPrivacy')|| 'Datenschutz');
+
+  const input = ge('login-name-input');
+  if (input) input.placeholder = t('loginInputPlaceholder') || 'TikTok Username';
+
+  const btnLabel = ge('login-btn-label');
+  const btn      = ge('login-btn');
+  if (btnLabel && btn && !btn.disabled) {
+    btnLabel.textContent = t('loginBtnEnter') || t('loginBtn') || 'Pool betreten';
+  }
+
+  _renderStats();
 }
 
 // ── Broadcast banner ──────────────────────────────────
@@ -219,7 +243,7 @@ function _setupHandlers() {
     import('../state.js').then(({ setState }) => setState('userSelectedLang', lang));
     _toggleLangModal(false);
     _updateLangBtn();
-    _renderStats();
+    _updateTexts();
   });
 
   on('login:ac-select', (el) => {
