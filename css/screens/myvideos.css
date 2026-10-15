@@ -27,6 +27,21 @@
 /* ── My Videos new layout ──────────────────────────────── */
 .myvids-scroll { flex: 1; overflow-y: auto; padding: var(--sp-4); }
 
+/* ── Timing row (posted date + expiry countdown) ─────── */
+.myvid-card__timing {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2) var(--sp-3);
+  padding: var(--sp-1) 0;
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+}
+.myvid-expires {
+  font-variant-numeric: tabular-nums;
+  color: var(--accent-warning);
+  font-weight: var(--weight-semibold);
+}
+
 /* ── Overflow / wackeln Fix ────────────────────────────── */
 .myvideos-content {
   overflow-x: hidden !important;

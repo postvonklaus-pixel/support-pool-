@@ -19,6 +19,9 @@ export function addNotif(to, icon, _text, subtype, data) {
 }
 
 export function renderNotification(notif, userLang) {
+  // weeklyMsg subtype: the text is stored directly in notif.message
+  if (notif.subtype === 'weeklyMsg') return notif.message || notif.text || '';
+
   const langs = getAllLangs();
   const lang  = userLang || state.lang || 'de';
   const dict  = langs[lang] || langs.de;

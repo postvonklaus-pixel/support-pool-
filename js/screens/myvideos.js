@@ -5,6 +5,7 @@
 import { state }    from '../state.js';
 import { t }        from '../i18n.js';
 import { esc, timeAgo } from '../utils.js';
+import { renderNotification } from '../features/notifications.js';
 import { on }       from '../events.js';
 import { writeDB }  from '../firebase.js';
 import { toast }    from '../components/toast.js';
@@ -71,6 +72,7 @@ export function render() {
   `;
 
   _registerHandlers();
+  _startExpiryTimer();
 }
 
 // ── Status-Card (B2.3) ─────────────────────────────────────
@@ -95,18 +97,19 @@ function _renderStatusCard(vids) {
     </div>`;
 }
 
-// ── Notifications (B2.3) ──────────────────────────────────
+// ── Notifications (support-type only) ─────────────────────
 function _getNotifs(cu) {
   const msgs = state.db.messages || {};
   return Object.entries(msgs)
-    .filter(([, m]) => m.to === cu || m.recipient === cu)
+    .filter(([, m]) => (m.to === cu || m.recipient === cu) && m.type === 'notif')
     .sort(([, a], [, b]) => (b.ts || 0) - (a.ts || 0))
-    .slice(0, 10)
+    .slice(0, 15)
     .map(([id, m]) => ({ ...m, _id: id }));
 }
 
 function _renderNotifSection(notifs, cu) {
   const unread = notifs.filter(n => !n.read).length;
+  const userLang = state.db.members?.[cu]?.lang || state.lang;
   return `
     <div class="myvid-notif-section">
       <div class="myvid-notif-section__head">
@@ -117,10 +120,10 @@ function _renderNotifSection(notifs, cu) {
       </div>
       ${notifs.map(n => `
         <div class="myvid-notif-item${n.read ? '' : ' myvid-notif-item--unread'}" data-notif-id="${esc(n._id)}">
-          <div class="myvid-notif-item__icon">💬</div>
+          <div class="myvid-notif-item__icon">${n.icon || '🔔'}</div>
           <div class="myvid-notif-item__body">
-            <div class="myvid-notif-item__text">${esc(n.text || n.body || '...')}</div>
-            <div class="myvid-notif-item__meta">${t('notifFrom')} @${esc(n.from || n.sender || '?')} · ${timeAgo(n.ts)}</div>
+            <div class="myvid-notif-item__text">${esc(renderNotification(n, userLang))}</div>
+            <div class="myvid-notif-item__meta">${n.ts ? timeAgo(n.ts) : ''}</div>
           </div>
         </div>
       `).join('')}
@@ -140,6 +143,10 @@ function _vidCard(v) {
     ? new Date(v.scheduledFor).toLocaleString('de-DE', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' })
     : null;
 
+  const postedTs  = v.postedAt || v.ts || 0;
+  const postedFmt = postedTs ? new Date(postedTs).toLocaleString('de-DE', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' }) : '';
+  const expiresTs = v.expiresR1 || 0;
+
   return `<div class="card card--glass myvid-card" data-vid-id="${esc(v.id || '')}">
     <div class="myvid-card__header">
       <a href="${esc(link)}" target="_blank" rel="noopener" class="myvid-card__link">
@@ -148,6 +155,15 @@ function _vidCard(v) {
       <span class="badge ${isDone ? 'badge--success' : isScheduled ? 'badge--warning' : 'badge--primary'}">
         ${isDone ? t('mvDone') : isScheduled ? `⏰ ${schedLabel}` : `R${v.round || 1}`}
       </span>
+    </div>
+    <div class="myvid-card__timing">
+      ${postedFmt ? `<span>📅 ${t('posted') || 'Gepostet'}: ${postedFmt}</span>` : ''}
+      ${isDone
+        ? `<span>✅ ${t('doneLabel') || 'Abgeschlossen'}</span>`
+        : expiresTs
+          ? `<span>⏰ ${t('expiresAt') || 'Läuft ab'}: <span class="myvid-expires" data-expires="${expiresTs}">${_renderTimeLeft(expiresTs)}</span></span>`
+          : ''
+      }
     </div>
     <div class="myvid-card__progress">
       <div class="myvid-card__prog-label">R1 <span>${r1}/${r1n}</span></div>
@@ -167,6 +183,26 @@ function _vidCard(v) {
       </button>` : ''}
     </div>
   </div>`;
+}
+
+function _renderTimeLeft(expiresAt) {
+  const diff = Math.max(0, expiresAt - Date.now());
+  if (!diff) return t('expired') || 'Abgelaufen';
+  const h = Math.floor(diff / 3600000);
+  const m = Math.floor((diff % 3600000) / 60000);
+  const s = Math.floor((diff % 60000) / 1000);
+  return `${h}h ${m}m ${s}s`;
+}
+
+let _expiryTimer = null;
+
+function _startExpiryTimer() {
+  clearInterval(_expiryTimer);
+  _expiryTimer = setInterval(() => {
+    document.querySelectorAll('.myvid-expires').forEach(el => {
+      el.textContent = _renderTimeLeft(parseInt(el.dataset.expires));
+    });
+  }, 1000);
 }
 
 function _registerHandlers() {

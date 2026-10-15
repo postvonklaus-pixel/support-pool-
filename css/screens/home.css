@@ -99,6 +99,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
+  padding-bottom: var(--space-4);
 }
 
 /* ── Feed Card ────────────────────────────────────────────── */
@@ -546,4 +547,47 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* ── Pool-Puls ─────────────────────────────────────────── */
+.pool-pulse {
+  margin: var(--sp-3) var(--sp-4) 0;
+  padding: var(--sp-3) var(--sp-4);
+  background: var(--bg-glass);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+}
+.pool-pulse__title {
+  font-size: var(--text-xs);
+  font-weight: var(--weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-tertiary);
+  margin-bottom: var(--sp-2);
+}
+.pool-pulse__stats {
+  display: flex;
+  gap: var(--sp-4);
+  flex-wrap: wrap;
+}
+.pool-pulse__stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 80px;
+}
+.pool-pulse__stat-val {
+  font-size: var(--text-xl);
+  font-weight: var(--weight-black);
+  font-family: var(--font-display);
+  color: var(--accent-primary);
+}
+.pool-pulse__stat-val--name {
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+}
+.pool-pulse__stat-label {
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
 }

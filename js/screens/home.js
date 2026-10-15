@@ -73,6 +73,7 @@ export function render() {
 
   _registerHandlers();
   _startWeeklyChipTimer();
+  _startPulseTimer();
 
   if (_tab === 'balance' && u.lastPost && (Date.now() - u.lastPost) < R1_MS) {
     startCircularTimer('home-ctimer');
@@ -133,10 +134,10 @@ function _renderFeedTab(videos, cu) {
   if (!videos.length) {
     return emptyState('🎯', t('noOpen'), t('noOpenSub'),
       { action: 'post:open', actionLabel: `+ ${t('postBtn')}` })
-      + _successStoriesSection();
+      + _poolPulseSection();
   }
   return `<div class="feed-list">${videos.map(v => _videoCard(v, locked)).join('')}</div>`
-    + _successStoriesSection();
+    + _poolPulseSection();
 }
 
 function _videoCard(v, locked = false) {
@@ -213,38 +214,56 @@ function _videoCard(v, locked = false) {
   `;
 }
 
-// ── Success Stories (B3.3) ─────────────────────────────────
-function _successStoriesSection() {
-  const done = Object.values(state.db.videos || {})
-    .filter(v => v.status === 'done')
-    .sort((a, b) => (b.doneAt || b.postedAt || 0) - (a.doneAt || a.postedAt || 0))
-    .slice(0, 5);
+// ── Pool-Puls ──────────────────────────────────────────────
+let _pulseTimer = null;
 
-  if (!done.length) return '';
+function _poolPulseSection() {
+  const today   = new Date().toISOString().slice(0, 10);
+  const members = state.db.members || {};
+  const videos  = state.db.videos  || {};
+
+  const todayCount = Object.values(members).reduce((sum, m) => {
+    const days = m.supportDays || m.activeDays || [];
+    return sum + (days.includes(today) ? 1 : 0);
+  }, 0);
+
+  let topUser = null, topVal = 0;
+  Object.entries(members).forEach(([k, m]) => {
+    if ((m.weeklyGiven || 0) > topVal) { topVal = m.weeklyGiven; topUser = k; }
+  });
+
+  const newVid = Object.values(videos)
+    .filter(v => v.postedAt && new Date(v.postedAt).toISOString().slice(0, 10) === today)
+    .sort((a, b) => (b.postedAt || 0) - (a.postedAt || 0))[0];
 
   return `
-    <div class="success-stories">
-      <div class="success-stories__title">🏆 ${t('successTitle') || 'Erfolgsgeschichten'}</div>
-      ${done.map(v => {
-        const owner    = v.ownerKey || v.owner || '?';
-        const link     = v.link || v.url || '#';
-        const urlShort = link.replace(/^https?:\/\/(www\.)?/, '').slice(0, 32);
-        const gradient = avatarGradient(owner);
-        const ownerU   = state.db.members?.[owner] || state.db.members?.[owner.toLowerCase()];
-        const vBadge   = ownerU && isVerified(ownerU) ? VERIFIED_BADGE : '';
-        return `<div class="success-card">
-          <div class="success-card__avatar" style="background:${gradient}" aria-hidden="true">
-            ${owner.slice(0, 2).toUpperCase()}
-          </div>
-          <div class="success-card__body">
-            <div class="success-card__owner">${vBadge} @${esc(owner)}</div>
-            <a class="success-card__url" href="${esc(link)}" target="_blank" rel="noopener">${esc(urlShort)}…</a>
-          </div>
-          <div class="success-card__trophy" aria-hidden="true">🏆</div>
-        </div>`;
-      }).join('')}
+    <div class="pool-pulse" id="pool-pulse">
+      <div class="pool-pulse__title">⚡ ${t('poolPulse') || 'Pool-Puls'}</div>
+      <div class="pool-pulse__stats">
+        <div class="pool-pulse__stat">
+          <div class="pool-pulse__stat-val">${todayCount}</div>
+          <div class="pool-pulse__stat-label">${t('todaySupports') || 'Heute supportet'}</div>
+        </div>
+        ${topUser ? `<div class="pool-pulse__stat">
+          <div class="pool-pulse__stat-val pool-pulse__stat-val--name">@${esc(topUser)}</div>
+          <div class="pool-pulse__stat-label">${t('topToday') || 'Top diese Woche'} · ${topVal}×</div>
+        </div>` : ''}
+        ${newVid ? `<div class="pool-pulse__stat">
+          <div class="pool-pulse__stat-val pool-pulse__stat-val--name">@${esc(newVid.ownerKey || newVid.owner || '?')}</div>
+          <div class="pool-pulse__stat-label">${t('newHighlight') || 'Neu im Pool'}</div>
+        </div>` : ''}
+      </div>
     </div>
   `;
+}
+
+function _startPulseTimer() {
+  clearInterval(_pulseTimer);
+  _pulseTimer = setInterval(() => {
+    const el = document.getElementById('pool-pulse');
+    if (!el) { clearInterval(_pulseTimer); return; }
+    el.outerHTML = _poolPulseSection();
+  }, 30000);
 }
 
 // ── Balance Tab ────────────────────────────────────────────

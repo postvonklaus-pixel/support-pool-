@@ -205,11 +205,24 @@ function checkBroadcast() {
 // ── Tick (periodic render refresh) ───────────────────────
 function tick() {
   if (!state.currentUser) return;
-  // Do not re-render while user is actively typing — prevents FAQ/broadcast/input loss
-  const active = document.activeElement;
-  if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA')) return;
+  // Skip while user is actively typing
+  const ae = document.activeElement;
+  if (ae && (ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA')) return;
+  // Skip if a modal/dialog is open
+  if (document.querySelector('.modal.active, [role="dialog"]:not([hidden])')) return;
+  // Skip if a FAQ item is expanded
+  if (document.querySelector('.faq-item.open')) return;
+  // Skip on settings screen to prevent scroll-jump
+  const activeScreen = document.querySelector('.screen.active');
+  if (activeScreen?.id === 'screen-settings') return;
+  // Skip for 5s after user last scrolled
+  if (Date.now() - (window._lastScrollTime || 0) < 5000) return;
   import('./router.js').then(m => m.renderActive({ debounce: true }));
 }
+
+// Track scroll activity to guard tick()
+document.addEventListener('scroll', () => { window._lastScrollTime = Date.now(); },
+  { passive: true, capture: true });
 
 // Service Worker intentionally not registered — index.html nuke script
 // deregisters any existing SW so JS is always served fresh from the network.

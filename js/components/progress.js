@@ -5,33 +5,41 @@
 import { t } from '../i18n.js';
 
 const TAU = 2 * Math.PI;
+let _ringIdx = 0;
 
-// ── Progress Ring (SVG donut) ──────────────────────────────
-// value/max → filled arc; label shown in center
+// ── Progress Ring (SVG donut, 2-layer gradient) ────────────
 export function progressRing(value, max, {
   label    = '',
   size     = 72,
   stroke   = 6,
   color    = 'var(--accent-primary)',
-  trackCol = 'var(--bg-elevated)',
+  trackCol = null,
   id       = '',
 } = {}) {
-  const r   = (size - stroke) / 2;
-  const circ = TAU * r;
-  const pct  = max > 0 ? Math.min(1, value / max) : 0;
-  const dash = pct * circ;
+  const r     = (size - stroke) / 2;
+  const circ  = TAU * r;
+  const pct   = max > 0 ? Math.min(1, value / max) : 0;
+  const dash  = pct * circ;
+  const gid   = `rg${++_ringIdx}`;
   const idAttr = id ? `id="${id}"` : '';
+  const bg    = trackCol ?? 'var(--accent-warning)';
 
   return `
     <div class="prog-ring" style="width:${size}px;height:${size}px" ${idAttr}>
       <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" aria-hidden="true">
+        <defs>
+          <linearGradient id="${gid}" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="var(--accent-primary)"/>
+            <stop offset="100%" stop-color="var(--accent-secondary, #06b6d4)"/>
+          </linearGradient>
+        </defs>
         <circle
           cx="${size / 2}" cy="${size / 2}" r="${r}"
-          fill="none" stroke="${trackCol}" stroke-width="${stroke}"
+          fill="none" stroke="${bg}" stroke-width="${stroke}" opacity="0.28"
         />
         <circle
           cx="${size / 2}" cy="${size / 2}" r="${r}"
-          fill="none" stroke="${color}" stroke-width="${stroke}"
+          fill="none" stroke="url(#${gid})" stroke-width="${stroke}"
           stroke-linecap="round"
           stroke-dasharray="${dash} ${circ}"
           stroke-dashoffset="0"

@@ -13,7 +13,7 @@ import { getTemplates, TEMPLATES } from '../features/adminTemplates.js';
 import { progressRing } from '../components/progress.js';
 import { renderFairnessMeter } from '../features/fairnessMeter.js';
 
-const TABS = ['overview', 'members', 'templates', 'videos', 'broadcast', 'groups'];
+const TABS = ['overview', 'members', 'templates', 'videos', 'broadcast', 'groups', 'messages'];
 let _tab          = 'overview';
 let _memberSearch = '';
 let _skipBcEcho   = false;
@@ -69,6 +69,7 @@ export function render() {
       ${_tab === 'videos'     ? _renderVideos()     : ''}
       ${_tab === 'broadcast'  ? _renderBroadcast()  : ''}
       ${_tab === 'groups'     ? _renderGroups()     : ''}
+      ${_tab === 'messages'   ? _renderMessages()   : ''}
     </div>
   `;
 
@@ -94,6 +95,7 @@ function _tabLabel(tab) {
     videos:     t('videos') || 'Videos',
     broadcast:  t('adminTabBroadcast'),
     groups:     t('adminTabGroups'),
+    messages:   t('weeklyMsgTitle') || 'Nachrichten',
   }[tab] || tab;
 }
 
@@ -373,6 +375,44 @@ function _renderBroadcast() {
   `;
 }
 
+// ── Messages (Weekly) ──────────────────────────────────────
+function _renderMessages() {
+  const templates = t('weeklyTpl') || [];
+  const mode = state.db.settings?.weeklyMsgMode || 'auto';
+
+  return `
+    <div class="admin-messages">
+      <div class="admin-section__title">📨 ${t('weeklyMsgTitle') || 'Wöchentliche Nachricht'}</div>
+      <div class="admin-msg-mode-row">
+        <label class="admin-msg-mode-btn ${mode === 'auto' ? 'active' : ''}" data-action="admin:msg:mode" data-mode="auto">
+          🤖 ${t('weeklyMsgAuto') || 'Automatisch'}
+        </label>
+        <label class="admin-msg-mode-btn ${mode === 'manual' ? 'active' : ''}" data-action="admin:msg:mode" data-mode="manual">
+          ✍️ ${t('weeklyMsgManual') || 'Manuell'}
+        </label>
+      </div>
+      ${mode === 'auto' ? `
+        <div class="admin-msg-tpl-list">
+          ${Array.isArray(templates) ? templates.map((tpl, i) => `
+            <div class="admin-msg-tpl-item" data-tpl-idx="${i}">
+              <span>${esc(tpl)}</span>
+              <button class="btn btn--sm btn--primary" data-action="admin:msg:send" data-tpl="${esc(tpl)}">
+                ${t('weeklyMsgSend') || 'Senden'}
+              </button>
+            </div>
+          `).join('') : ''}
+        </div>
+      ` : `
+        <textarea id="admin-msg-custom" class="admin-textarea" rows="4"
+          placeholder="${t('weeklyMsgTitle') || 'Nachricht eingeben...'}"></textarea>
+        <button class="btn btn--primary btn--sm" data-action="admin:msg:send:custom">
+          📤 ${t('weeklyMsgSend') || 'Senden'}
+        </button>
+      `}
+    </div>
+  `;
+}
+
 // ── Groups ─────────────────────────────────────────────────
 function _renderGroups() {
   const groups = Object.values(state.db.groups || {})
@@ -395,6 +435,22 @@ function _renderGroups() {
       </div>`;
     }).join('')}
   </div>`;
+}
+
+// ── Send weekly message to all active members ──────────────
+function _sendWeeklyMessage(text) {
+  const members = Object.keys(state.db.members || {}).filter(k => {
+    const m = state.db.members[k];
+    return m.status === 'active' && m.role !== 'admin';
+  });
+  import('../features/notifications.js').then(({ addNotif }) => {
+    members.forEach(k => addNotif(k, '📨', '', 'weeklyMsg', {
+      msgKey: 'weeklyTpl',
+      params: { text },
+      message: text,
+    }));
+  });
+  toast(`📨 ${t('weeklyMsgSend') || 'Gesendet'} (${members.length})`, 'success', 3000);
 }
 
 // ── Handlers ───────────────────────────────────────────────
@@ -696,6 +752,29 @@ function _registerHandlers() {
     if (bar) bar.remove();
     toast(t('adminViewBackToast'), 'success');
     import('../router.js').then(m => m.goScreen('admin'));
+  });
+
+  on('admin:msg:mode', (el) => {
+    const mode = el.dataset.mode || 'auto';
+    writeDB('settings/weeklyMsgMode', mode);
+    setTimeout(render, 150);
+  });
+
+  on('admin:msg:send', async (el) => {
+    const text = el.dataset.tpl;
+    if (!text) return;
+    const ok = await confirm(t('weeklyMsgSend') || 'Senden?', text.slice(0, 60));
+    if (!ok) return;
+    _sendWeeklyMessage(text);
+  });
+
+  on('admin:msg:send:custom', async () => {
+    const ta   = document.getElementById('admin-msg-custom');
+    const text = ta?.value?.trim();
+    if (!text) return;
+    const ok = await confirm(t('weeklyMsgSend') || 'Senden?', text.slice(0, 60));
+    if (!ok) return;
+    _sendWeeklyMessage(text);
   });
 }
 

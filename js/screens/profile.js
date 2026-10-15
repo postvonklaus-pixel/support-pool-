@@ -4,11 +4,8 @@
 
 import { state }      from '../state.js';
 import { t }          from '../i18n.js';
-import { esc, timeAgo, avatarGradient, getNextFridayWIB } from '../utils.js';
-import { renderNotification } from '../features/notifications.js';
+import { esc, avatarGradient, getNextFridayWIB } from '../utils.js';
 import { on }         from '../events.js';
-import { toast }      from '../components/toast.js';
-import { writeDB }    from '../firebase.js';
 import { progressRing, streakFlames } from '../components/progress.js';
 import { renderAchievements } from '../features/achievements.js';
 
@@ -44,8 +41,6 @@ export function render() {
   const daysIn   = u.joined ? Math.max(0, Math.floor((Date.now() - u.joined) / 86400000)) : 0;
   const initial  = (cu || '?').slice(0, 2).toUpperCase();
   const gradient = avatarGradient(cu);
-  const notifs   = _getNotifs(cu);
-  const unread   = notifs.filter(m => !m.read).length;
   const streak   = _currentStreak(u);
   const nextRank = ranks[ranks.indexOf(rank) + 1] || null;
   const toNext   = nextRank ? nextRank.min - given : 0;
@@ -56,7 +51,7 @@ export function render() {
       <!-- ── Hero ── -->
       <div class="profile-hero" style="--rank-color:${rank.color}">
         <div class="profile-hero__bg" aria-hidden="true"></div>
-        <div class="profile-avatar-wrap">
+        <div class="profile-avatar-wrap" data-rank="${ranks.indexOf(rank)}">
           <div class="profile-rank-ring" aria-hidden="true"></div>
           <div class="profile-avatar" style="background:${gradient}">${initial}</div>
           <div class="profile-rank-badge" title="${rank.label}">${rank.icon}</div>
@@ -152,76 +147,10 @@ export function render() {
         </div>
       </div>
 
-      <!-- ── Benachrichtigungen ── -->
-      <div class="profile-section">
-        <div class="profile-section__head">
-          <span class="profile-section__title">
-            🔔 ${t('notifs') || 'Benachrichtigungen'}
-            ${unread > 0 ? `<span class="notif-badge">${unread}</span>` : ''}
-          </span>
-          <span class="profile-section__sub">${t('notifsTapDel')}</span>
-        </div>
-        <div id="notif-list">
-          ${_renderNotifs(notifs, cu)}
-        </div>
-      </div>
-
     </div>
   `;
 
-  _markAllRead(cu, notifs);
   _registerHandlers();
-}
-
-// ── Notifications ──────────────────────────────────────────
-function _getNotifs(cu) {
-  return Object.entries(state.db.messages || {})
-    .filter(([, m]) => m.to === cu && (m.type === 'notif' || m.type === 'dm' || m.reply))
-    .map(([id, m]) => ({ ...m, _id: id }))
-    .sort((a, b) => (b.ts || b.timestamp || 0) - (a.ts || a.timestamp || 0))
-    .slice(0, 30);
-}
-
-function _renderNotifs(notifs, cu) {
-  if (!notifs.length) {
-    return `<div class="profile-empty">
-      <div class="profile-empty__icon">🔔</div>
-      <div class="profile-empty__text">${t('noNotif') || 'Keine Benachrichtigungen'}</div>
-    </div>`;
-  }
-  return notifs.map(m => {
-    const fromKey  = m.from || null;
-    const fromName = fromKey && state.db.members?.[fromKey]
-      ? (state.db.members[fromKey].name || fromKey) : (fromKey || '');
-    const userLang = state.db.members?.[cu]?.lang || state.lang;
-    const msg     = renderNotification(m, userLang);
-    const unread  = !m.read;
-    return `
-      <div class="notif-card ${unread ? 'notif-card--unread' : ''}" data-notif-id="${esc(m._id)}">
-        <div class="notif-card__icon">${m.icon || '📩'}</div>
-        <div class="notif-card__body">
-          ${fromKey ? `<div class="notif-card__sender">@${esc(fromName || fromKey)}</div>` : ''}
-          ${m.inReplyTo ? `<div class="notif-card__quote">↩ "${esc(m.inReplyTo)}"</div>` : ''}
-          <div class="notif-card__text">${esc(msg)}</div>
-          ${m.ts ? `<div class="notif-card__time">${timeAgo(m.ts, state.lang)}</div>` : ''}
-          ${fromKey && fromKey !== cu ? `
-            <button class="btn btn--ghost btn--sm" style="margin-top:8px"
-              data-action="notif:reply" data-from="${esc(fromKey)}" data-id="${esc(m._id)}">
-              ${t('replyBtn')}
-            </button>
-          ` : ''}
-        </div>
-        <button class="notif-card__del btn btn--icon" aria-label="Löschen"
-          data-action="notif:del" data-id="${esc(m._id)}">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
-        </button>
-      </div>
-    `;
-  }).join('');
-}
-
-function _markAllRead(cu, notifs) {
-  notifs.filter(m => !m.read).forEach(m => writeDB(`messages/${m._id}/read`, true));
 }
 
 function _currentStreak(u) {
@@ -236,23 +165,7 @@ function _currentStreak(u) {
 }
 
 function _registerHandlers() {
-  on('notif:del', (el) => {
-    const id   = el.dataset.id;
-    if (!id) return;
-    const card = el.closest('.notif-card');
-    if (card) {
-      card.style.cssText += 'opacity:0;transform:translateX(48px);transition:all .25s ease';
-      setTimeout(() => card.remove(), 250);
-    }
-    writeDB(`messages/${id}`, null);
-    toast(t('deletedMsg'), 'success', 1800);
-  });
-
-  on('notif:reply', (el) => {
-    const fromKey = el.dataset.from;
-    if (!fromKey) return;
-    import('../features/notifications.js').then(m => m.openReply(fromKey));
-  });
+  // handlers delegated to events.js
 }
 
 function _weeklyChipText() {

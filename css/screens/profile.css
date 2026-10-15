@@ -51,11 +51,7 @@
   position: absolute;
   inset: -5px;
   border-radius: var(--radius-full);
-  background: conic-gradient(
-    var(--rank-color, #7c3aed) 0deg,
-    transparent 240deg
-  );
-  animation: rank-spin 3s linear infinite;
+  background: conic-gradient(var(--rank-color, #7c3aed) 0deg, transparent 270deg);
   z-index: 0;
   opacity: 0.85;
 }
@@ -66,8 +62,23 @@
   border-radius: var(--radius-full);
   background: var(--bg-base);
 }
-@keyframes rank-spin {
-  to { transform: rotate(360deg); }
+
+/* Rank-based static ring variants */
+.profile-avatar-wrap[data-rank="0"] .profile-rank-ring {
+  background: conic-gradient(#94a3b8 0deg, transparent 200deg);
+}
+.profile-avatar-wrap[data-rank="1"] .profile-rank-ring {
+  background: conic-gradient(#22d3ee 0deg, #06b6d4 90deg, transparent 240deg);
+}
+.profile-avatar-wrap[data-rank="2"] .profile-rank-ring {
+  background: conic-gradient(#7c3aed 0deg, #a855f7 120deg, transparent 270deg);
+}
+.profile-avatar-wrap[data-rank="3"] .profile-rank-ring {
+  background: conic-gradient(#f59e0b 0deg, #fbbf24 120deg, #f59e0b 240deg, transparent 300deg);
+}
+.profile-avatar-wrap[data-rank="4"] .profile-rank-ring {
+  background: conic-gradient(#f43f5e 0deg, #fb7185 90deg, #f43f5e 180deg, #fb7185 270deg, #f43f5e 360deg);
+  opacity: 1;
 }
 .profile-avatar {
   width: 88px;
