@@ -41,6 +41,15 @@
   background: radial-gradient(120% 80% at 50% -10%,
     #1a1035 0%, #0a0614 40%, var(--login-bg) 100%);
 }
+.login-bg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url('/images/bg-texture.png');
+  background-size: 200px 200px;
+  opacity: 0.04;
+  mix-blend-mode: overlay;
+}
 
 .login-orb-1 {
   position: absolute;
