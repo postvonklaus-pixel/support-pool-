@@ -151,9 +151,11 @@
 
 .dash-scroll {
   flex: 1;
-  overflow: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
   padding: var(--sp-3);
-  padding-bottom: var(--sp-5);
+  padding-bottom: calc(var(--nav-height) + 36px + env(safe-area-inset-bottom, 0px));
   display: flex;
   flex-direction: column;
   gap: var(--sp-2);
@@ -260,6 +262,7 @@
   font-variant-numeric: tabular-nums;
   line-height: 1;
   color: var(--text-primary);
+  min-height: 32px;
 }
 .dash-tile__label {
   font-size: 11px;
