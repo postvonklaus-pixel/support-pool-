@@ -33,7 +33,9 @@
 
 /* ── Content area ─────────────────────────────────────────── */
 .admin-content {
-  flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch;
+  flex: 1; overflow-y: auto; overflow-x: hidden !important;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
   padding: var(--space-4);
 }
 
@@ -160,13 +162,21 @@
 .admin-member-row__menu { color: var(--text-tertiary); flex-shrink: 0; }
 
 /* ── Video list ───────────────────────────────────────────── */
-.admin-video-list { display: flex; flex-direction: column; gap: var(--space-2); }
+.admin-video-list {
+  display: flex; flex-direction: column; gap: var(--space-2);
+  overflow-x: hidden;
+}
 .admin-vid-row {
   display: flex; align-items: center; gap: var(--space-3);
   padding: var(--space-3) var(--space-4);
   background: var(--bg-elevated); border: 1px solid var(--border-subtle);
   border-radius: var(--radius-xl);
+  overflow-x: hidden;
+  max-width: 100%;
+  box-sizing: border-box;
+  word-break: break-word;
 }
+.admin-vid-row * { max-width: 100%; }
 .admin-vid-row__av {
   width: 36px; height: 36px; border-radius: var(--radius-full); flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;

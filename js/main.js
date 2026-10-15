@@ -61,6 +61,9 @@ async function boot() {
 
   // 7. Start periodic render tick (15s)
   setInterval(tick, 15000);
+
+  // 8. Start global countdown ticker (updates [data-expires] spans every 1s)
+  import('./features/timers.js').then(m => m.startCountdownTicker());
 }
 
 function _showApp() {

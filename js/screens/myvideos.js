@@ -72,7 +72,7 @@ export function render() {
   `;
 
   _registerHandlers();
-  _startExpiryTimer();
+  // Countdown updates handled by global startCountdownTicker() in main.js
 }
 
 // ── Status-Card (B2.3) ─────────────────────────────────────
@@ -130,6 +130,11 @@ function _renderNotifSection(notifs, cu) {
     </div>`;
 }
 
+function _fmtDate(ts) {
+  if (!ts) return '';
+  return new Date(ts).toLocaleString('de-DE', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
+}
+
 function _vidCard(v) {
   const r1   = (v.r1Supporters || []).length;
   const r2   = (v.r2Supporters || []).length;
@@ -138,14 +143,45 @@ function _vidCard(v) {
   const pct2 = Math.min(100, Math.round((r2 / R2_NEED) * 100));
   const isDone      = v.status === 'done';
   const isScheduled = v.status === 'scheduled' && (v.scheduledFor || 0) > Date.now();
-  const link = v.link || v.url || '#';
-  const schedLabel = isScheduled
+  const round       = v.round || 1;
+  const link        = v.link || v.url || '#';
+  const schedLabel  = isScheduled
     ? new Date(v.scheduledFor).toLocaleString('de-DE', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' })
     : null;
 
   const postedTs  = v.postedAt || v.ts || 0;
-  const postedFmt = postedTs ? new Date(postedTs).toLocaleString('de-DE', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' }) : '';
-  const expiresTs = v.expiresR1 || 0;
+  const expiresTs = round >= 2 ? (v.expiresR2 || v.expiresR1 || 0) : (v.expiresR1 || 0);
+  const doneTs    = v.doneAt || 0;
+
+  // Build timeline strip
+  const timelineRows = [];
+
+  if (postedTs) {
+    timelineRows.push(`
+      <div class="vt-row">
+        <span class="vt-label">📅 ${t('vtPosted') || 'Gepostet'}:</span>
+        <span class="vt-value">${_fmtDate(postedTs)}</span>
+      </div>`);
+  }
+
+  if (isDone) {
+    timelineRows.push(`
+      <div class="vt-row">
+        <span class="vt-label">✅ ${t('vtDone') || 'Fertig'}:</span>
+        <span class="vt-value">${doneTs ? _fmtDate(doneTs) : t('vtExpired') || 'Abgelaufen'}</span>
+      </div>`);
+  } else if (expiresTs) {
+    const isExpired = expiresTs <= Date.now();
+    const countdownText = isExpired
+      ? `(${t('vtExpired') || 'abgelaufen'})`
+      : `(${t('vtIn') || 'in'} ${_renderTimeLeft(expiresTs)})`;
+    timelineRows.push(`
+      <div class="vt-row vt-active">
+        <span class="vt-label">⏰ ${t('vtExpires') || 'Läuft ab'}:</span>
+        <span class="vt-value">${_fmtDate(expiresTs)}</span>
+        <span class="vt-countdown" data-expires="${expiresTs}">${countdownText}</span>
+      </div>`);
+  }
 
   return `<div class="card card--glass myvid-card" data-vid-id="${esc(v.id || '')}">
     <div class="myvid-card__header">
@@ -153,27 +189,19 @@ function _vidCard(v) {
         🔗 ${esc(link.replace(/^https?:\/\/(www\.)?/, '').slice(0,40))}
       </a>
       <span class="badge ${isDone ? 'badge--success' : isScheduled ? 'badge--warning' : 'badge--primary'}">
-        ${isDone ? t('mvDone') : isScheduled ? `⏰ ${schedLabel}` : `R${v.round || 1}`}
+        ${isDone ? t('mvDone') : isScheduled ? `⏰ ${schedLabel}` : `R${round}`}
       </span>
-    </div>
-    <div class="myvid-card__timing">
-      ${postedFmt ? `<span>📅 ${t('posted') || 'Gepostet'}: ${postedFmt}</span>` : ''}
-      ${isDone
-        ? `<span>✅ ${t('doneLabel') || 'Abgeschlossen'}</span>`
-        : expiresTs
-          ? `<span>⏰ ${t('expiresAt') || 'Läuft ab'}: <span class="myvid-expires" data-expires="${expiresTs}">${_renderTimeLeft(expiresTs)}</span></span>`
-          : ''
-      }
     </div>
     <div class="myvid-card__progress">
       <div class="myvid-card__prog-label">R1 <span>${r1}/${r1n}</span></div>
       <div class="progress-bar"><div class="progress-bar__fill" style="width:${pct1}%"></div></div>
     </div>
-    ${(v.round || 1) >= 2 ? `
+    ${round >= 2 ? `
     <div class="myvid-card__progress">
       <div class="myvid-card__prog-label">R2 <span>${r2}/${R2_NEED}</span></div>
       <div class="progress-bar"><div class="progress-bar__fill" style="width:${pct2}%"></div></div>
     </div>` : ''}
+    ${timelineRows.length ? `<div class="video-timeline">${timelineRows.join('')}</div>` : ''}
     <div class="myvid-card__actions">
       <button class="btn btn--ghost btn--sm" data-action="myvid:copy" data-link="${esc(link)}">
         📋 ${t('mvCopy')}
@@ -187,22 +215,11 @@ function _vidCard(v) {
 
 function _renderTimeLeft(expiresAt) {
   const diff = Math.max(0, expiresAt - Date.now());
-  if (!diff) return t('expired') || 'Abgelaufen';
+  if (!diff) return t('vtExpired') || 'Abgelaufen';
   const h = Math.floor(diff / 3600000);
   const m = Math.floor((diff % 3600000) / 60000);
   const s = Math.floor((diff % 60000) / 1000);
   return `${h}h ${m}m ${s}s`;
-}
-
-let _expiryTimer = null;
-
-function _startExpiryTimer() {
-  clearInterval(_expiryTimer);
-  _expiryTimer = setInterval(() => {
-    document.querySelectorAll('.myvid-expires').forEach(el => {
-      el.textContent = _renderTimeLeft(parseInt(el.dataset.expires));
-    });
-  }, 1000);
 }
 
 function _registerHandlers() {
