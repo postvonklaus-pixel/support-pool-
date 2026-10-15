@@ -9,6 +9,7 @@ import { toast }   from '../components/toast.js';
 import { openModal, closeModal } from '../components/modal.js';
 import { on }      from '../events.js';
 import { goScreen } from '../router.js';
+import { addNotif } from './notifications.js';
 
 const R1_MS   = 24 * 60 * 60 * 1000;
 const R1_NEED = 10;
@@ -140,3 +141,26 @@ on('post:submit', () => {
   }
   setTimeout(() => goScreen('myvideos'), 800);
 });
+
+// ── Client-Side Fallback: activate scheduled videos ───────
+// The Cloud Function (processScheduledVideos) is the primary poster.
+// This runs on boot as a safety net in case the CF missed a run.
+export function checkPendingOnBoot() {
+  const cu  = state.currentUser;
+  const now = Date.now();
+  const videos = state.db.videos || {};
+
+  Object.entries(videos).forEach(([vidId, v]) => {
+    if (v.status !== 'scheduled')   return;
+    if (!v.scheduledFor)            return;
+    if (v.scheduledFor > now)       return;
+    if ((v.ownerKey || v.owner) !== cu) return;
+
+    // Activate: mark as open
+    writeDB(`videos/${vidId}/status`,  'open');
+    writeDB(`videos/${vidId}/postedAt`, now);
+
+    addNotif(cu, '📹', '', 'postConfirm', { msgKey: 'schedPosted' });
+    toast(t('schedPosted') || '🎉 Dein geplantes Video ist jetzt live!', 'success', 4000);
+  });
+}

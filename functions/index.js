@@ -1,13 +1,12 @@
 /**
- * Support Pool — Caption Generator Firebase Function
- *
- * Uses the same static data as tiktapdown-mcp (MIT) for
- * get_tiktok_hashtags and generate_tiktok_hook, so there are
- * no external API calls and no per-use cost.
+ * Support Pool — Cloud Functions
+ * - Caption Generator (v2 callable)
+ * - Scheduled Video Poster (v2 scheduler, every 5 min)
  */
 
 const { onCall, HttpsError } = require("firebase-functions/v2/https");
-const { setGlobalOptions } = require("firebase-functions/v2");
+const { onSchedule }         = require("firebase-functions/v2/scheduler");
+const { setGlobalOptions }   = require("firebase-functions/v2");
 const admin = require("firebase-admin");
 
 admin.initializeApp();
@@ -281,3 +280,76 @@ exports.generateCaption = onCall({ cors: true }, async (request) => {
     tips: hashtagData.tips,
   };
 });
+
+// ─── Scheduled Video Poster ─────────────────────────────────────────────────
+//
+// Runs every 5 minutes (Asia/Jakarta = WIB).
+// For each member with a pendingUrl whose 12h cooldown has elapsed,
+// creates the video entry in the Realtime Database and clears pendingUrl.
+
+const R1_MS = 43200000; // 12h in ms
+
+exports.processScheduledVideos = onSchedule(
+  { schedule: "*/5 * * * *", timeZone: "Asia/Jakarta", region: "asia-southeast1" },
+  async () => {
+    const rtdb = admin.database();
+    const now  = Date.now();
+
+    try {
+      const membersSnap = await rtdb.ref("sp6/members").once("value");
+      const members     = membersSnap.val() || {};
+      const updates     = {};
+
+      for (const [key, member] of Object.entries(members)) {
+        if (!member.pendingUrl)  continue;
+        if (!member.lastPost)    continue;
+        if ((now - member.lastPost) < R1_MS) continue;
+
+        const vid      = "v" + now + "_" + key.substring(0, 4);
+        const isFirst  = (member.postsTotal || 0) === 0;
+        let   grpNum   = 1;
+
+        if (member.group) {
+          const gs = await rtdb.ref("sp6/groups/" + member.group + "/number").once("value");
+          grpNum   = gs.val() || 1;
+        }
+
+        updates["sp6/videos/" + vid] = {
+          id: vid, ownerKey: key, owner: member.name || key,
+          group: member.group || "", groupNumber: grpNum,
+          url: member.pendingUrl, posted: now, comment: "",
+          round: 1, r1Supporters: [], r2Supporters: [],
+          r1Need: isFirst ? 5 : 10,
+          expiresR1: now + R1_MS, expiresR2: now + R1_MS * 2,
+          status: "open", autoPosted: true,
+        };
+
+        const myVideos = Array.isArray(member.myVideos) ? [...member.myVideos] : [];
+        myVideos.push(vid);
+        updates["sp6/members/" + key + "/myVideos"]    = myVideos;
+        updates["sp6/members/" + key + "/lastPost"]    = now;
+        updates["sp6/members/" + key + "/postsTotal"]  = (member.postsTotal || 0) + 1;
+        updates["sp6/members/" + key + "/pendingUrl"]  = null;
+
+        const tvSnap = await rtdb.ref("sp6/settings/totalVideos").once("value");
+        updates["sp6/settings/totalVideos"] = (tvSnap.val() || 0) + 1;
+
+        const nid = "n" + now + "_" + Math.random().toString(36).substr(2, 4);
+        updates["sp6/messages/" + nid] = {
+          id: nid, to: key, icon: "📹", type: "notif",
+          subtype: "postConfirm", msgKey: "schedPosted",
+          ts: now, timestamp: now, read: false,
+        };
+      }
+
+      if (Object.keys(updates).length > 0) {
+        await rtdb.ref().update(updates);
+        console.log("processScheduledVideos: applied", Object.keys(updates).length, "updates");
+      }
+      return null;
+    } catch (err) {
+      console.error("processScheduledVideos error:", err);
+      throw err;
+    }
+  }
+);

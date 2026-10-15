@@ -137,6 +137,9 @@ export async function loginAs(username) {
   // Auto weekly reset (runs silently on first login of each new week)
   _checkAutoWeekReset();
 
+  // Client-side fallback for missed scheduled videos (CF is primary)
+  import('./features/posting.js').then(m => m.checkPendingOnBoot());
+
   // Go to dashboard
   goScreen('dashboard');
 
