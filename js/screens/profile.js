@@ -53,9 +53,10 @@ export function render() {
     <div class="profile-page">
 
       <!-- ── Hero ── -->
-      <div class="profile-hero">
+      <div class="profile-hero" style="--rank-color:${rank.color}">
         <div class="profile-hero__bg" aria-hidden="true"></div>
         <div class="profile-avatar-wrap">
+          <div class="profile-rank-ring" aria-hidden="true"></div>
           <div class="profile-avatar" style="background:${gradient}">${initial}</div>
           <div class="profile-rank-badge" title="${rank.label}">${rank.icon}</div>
         </div>

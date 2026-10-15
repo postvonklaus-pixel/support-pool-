@@ -15,6 +15,7 @@ import { isSupportLocked } from '../features/supportLock.js';
 
 const R1_NEED = 10;
 const R2_NEED = 10;
+const _r1Need = () => state.db.settings?.r1Need || R1_NEED;
 const R1_MS   = 24 * 60 * 60 * 1000;
 const BAL_CAP = 20;
 
@@ -137,7 +138,7 @@ function _renderFeedTab(videos, cu) {
 
 function _videoCard(v, locked = false) {
   const r1    = (v.r1Supporters || []).length;
-  const r1n   = v.r1Need || R1_NEED;
+  const r1n   = v.r1Need || _r1Need();
   const owner = v.ownerKey || v.owner || '?';
   const link  = v.link || v.url || '#';
   const round = v.round || 1;
@@ -351,14 +352,13 @@ function _openVideos(myKey) {
     const r2 = (v.r2Supporters || []).map(k => k.toLowerCase());
     if (r1.includes(myKey) || r2.includes(myKey)) return false;
     const rnd = v.round || 1;
-    const r1n = v.r1Need || R1_NEED;
+    const r1n = v.r1Need || _r1Need();
     if (rnd === 1 && r1.length >= r1n) return false;
     if (rnd === 2 && r2.length >= R2_NEED) return false;
     return true;
   }).sort((a, b) => {
-    // Urgent (few slots) first
-    const aLeft = (a.r1Need || R1_NEED) - (a.r1Supporters || []).length;
-    const bLeft = (b.r1Need || R1_NEED) - (b.r1Supporters || []).length;
+    const aLeft = (a.r1Need || _r1Need()) - (a.r1Supporters || []).length;
+    const bLeft = (b.r1Need || _r1Need()) - (b.r1Supporters || []).length;
     return aLeft - bLeft;
   });
 }
@@ -391,7 +391,7 @@ function _currentStreak(u) {
 function _sentimentBadge(v) {
   const age = v.postedAt ? Date.now() - v.postedAt : Infinity;
   const r1  = (v.r1Supporters || []).length;
-  const r1n = v.r1Need || R1_NEED;
+  const r1n = v.r1Need || _r1Need();
   const slots = r1n - r1;
 
   if (slots <= 2 && slots > 0) return `<span class="sf-badge sf-badge--urgent">${t('badgeFull')}</span>`;

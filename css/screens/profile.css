@@ -26,9 +26,17 @@
 .profile-hero__bg {
   position: absolute;
   inset: 0;
-  background: var(--gradient-hero);
-  opacity: 0.6;
+  background: linear-gradient(135deg,
+    color-mix(in srgb, var(--rank-color, #7c3aed) 30%, transparent) 0%,
+    color-mix(in srgb, var(--rank-color, #06b6d4) 15%, transparent) 60%,
+    transparent 100%
+  );
+  animation: hero-drift 6s ease-in-out infinite alternate;
   pointer-events: none;
+}
+@keyframes hero-drift {
+  from { opacity: 0.55; filter: hue-rotate(0deg); }
+  to   { opacity: 0.75; filter: hue-rotate(20deg); }
 }
 .profile-hero > * { position: relative; }
 
@@ -37,6 +45,29 @@
   margin-bottom: var(--space-4);
   flex-shrink: 0;
   overflow: visible;
+}
+
+.profile-rank-ring {
+  position: absolute;
+  inset: -5px;
+  border-radius: var(--radius-full);
+  background: conic-gradient(
+    var(--rank-color, #7c3aed) 0deg,
+    transparent 240deg
+  );
+  animation: rank-spin 3s linear infinite;
+  z-index: 0;
+  opacity: 0.85;
+}
+.profile-rank-ring::after {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  border-radius: var(--radius-full);
+  background: var(--bg-base);
+}
+@keyframes rank-spin {
+  to { transform: rotate(360deg); }
 }
 .profile-avatar {
   width: 88px;
@@ -50,9 +81,10 @@
   font-weight: var(--weight-black);
   color: #fff;
   font-family: var(--font-display);
-  box-shadow: 0 0 0 4px var(--bg-elevated), var(--shadow-glow-primary);
+  box-shadow: 0 0 0 3px var(--bg-elevated);
   flex-shrink: 0;
-  overflow: visible;
+  position: relative;
+  z-index: 1;
 }
 .profile-rank-badge {
   position: absolute;
@@ -64,6 +96,7 @@
   font-size: 16px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.15);
   border: 2px solid var(--border-subtle);
+  z-index: 2;
 }
 
 .profile-name {

@@ -4,7 +4,7 @@
    Responds to SKIP_WAITING message from the page.
    ═══════════════════════════════════════════════════════ */
 
-const CACHE = 'nova-v5';
+const CACHE = 'nova-v6';
 
 const STATIC_CSS = [
   '/support-pool-/css/tokens.css',
@@ -19,6 +19,7 @@ const STATIC_CSS = [
   '/support-pool-/css/screens/settings.css',
   '/support-pool-/css/screens/myvideos.css',
   '/support-pool-/css/screens/caption.css',
+  '/support-pool-/css/screens/chat.css',
 ];
 
 self.addEventListener('install', e => {

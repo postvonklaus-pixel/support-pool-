@@ -38,7 +38,7 @@ export function handleSupport(vidId) {
   const pool = _getCommentPool(lang);
   const owner = v.ownerKey || v.owner || '?';
   const r1    = (v.r1Supporters || []).length;
-  const r1n   = v.r1Need || 10;
+  const r1n   = v.r1Need || state.db.settings?.r1Need || 10;
   const slotsLeft = r1n - r1;
   const urgent = slotsLeft <= 3 && slotsLeft > 0;
 
@@ -200,7 +200,7 @@ on('support:done', (el) => {
 
   const newSups = [...supporters, cu];
   const dbVidId = _findVideoId(vidId);
-  const r1n     = v.r1Need || 10;
+  const r1n     = v.r1Need || state.db.settings?.r1Need || 10;
 
   writeDB(`videos/${dbVidId}/${field}`, newSups);
 
