@@ -197,8 +197,25 @@
 .dash-tile:active { transform: scale(0.97); box-shadow: var(--shadow-md); }
 
 /* ── Tile color variants ────────────────────────────────── */
-.dash-tile--support  { background: linear-gradient(135deg,rgba(6,182,212,.15),rgba(6,182,212,.05));  border-color:rgba(6,182,212,.3); }
-.dash-tile--post     { background: linear-gradient(135deg,rgba(124,58,237,.15),rgba(124,58,237,.05)); border-color:rgba(124,58,237,.3); }
+
+/* Row 1 hero tiles — most important actions */
+.dash-tile--support {
+  background: linear-gradient(145deg, rgba(6,182,212,.45) 0%, rgba(6,182,212,.18) 100%);
+  border-color: rgba(6,182,212,.65);
+  box-shadow: 0 0 0 1px rgba(6,182,212,.15), 0 8px 28px rgba(6,182,212,.28);
+}
+.dash-tile--support .dash-tile__ic--cyan { background: rgba(6,182,212,1); box-shadow: 0 0 14px rgba(6,182,212,.7); }
+.dash-tile--support .dash-tile__value    { color: rgba(6,182,212,1); text-shadow: 0 0 16px rgba(6,182,212,.5); }
+.dash-tile--support .dash-tile__label   { color: rgba(255,255,255,.85); }
+
+.dash-tile--post {
+  background: linear-gradient(145deg, rgba(124,58,237,.45) 0%, rgba(124,58,237,.18) 100%);
+  border-color: rgba(124,58,237,.65);
+  box-shadow: 0 0 0 1px rgba(124,58,237,.15), 0 8px 28px rgba(124,58,237,.28);
+}
+.dash-tile--post .dash-tile__ic--violet { background: rgba(124,58,237,1); box-shadow: 0 0 14px rgba(124,58,237,.7); }
+.dash-tile--post .dash-tile__value      { color: rgba(167,139,250,1); text-shadow: 0 0 16px rgba(124,58,237,.5); }
+.dash-tile--post .dash-tile__label      { color: rgba(255,255,255,.85); }
 .dash-tile--balance  { background: linear-gradient(135deg,rgba(232,184,75,.15),rgba(232,184,75,.05)); border-color:rgba(232,184,75,.3); }
 .dash-tile--profile  { background: linear-gradient(135deg,rgba(168,85,247,.15),rgba(168,85,247,.05)); border-color:rgba(168,85,247,.3); }
 .dash-tile--myvideos { background: linear-gradient(135deg,rgba(59,130,246,.15),rgba(59,130,246,.05)); border-color:rgba(59,130,246,.25); }
