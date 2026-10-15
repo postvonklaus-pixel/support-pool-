@@ -377,38 +377,71 @@ function _renderBroadcast() {
 
 // ── Messages (Weekly) ──────────────────────────────────────
 function _renderMessages() {
-  const templates = t('weeklyTpl') || [];
-  const mode = state.db.settings?.weeklyMsgMode || 'auto';
+  const templates  = t('weeklyTpl') || [];
+  const mode       = state.db.settings?.weeklyMsgMode || 'auto';
+  const lastSent   = state.db.settings?.weeklyMsgLastSent || 0;
+  const members    = Object.values(state.db.members || {});
+  const activeCount = members.filter(m => m.status === 'active' && m.role !== 'admin').length;
+
+  const tplArr = Array.isArray(templates) ? templates : [];
+  const previewIdx  = state._msgPreviewIdx != null
+    ? state._msgPreviewIdx % (tplArr.length || 1)
+    : 0;
+  const previewText = tplArr[previewIdx] || '';
+
+  const lastSentStr = lastSent
+    ? new Date(lastSent).toLocaleString('de-DE', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' })
+    : '—';
 
   return `
-    <div class="admin-messages">
-      <div class="admin-section__title">📨 ${t('weeklyMsgTitle') || 'Wöchentliche Nachricht'}</div>
-      <div class="admin-msg-mode-row">
-        <label class="admin-msg-mode-btn ${mode === 'auto' ? 'active' : ''}" data-action="admin:msg:mode" data-mode="auto">
-          🤖 ${t('weeklyMsgAuto') || 'Automatisch'}
-        </label>
-        <label class="admin-msg-mode-btn ${mode === 'manual' ? 'active' : ''}" data-action="admin:msg:mode" data-mode="manual">
-          ✍️ ${t('weeklyMsgManual') || 'Manuell'}
-        </label>
-      </div>
-      ${mode === 'auto' ? `
-        <div class="admin-msg-tpl-list">
-          ${Array.isArray(templates) ? templates.map((tpl, i) => `
-            <div class="admin-msg-tpl-item" data-tpl-idx="${i}">
-              <span>${esc(tpl)}</span>
-              <button class="btn btn--sm btn--primary" data-action="admin:msg:send" data-tpl="${esc(tpl)}">
-                ${t('weeklyMsgSend') || 'Senden'}
-              </button>
-            </div>
-          `).join('') : ''}
+    <div class="admin-messages-tab">
+      <div class="am-hero">
+        <div class="am-hero__icon">📨</div>
+        <div class="am-hero__body">
+          <div class="am-hero__title">${t('weeklyMsgTitle') || 'Wöchentliche Nachricht'}</div>
+          <div class="am-hero__sub">${t('weeklyMsgSub') || 'Nachricht an alle aktiven Mitglieder senden'}</div>
         </div>
+      </div>
+
+      <div class="am-mode-tabs">
+        <button class="am-mode-btn${mode === 'auto' ? ' active' : ''}" data-action="admin:msg:mode" data-mode="auto">
+          🤖 ${t('weeklyMsgAuto') || 'Vorgefertigt'}
+        </button>
+        <button class="am-mode-btn${mode === 'manual' ? ' active' : ''}" data-action="admin:msg:mode" data-mode="manual">
+          ✍️ ${t('weeklyMsgManual') || 'Manuell'}
+        </button>
+      </div>
+
+      ${mode === 'auto' ? `
+        <div class="am-label">${t('weeklyMsgPreview') || 'Vorschau'}</div>
+        <div class="am-preview">${esc(previewText)}</div>
+        ${tplArr.length > 1 ? `
+          <button class="am-btn-secondary" data-action="admin:msg:pickrandom">
+            🔀 ${t('weeklyMsgPickRandom') || 'Andere Vorlage'}
+          </button>` : ''}
+        <button class="am-send-btn" data-action="admin:msg:send" data-tpl="${esc(previewText)}">
+          📤 ${t('weeklyMsgSend') || 'An alle senden'}
+        </button>
       ` : `
-        <textarea id="admin-msg-custom" class="admin-textarea" rows="4"
-          placeholder="${t('weeklyMsgTitle') || 'Nachricht eingeben...'}"></textarea>
-        <button class="btn btn--primary btn--sm" data-action="admin:msg:send:custom">
-          📤 ${t('weeklyMsgSend') || 'Senden'}
+        <div class="am-label">${t('weeklyMsgCustomLabel') || 'Eigene Nachricht'}</div>
+        <textarea id="admin-msg-custom" class="am-textarea" rows="5"
+          placeholder="${t('weeklyMsgCustomLabel') || 'Nachricht eingeben...'}"></textarea>
+        <div class="am-hint">⚠️ ${t('weeklyMsgCustomHint') || 'Manuelle Nachrichten werden nicht übersetzt'}</div>
+        <button class="am-send-btn" data-action="admin:msg:send:custom">
+          📤 ${t('weeklyMsgSend') || 'An alle senden'}
         </button>
       `}
+
+      <div class="am-stats">
+        <div class="am-stat">
+          <div class="am-stat-num">${activeCount}</div>
+          <div class="am-stat-lbl">${t('weeklyMsgActiveMembers') || 'Aktive Mitglieder'}</div>
+        </div>
+        <div class="am-stat">
+          <div class="am-stat-num">${lastSentStr}</div>
+          <div class="am-stat-lbl">${t('weeklyMsgLastSent') || 'Letzte Sendung'}</div>
+        </div>
+      </div>
     </div>
   `;
 }
@@ -450,7 +483,8 @@ function _sendWeeklyMessage(text) {
       message: text,
     }));
   });
-  toast(`📨 ${t('weeklyMsgSend') || 'Gesendet'} (${members.length})`, 'success', 3000);
+  writeDB('settings/weeklyMsgLastSent', Date.now());
+  toast(`📨 ${t('weeklyMsgSend') || 'An alle senden'} (${members.length})`, 'success', 3000);
 }
 
 // ── Handlers ───────────────────────────────────────────────
@@ -760,10 +794,21 @@ function _registerHandlers() {
     setTimeout(render, 150);
   });
 
+  on('admin:msg:pickrandom', () => {
+    const templates = t('weeklyTpl') || [];
+    const tplArr = Array.isArray(templates) ? templates : [];
+    if (tplArr.length < 2) return;
+    const current = state._msgPreviewIdx != null ? state._msgPreviewIdx % tplArr.length : 0;
+    let next = Math.floor(Math.random() * (tplArr.length - 1));
+    if (next >= current) next++;
+    state._msgPreviewIdx = next;
+    render();
+  });
+
   on('admin:msg:send', async (el) => {
     const text = el.dataset.tpl;
     if (!text) return;
-    const ok = await confirm(t('weeklyMsgSend') || 'Senden?', text.slice(0, 60));
+    const ok = await confirm(t('weeklyMsgSend') || 'An alle senden?', text.slice(0, 60));
     if (!ok) return;
     _sendWeeklyMessage(text);
   });
@@ -772,7 +817,7 @@ function _registerHandlers() {
     const ta   = document.getElementById('admin-msg-custom');
     const text = ta?.value?.trim();
     if (!text) return;
-    const ok = await confirm(t('weeklyMsgSend') || 'Senden?', text.slice(0, 60));
+    const ok = await confirm(t('weeklyMsgSend') || 'An alle senden?', text.slice(0, 60));
     if (!ok) return;
     _sendWeeklyMessage(text);
   });
