@@ -23,9 +23,18 @@
   overflow-x: hidden;
   color: var(--login-text-1);
   font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', sans-serif;
-  display: flex;
+  /* display:none / display:flex handled by layout.css .screen + .active */
   flex-direction: column;
-  min-height: 100dvh;
+}
+
+/* When active: cover full viewport including bottom nav */
+#screen-login.active {
+  position: fixed;
+  inset: 0;
+  z-index: 110;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
 }
 
 @supports (padding-top: env(safe-area-inset-top)) {
