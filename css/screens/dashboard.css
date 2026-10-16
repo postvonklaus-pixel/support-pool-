@@ -241,7 +241,7 @@
 
 /* Row 3 small tiles */
 .dash-tile--myvideos { background: linear-gradient(135deg,rgba(99,102,241,.08),rgba(99,102,241,.03)); border-color:rgba(99,102,241,.18); box-shadow:0 4px 20px rgba(0,0,0,0.05); }
-.dash-tile--caption  { background: linear-gradient(135deg,rgba(124,58,237,.08),rgba(124,58,237,.03)); border-color:rgba(124,58,237,.18); box-shadow:0 4px 20px rgba(0,0,0,0.05); }
+.dash-tile--urgent   { background: linear-gradient(135deg,rgba(234,88,12,.10),rgba(234,88,12,.03)); border-color:rgba(234,88,12,.22); box-shadow:0 4px 20px rgba(0,0,0,0.05); }
 .dash-tile--settings { background: var(--bg-glass); border-color:var(--border-subtle); box-shadow:0 4px 20px rgba(0,0,0,0.05); }
 .dash-tile--admin    { background: linear-gradient(135deg,rgba(76,29,149,.3),rgba(30,8,64,.2)); border-color:rgba(124,58,237,.3); box-shadow:0 4px 20px rgba(0,0,0,0.08); }
 .dash-tile--weekly   { background: var(--bg-glass); border-color:var(--border-subtle); box-shadow:0 4px 20px rgba(0,0,0,0.05); }
@@ -264,6 +264,7 @@
 .dash-tile__ic--blue       { background: rgba(99,102,241,.7); }
 .dash-tile__ic--pink       { background: rgba(124,58,237,.65); }
 .dash-tile__ic--gray       { background: rgba(100,116,139,.6); }
+.dash-tile__ic--amber      { background: rgba(234,88,12,.85); }
 .dash-tile__ic--darkviolet { background: rgba(76,29,149,.9); }
 
 /* Icon float (2s loop, ±2px) */

@@ -17,7 +17,7 @@ const IC = {
   balance:  `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>`,
   profile:  `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`,
   myvideos: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/></svg>`,
-  caption:  `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>`,
+  urgent:   `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`,
   settings: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>`,
   admin:    `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`,
   weekly:   `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>`,
@@ -54,6 +54,18 @@ export function render() {
   const unreadNotifs = Object.values(state.db.messages || {}).filter(m =>
     m.to === cu && (m.type === 'notif' || m.type === 'dm' || m.reply) && !m.read
   ).length;
+
+  const now = Date.now();
+  const TWO_HOURS = 2 * 60 * 60 * 1000;
+  const urgentCnt = Object.values(state.db.videos || {}).filter(v => {
+    if (v.status === 'done' || v.status === 'expired') return false;
+    if ((v.ownerKey || v.owner || '').toLowerCase() === myKey) return false;
+    if (!v.expiresR1 || v.expiresR1 < now || v.expiresR1 - now > TWO_HOURS) return false;
+    const r1 = (v.r1Supporters || []).map(k => k.toLowerCase());
+    if (r1.includes(myKey)) return false;
+    if ((v.round || 1) === 1 && r1.length >= (v.r1Need || R1_NEED)) return false;
+    return true;
+  }).length;
 
   const balColor = balance >= 0 ? 'var(--accent-success)' : 'var(--accent-danger)';
   const myVids   = Object.values(state.db.videos || {}).filter(v =>
@@ -117,11 +129,12 @@ export function render() {
           <div class="dash-tile__sub">${unreadNotifs > 0 ? `${unreadNotifs} ${t('notifs') || 'neu'}` : myVids > 0 ? `${myVids} aktiv` : t('noMy') || 'Noch kein Video'}</div>
         </div>
 
-        <div class="dash-tile dash-tile--caption" data-action="nav:goto" data-screen="caption" role="button" tabindex="0">
-          <div class="dash-tile__ic dash-tile__ic--pink">${IC.caption}</div>
-          <div class="dash-tile__value"></div>
-          <div class="dash-tile__label">${t('dashTileCaption') || 'BEITRÄGE'}</div>
-          <div class="dash-tile__sub">${t('capTileSub') || 'Text generieren'}</div>
+        <div class="dash-tile dash-tile--urgent ${urgentCnt > 0 ? 'dash-tile--active' : ''}" data-action="dash:urgent" role="button" tabindex="0">
+          <div class="dash-tile__ic dash-tile__ic--amber">${IC.urgent}</div>
+          ${urgentCnt > 0 ? `<div class="dash-badge dash-badge--red">${urgentCnt}</div>` : ''}
+          <div class="dash-tile__value">${urgentCnt}</div>
+          <div class="dash-tile__label">${t('dashTileUrgent') || 'DRINGEND'}</div>
+          <div class="dash-tile__sub">${urgentCnt > 0 ? `${urgentCnt} ${t('urgentSub') || 'läuft bald ab'}` : t('noUrgent') || 'Alles gut ✓'}</div>
         </div>
 
         <div class="dash-tile dash-tile--settings" data-action="nav:goto" data-screen="settings" role="button" tabindex="0">
@@ -162,5 +175,8 @@ function _registerHandlers() {
   });
   on('dash:leaderboard', () => {
     import('./home.js').then(m => { m.setMode?.('leaderboard'); goScreen('home'); });
+  });
+  on('dash:urgent', () => {
+    import('./home.js').then(m => { m.setMode?.('feed'); goScreen('home'); });
   });
 }
