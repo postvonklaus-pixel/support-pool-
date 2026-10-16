@@ -387,7 +387,10 @@ function _openVideos(myKey) {
 
 function _todaySupports(cu) {
   const today = new Date().toISOString().slice(0, 10);
+  const todayKey = today.replace(/-/g, '_');
   const u = state.db.members?.[cu] || {};
+  const direct = u.todayGiven?.[todayKey];
+  if (direct !== undefined) return direct;
   const days = u.supportDays || u.activeDays || [];
   if (!days.includes(today)) return 0;
   const cutoff = Date.now() - 86400000;

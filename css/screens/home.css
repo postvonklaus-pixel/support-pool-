@@ -87,11 +87,17 @@
   border-radius: var(--radius-full);
 }
 
+/* Home screen manages its own scroll via .home-content — remove the
+   redundant nav-clearance padding that .screen adds by default */
+#screen-home { padding-bottom: 0; }
+
 .home-content {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   padding: var(--space-4);
+  padding-bottom: calc(var(--nav-height) + var(--space-4));
 }
 
 /* ── Feed List ────────────────────────────────────────────── */

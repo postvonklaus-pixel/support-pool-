@@ -227,6 +227,9 @@ on('support:done', (el) => {
   const days  = [...new Set([...(u.supportDays || []), today])];
   writeDB(`members/${cu}/supportDays`, days);
 
+  const todayKey = today.replace(/-/g, '_');
+  writeDB(`members/${cu}/todayGiven/${todayKey}`, (u.todayGiven?.[todayKey] || 0) + 1);
+
   // Increment owner's received counter
   const owner    = v.ownerKey || v.owner;
   if (owner && owner !== cu) {
