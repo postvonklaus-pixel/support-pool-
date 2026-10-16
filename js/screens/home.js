@@ -4,7 +4,7 @@
 
 import { state }      from '../state.js';
 import { t }          from '../i18n.js';
-import { esc, avatarGradient, timeAgo } from '../utils.js';
+import { esc, avatarGradient, timeAgo, fbDec } from '../utils.js';
 import { on }         from '../events.js';
 import { startTimer } from '../components/timer.js';
 import { goalPill, balanceMeter, circularTimer, startCircularTimer } from '../components/progress.js';
@@ -143,7 +143,7 @@ function _renderFeedTab(videos, cu) {
 function _videoCard(v, locked = false) {
   const r1    = (v.r1Supporters || []).length;
   const r1n   = v.r1Need || _r1Need();
-  const owner = v.ownerKey || v.owner || '?';
+  const owner = fbDec(v.ownerKey || v.owner || '?');
   const link  = v.link || v.url || '#';
   const round = v.round || 1;
   const r2    = (v.r2Supporters || []).length;
@@ -245,11 +245,11 @@ function _poolPulseSection() {
           <div class="pool-pulse__stat-label">${t('todaySupports') || 'Heute supportet'}</div>
         </div>
         ${topUser ? `<div class="pool-pulse__stat">
-          <div class="pool-pulse__stat-val pool-pulse__stat-val--name">@${esc(topUser)}</div>
+          <div class="pool-pulse__stat-val pool-pulse__stat-val--name">@${esc(fbDec(topUser))}</div>
           <div class="pool-pulse__stat-label">${t('topToday') || 'Top diese Woche'} · ${topVal}×</div>
         </div>` : ''}
         ${newVid ? `<div class="pool-pulse__stat">
-          <div class="pool-pulse__stat-val pool-pulse__stat-val--name">@${esc(newVid.ownerKey || newVid.owner || '?')}</div>
+          <div class="pool-pulse__stat-val pool-pulse__stat-val--name">@${esc(fbDec(newVid.ownerKey || newVid.owner || '?'))}</div>
           <div class="pool-pulse__stat-label">${t('newHighlight') || 'Neu im Pool'}</div>
         </div>` : ''}
       </div>
@@ -388,13 +388,16 @@ function _openVideos(myKey) {
 function _todaySupports(cu) {
   const today = new Date().toISOString().slice(0, 10);
   const u = state.db.members?.[cu] || {};
-  return ((u.activeDays || []).includes(today) ? 1 : 0) +
-    Object.values(state.db.videos || {})
-      .filter(v => (v.r1Supporters || []).includes(cu) || (v.r2Supporters || []).includes(cu))
-      .filter(v => {
-        const ts = v.supportedAt?.[cu] || v.lastSupportTs || 0;
-        return ts && new Date(ts).toISOString().slice(0, 10) === today;
-      }).length;
+  const days = u.supportDays || u.activeDays || [];
+  if (!days.includes(today)) return 0;
+  const cutoff = Date.now() - 86400000;
+  const myKey = cu.toLowerCase();
+  const cnt = Object.values(state.db.videos || {}).filter(v => {
+    if ((v.posted || 0) < cutoff) return false;
+    const r = [...(v.r1Supporters || []), ...(v.r2Supporters || [])].map(k => k.toLowerCase());
+    return r.includes(myKey);
+  }).length;
+  return Math.max(cnt, 1);
 }
 
 function _currentStreak(u) {

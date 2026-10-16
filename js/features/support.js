@@ -38,7 +38,7 @@ export function handleSupport(vidId) {
   const link = v.link || v.url || '#';
   const lang = state.lang;
   const pool = _getCommentPool(lang);
-  const owner = v.ownerKey || v.owner || '?';
+  const owner = fbDec(v.ownerKey || v.owner || '?');
   const r1    = (v.r1Supporters || []).length;
   const r1n   = v.r1Need || state.db.settings?.r1Need || 10;
   const slotsLeft = r1n - r1;
