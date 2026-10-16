@@ -161,19 +161,19 @@
   gap: var(--sp-2);
 }
 
-/* Rows 1 + 2: 2-column, each take flex:2 (large tiles) */
+/* Rows 1 + 2: 2-column, fixed 140px so content always fits */
 .dash-row {
-  flex: 2;
-  min-height: 0;
+  flex: none;
+  height: 140px;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: var(--sp-2);
 }
 
-/* Row 3: 2×2 grid, flex:4 so each of its 2 sub-rows = same height as each large row (flex:2) */
+/* Row 3: 2×2 grid, 288px = 2×140px − 8px gap so each sub-row is 140px */
 .dash-row--sm {
-  flex: 4;
-  min-height: 0;
+  flex: none;
+  height: 288px;
   display: grid;
   grid-template-columns: 1fr 1fr;
   grid-template-rows: 1fr 1fr;
@@ -183,10 +183,10 @@
 /* ── Tile base ─────────────────────────────────────────── */
 .dash-tile {
   border-radius: 20px;
-  padding: var(--sp-4);
+  padding: 12px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
   position: relative;
   overflow: hidden;
   cursor: pointer;
@@ -226,7 +226,6 @@
 }
 .dash-tile--support .dash-tile__ic--cyan { background: rgba(99,102,241,.9); }
 .dash-tile--support .dash-tile__value    { color: rgba(79,70,229,1); }
-.dash-tile--support .dash-tile__label    { color: #6B7280; }
 
 .dash-tile--post {
   background: linear-gradient(145deg, rgba(124,58,237,.18) 0%, rgba(124,58,237,.07) 100%);
@@ -235,7 +234,6 @@
 }
 .dash-tile--post .dash-tile__ic--violet { background: rgba(124,58,237,.9); }
 .dash-tile--post .dash-tile__value      { color: rgba(109,40,217,1); }
-.dash-tile--post .dash-tile__label      { color: #6B7280; }
 
 /* Row 2 tiles */
 .dash-tile--balance  { background: linear-gradient(135deg,rgba(99,102,241,.1),rgba(99,102,241,.04)); border-color:rgba(99,102,241,.22); box-shadow:0 4px 20px rgba(0,0,0,0.05); }
@@ -257,7 +255,7 @@
   display: flex; align-items: center; justify-content: center;
   color: #fff;
   flex-shrink: 0;
-  margin-bottom: var(--sp-1);
+  margin-bottom: 0;
 }
 .dash-tile__ic--cyan       { background: rgba(99,102,241,.85); }
 .dash-tile__ic--violet     { background: rgba(124,58,237,.85); }

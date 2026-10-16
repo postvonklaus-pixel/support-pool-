@@ -269,10 +269,16 @@ exports.generateCaption = onCall({ cors: true }, async (request) => {
     createdAt: admin.firestore.FieldValue.serverTimestamp(),
   };
 
-  const ref = await db.collection("caption_drafts").add(draft);
+  let draftId = 'local';
+  try {
+    const ref = await db.collection("caption_drafts").add(draft);
+    draftId = ref.id;
+  } catch (fsErr) {
+    console.warn("Firestore save skipped:", fsErr.message);
+  }
 
   return {
-    draftId: ref.id,
+    draftId,
     hashtags: hashtagData.hashtags,
     hashtagString: hashtagData.hashtagString,
     hooks: hookTemplates,
