@@ -99,10 +99,9 @@ export function render() {
 
         <div class="dash-tile dash-tile--profile" data-action="nav:goto" data-screen="profile" role="button" tabindex="0">
           <div class="dash-tile__ic dash-tile__ic--lila">${IC.profile}</div>
-          ${unreadNotifs > 0 ? `<div class="dash-badge dash-badge--red">${unreadNotifs}</div>` : ''}
-          <div class="dash-tile__value">${unreadNotifs > 0 ? unreadNotifs : weeklyGiven}</div>
+          <div class="dash-tile__value">${weeklyGiven}</div>
           <div class="dash-tile__label">${t('navProfile') || 'PROFIL'}</div>
-          <div class="dash-tile__sub">${unreadNotifs > 0 ? (t('notifs') || '🔔 Neu') : `${weeklyGiven} ${t('given') || 'gegeben'}`}</div>
+          <div class="dash-tile__sub">${weeklyGiven} ${t('given') || 'gegeben'}</div>
         </div>
 
       </div>
@@ -110,11 +109,12 @@ export function render() {
       <!-- Row 3: 4 kleine Kacheln (2×2) -->
       <div class="dash-row dash-row--sm">
 
-        <div class="dash-tile dash-tile--myvideos" data-action="nav:goto" data-screen="myvideos" role="button" tabindex="0">
+        <div class="dash-tile dash-tile--myvideos ${unreadNotifs > 0 ? 'dash-tile--active' : ''}" data-action="nav:goto" data-screen="myvideos" role="button" tabindex="0">
           <div class="dash-tile__ic dash-tile__ic--blue">${IC.myvideos}</div>
+          ${unreadNotifs > 0 ? `<div class="dash-badge dash-badge--red">${unreadNotifs}</div>` : ''}
           <div class="dash-tile__value">${myVids}</div>
           <div class="dash-tile__label">${t('dashTileVideos') || 'VIDEOS'}</div>
-          <div class="dash-tile__sub">${myVids > 0 ? `${myVids} aktiv` : t('noMy') || 'Noch kein Video'}</div>
+          <div class="dash-tile__sub">${unreadNotifs > 0 ? `${unreadNotifs} ${t('notifs') || 'neu'}` : myVids > 0 ? `${myVids} aktiv` : t('noMy') || 'Noch kein Video'}</div>
         </div>
 
         <div class="dash-tile dash-tile--caption" data-action="nav:goto" data-screen="caption" role="button" tabindex="0">
