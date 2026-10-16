@@ -170,9 +170,9 @@
   gap: var(--sp-2);
 }
 
-/* Row 3: 2×2 grid (4 small tiles, flex:2 so visually same height) */
+/* Row 3: 2×2 grid, flex:4 so each of its 2 sub-rows = same height as each large row (flex:2) */
 .dash-row--sm {
-  flex: 2;
+  flex: 4;
   min-height: 0;
   display: grid;
   grid-template-columns: 1fr 1fr;

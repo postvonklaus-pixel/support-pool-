@@ -113,21 +113,21 @@ export function render() {
         <div class="dash-tile dash-tile--myvideos" data-action="nav:goto" data-screen="myvideos" role="button" tabindex="0">
           <div class="dash-tile__ic dash-tile__ic--blue">${IC.myvideos}</div>
           <div class="dash-tile__value">${myVids}</div>
-          <div class="dash-tile__label">${t('myVidsTile') || 'MEINE VIDEOS'}</div>
+          <div class="dash-tile__label">${t('dashTileVideos') || 'VIDEOS'}</div>
           <div class="dash-tile__sub">${myVids > 0 ? `${myVids} aktiv` : t('noMy') || 'Noch kein Video'}</div>
         </div>
 
         <div class="dash-tile dash-tile--caption" data-action="nav:goto" data-screen="caption" role="button" tabindex="0">
           <div class="dash-tile__ic dash-tile__ic--pink">${IC.caption}</div>
           <div class="dash-tile__value"></div>
-          <div class="dash-tile__label">${t('capTileLabel') || 'CAPTION'}</div>
+          <div class="dash-tile__label">${t('dashTileCaption') || 'BEITRÄGE'}</div>
           <div class="dash-tile__sub">${t('capTileSub') || 'Text generieren'}</div>
         </div>
 
         <div class="dash-tile dash-tile--settings" data-action="nav:goto" data-screen="settings" role="button" tabindex="0">
           <div class="dash-tile__ic dash-tile__ic--gray">${IC.settings}</div>
           <div class="dash-tile__value"></div>
-          <div class="dash-tile__label">${t('settings') || 'EINSTELLUNGEN'}</div>
+          <div class="dash-tile__label">${t('dashTileSettings') || 'EINSTELLUNGEN'}</div>
           <div class="dash-tile__sub">${t('settingsSub') || 'App anpassen'}</div>
         </div>
 
@@ -141,7 +141,7 @@ export function render() {
         <div class="dash-tile dash-tile--weekly" data-action="dash:leaderboard" role="button" tabindex="0">
           <div class="dash-tile__ic dash-tile__ic--gray">${IC.weekly}</div>
           <div class="dash-tile__value" style="font-size:var(--text-xl)">${weeklyGiven}</div>
-          <div class="dash-tile__label">${t('weeklySupLabel') || 'DIESE WOCHE'}</div>
+          <div class="dash-tile__label">${t('dashTileActivity') || 'AKTIVITÄT'}</div>
           <div class="dash-tile__sub">${t('given') || 'gegeben'}</div>
         </div>`}
 
