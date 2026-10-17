@@ -24,10 +24,7 @@ let _adminViewAs  = null;  // original admin key during impersonation
 function _isAdmin(cu) {
   if (!cu) return false;
   const u = state.db.members?.[cu];
-  if (!u || u.role !== 'admin' || u.status !== 'active') return false;
-  const admins = state.db.settings?.admins;
-  // If settings.admins list exists, cu must be in it
-  if (Array.isArray(admins) && !admins.includes(cu)) return false;
+  if (!u || u.role !== 'admin') return false;
   return true;
 }
 
@@ -215,8 +212,12 @@ function _renderTemplates() {
 // ── Members ────────────────────────────────────────────────
 function _renderMembers() {
   const all = Object.entries(state.db.members || {})
-    .filter(([, m]) => m.status === 'active')
-    .sort(([, a], [, b]) => (b.stats?.given || 0) - (a.stats?.given || 0));
+    .sort(([, a], [, b]) => {
+      const aInactive = a.status === 'inactive';
+      const bInactive = b.status === 'inactive';
+      if (aInactive !== bInactive) return aInactive ? 1 : -1;
+      return (b.stats?.given || 0) - (a.stats?.given || 0);
+    });
 
   const filtered = _memberSearch
     ? all.filter(([k, m]) => (m.name || k).toLowerCase().includes(_memberSearch.toLowerCase()))
@@ -277,35 +278,46 @@ function _renderMembers() {
 }
 
 function _adminMemberRow(key, m) {
-  const bal   = (m.stats?.given || 0) - (m.stats?.received || 0);
-  const grad  = avatarGradient(key);
+  const bal      = (m.stats?.given || 0) - (m.stats?.received || 0);
+  const grad     = avatarGradient(key);
   const initials = key.slice(0, 2).toUpperCase();
   const balCls   = bal > 0 ? 'pos' : bal < 0 ? 'neg' : '';
   const online   = m.online === true;
+  const inactive = m.status === 'inactive';
 
-  return `<div class="admin-member-row">
+  return `<div class="admin-member-row${inactive ? ' admin-member-row--inactive' : ''}">
     <div class="admin-member-row__av-wrap">
-      <div class="admin-member-row__av" style="background:${grad}">${initials}</div>
-      ${online ? '<span class="admin-member-row__online"></span>' : ''}
+      <div class="admin-member-row__av" style="background:${grad};opacity:${inactive?'0.45':'1'}">${initials}</div>
+      ${online && !inactive ? '<span class="admin-member-row__online"></span>' : ''}
     </div>
     <div class="admin-member-row__body">
-      <div class="admin-member-row__name">${esc(m.name || key)}${m.role==='admin'?' 👑':''}</div>
+      <div class="admin-member-row__name">
+        ${esc(m.name || key)}${m.role==='admin'?' 👑':''}
+        ${inactive ? '<span class="badge badge--warning" style="margin-left:4px;font-size:10px">inaktiv</span>' : ''}
+      </div>
       <div class="admin-member-row__meta">G:${m.stats?.given||0} · R:${m.stats?.received||0} · W:${m.weeklyGiven||0}</div>
     </div>
     <div class="admin-member-row__bal admin-member-row__bal--${balCls}">${bal > 0 ? '+' : ''}${bal}</div>
     <div class="admin-member-row__actions">
-      <button class="btn btn--ghost btn--icon btn--sm"
-        data-action="admin:member:balance" data-key="${esc(key)}" title="Balance anpassen" aria-label="Balance">
-        ⚖️
-      </button>
-      <button class="btn btn--ghost btn--icon btn--sm"
-        data-action="admin:member:view-as" data-key="${esc(key)}" title="Als Mitglied anzeigen" aria-label="Ansehen">
-        👁
-      </button>
-      <button class="btn btn--ghost btn--icon btn--sm"
-        data-action="admin:member:kick" data-key="${esc(key)}" title="Entfernen" aria-label="Entfernen">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-      </button>
+      ${inactive ? `
+        <button class="btn btn--ghost btn--icon btn--sm"
+          data-action="admin:member:reactivate" data-key="${esc(key)}" title="Reaktivieren" aria-label="Reaktivieren">
+          ✓
+        </button>
+      ` : `
+        <button class="btn btn--ghost btn--icon btn--sm"
+          data-action="admin:member:balance" data-key="${esc(key)}" title="Balance anpassen" aria-label="Balance">
+          ⚖️
+        </button>
+        <button class="btn btn--ghost btn--icon btn--sm"
+          data-action="admin:member:view-as" data-key="${esc(key)}" title="Als Mitglied anzeigen" aria-label="Ansehen">
+          👁
+        </button>
+        <button class="btn btn--ghost btn--icon btn--sm"
+          data-action="admin:member:kick" data-key="${esc(key)}" title="Entfernen" aria-label="Entfernen">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      `}
     </div>
   </div>`;
 }
@@ -505,6 +517,14 @@ function _registerHandlers() {
   on('admin:member:search', (el) => {
     _memberSearch = el.value || '';
     _debounceRender();
+  });
+
+  on('admin:member:reactivate', async (el) => {
+    const key = el.dataset.key;
+    if (!key) return;
+    writeDB(`members/${key}/status`, 'active');
+    toast(`@${key} reaktiviert`, 'success');
+    setTimeout(render, 300);
   });
 
   on('admin:member:kick', async (el) => {

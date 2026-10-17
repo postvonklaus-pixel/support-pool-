@@ -354,7 +354,7 @@ function _handleNameSubmit() {
   _username = found;
   const u = members[found];
 
-  if (u.status && u.status !== 'active') {
+  if (u.status && u.status !== 'active' && u.role !== 'admin') {
     toast(t('loginDenied') || 'Zugriff verweigert', 'error');
     return;
   }
