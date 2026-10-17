@@ -77,22 +77,26 @@ export function render() {
 
 // ── Status-Card (B2.3) ─────────────────────────────────────
 function _renderStatusCard(vids) {
-  const active = vids.find(v => v.status !== 'done' && v.status !== 'expired');
+  const active = vids.find(v => v.status !== 'done' && v.status !== 'expired' && v.status !== 'scheduled');
   if (!active) return '';
-  const r1  = (active.r1Supporters || []).length;
-  const r1n = active.r1Need || R1_NEED;
-  const pct = Math.min(100, Math.round((r1 / r1n) * 100));
-  const link = active.link || active.url || '#';
+  const round = active.round || 1;
+  const r1    = (active.r1Supporters || []).length;
+  const r1n   = active.r1Need || R1_NEED;
+  const r2    = (active.r2Supporters || []).length;
+  const cur   = round >= 2 ? r2  : r1;
+  const max   = round >= 2 ? R2_NEED : r1n;
+  const pct   = Math.min(100, Math.round((cur / max) * 100));
+  const link  = active.link || active.url || '#';
 
   return `
     <div class="myvid-status-card card--glass">
       <div class="myvid-status-card__ring">
-        ${progressRing(r1, r1n, { label: `${pct}%`, size: 80, stroke: 7, color: 'var(--accent-primary)' })}
+        ${progressRing(cur, max, { label: `${pct}%`, size: 80, stroke: 7, color: 'var(--accent-primary)' })}
       </div>
       <div class="myvid-status-card__body">
-        <div class="myvid-status-card__title">🎬 ${t('activeVid')} · R${active.round || 1}</div>
+        <div class="myvid-status-card__title">🎬 ${t('activeVid')} · R${round}</div>
         <div class="myvid-status-card__link">${esc(link.replace(/^https?:\/\/(www\.)?/,'').slice(0,36))}</div>
-        <div class="myvid-status-card__prog">${r1} ${t('notifFrom')} ${r1n} ${t('statusCardSup')}</div>
+        <div class="myvid-status-card__prog">${cur} ${t('notifFrom')} ${max} ${t('statusCardSup')}</div>
       </div>
     </div>`;
 }
@@ -130,9 +134,11 @@ function _renderNotifSection(notifs, cu) {
     </div>`;
 }
 
+const _LOCALE_MAP = { de:'de-DE', en:'en-GB', id:'id-ID', it:'it-IT', es:'es-ES', tr:'tr-TR', ar:'ar-SA', zh:'zh-CN', ja:'ja-JP', pl:'pl-PL' };
 function _fmtDate(ts) {
   if (!ts) return '';
-  return new Date(ts).toLocaleString('de-DE', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
+  const locale = _LOCALE_MAP[state.lang] || 'de-DE';
+  return new Date(ts).toLocaleString(locale, { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
 }
 
 function _vidCard(v) {
@@ -228,8 +234,8 @@ function _registerHandlers() {
     if (!cu) return;
     const msgs = state.db.messages || {};
     Object.entries(msgs).forEach(([id, m]) => {
-      if ((m.to === cu || m.recipient === cu) && !m.read) {
-        writeDB(`messages/${id}/read`, true);
+      if ((m.to === cu || m.recipient === cu) && m.type === 'notif') {
+        writeDB(`messages/${id}`, null);
       }
     });
     toast(t('notifsCleared'), 'success');
