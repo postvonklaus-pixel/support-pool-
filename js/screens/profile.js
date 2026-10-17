@@ -35,7 +35,7 @@ export function render() {
   const stats    = u.stats || {};
   const given    = stats.given    || 0;
   const received = stats.received || 0;
-  const bal      = Math.min(given - received, 20);
+  const bal      = given - received;
   const ranks    = _ranks();
   const rank     = rankFor(u, ranks);
   const daysIn   = u.joined ? Math.max(0, Math.floor((Date.now() - u.joined) / 86400000)) : 0;
@@ -151,6 +151,17 @@ export function render() {
   `;
 
   _registerHandlers();
+  _startWeeklyChipTimer();
+}
+
+let _weeklyTimer = null;
+function _startWeeklyChipTimer() {
+  clearInterval(_weeklyTimer);
+  _weeklyTimer = setInterval(() => {
+    const chip = document.getElementById('profile-weekly-chip');
+    if (!chip) { clearInterval(_weeklyTimer); return; }
+    chip.textContent = _weeklyChipText();
+  }, 60000);
 }
 
 function _currentStreak(u) {
