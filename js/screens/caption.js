@@ -111,7 +111,7 @@ export async function generate() {
     });
 
     if (!data?.caption) {
-      res.innerHTML = `<div class="empty-state"><div class="empty-state__sub">Keine Ergebnisse</div></div>`;
+      res.innerHTML = `<div class="empty-state"><div class="empty-state__sub">${t('capError') || 'Keine Ergebnisse'}</div></div>`;
       return;
     }
 
@@ -184,7 +184,7 @@ function _registerHandlers() {
     const text = el.dataset.text || '';
     try {
       await navigator.clipboard.writeText(text);
-      toast('Kopiert! 📋', 'success', 1800);
+      toast(t('capCopied') || 'Kopiert! 📋', 'success', 1800);
     } catch {
       toast(text, 'info', 6000);
     }
