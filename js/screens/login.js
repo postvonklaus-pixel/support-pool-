@@ -9,6 +9,8 @@ import { ge, haptic, fbEnc, fbDec, copyToClipboard } from '../utils.js';
 import { toast }              from '../components/toast.js';
 import { writeDB }            from '../firebase.js';
 import { handlePinKey, handlePinDel, initPinPad, resetPin, shakePin } from '../components/pinpad.js';
+import { addNotif } from '../features/notifications.js';
+import { getAllLangs } from '../i18n.js';
 
 const LANG_LIST = ['de','en','id','it','es','tr','ar','zh','ja','pl'];
 
@@ -423,6 +425,26 @@ function _handleRegisterConfirm() {
     online:     true,
     stats:      { given: 0, received: 0 },
     postsTotal: 0,
+  });
+
+  // Auto-assign to the group with fewest members
+  const groups = state.db.groups || {};
+  const groupEntries = Object.entries(groups);
+  if (groupEntries.length > 0) {
+    const [bestGid, bestG] = groupEntries.reduce((best, [gid, g]) => {
+      const count = (g.members || []).length;
+      return count < (best[1].members || []).length ? [gid, g] : best;
+    });
+    writeDB(`members/${key}/group`, bestGid);
+    const arr = bestG.members || [];
+    writeDB(`groups/${bestGid}/members`, [...arr, key]);
+  }
+
+  // Notify all existing active members about the new member
+  const allLangs = getAllLangs();
+  Object.entries(state.db.members || {}).forEach(([mKey, m]) => {
+    if (mKey === key || m.status !== 'active') return;
+    addNotif(mKey, '👋', null, null, { msgKey: 'notifNewMember', params: { name: username } });
   });
 
   const welcomeMsg = (t('loginWelcome') || 'Willkommen, @{name}! 🎉').replace('{name}', username);
