@@ -59,39 +59,11 @@ async function boot() {
     import('./components/toast.js').then(m => m.toast('Offline-Modus — bitte reload', 'warning', 5000));
   }
 
-  // 7. Admin recovery via URL param ?restore=nova-admin-2024
-  _checkAdminRestore();
-
-  // 8. Start periodic render tick (15s)
+  // 7. Start periodic render tick (15s)
   setInterval(tick, 15000);
 
-  // 9. Start global countdown ticker (updates [data-expires] spans every 1s)
+  // 8. Start global countdown ticker (updates [data-expires] spans every 1s)
   import('./features/timers.js').then(m => m.startCountdownTicker());
-}
-
-function _checkAdminRestore() {
-  const params = new URLSearchParams(window.location.search);
-  if (params.get('restore') !== 'nova-admin-2024') return;
-  // Wait for Firebase to load, then create admin if missing
-  setTimeout(() => {
-    if (state.db.members?.['Admin👑']) {
-      toast('Admin existiert bereits', 'info');
-      return;
-    }
-    writeDB('members/Admin👑', {
-      name:       'Admin👑',
-      role:       'admin',
-      status:     'active',
-      lang:       'de',
-      joinedAt:   Date.now(),
-      online:     true,
-      stats:      { given: 0, received: 0 },
-      postsTotal: 0,
-    });
-    toast('Admin wiederhergestellt ✓ — bitte einloggen', 'success', 5000);
-    // Clean URL without reload
-    window.history.replaceState({}, '', window.location.pathname);
-  }, 3000);
 }
 
 function _showApp() {
@@ -298,7 +270,7 @@ document.addEventListener('scroll', () => { window._lastScrollTime = Date.now();
 // deregisters any existing SW so JS is always served fresh from the network.
 
 // ── Expose globals needed by firebase callbacks ───────────
-window._nova = { loginAs, logout, state, saveDB, writeDB };
+window._nova = { loginAs, logout, state, saveDB };
 
 // ── Start ─────────────────────────────────────────────────
 boot().catch(err => console.error('[nova] boot failed:', err));
