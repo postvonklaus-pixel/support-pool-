@@ -276,7 +276,7 @@
   min-width: 18px; height: 18px; padding: 0 5px;
   background: var(--accent-danger); color: #fff;
   font-size: 10px; font-weight: var(--weight-bold);
-  border-radius: var(--radius-full); margin-left: var(--space-2);
+  border-radius: var(--radius-full); margin-inline-start: var(--space-2);
 }
 
 .notif-card {
@@ -306,7 +306,7 @@
 .notif-card__quote {
   font-size: var(--text-xs); color: var(--text-tertiary);
   background: var(--bg-glass); padding: 2px 8px;
-  border-left: 2px solid var(--accent-primary);
+  border-inline-start: 2px solid var(--accent-primary);
   border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
   margin-bottom: var(--space-1); font-style: italic;
 }

@@ -264,7 +264,7 @@
   background: none;
   border: none;
   cursor: pointer;
-  text-align: left;
+  text-align: start;
   color: var(--text-primary);
   font-size: var(--text-sm, 0.875rem);
   font-weight: 600;
@@ -384,7 +384,7 @@
   max-height: 60vh;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  padding-right: 2px;
+  padding-inline-end: 2px;
 }
 
 .priv-section {}
@@ -417,7 +417,7 @@
 }
 
 .hs-block__steps {
-  padding-left: 18px;
+  padding-inline-start: 18px;
   margin: 0;
   display: flex;
   flex-direction: column;

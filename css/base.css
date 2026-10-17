@@ -96,6 +96,7 @@ ul, ol { list-style: none; }
 
 /* ── RTL support ── */
 [dir="rtl"] { direction: rtl; }
+[dir="rtl"] .chat-back-btn svg { transform: scaleX(-1); }
 
 /* ── Utility classes ── */
 .sr-only {

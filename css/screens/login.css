@@ -87,8 +87,7 @@
   top: 0; left: 0; right: 0;
   height: calc(56px + env(safe-area-inset-top, 0px));
   padding-top: env(safe-area-inset-top, 0px);
-  padding-left: 16px;
-  padding-right: 16px;
+  padding-inline: 16px;
   background: rgba(5,3,10,0.85);
   backdrop-filter: blur(20px) saturate(150%);
   -webkit-backdrop-filter: blur(20px) saturate(150%);
@@ -250,7 +249,7 @@
   width: 26px; height: 26px;
   border-radius: 50%;
   border: 2.5px solid #1a1830;
-  margin-left: -8px;
+  margin-inline-start: -8px;
   overflow: hidden;
   flex-shrink: 0;
   display: flex;
@@ -328,8 +327,8 @@
   border-radius: 999px;
   background: rgba(255,255,255,0.06);
   border: 1.5px solid rgba(255,255,255,0.10);
-  padding-left: 56px;
-  padding-right: 16px;
+  padding-inline-start: 56px;
+  padding-inline-end: 16px;
   font-size: 17px;
   font-weight: 500;
   color: #fff;
@@ -641,7 +640,7 @@
   border: none;
   background: transparent;
   width: 100%;
-  text-align: left;
+  text-align: start;
   font-family: inherit;
 }
 .login-lang-item:hover { background: rgba(255,255,255,0.07); color: #fff; }

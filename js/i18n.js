@@ -2578,6 +2578,9 @@ export function t(key) {
 
 export function initI18n(lang = 'de') {
   _current = LANGS[lang] || LANGS.de;
+  const dir = _current.dir || 'ltr';
+  document.documentElement.setAttribute('dir', dir);
+  document.documentElement.setAttribute('lang', lang);
   applyToDOM();
 }
 
