@@ -52,7 +52,7 @@ async function boot() {
     await Promise.race([initFirebase(onDBUpdate), fbTimeout]);
     // If session exists and DB is now loaded, redirect to dashboard
     if (savedUser && state.db.members?.[savedUser]) {
-      await loginAs(savedUser);
+      await loginAs(savedUser, { silent: true });
     }
   } catch (err) {
     console.error('[boot] Firebase error (non-fatal):', err);
@@ -99,7 +99,7 @@ function onDBUpdate(snapshot) {
     _dbFirstLoad = false;
     const savedUser = loadSession();
     if (savedUser && state.db.members?.[savedUser] && state.ui.activeScreen === 'login') {
-      loginAs(savedUser);
+      loginAs(savedUser, { silent: true });
       return;
     }
   }
@@ -112,9 +112,14 @@ function onDBUpdate(snapshot) {
 }
 
 // ── Login ─────────────────────────────────────────────────
-export async function loginAs(username) {
+export async function loginAs(username, { silent = false } = {}) {
   const u = state.db.members[username];
-  if (!u) { toast('Nutzer nicht gefunden', 'error'); return false; }
+  if (!u) {
+    if (!silent) {
+      import('./i18n.js').then(({ t }) => toast(t('loginNotFound') || 'Nutzer nicht gefunden', 'error'));
+    }
+    return false;
+  }
 
   setState('currentUser', username);
 
