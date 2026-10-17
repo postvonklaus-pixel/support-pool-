@@ -11,7 +11,7 @@ import { on }      from '../events.js';
 import { goScreen } from '../router.js';
 import { addNotif } from './notifications.js';
 
-const R1_MS   = 24 * 60 * 60 * 1000;
+const R1_MS   = 12 * 60 * 60 * 1000;
 const R1_NEED = 10;
 
 export function openPostModal() {

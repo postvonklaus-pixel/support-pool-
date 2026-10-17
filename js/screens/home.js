@@ -17,7 +17,7 @@ import { getNextFridayWIB } from '../utils.js';
 const R1_NEED = 10;
 const R2_NEED = 10;
 const _r1Need = () => state.db.settings?.r1Need || R1_NEED;
-const R1_MS   = 24 * 60 * 60 * 1000;
+const R1_MS   = 12 * 60 * 60 * 1000;
 const BAL_CAP = 20;
 
 let _tab = 'feed'; // 'feed' | 'balance' | 'leaderboard'
