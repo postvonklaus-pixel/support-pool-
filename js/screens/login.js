@@ -436,20 +436,21 @@ function _handleRegisterConfirm() {
   const groups = state.db.groups || {};
   const groupEntries = Object.entries(groups);
   if (groupEntries.length > 0) {
+    const _toArr = (v) => Array.isArray(v) ? v : Object.values(v || {});
     const [bestGid, bestG] = groupEntries.reduce((best, [gid, g]) => {
-      const count = (g.members || []).length;
-      return count < (best[1].members || []).length ? [gid, g] : best;
+      const count = _toArr(g.members).length;
+      return count < _toArr(best[1].members).length ? [gid, g] : best;
     });
     writeDB(`members/${key}/group`, bestGid);
     state.db.members[key].group = bestGid;
-    const arr = bestG.members || [];
+    const arr = _toArr(bestG.members);
     writeDB(`groups/${bestGid}/members`, [...arr, key]);
   }
 
-  // Notify all existing active members about the new member
-  const allLangs = getAllLangs();
+  // Notify all existing members (active + admin) about the new member
   Object.entries(state.db.members || {}).forEach(([mKey, m]) => {
-    if (mKey === key || m.status !== 'active') return;
+    if (mKey === key) return;
+    if (m.status === 'inactive' || m.status === 'kicked') return;
     addNotif(mKey, '👋', null, null, { msgKey: 'notifNewMember', params: { name: username } });
   });
 
