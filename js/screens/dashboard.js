@@ -113,7 +113,7 @@ export function render() {
       <!-- Row 1: Offene Videos + Video posten (LARGE) -->
       <div class="dash-row">
 
-        <div class="dash-tile dash-tile--support ${openCnt > 0 ? 'dash-tile--active' : ''}"
+        <div class="dash-tile dash-tile--support dash-tile--hero ${openCnt > 0 ? 'dash-tile--active' : ''}"
           data-action="dash:support" role="button" tabindex="0" ${delay(0)}>
           <div class="dash-tile__ic dash-tile__ic--cyan">${IC.videos}</div>
           ${openCnt > 0 ? `<div class="dash-badge dash-badge--cyan">${openCnt}</div>` : ''}
@@ -122,7 +122,7 @@ export function render() {
           <div class="dash-tile__sub">${openCnt > 0 ? `${openCnt} ${t('dbSupOpen') || 'offen'}` : t('noOpen') || 'Keine offen'}</div>
         </div>
 
-        <div class="dash-tile dash-tile--post" data-action="post:open" role="button" tabindex="0" ${delay(1)}>
+        <div class="dash-tile dash-tile--post dash-tile--hero" data-action="post:open" role="button" tabindex="0" ${delay(1)}>
           <div class="dash-tile__ic dash-tile__ic--violet">${IC.post}</div>
           <div class="dash-tile__value">${myVids}</div>
           <div class="dash-tile__label">${t('postBtn') || 'VIDEO POSTEN'}</div>
@@ -158,7 +158,7 @@ export function render() {
           <div class="dash-tile__ic dash-tile__ic--lila">${IC.profile}</div>
           <div class="dash-tile__value">${rankIcon}</div>
           <div class="dash-tile__label">${t('navProfile') || 'PROFIL'}</div>
-          <div class="dash-tile__sub">${given} ${t('given') || 'gegeben'} · W:${weeklyGiven}</div>
+          <div class="dash-tile__sub">${given} ${t('given') || 'gegeben'} · ${t('wkLabel') || 'Woche'}: ${weeklyGiven}</div>
         </div>
 
       </div>
