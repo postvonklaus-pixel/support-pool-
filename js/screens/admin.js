@@ -307,6 +307,10 @@ function _adminMemberRow(key, m) {
           data-action="admin:member:reactivate" data-key="${esc(key)}" title="Reaktivieren" aria-label="Reaktivieren">
           ✓
         </button>
+        <button class="btn btn--danger btn--icon btn--sm"
+          data-action="admin:member:delete" data-key="${esc(key)}" title="Endgültig löschen" aria-label="Löschen">
+          🗑️
+        </button>
       ` : `
         <button class="btn btn--ghost btn--icon btn--sm"
           data-action="admin:member:assign-group" data-key="${esc(key)}" title="Gruppe zuweisen" aria-label="Gruppe">
@@ -632,6 +636,31 @@ function _registerHandlers() {
     });
     toast(`@${key} entfernt`, 'success');
     setTimeout(render, 300);
+  });
+
+  on('admin:member:delete', async (el) => {
+    const key = el.dataset.key;
+    if (!key) return;
+    const ok = await confirm(
+      `@${key} endgültig löschen?`,
+      'Der Benutzername wird dauerhaft entfernt und kann neu vergeben werden.'
+    );
+    if (!ok) return;
+    // Remove from all groups
+    Object.entries(state.db.groups || {}).forEach(([gid, g]) => {
+      const arr = Array.isArray(g.members) ? g.members : Object.values(g.members || {});
+      if (arr.includes(key)) {
+        writeDB(`groups/${gid}/members`, arr.filter(m => m !== key));
+      }
+    });
+    // Delete all their messages/notifications
+    Object.entries(state.db.messages || {}).forEach(([mid, msg]) => {
+      if (msg.to === key || msg.from === key) writeDB(`messages/${mid}`, null);
+    });
+    // Delete member record (makes username available again)
+    writeDB(`members/${key}`, null);
+    toast(`@${key} dauerhaft gelöscht`, 'success');
+    setTimeout(render, 400);
   });
 
   on('admin:vid:delete', async (el) => {
