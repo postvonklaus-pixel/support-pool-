@@ -173,7 +173,7 @@ function _videoCard(v, locked = false) {
 
   return `
     <article class="${cardClass}" data-vid="${esc(v.id || link)}">
-      ${boost ? `<div class="boost-banner" aria-label="Fast fertig">⚡ FAST DONE — 1 Support fehlt!</div>` : ''}
+      ${boost ? `<div class="boost-banner">${t('boostBanner') || '⚡ Fast fertig — noch 1 Support!'}</div>` : ''}
       <div class="feed-card__head">
         <div class="feed-card__avatar" style="background:${gradient}" aria-hidden="true">
           ${owner.slice(0, 2).toUpperCase()}
@@ -199,7 +199,7 @@ function _videoCard(v, locked = false) {
           <span class="feed-card__prog-label">
             ${urgent ? `<span style="color:var(--accent-danger)">${t('feedUrgent').replace('{n}', slotsLeft)}</span>` : 'Supports'}
           </span>
-          ${goalPill(r1, r1n, 'Slots', { urgent })}
+          ${goalPill(round >= 2 ? r2 : r1, round >= 2 ? r2n : r1n, 'Slots', { urgent })}
         </div>
       </div>
 
@@ -324,7 +324,6 @@ function _renderLeaderboardTab(cu) {
   const podiumH= ['72px', '56px', '44px'];
 
   const podiumOrder = [top3[1], top3[0], top3[2]].filter(Boolean);
-  const podiumPos   = top3[1] ? [1, 0, 2] : [0, 1, 2];
 
   return `
     <div class="lb-wrap">
@@ -396,7 +395,7 @@ function _todaySupports(cu) {
   const cutoff = Date.now() - 86400000;
   const myKey = cu.toLowerCase();
   const cnt = Object.values(state.db.videos || {}).filter(v => {
-    if ((v.posted || 0) < cutoff) return false;
+    if ((v.postedAt || 0) < cutoff) return false;
     const r = [...(v.r1Supporters || []), ...(v.r2Supporters || [])].map(k => k.toLowerCase());
     return r.includes(myKey);
   }).length;
