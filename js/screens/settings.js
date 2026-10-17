@@ -560,7 +560,7 @@ function _confirmPin() {
 // ── Refer Modal ───────────────────────────────────────────
 
 function _openReferModal() {
-  const link      = window.location.origin;
+  const link      = document.querySelector('base')?.href || window.location.origin;
   const text      = t('referText') || 'Hey! 👋 Ich bin im NOVA Support Pool – einer TikTok-Community, in der wir uns gegenseitig unterstützen. Komm dazu und lass uns zusammen wachsen! 🚀';
   const instr     = t('referInstr')     || 'Kopiere den Text und schick ihn an Freunde — oder teile direkt den Link zur App.';
   const textLabel = t('referTextLabel') || 'Einladungstext';
