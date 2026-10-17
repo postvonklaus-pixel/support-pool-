@@ -14,6 +14,7 @@ import { progressRing } from '../components/progress.js';
 import { renderFairnessMeter } from '../features/fairnessMeter.js';
 
 const TABS = ['overview', 'members', 'templates', 'videos', 'broadcast', 'groups', 'messages'];
+const _ADMIN_LOCALE_MAP = { de:'de-DE', en:'en-GB', id:'id-ID', it:'it-IT', es:'es-ES', tr:'tr-TR', ar:'ar-SA', zh:'zh-CN', ja:'ja-JP', pl:'pl-PL' };
 let _tab          = 'overview';
 let _memberSearch = '';
 let _skipBcEcho   = false;
@@ -119,7 +120,7 @@ function _renderOverview() {
     <div class="admin-overview">
       <div class="admin-stat-grid">
         ${_kpi('👥', active, t('adminTabMembers'))}
-        ${_kpi('🟢', online, 'Online')}
+        ${_kpi('🟢', online, t('online') || 'Online')}
         ${_kpi('🎯', openVids, t('adminKpiOpen'))}
         ${_kpi('📊', weeklyTotal, t('adminKpiWeekly'))}
         ${_kpi('🏠', groups, t('adminTabGroups'))}
@@ -129,7 +130,7 @@ function _renderOverview() {
       <div class="admin-rings-row">
         ${progressRing(online, Math.max(active, 1), { label: 'Online', size: 64, color: 'var(--success, #10b981)' })}
         ${progressRing(doneVids, Math.max(allVids.length, 1), { label: 'Videos', size: 64, color: 'var(--accent-primary)' })}
-        ${progressRing(weeklyTotal, Math.max(weeklyTotal, active * 5, 1), { label: 'Woche', size: 64, color: 'var(--accent-warning, #f59e0b)' })}
+        ${progressRing(weeklyTotal, Math.max(weeklyTotal, active * 5, 1), { label: t('wkLabel') || 'Woche', size: 64, color: 'var(--accent-warning, #f59e0b)' })}
       </div>
 
       ${topThisWeek.length ? `
@@ -295,7 +296,7 @@ function _adminMemberRow(key, m) {
     <div class="admin-member-row__body">
       <div class="admin-member-row__name">
         ${esc(m.name || key)}${m.role==='admin'?' 👑':''}
-        ${inactive ? '<span class="badge badge--warning" style="margin-left:4px;font-size:10px">inaktiv</span>' : ''}
+        ${inactive ? `<span class="badge badge--warning" style="margin-left:4px;font-size:10px">${t('memberInactive') || 'inaktiv'}</span>` : ''}
       </div>
       <div class="admin-member-row__meta">G:${m.stats?.given||0} · R:${m.stats?.received||0} · W:${m.weeklyGiven||0}</div>
     </div>
@@ -331,6 +332,12 @@ function _adminMemberRow(key, m) {
 // ── Videos ─────────────────────────────────────────────────
 function _renderVideos() {
   const R1_NEED = 10;
+  const STATUS_LBL = {
+    done:      t('doneLabel')    || 'done',
+    expired:   t('expired')      || 'expired',
+    open:      t('adminKpiOpen') || 'open',
+    scheduled: t('postSchedLabel')?.replace(/⏰\s*/,'') || 'scheduled',
+  };
   const videos = Object.entries(state.db.videos || {})
     .sort(([,a],[,b]) => (b.postedAt||b.ts||0) - (a.postedAt||a.ts||0))
     .slice(0, 40);
@@ -359,7 +366,7 @@ function _renderVideos() {
           </div>
         </div>
         <div class="admin-vid-row__actions">
-          <span class="badge ${status==='done'?'badge--success':status==='expired'?'badge--warning':'badge--primary'}">${status}</span>
+          <span class="badge ${status==='done'?'badge--success':status==='expired'?'badge--warning':'badge--primary'}">${STATUS_LBL[status] || status}</span>
           <button class="btn btn--ghost btn--icon btn--sm" data-action="admin:vid:done" data-vid-id="${esc(id)}" title="Als Done markieren" aria-label="Done">✓</button>
           <button class="btn btn--danger btn--icon btn--sm" data-action="admin:vid:delete" data-vid-id="${esc(id)}" title="Löschen" aria-label="Löschen">
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>
@@ -408,7 +415,7 @@ function _renderMessages() {
   const previewText = tplArr[previewIdx] || '';
 
   const lastSentStr = lastSent
-    ? new Date(lastSent).toLocaleString('de-DE', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' })
+    ? new Date(lastSent).toLocaleString(_ADMIN_LOCALE_MAP[state.lang] || 'de-DE', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' })
     : '—';
 
   return `
@@ -695,7 +702,7 @@ function _registerHandlers() {
 
     openModal({
       id: 'week-recap-modal',
-      title: '📊 Wochenrückblick',
+      title: `📊 ${t('adminRecapBtn') || 'Wochenrückblick'}`,
       body: `
         <div class="recap-stats">
           <div class="recap-stat"><div class="recap-stat__val">${totalWeekly}</div><div class="recap-stat__label">${t('adminRecapTotalSup')}</div></div>
