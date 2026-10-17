@@ -21,6 +21,23 @@ function _getCommentPool(lang) {
   return defaults.map((def, i) => custom[i] ?? def);
 }
 
+const _LOCALE_MAP = { de:'de-DE', en:'en-GB', id:'id-ID', it:'it-IT', es:'es-ES', tr:'tr-TR', ar:'ar-SA', zh:'zh-CN', ja:'ja-JP', pl:'pl-PL' };
+
+function _fillPlaceholders(text, owner) {
+  const cu     = state.currentUser || '';
+  const u      = state.db.members?.[cu] || {};
+  const member = u.name || fbDec(cu);
+  const gruppe = u.group || '';
+  const locale = _LOCALE_MAP[state.lang] || 'de-DE';
+  const now    = new Date();
+  return text
+    .replace(/\{member\}/g, member)
+    .replace(/\{name\}/g,   owner)
+    .replace(/\{gruppe\}/g, gruppe)
+    .replace(/\{date\}/g,   now.toLocaleDateString(locale))
+    .replace(/\{time\}/g,   now.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' }));
+}
+
 let _copied      = false;
 let _videoOpened = false;
 let _videoLink   = '';   // saved so copyComment can re-open TikTok
@@ -93,12 +110,14 @@ function _buildStep1(vidId, link, pool, owner, slotsLeft, urgent) {
       <div class="sf-body hidden" id="sf-body-2">
         <p class="sf-inst">${t('sfInst2')}</p>
         <div class="sf-comments">
-          ${pool.map((c, i) => `
-            <button class="sf-comment-btn" data-action="support:copy" data-comment="${esc(c)}" data-idx="${i}">
-              <span class="sf-comment-btn__txt">${esc(c)}</span>
+          ${pool.map((c, i) => {
+            const filled = _fillPlaceholders(c, owner);
+            return `
+            <button class="sf-comment-btn" data-action="support:copy" data-comment="${esc(filled)}" data-idx="${i}">
+              <span class="sf-comment-btn__txt">${esc(filled)}</span>
               <span class="sf-comment-btn__icon">📋</span>
-            </button>
-          `).join('')}
+            </button>`;
+          }).join('')}
         </div>
         <div class="sf-copy-hint hidden" id="sf-copy-hint">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
