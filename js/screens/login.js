@@ -10,7 +10,6 @@ import { toast }              from '../components/toast.js';
 import { writeDB }            from '../firebase.js';
 import { handlePinKey, handlePinDel, initPinPad, resetPin, shakePin } from '../components/pinpad.js';
 import { addNotif } from '../features/notifications.js';
-import { getAllLangs } from '../i18n.js';
 
 const LANG_LIST = ['de','en','id','it','es','tr','ar','zh','ja','pl'];
 
@@ -432,31 +431,10 @@ function _handleRegisterConfirm() {
   if (!state.db.members) state.db.members = {};
   state.db.members[key] = newMember;
 
-  // Auto-assign to the group with fewest members
-  const groups = state.db.groups || {};
-  const groupEntries = Object.entries(groups);
-  if (groupEntries.length > 0) {
-    const _toArr = (v) => Array.isArray(v) ? v : Object.values(v || {});
-    const [bestGid, bestG] = groupEntries.reduce((best, [gid, g]) => {
-      const count = _toArr(g.members).length;
-      return count < _toArr(best[1].members).length ? [gid, g] : best;
-    });
-    writeDB(`members/${key}/group`, bestGid);
-    state.db.members[key].group = bestGid;
-    const arr = _toArr(bestG.members);
-    writeDB(`groups/${bestGid}/members`, [...arr, key]);
-  }
-
-  // Notify all existing members (active + admin) about the new member
-  Object.entries(state.db.members || {}).forEach(([mKey, m]) => {
-    if (mKey === key) return;
-    if (m.status === 'inactive' || m.status === 'kicked') return;
-    addNotif(mKey, '👋', null, null, { msgKey: 'notifNewMember', params: { name: username } });
-  });
-
   const welcomeMsg = (t('loginWelcome') || 'Willkommen, @{name}! 🎉').replace('{name}', username);
   toast(welcomeMsg, 'success', 3000);
-  setTimeout(() => import('../main.js').then(m => m.loginAs(key)), 800);
+  // Pass isNew=true so loginAs does group assignment + notifications after Firebase is ready
+  setTimeout(() => import('../main.js').then(m => m.loginAs(key, { isNew: true })), 800);
 }
 
 function _handleRegisterCancel() {

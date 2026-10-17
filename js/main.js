@@ -112,7 +112,7 @@ function onDBUpdate(snapshot) {
 }
 
 // ── Login ─────────────────────────────────────────────────
-export async function loginAs(username, { silent = false } = {}) {
+export async function loginAs(username, { silent = false, isNew = false } = {}) {
   const u = state.db.members[username];
   if (!u) {
     if (!silent) {
@@ -154,12 +154,46 @@ export async function loginAs(username, { silent = false } = {}) {
   // Save session
   import('./storage.js').then(m => m.saveSession(username));
 
+  // New-member setup (group + notifications) — runs here because Firebase is
+  // guaranteed to be connected by login time, unlike at registration time
+  if (isNew) {
+    _setupNewMember(username, u);
+  }
+
   // Show onboarding for first-time users
   import('./features/onboarding.js').then(m => {
     if (m.shouldShowOnboarding(username)) m.startOnboarding(username);
   });
 
   return true;
+}
+
+// ── New-member setup (runs on first loginAs) ──────────────
+function _setupNewMember(key, u) {
+  import('./firebase.js').then(({ writeDB: wDB }) => {
+    import('./features/notifications.js').then(({ addNotif }) => {
+      // Group assignment
+      const groups = state.db.groups || {};
+      const groupEntries = Object.entries(groups);
+      if (groupEntries.length > 0 && !u.group) {
+        const toArr = (v) => Array.isArray(v) ? v : Object.values(v || {});
+        const [bestGid, bestG] = groupEntries.reduce((best, [gid, g]) => {
+          return toArr(g.members).length < toArr(best[1].members).length ? [gid, g] : best;
+        });
+        wDB(`members/${key}/group`, bestGid);
+        const arr = toArr(bestG.members);
+        wDB(`groups/${bestGid}/members`, [...arr, key]);
+      }
+
+      // Notify all existing members (active + admin)
+      const name = u.name || key;
+      Object.entries(state.db.members || {}).forEach(([mKey, m]) => {
+        if (mKey === key) return;
+        if (m.status === 'inactive' || m.status === 'kicked') return;
+        addNotif(mKey, '👋', null, null, { msgKey: 'notifNewMember', params: { name } });
+      });
+    });
+  });
 }
 
 // ── Auto Weekly Reset (Friday 00:00 WIB) ─────────────────

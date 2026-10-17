@@ -7,7 +7,7 @@ import { storage } from '../storage.js';
 import { writeDB } from '../firebase.js';
 import { state }   from '../state.js';
 
-const STORAGE_KEY = 'onboarded';
+const _storageKey = (cu) => `ob_${cu}`;
 
 const _OB = {
   de: [
@@ -189,15 +189,17 @@ function _getSlides() {
 let _slide  = 0;
 let _el     = null;
 let _touchX = 0;
+let _cu     = null;
 
 export function shouldShowOnboarding(cu) {
-  if (storage.get(STORAGE_KEY)) return false;
+  if (storage.get(_storageKey(cu))) return false;
   const u = state.db.members?.[cu] || {};
   if (u.onboarded) return false;
   return true;
 }
 
 export function startOnboarding(cu) {
+  _cu    = cu;
   _slide = 0;
   _el    = document.getElementById('onboarding-overlay');
   if (!_el) return;
@@ -263,9 +265,11 @@ function _finish() {
   _el.removeEventListener('touchend',   _onTouchEnd);
 
   // Mark as done
-  storage.set(STORAGE_KEY, true);
-  const cu = state.currentUser;
-  if (cu) writeDB(`members/${cu}/onboarded`, true);
+  const cu = _cu || state.currentUser;
+  if (cu) {
+    storage.set(_storageKey(cu), true);
+    writeDB(`members/${cu}/onboarded`, true);
+  }
 }
 
 function _onTouchStart(e) { _touchX = e.touches[0].clientX; }
