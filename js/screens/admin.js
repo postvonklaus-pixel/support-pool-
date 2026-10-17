@@ -266,6 +266,8 @@ function _renderMembers() {
           <div class="admin-group__header" data-action="admin:group:toggle" data-group="__ungrouped">
             <span class="admin-group__name">${t('adminNoGroup')}</span>
             <span class="badge">${ungrouped.length}</span>
+            ${Object.keys(groups).length ? `<button class="btn btn--ghost btn--sm" style="margin-left:auto;margin-right:8px;font-size:11px"
+              data-action="admin:distribute-members">🔀 Verteilen</button>` : ''}
             <svg class="admin-group__chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
           </div>
           <div class="admin-group__body">
@@ -305,6 +307,10 @@ function _adminMemberRow(key, m) {
           ✓
         </button>
       ` : `
+        <button class="btn btn--ghost btn--icon btn--sm"
+          data-action="admin:member:assign-group" data-key="${esc(key)}" title="Gruppe zuweisen" aria-label="Gruppe">
+          📁
+        </button>
         <button class="btn btn--ghost btn--icon btn--sm"
           data-action="admin:member:balance" data-key="${esc(key)}" title="Balance anpassen" aria-label="Balance">
           ⚖️
@@ -525,6 +531,83 @@ function _registerHandlers() {
     writeDB(`members/${key}/status`, 'active');
     toast(`@${key} reaktiviert`, 'success');
     setTimeout(render, 300);
+  });
+
+  on('admin:member:assign-group', (el) => {
+    const key    = el.dataset.key;
+    if (!key) return;
+    const groups = Object.values(state.db.groups || {})
+      .sort((a, b) => (a.number||0) - (b.number||0));
+    const modalId = 'assign-group-modal';
+
+    const currentGid = Object.entries(state.db.groups || {})
+      .find(([, g]) => (g.members || []).includes(key))?.[0] || null;
+
+    openModal({
+      id: modalId,
+      title: `@${key} – Gruppe zuweisen`,
+      body: `<div style="display:flex;flex-direction:column;gap:8px;max-height:280px;overflow-y:auto;padding:2px">
+        ${groups.map(g => `
+          <button class="btn btn--ghost btn--full" style="justify-content:space-between${g.id===currentGid?';border-color:var(--accent)':''}"
+            data-action="admin:member:set-group" data-key="${esc(key)}" data-gid="${esc(g.id)}" data-modal="${modalId}">
+            ${esc(g.name)} ${g.id===currentGid?'✓':''}
+            <span class="badge badge--primary">${(g.members||[]).length}</span>
+          </button>`).join('')}
+        ${currentGid ? `<button class="btn btn--ghost btn--full" style="color:var(--fg-3);margin-top:4px"
+          data-action="admin:member:set-group" data-key="${esc(key)}" data-gid="" data-modal="${modalId}">
+          Keine Gruppe
+        </button>` : ''}
+      </div>`,
+      actions: []
+    });
+  });
+
+  on('admin:member:set-group', (el) => {
+    const key     = el.dataset.key;
+    const newGid  = el.dataset.gid;
+    const modalId = el.dataset.modal;
+    if (!key) return;
+
+    Object.entries(state.db.groups || {}).forEach(([gid, g]) => {
+      const arr = g.members || [];
+      if (arr.includes(key)) writeDB(`groups/${gid}/members`, arr.filter(m => m !== key));
+    });
+
+    if (newGid) {
+      const arr = state.db.groups?.[newGid]?.members || [];
+      if (!arr.includes(key)) writeDB(`groups/${newGid}/members`, [...arr, key]);
+    }
+
+    closeModal(modalId);
+    toast(`@${key} ${newGid ? 'zugewiesen' : 'aus Gruppe entfernt'}`, 'success');
+    setTimeout(render, 400);
+  });
+
+  on('admin:distribute-members', async () => {
+    const groups = Object.values(state.db.groups || {})
+      .sort((a, b) => (a.number||0) - (b.number||0));
+    if (!groups.length) return;
+
+    const groupedKeys = new Set(groups.flatMap(g => g.members || []));
+    const unassigned  = Object.entries(state.db.members || {})
+      .filter(([k, m]) => m.status !== 'inactive' && m.role !== 'admin' && !groupedKeys.has(k))
+      .map(([k]) => k);
+
+    if (!unassigned.length) { toast('Alle Mitglieder sind bereits in Gruppen', 'info'); return; }
+
+    const ok = await confirm(
+      `${unassigned.length} Mitglieder gleichmäßig verteilen?`,
+      `Auf ${groups.length} Gruppen aufteilen`
+    );
+    if (!ok) return;
+
+    const updated = {};
+    groups.forEach(g => { updated[g.id] = [...(g.members || [])]; });
+    unassigned.forEach((k, i) => updated[groups[i % groups.length].id].push(k));
+    Object.entries(updated).forEach(([gid, arr]) => writeDB(`groups/${gid}/members`, arr));
+
+    toast(`${unassigned.length} Mitglieder verteilt`, 'success');
+    setTimeout(render, 500);
   });
 
   on('admin:member:kick', async (el) => {
