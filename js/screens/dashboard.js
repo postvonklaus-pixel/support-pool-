@@ -10,6 +10,29 @@ import { on }          from '../events.js';
 const R1_NEED = 10;
 const R2_NEED = 10;
 
+function _rankIcon(given) {
+  if (given >= 100) return '👑';
+  if (given >= 50)  return '🏆';
+  if (given >= 20)  return '🔥';
+  if (given >= 5)   return '⚡';
+  return '🌱';
+}
+
+function _boostRemaining(myKey) {
+  let min = Infinity;
+  Object.values(state.db.videos || {}).forEach(v => {
+    if ((v.ownerKey || v.owner || '').toLowerCase() !== myKey) return;
+    if (v.status === 'done' || v.status === 'expired') return;
+    const exp = v.expiresR1 || 0;
+    if (exp > Date.now() && exp < min) min = exp;
+  });
+  if (min === Infinity) return null;
+  const diff = Math.max(0, min - Date.now());
+  const mins = Math.floor(diff / 60000);
+  const hrs  = Math.floor(mins / 60);
+  return hrs > 0 ? `${hrs}h ${mins % 60}min` : `${mins}min`;
+}
+
 // ── Lucide-style SVG icons ────────────────────────────────
 const IC = {
   videos:   `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>`,
@@ -34,7 +57,6 @@ export function render() {
   const stats    = u.stats || {};
   const given    = stats.given    || 0;
   const received = stats.received || 0;
-  const balance  = Math.min(given - received, 20);
   const myKey    = cu.toLowerCase();
   const isAdmin  = u.role === 'admin';
   const weeklyGiven = u.weeklyGiven || 0;
@@ -67,10 +89,14 @@ export function render() {
     return true;
   }).length;
 
-  const balColor = balance >= 0 ? 'var(--accent-success)' : 'var(--accent-danger)';
-  const myVids   = Object.values(state.db.videos || {}).filter(v =>
+  const realBalance = given - received;
+  const balColor    = realBalance >= 0 ? 'var(--accent-success)' : 'var(--accent-danger)';
+  const myVids      = Object.values(state.db.videos || {}).filter(v =>
     (v.ownerKey || v.owner || '').toLowerCase() === myKey
   ).length;
+  const rankIcon    = _rankIcon(given);
+  const boostTimer  = _boostRemaining(myKey);
+  const delay       = (n) => `style="animation-delay:${n * 50}ms"`;
 
   el.innerHTML = `
     <div class="page-header">
@@ -78,10 +104,17 @@ export function render() {
     </div>
     <div class="dash-scroll">
 
+      <!-- Section label: Hauptaktionen -->
+      <div class="dash-section-label">
+        <span class="dash-section-label__text">🔥 ${t('dashActions') || 'HAUPTAKTIONEN'}</span>
+        ${openCnt > 0 ? `<span class="dash-section-label__badge">${openCnt}</span>` : ''}
+      </div>
+
       <!-- Row 1: Offene Videos + Video posten (LARGE) -->
       <div class="dash-row">
 
-        <div class="dash-tile dash-tile--support ${openCnt > 0 ? 'dash-tile--active' : ''}" data-action="dash:support" role="button" tabindex="0">
+        <div class="dash-tile dash-tile--support ${openCnt > 0 ? 'dash-tile--active' : ''}"
+          data-action="dash:support" role="button" tabindex="0" ${delay(0)}>
           <div class="dash-tile__ic dash-tile__ic--cyan">${IC.videos}</div>
           ${openCnt > 0 ? `<div class="dash-badge dash-badge--cyan">${openCnt}</div>` : ''}
           <div class="dash-tile__value">${openCnt}</div>
@@ -89,31 +122,43 @@ export function render() {
           <div class="dash-tile__sub">${openCnt > 0 ? `${openCnt} ${t('dbSupOpen') || 'offen'}` : t('noOpen') || 'Keine offen'}</div>
         </div>
 
-        <div class="dash-tile dash-tile--post" data-action="post:open" role="button" tabindex="0">
+        <div class="dash-tile dash-tile--post" data-action="post:open" role="button" tabindex="0" ${delay(1)}>
           <div class="dash-tile__ic dash-tile__ic--violet">${IC.post}</div>
           <div class="dash-tile__value">${myVids}</div>
           <div class="dash-tile__label">${t('postBtn') || 'VIDEO POSTEN'}</div>
-          <div class="dash-tile__sub">${myVids === 0 ? (t('noMy') || 'Noch kein Video') : `${myVids} aktiv`}</div>
+          <div class="dash-tile__sub">${boostTimer
+            ? `${t('dashBoost') || 'Boost läuft'} ${boostTimer}`
+            : myVids === 0 ? (t('noMy') || 'Noch kein Video') : `${myVids} ${t('dashTileActivity') ? '' : 'aktiv'}`
+          }</div>
         </div>
 
+      </div>
+
+      <!-- Divider: Dein Konto -->
+      <div class="dash-divider">
+        <div class="dash-divider__line"></div>
+        <div class="dash-divider__label">↓ ${t('dashAccount') || 'DEIN KONTO'} ↓</div>
+        <div class="dash-divider__line"></div>
       </div>
 
       <!-- Row 2: Guthaben + Profil (LARGE) -->
       <div class="dash-row">
 
-        <div class="dash-tile dash-tile--balance ${balance < 0 ? 'dash-tile--alert' : ''}" data-action="dash:guthaben" role="button" tabindex="0">
+        <div class="dash-tile dash-tile--balance ${realBalance < 0 ? 'dash-tile--alert' : ''}"
+          data-action="dash:guthaben" role="button" tabindex="0" ${delay(2)}>
           <div class="dash-tile__ic dash-tile__ic--gold">${IC.balance}</div>
-          ${balance < 0 ? `<div class="dash-badge dash-badge--red">!</div>` : ''}
-          <div class="dash-tile__value" style="color:${balColor}">${balance >= 0 ? '+' : ''}${balance}</div>
+          ${realBalance < 0 ? `<div class="dash-badge dash-badge--red">!</div>` : ''}
+          <div class="dash-tile__value" style="color:${balColor}">${realBalance >= 0 ? '+' : ''}${realBalance}</div>
           <div class="dash-tile__label">${t('balance') || 'GUTHABEN'}</div>
           <div class="dash-tile__meta"><span>↑${given}</span><span>↓${received}</span></div>
         </div>
 
-        <div class="dash-tile dash-tile--profile" data-action="nav:goto" data-screen="profile" role="button" tabindex="0">
+        <div class="dash-tile dash-tile--profile" data-action="nav:goto" data-screen="profile"
+          role="button" tabindex="0" ${delay(3)}>
           <div class="dash-tile__ic dash-tile__ic--lila">${IC.profile}</div>
-          <div class="dash-tile__value">${weeklyGiven}</div>
+          <div class="dash-tile__value">${rankIcon}</div>
           <div class="dash-tile__label">${t('navProfile') || 'PROFIL'}</div>
-          <div class="dash-tile__sub">${weeklyGiven} ${t('given') || 'gegeben'}</div>
+          <div class="dash-tile__sub">${given} ${t('given') || 'gegeben'} · W:${weeklyGiven}</div>
         </div>
 
       </div>
@@ -121,15 +166,17 @@ export function render() {
       <!-- Row 3: 4 kleine Kacheln (2×2) -->
       <div class="dash-row dash-row--sm">
 
-        <div class="dash-tile dash-tile--myvideos ${unreadNotifs > 0 ? 'dash-tile--active' : ''}" data-action="nav:goto" data-screen="myvideos" role="button" tabindex="0">
+        <div class="dash-tile dash-tile--myvideos ${unreadNotifs > 0 ? 'dash-tile--active' : ''}"
+          data-action="nav:goto" data-screen="myvideos" role="button" tabindex="0" ${delay(4)}>
           <div class="dash-tile__ic dash-tile__ic--blue">${IC.myvideos}</div>
           ${unreadNotifs > 0 ? `<div class="dash-badge dash-badge--red">${unreadNotifs}</div>` : ''}
           <div class="dash-tile__value">${myVids}</div>
           <div class="dash-tile__label">${t('dashTileVideos') || 'VIDEOS'}</div>
-          <div class="dash-tile__sub">${unreadNotifs > 0 ? `${unreadNotifs} ${t('notifs') || 'neu'}` : myVids > 0 ? `${myVids} aktiv` : t('noMy') || 'Noch kein Video'}</div>
+          <div class="dash-tile__sub">${unreadNotifs > 0 ? `${unreadNotifs} ${t('notifs') || 'neu'}` : myVids > 0 ? `${myVids} ${t('active') || 'aktiv'}` : t('noMy') || 'Noch kein Video'}</div>
         </div>
 
-        <div class="dash-tile dash-tile--urgent ${urgentCnt > 0 ? 'dash-tile--active' : ''}" data-action="dash:urgent" role="button" tabindex="0">
+        <div class="dash-tile dash-tile--urgent ${urgentCnt > 0 ? 'dash-tile--active' : ''}"
+          data-action="dash:urgent" role="button" tabindex="0" ${delay(5)}>
           <div class="dash-tile__ic dash-tile__ic--amber">${IC.urgent}</div>
           ${urgentCnt > 0 ? `<div class="dash-badge dash-badge--red">${urgentCnt}</div>` : ''}
           <div class="dash-tile__value">${urgentCnt}</div>
@@ -137,25 +184,28 @@ export function render() {
           <div class="dash-tile__sub">${urgentCnt > 0 ? `${urgentCnt} ${t('urgentSub') || 'läuft bald ab'}` : t('noUrgent') || 'Alles gut ✓'}</div>
         </div>
 
-        <div class="dash-tile dash-tile--settings" data-action="nav:goto" data-screen="settings" role="button" tabindex="0">
+        <div class="dash-tile dash-tile--settings" data-action="nav:goto" data-screen="settings"
+          role="button" tabindex="0" ${delay(6)}>
           <div class="dash-tile__ic dash-tile__ic--gray">${IC.settings}</div>
-          <div class="dash-tile__value"></div>
+          <div class="dash-tile__value" style="font-size:var(--text-xl)">⚙</div>
           <div class="dash-tile__label">${t('dashTileSettings') || 'EINSTELLUNGEN'}</div>
           <div class="dash-tile__sub">${t('settingsSub') || 'App anpassen'}</div>
         </div>
 
         ${isAdmin ? `
-        <div class="dash-tile dash-tile--admin" data-action="nav:goto" data-screen="admin" role="button" tabindex="0">
+        <div class="dash-tile dash-tile--admin" data-action="nav:goto" data-screen="admin"
+          role="button" tabindex="0" ${delay(7)}>
           <div class="dash-tile__ic dash-tile__ic--darkviolet">${IC.admin}</div>
           <div class="dash-tile__value">${Object.keys(state.db.members || {}).length}</div>
           <div class="dash-tile__label">${t('adminPanel') || 'ADMIN'}</div>
-          <div class="dash-tile__sub">Panel öffnen</div>
+          <div class="dash-tile__sub">${t('adminPanelOpen') || 'Panel öffnen'}</div>
         </div>` : `
-        <div class="dash-tile dash-tile--weekly" data-action="dash:leaderboard" role="button" tabindex="0">
+        <div class="dash-tile dash-tile--weekly" data-action="dash:leaderboard"
+          role="button" tabindex="0" ${delay(7)}>
           <div class="dash-tile__ic dash-tile__ic--gray">${IC.weekly}</div>
           <div class="dash-tile__value" style="font-size:var(--text-xl)">${weeklyGiven}</div>
           <div class="dash-tile__label">${t('dashTileActivity') || 'AKTIVITÄT'}</div>
-          <div class="dash-tile__sub">${t('given') || 'gegeben'}</div>
+          <div class="dash-tile__sub">${weeklyGiven} ${t('given') || 'gegeben'}</div>
         </div>`}
 
       </div>

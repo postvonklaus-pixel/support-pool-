@@ -180,6 +180,51 @@
   gap: var(--sp-2);
 }
 
+/* ── Section label (HAUPTAKTIONEN) ─────────────────────── */
+.dash-section-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 2px 4px 0;
+}
+.dash-section-label__text {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+.dash-section-label__badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 99px;
+  background: var(--accent-primary, #6366f1);
+  color: #fff;
+  line-height: 1.6;
+}
+
+/* ── Account divider (DEIN KONTO) ───────────────────────── */
+.dash-divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 2px 0;
+}
+.dash-divider__line {
+  flex: 1;
+  height: 1px;
+  background: var(--border-subtle);
+}
+.dash-divider__label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  white-space: nowrap;
+}
+
 /* ── Tile base ─────────────────────────────────────────── */
 .dash-tile {
   border-radius: 20px;
@@ -199,22 +244,12 @@
 .dash-tile:hover  { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
 .dash-tile:active { transform: scale(0.97); box-shadow: var(--shadow-md); }
 
-/* Stagger entrance */
+/* Stagger entrance — delay set per-tile via inline style in JS */
 @keyframes tile-in {
   from { opacity: 0; transform: translateY(10px) scale(0.97); }
   to   { opacity: 1; transform: translateY(0)    scale(1); }
 }
-.dash-tile {
-  animation: tile-in 0.32s var(--ease-out) both;
-}
-.dash-tile:nth-child(1) { animation-delay: 0ms; }
-.dash-tile:nth-child(2) { animation-delay: 50ms; }
-.dash-tile:nth-child(3) { animation-delay: 100ms; }
-.dash-tile:nth-child(4) { animation-delay: 150ms; }
-.dash-tile:nth-child(5) { animation-delay: 180ms; }
-.dash-tile:nth-child(6) { animation-delay: 210ms; }
-.dash-tile:nth-child(7) { animation-delay: 240ms; }
-.dash-tile:nth-child(8) { animation-delay: 270ms; }
+.dash-tile { animation: tile-in 0.32s var(--ease-out) both; }
 
 /* ── Tile color variants — unified indigo/violet palette ── */
 
