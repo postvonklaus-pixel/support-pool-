@@ -48,13 +48,14 @@ function _isDBReady() {
 }
 
 function _watchDB() {
+  _setLoginReady('loading');
+
   if (_isDBReady()) {
-    _setLoginReady(true);
     _renderStats();
     _renderLoginBroadcast();
+    setTimeout(() => _setLoginReady(true), 750);
     return;
   }
-  _setLoginReady('loading');
 
   _unsubDB = subscribe((change) => {
     if (change.path === 'db' && _isDBReady()) {
@@ -356,14 +357,6 @@ function _handleNameSubmit() {
   if (u.status && u.status !== 'active') {
     toast(t('loginDenied') || 'Zugriff verweigert', 'error');
     return;
-  }
-
-  if (u.role === 'admin') {
-    const admins = state.db.settings?.admins;
-    if (Array.isArray(admins) && !admins.includes(found)) {
-      toast(t('loginDenied') || 'Zugriff verweigert', 'error');
-      return;
-    }
   }
 
   if (!u.memberPin) {
