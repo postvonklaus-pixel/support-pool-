@@ -546,6 +546,27 @@
   border-color: rgba(255,255,255,0.25);
 }
 
+/* ── Loading bar ─────────────────────────────────────── */
+.login-loader {
+  width: 100%;
+  height: 3px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 99px;
+  overflow: hidden;
+  margin: 2px 0;
+}
+.login-loader__bar {
+  height: 100%;
+  width: 45%;
+  background: linear-gradient(90deg, transparent, #a78bfa, #67e8f9, transparent);
+  border-radius: 99px;
+  animation: login-load 1.4s ease-in-out infinite;
+}
+@keyframes login-load {
+  0%   { transform: translateX(-220%); }
+  100% { transform: translateX(490%); }
+}
+
 /* ── Language modal ──────────────────────────────────── */
 .login-lang-modal {
   position: fixed;

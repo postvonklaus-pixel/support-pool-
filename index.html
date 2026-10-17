@@ -142,6 +142,11 @@
           <!-- Divider -->
           <div class="login-divider"></div>
 
+          <!-- Loading bar (visible while Firebase connects) -->
+          <div class="login-loader hidden" id="login-loader" aria-hidden="true">
+            <div class="login-loader__bar"></div>
+          </div>
+
           <!-- Headline -->
           <div class="login-h1" id="login-h1">Willkommen, Creator</div>
           <div class="login-h2" id="login-h2">Dein TikTok-Wachstum beginnt hier.</div>
@@ -255,11 +260,6 @@
       <div class="login-lang-modal" id="login-lang-modal" style="display:none"
            role="dialog" aria-modal="true" aria-label="Sprache wählen">
         <div class="login-lang-modal-content" id="login-lang-modal-content">
-          <div class="login-lang-modal-header">
-            <div class="login-lang-modal-title">Sprache wählen</div>
-            <button class="login-lang-modal-close" data-action="login:lang-close"
-                    aria-label="Schließen">✕</button>
-          </div>
           <div class="login-lang-modal-list" id="login-lang-modal-list"></div>
         </div>
       </div>

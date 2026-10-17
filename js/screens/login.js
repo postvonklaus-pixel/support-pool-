@@ -81,9 +81,13 @@ function _watchDB() {
 }
 
 function _setLoginReady(s) {
-  const btn   = ge('login-btn');
-  const label = ge('login-btn-label');
+  const btn    = ge('login-btn');
+  const label  = ge('login-btn-label');
+  const loader = ge('login-loader');
   if (!btn) return;
+
+  if (loader) loader.classList.toggle('hidden', s !== 'loading');
+
   if (s === true) {
     btn.disabled = false;
     btn.style.opacity = '';
@@ -268,7 +272,7 @@ function _setupHandlers() {
     });
   }
 
-  // Autocomplete
+  // Autocomplete + keyboard-scroll fix
   const input = ge('login-name-input');
   if (input) {
     input.addEventListener('input',   (e) => _renderAutocomplete(e.target.value));
@@ -278,6 +282,22 @@ function _setupHandlers() {
     });
     input.addEventListener('blur', () => {
       setTimeout(() => ge('login-autocomplete')?.classList.remove('open'), 160);
+    });
+
+    // When keyboard opens, scroll login screen so h1 stays visible below the topbar
+    input.addEventListener('focus', () => {
+      setTimeout(() => {
+        const screen = document.getElementById('screen-login');
+        const h1     = ge('login-h1');
+        if (!screen || !h1) return;
+        const screenTop = screen.getBoundingClientRect().top;
+        const h1Top     = h1.getBoundingClientRect().top;
+        // h1's absolute position within the scroll container
+        const h1InContainer = h1Top - screenTop + screen.scrollTop;
+        // Topbar is 56px + safe-area; target: h1 just below it with 8px gap
+        const topbarH = 56 + (window.visualViewport?.offsetTop || 0);
+        screen.scrollTo({ top: Math.max(0, h1InContainer - topbarH - 8), behavior: 'smooth' });
+      }, 420);
     });
   }
 }
