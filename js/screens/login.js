@@ -416,7 +416,7 @@ function _handleRegisterConfirm() {
 
   const now = Date.now();
   const key = fbEnc(username);
-  writeDB(`members/${key}`, {
+  const newMember = {
     name:       username,
     role:       'member',
     status:     'active',
@@ -425,7 +425,12 @@ function _handleRegisterConfirm() {
     online:     true,
     stats:      { given: 0, received: 0 },
     postsTotal: 0,
-  });
+  };
+  writeDB(`members/${key}`, newMember);
+
+  // Optimistic local state update so loginAs() finds the member immediately
+  if (!state.db.members) state.db.members = {};
+  state.db.members[key] = newMember;
 
   // Auto-assign to the group with fewest members
   const groups = state.db.groups || {};
@@ -436,6 +441,7 @@ function _handleRegisterConfirm() {
       return count < (best[1].members || []).length ? [gid, g] : best;
     });
     writeDB(`members/${key}/group`, bestGid);
+    state.db.members[key].group = bestGid;
     const arr = bestG.members || [];
     writeDB(`groups/${bestGid}/members`, [...arr, key]);
   }
