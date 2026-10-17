@@ -151,6 +151,10 @@ function _updateTexts() {
     btnLabel.textContent = t('loginBtnEnter') || t('loginBtn') || 'Pool betreten';
   }
 
+  set('pin-label', t('pinLabel') || 'PIN eingeben');
+  const pf = ge('pin-forgot-link');
+  if (pf) pf.textContent = t('pinForgot') || 'PIN vergessen?';
+
   _renderStats();
 }
 
@@ -329,10 +333,14 @@ function _handleNameSubmit() {
   _username = found;
   const u = members[found];
 
+  if (u.status && u.status !== 'active') {
+    toast(t('loginDenied') || 'Zugriff verweigert', 'error');
+    return;
+  }
+
   if (u.role === 'admin') {
     const admins = state.db.settings?.admins;
-    if (!u.status || u.status !== 'active' ||
-        (Array.isArray(admins) && !admins.includes(found))) {
+    if (Array.isArray(admins) && !admins.includes(found)) {
       toast(t('loginDenied') || 'Zugriff verweigert', 'error');
       return;
     }
@@ -363,11 +371,22 @@ function _showRegisterStep(username) {
   _step = 'register';
   ge('login-name-step')?.classList.add('hidden');
   const regStep = ge('login-register-step');
-  if (regStep) {
-    regStep.classList.remove('hidden');
-    const label = regStep.querySelector('.login-reg__name');
-    if (label) label.textContent = `@${username}`;
-  }
+  if (!regStep) return;
+  regStep.classList.remove('hidden');
+
+  const titleEl = regStep.querySelector('.login-reg__title');
+  if (titleEl) titleEl.textContent = t('regTitle') || 'Neu hier?';
+
+  const subEl = regStep.querySelector('.login-reg__sub');
+  if (subEl) subEl.innerHTML =
+    `<span style="color:var(--login-accent);font-weight:700">@${username}</span> ` +
+    (t('regSub') || 'ist noch nicht registriert. Konto jetzt erstellen?');
+
+  const confirmBtn = regStep.querySelector('[data-action="login:register"]');
+  if (confirmBtn) confirmBtn.textContent = t('regConfirm') || '✓ Konto erstellen & einloggen';
+
+  const backBtn = regStep.querySelector('[data-action="login:reg:cancel"]');
+  if (backBtn) backBtn.textContent = t('regBack') || '← Zurück';
 }
 
 function _handleRegisterConfirm() {
@@ -393,7 +412,8 @@ function _handleRegisterConfirm() {
     postsTotal: 0,
   });
 
-  toast(t('loginWelcome') || `Willkommen, @${username}! 🎉`, 'success', 3000);
+  const welcomeMsg = (t('loginWelcome') || 'Willkommen, @{name}! 🎉').replace('{name}', username);
+  toast(welcomeMsg, 'success', 3000);
   setTimeout(() => import('../main.js').then(m => m.loginAs(key)), 800);
 }
 
