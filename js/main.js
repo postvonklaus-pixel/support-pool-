@@ -270,7 +270,7 @@ document.addEventListener('scroll', () => { window._lastScrollTime = Date.now();
 // deregisters any existing SW so JS is always served fresh from the network.
 
 // ── Expose globals needed by firebase callbacks ───────────
-window._nova = { loginAs, logout, state, saveDB };
+window._nova = { loginAs, logout, state, saveDB, writeDB };
 
 // ── Start ─────────────────────────────────────────────────
 boot().catch(err => console.error('[nova] boot failed:', err));
