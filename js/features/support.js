@@ -4,7 +4,7 @@
 
 import { state }   from '../state.js';
 import { t }       from '../i18n.js';
-import { esc }     from '../utils.js';
+import { esc, openUrl } from '../utils.js';
 import { writeDB } from '../firebase.js';
 import { toast }   from '../components/toast.js';
 import { openModal, closeModal } from '../components/modal.js';
@@ -131,7 +131,7 @@ export function copyComment(comment) {
     _copied = true;
     // Re-open TikTok so user can paste the comment immediately
     if (_videoLink && _videoLink !== '#') {
-      window.open(_videoLink, '_blank', 'noopener,noreferrer');
+      openUrl(_videoLink);
     }
     _advanceToStep3();
     const hint = document.getElementById('sf-copy-hint');
@@ -165,7 +165,7 @@ on('support:video-opened', (el) => {
   // events.js calls e.preventDefault() on all data-action clicks, which
   // blocks the <a href> from navigating. Open the link manually instead.
   const link = el.getAttribute('href') || el.dataset.link;
-  if (link && link !== '#') window.open(link, '_blank', 'noopener,noreferrer');
+  if (link && link !== '#') openUrl(link);
 
   _videoOpened = true;
   _setStep(1, 2);

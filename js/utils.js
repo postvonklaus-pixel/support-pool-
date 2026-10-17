@@ -185,8 +185,16 @@ export function countUp(el, from, to, duration = 600) {
 }
 
 // ── Open URL (TikTok etc.) ────────────────────────────────
+// Chrome iOS leaves an about:blank tab when window.open() is used
+// programmatically. A real <a> click avoids this.
 export function openUrl(url) {
-  window.open(url, '_blank', 'noopener,noreferrer');
+  const a = document.createElement('a');
+  a.href = url;
+  a.target = '_blank';
+  a.rel = 'noopener noreferrer';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
 }
 
 // ── Safe JSON parse ───────────────────────────────────────
