@@ -50,6 +50,37 @@ const PRIVACY = {
 
 const _chevSVG = `<svg class="settings-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>`;
 
+const HOMESCREEN = {
+  de: {
+    ios: [
+      'Seite in <strong>Safari</strong> öffnen',
+      'Teilen-Symbol <strong>□↑</strong> antippen',
+      '→ <strong>„Zum Home-Bildschirm"</strong> wählen',
+      '→ <strong>„Hinzufügen"</strong> bestätigen',
+    ],
+    and: [
+      'Seite in <strong>Chrome</strong> öffnen',
+      'Menü <strong>⋮</strong> oben rechts antippen',
+      '→ <strong>„App installieren"</strong> oder <strong>„Zum Startbildschirm"</strong>',
+      '→ <strong>„Hinzufügen"</strong> bestätigen',
+    ],
+  },
+  en: {
+    ios: [
+      'Open page in <strong>Safari</strong>',
+      'Tap the share icon <strong>□↑</strong>',
+      '→ Select <strong>"Add to Home Screen"</strong>',
+      '→ Confirm <strong>"Add"</strong>',
+    ],
+    and: [
+      'Open page in <strong>Chrome</strong>',
+      'Tap the menu <strong>⋮</strong> top right',
+      '→ Select <strong>"Install app"</strong> or <strong>"Add to Home Screen"</strong>',
+      '→ Confirm <strong>"Add"</strong>',
+    ],
+  },
+};
+
 export function render() {
   const el = document.getElementById('screen-settings');
   if (!el) return;
@@ -62,7 +93,7 @@ export function render() {
   const gradient = cu ? avatarGradient(cu) : 'var(--gradient-primary)';
   const given  = u.stats?.given || 0;
   const recv   = u.stats?.received || 0;
-  const bal    = Math.min(given - recv, 20);
+  const bal    = given - recv;
 
   el.innerHTML = `
     <div class="settings-page">
@@ -139,7 +170,7 @@ export function render() {
 
       <!-- ── Benachrichtigungen ──────────────────────────── -->
       <div class="settings-group">
-        <div class="settings-group__label">${t('broadcastLabel') || 'Ankündigungen'}</div>
+        <div class="settings-group__label">${t('setSecNotif') || 'Benachrichtigungen'}</div>
         <div class="settings-group__card">
           <div class="settings-row-item">
             <div class="settings-row-item__icon">🔔</div>
@@ -256,7 +287,7 @@ const _FAQ_DE = [
   { q: 'Wie berechnet sich das Guthaben?',
     a: 'Guthaben = Gegeben minus Erhalten (max. +20). Support geben = +1, Video erhalten = −1. Negatives Guthaben sperrt neue Posts.' },
   { q: 'Wie oft kann ich ein Video posten?',
-    a: 'Einmal alle 24 Stunden. Der Cooldown startet beim letzten Post.' },
+    a: 'Einmal alle 12 Stunden. Der Cooldown startet beim letzten Post.' },
   { q: 'Was sind Runden (R1/R2)?',
     a: 'Jedes Video startet in Runde 1. Wenn alle Slots voll sind, geht es in Runde 2 für weitere Supports.' },
   { q: 'Wie funktioniert das Rang-System?',
@@ -289,13 +320,13 @@ function _renderBroadcastSection(cu) {
               ${t('broadcastCopy') || 'Kopieren'}
             </button>
           </div>
-          ${isAdmin ? `<div class="settings-broadcast-box__meta">Sichtbar für ${memberCount} Mitglieder</div>` : ''}
+          ${isAdmin ? `<div class="settings-broadcast-box__meta">${(t('bcVisibleFor') || 'Sichtbar für {n} Mitglieder').replace('{n}', memberCount)}</div>` : ''}
         ` : `
           <div class="settings-row-item">
             <div class="settings-row-item__icon">📢</div>
             <div class="settings-row-item__body">
               <div class="settings-row-item__label">${t('broadcastLabel') || 'Ankündigungen'}</div>
-              <div class="settings-row-item__sub" style="color:var(--text-tertiary)">Keine aktive Ankündigung</div>
+              <div class="settings-row-item__sub" style="color:var(--text-tertiary)">${t('bcNoActive') || 'Keine aktive Ankündigung'}</div>
             </div>
           </div>
         `}
@@ -344,7 +375,7 @@ function _registerHandlers() {
     const text = el.dataset.text || '';
     import('../utils.js').then(({ copyToClipboard }) =>
       copyToClipboard(text).then(() =>
-        import('../components/toast.js').then(m => m.toast(t('broadcastCopy') || 'Kopiert', 'success', 1500))
+        import('../components/toast.js').then(m => m.toast(t('capCopied') || 'Kopiert! 📋', 'success', 1500))
       )
     );
   });
@@ -512,18 +543,8 @@ function _openPrivacyModal() {
 // ── Homescreen Guide Modal ────────────────────────────────
 
 function _openHomescreenModal() {
-  const ios = [
-    'Seite in <strong>Safari</strong> öffnen',
-    'Teilen-Symbol <strong>□↑</strong> antippen',
-    '→ <strong>„Zum Home-Bildschirm"</strong> wählen',
-    '→ <strong>„Hinzufügen"</strong> bestätigen',
-  ];
-  const and_ = [
-    'Seite in <strong>Chrome</strong> öffnen',
-    'Menü <strong>⋮</strong> oben rechts antippen',
-    '→ <strong>„App installieren"</strong> oder <strong>„Zum Startbildschirm"</strong>',
-    '→ <strong>„Hinzufügen"</strong> bestätigen',
-  ];
+  const lang = state.lang || 'de';
+  const hs   = HOMESCREEN[lang] || HOMESCREEN.de;
   const block = (emoji, title, steps) =>
     `<div class="hs-block">
       <div class="hs-block__title">${emoji} ${title}</div>
@@ -533,6 +554,6 @@ function _openHomescreenModal() {
   openModal({
     id: 'homescreen-modal',
     title: `📱 ${t('hsTitle')}`,
-    body: block('🍎', 'iPhone / iPad (Safari)', ios) + block('🤖', 'Android (Chrome)', and_),
+    body: block('🍎', 'iPhone / iPad (Safari)', hs.ios) + block('🤖', 'Android (Chrome)', hs.and),
   });
 }
