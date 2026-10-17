@@ -216,6 +216,21 @@ export function render() {
         </div>
       </div>
 
+      <!-- ── Freunde werben ─────────────────────────────── -->
+      <div class="settings-group">
+        <div class="settings-group__label">${t('referSection') || 'Empfehlen'}</div>
+        <div class="settings-group__card">
+          <div class="settings-row-item settings-row-item--tap" data-action="settings:refer">
+            <div class="settings-row-item__icon">🎉</div>
+            <div class="settings-row-item__body">
+              <div class="settings-row-item__label">${t('referTitle') || 'Freunde einladen'}</div>
+              <div class="settings-row-item__sub">${t('referSub') || 'Text & Link teilen — Pool stärken'}</div>
+            </div>
+            ${_chevSVG}
+          </div>
+        </div>
+      </div>
+
       <!-- ── FAQ Accordion ───────────────────────────────── -->
       <div class="settings-group">
         <div class="settings-group__label">${t('settingsHelp')}</div>
@@ -425,6 +440,19 @@ function _registerHandlers() {
     }
   });
 
+  on('settings:refer', () => _openReferModal());
+  on('refer:copy:text', (el) => {
+    const text = el.dataset.copy || '';
+    import('../utils.js').then(({ copyToClipboard }) =>
+      copyToClipboard(text).then(() => toast(t('capCopied') || 'Kopiert! 📋', 'success', 1500))
+    );
+  });
+  on('refer:copy:link', (el) => {
+    const link = el.dataset.copy || '';
+    import('../utils.js').then(({ copyToClipboard }) =>
+      copyToClipboard(link).then(() => toast(t('capCopied') || 'Kopiert! 📋', 'success', 1500))
+    );
+  });
   on('settings:privacy', () => _openPrivacyModal());
   on('settings:homescreen', () => _openHomescreenModal());
   on('pin:key', (el) => _handlePinKey(el));
@@ -527,6 +555,43 @@ function _confirmPin() {
       if (sub) sub.textContent = t('pinNewSub');
     }
   }
+}
+
+// ── Refer Modal ───────────────────────────────────────────
+
+function _openReferModal() {
+  const link      = window.location.origin;
+  const text      = t('referText') || 'Hey! 👋 Ich bin im NOVA Support Pool – einer TikTok-Community, in der wir uns gegenseitig unterstützen. Komm dazu und lass uns zusammen wachsen! 🚀';
+  const instr     = t('referInstr')     || 'Kopiere den Text und schick ihn an Freunde — oder teile direkt den Link zur App.';
+  const textLabel = t('referTextLabel') || 'Einladungstext';
+  const linkLabel = t('referLinkLabel') || 'App-Link';
+  const copyLbl   = t('broadcastCopy')  || 'Kopieren';
+
+  openModal({
+    id: 'refer-modal',
+    title: `🎉 ${t('referTitle') || 'Freunde einladen'}`,
+    body: `
+      <p class="refer-instr">${esc(instr)}</p>
+      <div class="refer-block">
+        <div class="refer-block__label">${esc(textLabel)}</div>
+        <div class="refer-block__text">${esc(text)}</div>
+        <button class="btn btn--sm btn--primary refer-copy-btn"
+          data-action="refer:copy:text"
+          data-copy="${text.replace(/"/g, '&quot;')}">
+          📋 ${copyLbl}
+        </button>
+      </div>
+      <div class="refer-block">
+        <div class="refer-block__label">${esc(linkLabel)}</div>
+        <div class="refer-block__text refer-block__text--link">${esc(link)}</div>
+        <button class="btn btn--sm btn--ghost refer-copy-btn"
+          data-action="refer:copy:link"
+          data-copy="${link}">
+          🔗 ${copyLbl}
+        </button>
+      </div>
+    `,
+  });
 }
 
 // ── Privacy Modal ─────────────────────────────────────────
