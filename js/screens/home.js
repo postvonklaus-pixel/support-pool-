@@ -244,13 +244,15 @@ function _poolPulseSection() {
           <div class="pool-pulse__stat-val">${todayCount}</div>
           <div class="pool-pulse__stat-label">${t('todaySupports') || 'Heute supportet'}</div>
         </div>
-        ${topUser ? `<div class="pool-pulse__stat">
-          <div class="pool-pulse__stat-val pool-pulse__stat-val--name">@${esc(fbDec(topUser))}</div>
-          <div class="pool-pulse__stat-label">${t('topToday') || 'Top diese Woche'} · ${topVal}×</div>
-        </div>` : ''}
-        ${newVid ? `<div class="pool-pulse__stat">
-          <div class="pool-pulse__stat-val pool-pulse__stat-val--name">@${esc(fbDec(newVid.ownerKey || newVid.owner || '?'))}</div>
-          <div class="pool-pulse__stat-label">${t('newHighlight') || 'Neu im Pool'}</div>
+        ${(topUser || newVid) ? `<div class="pool-pulse__right">
+          ${topUser ? `<div class="pool-pulse__stat">
+            <div class="pool-pulse__stat-val pool-pulse__stat-val--name">@${esc(fbDec(topUser))}</div>
+            <div class="pool-pulse__stat-label">${t('topToday') || 'Top heute'} · ${topVal}×</div>
+          </div>` : ''}
+          ${newVid ? `<div class="pool-pulse__stat">
+            <div class="pool-pulse__stat-val pool-pulse__stat-val--name">@${esc(fbDec(newVid.ownerKey || newVid.owner || '?'))}</div>
+            <div class="pool-pulse__stat-label">${t('newHighlight') || 'Neu im Pool'}</div>
+          </div>` : ''}
         </div>` : ''}
       </div>
     </div>

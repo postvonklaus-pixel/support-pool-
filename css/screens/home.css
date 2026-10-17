@@ -589,9 +589,19 @@
   font-family: var(--font-display);
   color: var(--accent-primary);
 }
+.pool-pulse__right {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  flex: 1;
+}
 .pool-pulse__stat-val--name {
   font-size: var(--text-sm);
   color: var(--text-primary);
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .pool-pulse__stat-label {
   font-size: var(--text-xs);
