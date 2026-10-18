@@ -17,7 +17,8 @@ export function trustLevel(memberKey) {
   const given = u.stats?.given    || 0;
   const recv  = u.stats?.received || 0;
   const posts = u.postsTotal      || 0;
-  const days  = u.joined ? Math.floor((Date.now() - u.joined) / 86400000) : 0;
+  const _jTs  = u.joinedAt || u.joined || 0;
+  const days  = _jTs ? Math.floor((Date.now() - _jTs) / 86400000) : 0;
   const streak = _streak(u);
 
   const score = Math.floor(given * 1.0 + posts * 0.5 + Math.min(days, 60) * 0.2 + streak * 0.5);

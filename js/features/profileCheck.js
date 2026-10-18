@@ -32,7 +32,7 @@ function _renderModal() {
   const bal    = Math.min(given - recv, 20);
   const vids   = u.postsTotal || 0;
   const wGiven = u.weeklyGiven || 0;
-  const joined = u.joined || Date.now();
+  const joined = u.joinedAt || u.joined || Date.now();
   const memberDays = Math.max(0, Math.floor((Date.now() - joined) / 86400000));
 
   // Active days last 7
@@ -151,7 +151,7 @@ export function drawStoryCanvas() {
   const given = stats.given || 0;
   const recv  = stats.received || 0;
   const bal   = Math.min(given - recv, 20);
-  const joined= u.joined || Date.now();
+  const joined= u.joinedAt || u.joined || Date.now();
   const memberDays = Math.max(0, Math.floor((Date.now() - joined) / 86400000));
   const supportDays= u.supportDays || [];
   let activeLast7 = 0;

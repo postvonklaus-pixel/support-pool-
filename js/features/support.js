@@ -239,7 +239,8 @@ on('support:done', (el) => {
   // Supporter stats
   const u = state.db.members?.[cu] || {};
   const stats = u.stats || {};
-  writeDB(`members/${cu}/stats/given`, (stats.given || 0) + 1);
+  const newGiven = (stats.given || 0) + 1;
+  writeDB(`members/${cu}/stats/given`, newGiven);
   writeDB(`members/${cu}/weeklyGiven`,  (u.weeklyGiven || 0) + 1);
 
   const today = new Date().toISOString().slice(0, 10);
@@ -247,7 +248,18 @@ on('support:done', (el) => {
   writeDB(`members/${cu}/supportDays`, days);
 
   const todayKey = today.replace(/-/g, '_');
-  writeDB(`members/${cu}/todayGiven/${todayKey}`, (u.todayGiven?.[todayKey] || 0) + 1);
+  const newTodayGiven = (u.todayGiven?.[todayKey] || 0) + 1;
+  writeDB(`members/${cu}/todayGiven/${todayKey}`, newTodayGiven);
+
+  // Optimistic local state update for member stats so counters render immediately
+  if (state.db.members?.[cu]) {
+    if (!state.db.members[cu].stats) state.db.members[cu].stats = {};
+    state.db.members[cu].stats.given = newGiven;
+    state.db.members[cu].weeklyGiven = (u.weeklyGiven || 0) + 1;
+    state.db.members[cu].supportDays = days;
+    if (!state.db.members[cu].todayGiven) state.db.members[cu].todayGiven = {};
+    state.db.members[cu].todayGiven[todayKey] = newTodayGiven;
+  }
 
   // Increment owner's received counter
   const owner    = v.ownerKey || v.owner;
