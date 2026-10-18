@@ -5,7 +5,7 @@
 import { state, setState, subscribe } from './state.js';
 import { storage, loadSession, getLang } from './storage.js';
 import { initTheme } from './features/theme.js';
-import { ge, toast, getLastFridayWIB } from './utils.js';
+import { ge, toast, getLastFridayWIB, fbDec } from './utils.js';
 import { initFirebase, saveDB, writeDB } from './firebase.js';
 import { initI18n, setLang } from './i18n.js';
 import { initEvents } from './events.js';
@@ -220,15 +220,16 @@ export function logout() {
 
 // ── Header update ─────────────────────────────────────────
 function updateHeader(username, u) {
-  const avatar = ge('header-avatar');
-  const name   = ge('header-username');
+  const decoded = fbDec(username);
+  const avatar  = ge('header-avatar');
+  const name    = ge('header-username');
   if (avatar) {
-    avatar.textContent = (username || '?').slice(0, 2).toUpperCase();
+    avatar.textContent = (decoded || '?').slice(0, 2).toUpperCase();
     import('./utils.js').then(({ avatarGradient }) => {
       avatar.style.background = avatarGradient(username);
     });
   }
-  if (name) name.textContent = username;
+  if (name) name.textContent = decoded;
 }
 
 // ── Broadcast banner ──────────────────────────────────────
