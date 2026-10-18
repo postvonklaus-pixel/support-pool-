@@ -38,7 +38,8 @@ export function render() {
   const bal      = given - received;
   const ranks    = _ranks();
   const rank     = rankFor(u, ranks);
-  const daysIn   = u.joined ? Math.max(0, Math.floor((Date.now() - u.joined) / 86400000)) : 0;
+  const _joinTs  = u.joinedAt || u.joined || 0;
+  const daysIn   = _joinTs ? Math.max(0, Math.floor((Date.now() - _joinTs) / 86400000)) : 0;
   const initial  = (cu || '?').slice(0, 2).toUpperCase();
   const gradient = avatarGradient(cu);
   const streak   = _currentStreak(u);
