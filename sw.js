@@ -4,7 +4,7 @@
    Responds to SKIP_WAITING message from the page.
    ═══════════════════════════════════════════════════════ */
 
-const CACHE = 'nova-v7';
+const CACHE = 'nova-v8';
 
 const STATIC_CSS = [
   '/support-pool-/css/tokens.css',
@@ -51,11 +51,12 @@ self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
   if (!url.origin.includes('github.io') && !url.origin.includes('localhost')) return;
 
-  // HTML + JS: network-first so every push reaches users immediately
+  // HTML + JS + CSS: network-first so every push reaches users immediately
   if (
     url.pathname.endsWith('/') ||
     url.pathname.endsWith('.html') ||
-    url.pathname.endsWith('.js')
+    url.pathname.endsWith('.js') ||
+    url.pathname.endsWith('.css')
   ) {
     e.respondWith(
       fetch(e.request)
@@ -68,7 +69,7 @@ self.addEventListener('fetch', e => {
     return;
   }
 
-  // CSS and other assets: stale-while-revalidate
+  // Other assets: stale-while-revalidate
   e.respondWith(
     caches.match(e.request).then(cached => {
       const fresh = fetch(e.request).then(res => {

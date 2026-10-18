@@ -6,7 +6,7 @@ import { state, setState, subscribe } from './state.js';
 import { storage, loadSession, getLang } from './storage.js';
 import { initTheme } from './features/theme.js';
 import { ge, toast, getLastFridayWIB, fbDec } from './utils.js';
-import { initFirebase, saveDB, writeDB } from './firebase.js';
+import { initFirebase, saveDB, writeDB, getPendingPaths } from './firebase.js';
 import { initI18n, setLang } from './i18n.js';
 import { initEvents } from './events.js';
 import { initRouter, goScreen } from './router.js';
@@ -82,14 +82,33 @@ function _showApp() {
 // ── Firebase DB update handler ────────────────────────────
 let _dbFirstLoad = true;
 
+// Re-applies queued writes (paths like 'members/key/stats/given') after
+// Firebase replaces state.db, so optimistic updates survive the next snapshot.
+function _applyPendingWrites(pending) {
+  const entries = Object.entries(pending);
+  if (!entries.length) return;
+  entries.forEach(([path, value]) => {
+    const parts = path.split('/');
+    let node = state.db;
+    for (let i = 0; i < parts.length - 1; i++) {
+      const k = parts[i];
+      if (!node[k] || typeof node[k] !== 'object') node[k] = {};
+      node = node[k];
+    }
+    node[parts[parts.length - 1]] = value;
+  });
+}
+
 function onDBUpdate(snapshot) {
-  const data = snapshot || {};
+  const data    = snapshot || {};
+  const pending = getPendingPaths(); // capture before overwriting state
   state.db.groups   = data.groups   || {};
   state.db.members  = data.members  || {};
   state.db.videos   = data.videos   || {};
   state.db.messages = data.messages || {};
   state.db.chat     = data.chat     || {};
   state.db.settings = data.settings || {};
+  _applyPendingWrites(pending); // re-apply unconfirmed optimistic writes
 
   // Notify all subscribers
   setState('db', state.db);

@@ -127,6 +127,14 @@ export function writeDB(path, value) {
   _flush();
 }
 
+// Returns a snapshot of all queued-but-not-yet-sent writes.
+// Used by onDBUpdate to re-apply optimistic state after Firebase replaces state.db.
+export function getPendingPaths() {
+  const out = {};
+  _pendingWrites.forEach((val, path) => { out[path] = val; });
+  return out;
+}
+
 const _flush = debounce(() => {
   if (!_db || !_pendingWrites.size) return;
   const updates = {};
