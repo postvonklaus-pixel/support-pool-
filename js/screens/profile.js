@@ -45,6 +45,11 @@ export function render() {
   const streak   = _currentStreak(u);
   const nextRank = ranks[ranks.indexOf(rank) + 1] || null;
   const toNext   = nextRank ? nextRank.min - given : 0;
+  // Real video count as fallback (handles reset/new accounts where postsTotal = 0)
+  const _realVids  = Object.values(state.db.videos || {}).filter(v =>
+    (v.ownerKey || v.owner || '').toLowerCase() === cu.toLowerCase()
+  ).length;
+  const postsTotal = Math.max(u.postsTotal || 0, _realVids);
 
   el.innerHTML = `
     <div class="profile-page">
@@ -72,7 +77,7 @@ export function render() {
           ${progressRing(received, Math.max(received, given, 10), { label: t('pRecv'), size: 72, color: 'var(--accent-secondary, #7c3aed)' })}
         </div>
         <div class="profile-stat-card">
-          <div class="profile-stat-card__val">${u.postsTotal || 0}</div>
+          <div class="profile-stat-card__val">${postsTotal}</div>
           <div class="profile-stat-card__label">${t('pVids')}</div>
         </div>
         <div class="profile-stat-card">

@@ -25,7 +25,9 @@
 }
 
 /* ── My Videos new layout ──────────────────────────────── */
-.myvids-scroll { flex: 1; overflow-y: auto; padding: var(--sp-4); }
+/* Screen itself must not scroll — inner .myvids-scroll handles it */
+#screen-myvideos { overflow: hidden; }
+.myvids-scroll { flex: 1; overflow-y: auto; padding: var(--sp-4); padding-bottom: calc(var(--nav-height, 64px) + var(--sp-6)); }
 
 /* ── Video Timeline Strip ─────────────────────────────── */
 .video-timeline {

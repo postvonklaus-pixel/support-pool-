@@ -939,12 +939,24 @@ function _registerHandlers() {
         const r = parseInt(document.getElementById('bal-recv')?.value   || '0', 10);
         writeDB(`members/${_balAdjKey}/stats/given`,    g);
         writeDB(`members/${_balAdjKey}/stats/received`, r);
+        // Optimistic update so profile reflects change immediately
+        if (state.db.members?.[_balAdjKey]) {
+          if (!state.db.members[_balAdjKey].stats) state.db.members[_balAdjKey].stats = {};
+          state.db.members[_balAdjKey].stats.given    = g;
+          state.db.members[_balAdjKey].stats.received = r;
+        }
         closeModal('bal-adj-modal');
         toast(`Balance für @${_balAdjKey} angepasst ✓`, 'success');
         setTimeout(render, 300);
       } else if (btn.dataset.cmd === 'autofix') {
         writeDB(`members/${_balAdjKey}/stats/given`,    0);
         writeDB(`members/${_balAdjKey}/stats/received`, 0);
+        // Optimistic update
+        if (state.db.members?.[_balAdjKey]) {
+          if (!state.db.members[_balAdjKey].stats) state.db.members[_balAdjKey].stats = {};
+          state.db.members[_balAdjKey].stats.given    = 0;
+          state.db.members[_balAdjKey].stats.received = 0;
+        }
         closeModal('bal-adj-modal');
         toast(`Balance für @${_balAdjKey} zurückgesetzt ✓`, 'success');
         setTimeout(render, 300);
