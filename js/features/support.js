@@ -261,8 +261,15 @@ on('support:done', (el) => {
     state.db.members[cu].todayGiven[todayKey] = newTodayGiven;
   }
 
-  // Increment owner's received counter
-  const owner    = v.ownerKey || v.owner;
+  // Increment owner's received counter.
+  // ownerKey was historically stored lowercase — resolve to the real member key.
+  let owner = v.ownerKey || v.owner || '';
+  if (owner && !state.db.members?.[owner]) {
+    const match = Object.keys(state.db.members || {}).find(
+      k => k.toLowerCase() === owner.toLowerCase()
+    );
+    if (match) owner = match;
+  }
   if (owner && owner !== cu) {
     const ownerData  = state.db.members?.[owner] || {};
     const ownerStats = ownerData.stats || {};

@@ -120,7 +120,7 @@ on('post:submit', () => {
   const scheduledFor = isScheduled ? new Date(schedDt.value).getTime() : null;
 
   writeDB(`videos/${id}`, {
-    id, link: url, owner: cu, ownerKey: cu.toLowerCase(),
+    id, link: url, owner: cu, ownerKey: cu,
     status: isScheduled ? 'scheduled' : 'open',
     round: 1,
     r1Supporters: [], r2Supporters: [],
