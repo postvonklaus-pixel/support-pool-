@@ -240,12 +240,20 @@ function _renderMembers() {
     if (!found) ungrouped.push([key, m]);
   });
 
+  const ungroupedTotal = Object.entries(state.db.members || {}).filter(([k, m]) => {
+    if (m.status === 'inactive' || m.role === 'admin') return false;
+    return !Object.values(state.db.groups || {}).some(g => (g.members || []).includes(k));
+  }).length;
+
   return `
     <div class="admin-search-bar">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
       <input class="admin-search-input" id="admin-member-search"
         placeholder="${t('adminSearchPH')}" value="${esc(_memberSearch)}"
         data-action="admin:member:search">
+      ${ungroupedTotal > 0 && Object.keys(groups).length > 0 ? `
+        <button class="btn btn--ghost btn--sm" style="white-space:nowrap;margin-left:6px;font-size:11px"
+          data-action="admin:distribute-members">🔀 ${ungroupedTotal} verteilen</button>` : ''}
     </div>
     <div class="admin-member-list">
       ${Object.values(groups).sort((a, b) => (a.number||0) - (b.number||0)).map(g => {
@@ -965,7 +973,14 @@ function _registerHandlers() {
 let _renderTimer = null;
 function _debounceRender() {
   clearTimeout(_renderTimer);
-  _renderTimer = setTimeout(render, 200);
+  _renderTimer = setTimeout(() => {
+    render();
+    // Restore focus to search input after re-render
+    if (_memberSearch) {
+      const el = document.getElementById('admin-member-search');
+      if (el) { el.focus(); const l = el.value.length; el.setSelectionRange(l, l); }
+    }
+  }, 200);
 }
 
 // ── Impersonation bar ──────────────────────────────────────

@@ -4,7 +4,7 @@
 
 import { state }      from '../state.js';
 import { t }          from '../i18n.js';
-import { esc, avatarGradient, getNextFridayWIB } from '../utils.js';
+import { esc, avatarGradient, getNextFridayWIB, fbDec } from '../utils.js';
 import { on }         from '../events.js';
 import { progressRing, streakFlames } from '../components/progress.js';
 import { renderAchievements } from '../features/achievements.js';
@@ -57,7 +57,7 @@ export function render() {
           <div class="profile-rank-badge" title="${rank.label}">${rank.icon}</div>
         </div>
         <div class="profile-name">${esc(u.name || cu)}</div>
-        <div class="profile-handle">@${esc(cu)}</div>
+        <div class="profile-handle">@${esc(fbDec(cu))}</div>
         <div class="profile-rank-label" style="color:${rank.color}">${rank.icon} ${rank.label}</div>
         <div class="profile-weekly-chip" id="profile-weekly-chip">${_weeklyChipText()}</div>
       </div>
