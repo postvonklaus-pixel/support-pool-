@@ -255,7 +255,14 @@ function _renderMembers() {
         <button class="btn btn--ghost btn--sm" style="white-space:nowrap;margin-left:6px;font-size:11px"
           data-action="admin:distribute-members">🔀 ${ungroupedTotal} verteilen</button>` : ''}
     </div>
-    <div class="admin-member-list">
+    <div class="admin-member-list" id="admin-members-body">
+      ${_memberListHTML(filtered, grouped, ungrouped, groups)}
+    </div>
+  `;
+}
+
+function _memberListHTML(filtered, grouped, ungrouped, groups) {
+  return `
       ${Object.values(groups).sort((a, b) => (a.number||0) - (b.number||0)).map(g => {
         const gm = grouped[g.id] || [];
         if (!gm.length) return '';
@@ -284,7 +291,6 @@ function _renderMembers() {
           </div>
         </div>` : ''}
       ${!filtered.length ? `<div class="admin-empty">${t('adminNoResult')} "${esc(_memberSearch)}"</div>` : ''}
-    </div>
   `;
 }
 
@@ -541,7 +547,38 @@ function _registerHandlers() {
 
   on('admin:member:search', (el) => {
     _memberSearch = el.value || '';
-    _debounceRender();
+    const listEl = document.getElementById('admin-members-body');
+    if (listEl) {
+      // Partial update: only replace the list body, not the search input.
+      // This keeps the input element in the DOM so iOS keyboard stays open.
+      const all = Object.entries(state.db.members || {})
+        .sort(([, a], [, b]) => {
+          const aInactive = a.status === 'inactive';
+          const bInactive = b.status === 'inactive';
+          if (aInactive !== bInactive) return aInactive ? 1 : -1;
+          return (b.stats?.given || 0) - (a.stats?.given || 0);
+        });
+      const filtered = _memberSearch
+        ? all.filter(([k, m]) => (m.name || k).toLowerCase().includes(_memberSearch.toLowerCase()))
+        : all;
+      const groups  = state.db.groups || {};
+      const grouped = {};
+      const ungrouped = [];
+      filtered.forEach(([key, m]) => {
+        let found = false;
+        Object.values(groups).forEach(g => {
+          if ((g.members || []).includes(key)) {
+            grouped[g.id] = grouped[g.id] || [];
+            grouped[g.id].push([key, m]);
+            found = true;
+          }
+        });
+        if (!found) ungrouped.push([key, m]);
+      });
+      listEl.innerHTML = _memberListHTML(filtered, grouped, ungrouped, groups);
+    } else {
+      _debounceRender();
+    }
   });
 
   on('admin:member:reactivate', async (el) => {
