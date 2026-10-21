@@ -71,7 +71,6 @@ export function handleSupport(vidId) {
   _videoOpened = false;
   _videoLink   = v.link || v.url || '';
 
-  const cu   = state.currentUser;
   const link = v.link || v.url || '#';
   const lang = state.lang;
   const pool = _getCommentPool(lang);
