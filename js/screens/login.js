@@ -134,6 +134,10 @@ function _renderStats() {
   const ss = ge('login-stat-supports'); if (ss) ss.textContent = _fmt(totalSupports);
   const vs = ge('login-stat-videos');   if (vs) vs.textContent = _fmt(openVideos);
 
+  const gl = ge('login-stat-groups-lbl');   if (gl) gl.textContent = t('statGroups')   || 'Gruppen';
+  const sl = ge('login-stat-supports-lbl'); if (sl) sl.textContent = t('statSupports') || 'Supports';
+  const vl = ge('login-stat-videos-lbl');   if (vl) vl.textContent = t('statVideos')   || 'Videos';
+
   const memberCount = Object.keys(members).length;
   const eyebrow = ge('login-eyebrow');
   if (eyebrow) {
