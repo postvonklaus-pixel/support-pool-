@@ -96,7 +96,9 @@ function _buildCheckHTML(cu, u, given, recv, bal, balGood, vids, wGiven, memberD
   const sumColor= score >= 4 ? 'var(--success)' : score >= 2 ? 'var(--warning,#f59e0b)' : 'var(--danger)';
   const sinceLabel = (t('profCheckSince') || '{n} Tage im Pool').replace('{n}', memberDays);
   const daysLabel  = (t('profCheckDays')  || '{n} von 7 aktiv').replace('{n}', activeLast7);
-  const todayLabel = (t('profCheckToday') || 'Heute: {n}').replace('{n}', u.todayCount || 0);
+  const _todayKey  = new Date().toISOString().slice(0, 10).replace(/-/g, '_');
+  const todayCount = u.todayGiven?.[_todayKey] || 0;
+  const todayLabel = (t('profCheckToday') || 'Heute: {n}').replace('{n}', todayCount);
 
   let html = `<div style="font-size:12px;font-weight:600;color:var(--text-tertiary,var(--text-secondary));text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">${t('profCheckPos') || 'POSITIVES'}</div>`;
   html += _row('💰', `${t('profCheckBal')}: ${balGood ? t('profCheckBalGood') : t('profCheckBalBad')}`, balGood);
@@ -105,7 +107,7 @@ function _buildCheckHTML(cu, u, given, recv, bal, balGood, vids, wGiven, memberD
   html += _row('📅', `${t('profCheckWeek')}: ${wGiven}`, wGiven >= 1);
   html += _row('🗓️', sinceLabel, memberDays >= 1);
   html += _row('🔥', daysLabel, activeLast7 >= 4);
-  html += _row('⚡', todayLabel, (u.todayCount || 0) >= 1);
+  html += _row('⚡', todayLabel, todayCount >= 1);
 
   html += `<div style="margin:14px 0;border-top:1px solid var(--border-subtle)"></div>`;
   html += `<div style="font-size:12px;font-weight:600;color:var(--text-tertiary,var(--text-secondary));text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">${t('profCheckOpt') || 'OPTIONAL'}</div>`;
@@ -141,6 +143,20 @@ function _buildStoryHTML(cu, u, given, activeLast7, memberDays) {
   `;
 }
 
+function _rrect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
+
 export function drawStoryCanvas() {
   const canvas = document.getElementById('pc-story-canvas');
   if (!canvas) return;
@@ -151,9 +167,9 @@ export function drawStoryCanvas() {
   const given = stats.given || 0;
   const recv  = stats.received || 0;
   const bal   = Math.min(given - recv, 20);
-  const joined= u.joinedAt || u.joined || Date.now();
+  const joined = u.joinedAt || u.joined || Date.now();
   const memberDays = Math.max(0, Math.floor((Date.now() - joined) / 86400000));
-  const supportDays= u.supportDays || [];
+  const supportDays = u.supportDays || [];
   let activeLast7 = 0;
   const today = new Date();
   for (let i = 0; i < 7; i++) {
@@ -166,81 +182,135 @@ export function drawStoryCanvas() {
   canvas.height = H;
   const ctx = canvas.getContext('2d');
 
-  // Background gradient
-  const bg = ctx.createLinearGradient(0, 0, W, H);
-  bg.addColorStop(0, '#0a0a14');
-  bg.addColorStop(0.5, '#14082a');
-  bg.addColorStop(1, '#0a0a14');
+  // ── Background ──────────────────────────────────────────
+  const bg = ctx.createLinearGradient(0, 0, 0, H);
+  bg.addColorStop(0,   '#07020f');
+  bg.addColorStop(0.4, '#130428');
+  bg.addColorStop(0.7, '#0d0620');
+  bg.addColorStop(1,   '#07020f');
   ctx.fillStyle = bg;
   ctx.fillRect(0, 0, W, H);
 
-  // Stars / dots
-  ctx.fillStyle = 'rgba(255,255,255,0.08)';
-  for (let i = 0; i < 80; i++) {
-    ctx.beginPath();
-    ctx.arc(Math.random()*W, Math.random()*H, Math.random()*3+1, 0, Math.PI*2);
-    ctx.fill();
+  // Stars
+  const rng = (seed) => { let s = seed; return () => { s = (s * 16807 + 0) % 2147483647; return (s - 1) / 2147483646; }; };
+  const rand = rng(42);
+  for (let i = 0; i < 140; i++) {
+    const x = rand() * W, y = rand() * H, r = rand() * 2.2 + 0.4;
+    const a = rand() * 0.5 + 0.06;
+    ctx.fillStyle = `rgba(255,255,255,${a.toFixed(2)})`;
+    ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
   }
 
-  // Glow circle
-  const grd = ctx.createRadialGradient(W/2, H*0.38, 0, W/2, H*0.38, 520);
-  grd.addColorStop(0, 'rgba(124,58,237,0.35)');
-  grd.addColorStop(1, 'rgba(6,182,212,0)');
-  ctx.fillStyle = grd;
+  // Purple glow behind avatar
+  const glow = ctx.createRadialGradient(W/2, H * 0.33, 0, W/2, H * 0.33, 580);
+  glow.addColorStop(0,   'rgba(124,58,237,0.42)');
+  glow.addColorStop(0.5, 'rgba(6,182,212,0.08)');
+  glow.addColorStop(1,   'rgba(0,0,0,0)');
+  ctx.fillStyle = glow;
+  ctx.fillRect(0, 0, W, H);
+
+  // Cyan accent glow (bottom)
+  const glow2 = ctx.createRadialGradient(W/2, H * 0.72, 0, W/2, H * 0.72, 400);
+  glow2.addColorStop(0,   'rgba(6,182,212,0.18)');
+  glow2.addColorStop(1,   'rgba(0,0,0,0)');
+  ctx.fillStyle = glow2;
   ctx.fillRect(0, 0, W, H);
 
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
 
-  // Avatar circle
-  const cx = W/2, cy = H*0.32;
-  ctx.beginPath();
-  ctx.arc(cx, cy, 152, 0, Math.PI*2);
-  const avGrd = ctx.createLinearGradient(cx-152, cy-152, cx+152, cy+152);
-  avGrd.addColorStop(0, '#7c3aed');
-  avGrd.addColorStop(1, '#06b6d4');
-  ctx.fillStyle = avGrd;
-  ctx.fill();
-  ctx.font = 'bold 96px Inter, sans-serif';
-  ctx.fillStyle = '#fff';
-  ctx.fillText((cu || '?').slice(0,2).toUpperCase(), cx, cy);
+  // ── Top label ───────────────────────────────────────────
+  ctx.font = '500 30px Inter, Arial, sans-serif';
+  ctx.fillStyle = 'rgba(124,58,237,0.85)';
+  ctx.fillText('✦  NOVA SUPPORT POOL  ✦', W/2, 88);
 
-  // Username
-  ctx.font = 'bold 64px Inter, sans-serif';
+  // ── Avatar ──────────────────────────────────────────────
+  const cx = W/2, cy = H * 0.33;
+
+  // Outer glow ring
+  const ringG = ctx.createRadialGradient(cx, cy, 148, cx, cy, 210);
+  ringG.addColorStop(0, 'rgba(124,58,237,0.55)');
+  ringG.addColorStop(1, 'rgba(124,58,237,0)');
+  ctx.fillStyle = ringG;
+  ctx.beginPath(); ctx.arc(cx, cy, 210, 0, Math.PI * 2); ctx.fill();
+
+  // Avatar fill
+  ctx.beginPath(); ctx.arc(cx, cy, 160, 0, Math.PI * 2);
+  const avG = ctx.createLinearGradient(cx - 160, cy - 160, cx + 160, cy + 160);
+  avG.addColorStop(0, '#7c3aed'); avG.addColorStop(1, '#06b6d4');
+  ctx.fillStyle = avG; ctx.fill();
+
+  // Avatar border
+  ctx.strokeStyle = 'rgba(255,255,255,0.18)';
+  ctx.lineWidth = 5; ctx.stroke();
+
+  // Avatar initials
+  ctx.font = 'bold 104px Inter, Arial, sans-serif';
   ctx.fillStyle = '#ffffff';
-  ctx.fillText('@' + (u.name || cu || ''), cx, H*0.32 + 220);
+  ctx.shadowColor = 'rgba(0,0,0,0.4)'; ctx.shadowBlur = 12;
+  ctx.fillText((cu || '?').slice(0, 2).toUpperCase(), cx, cy);
+  ctx.shadowBlur = 0;
 
-  // NOVA label
-  ctx.font = '600 36px Inter, sans-serif';
-  ctx.fillStyle = '#7c3aed';
-  ctx.fillText('NOVA Support Pool', cx, H*0.32 + 296);
+  // ── Username ────────────────────────────────────────────
+  ctx.font = 'bold 68px Inter, Arial, sans-serif';
+  ctx.fillStyle = '#ffffff';
+  ctx.fillText('@' + (u.name || cu || ''), cx, cy + 232);
 
-  // Stats
-  const stats2 = [
-    { v: String(given), l: t('given') || 'Gegeben' },
-    { v: String(bal >= 0 ? '+' + bal : bal), l: t('balance') || 'Guthaben' },
-    { v: String(memberDays), l: t('streakDays') || 'Tage' },
-    { v: String(activeLast7) + '/7', l: t('profCheckDays')?.split('{n}')[1]?.trim() || 'aktiv' },
+  // Subtitle
+  ctx.font = '500 34px Inter, Arial, sans-serif';
+  ctx.fillStyle = 'rgba(124,58,237,0.9)';
+  ctx.fillText('NOVA Support Pool', cx, cy + 306);
+
+  // ── Divider ─────────────────────────────────────────────
+  const divY = cy + 378;
+  const divG = ctx.createLinearGradient(W/2 - 320, divY, W/2 + 320, divY);
+  divG.addColorStop(0,   'rgba(124,58,237,0)');
+  divG.addColorStop(0.5, 'rgba(124,58,237,0.75)');
+  divG.addColorStop(1,   'rgba(124,58,237,0)');
+  ctx.strokeStyle = divG; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(W/2 - 320, divY); ctx.lineTo(W/2 + 320, divY); ctx.stroke();
+
+  // ── Stats 2×2 Grid ──────────────────────────────────────
+  const statsData = [
+    { v: String(given),                      l: t('given')    || 'Gegeben'      },
+    { v: (bal >= 0 ? '+' : '') + String(bal), l: t('balance')  || 'Guthaben'     },
+    { v: String(memberDays),                  l: t('daysInPool') || 'Tage im Pool' },
+    { v: activeLast7 + '/7',                  l: t('activeDays') || 'Tage aktiv'  },
   ];
-  const cols = stats2.length;
-  const cw   = W / cols;
-  const sy   = H * 0.62;
-  stats2.forEach((s, i) => {
-    const x = cw * i + cw / 2;
-    const grd2 = ctx.createLinearGradient(x-80, sy, x+80, sy);
-    grd2.addColorStop(0, '#7c3aed'); grd2.addColorStop(1, '#06b6d4');
-    ctx.font = 'bold 72px Inter, sans-serif';
-    ctx.fillStyle = grd2;
-    ctx.fillText(s.v, x, sy);
-    ctx.font = '400 30px Inter, sans-serif';
-    ctx.fillStyle = 'rgba(255,255,255,0.55)';
-    ctx.fillText(s.l, x, sy + 88);
+
+  const cW = 450, cH = 230, gX = 48, gY = 40;
+  const startX = (W - (2 * cW + gX)) / 2;
+  const startY = divY + 72;
+
+  statsData.forEach((s, i) => {
+    const col = i % 2, row = Math.floor(i / 2);
+    const bx = startX + col * (cW + gX);
+    const by = startY + row * (cH + gY);
+
+    // Card background
+    _rrect(ctx, bx, by, cW, cH, 28);
+    ctx.fillStyle = 'rgba(255,255,255,0.055)';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+    ctx.lineWidth = 1.5; ctx.stroke();
+
+    // Value
+    const valG = ctx.createLinearGradient(bx, by, bx + cW, by + cH);
+    valG.addColorStop(0, '#9f60ff'); valG.addColorStop(1, '#22d3ee');
+    ctx.font = 'bold 92px Inter, Arial, sans-serif';
+    ctx.fillStyle = valG;
+    ctx.fillText(s.v, bx + cW / 2, by + cH / 2 - 20);
+
+    // Label
+    ctx.font = '400 30px Inter, Arial, sans-serif';
+    ctx.fillStyle = 'rgba(255,255,255,0.48)';
+    ctx.fillText(s.l, bx + cW / 2, by + cH / 2 + 58);
   });
 
-  // Footer
-  ctx.font = '400 28px Inter, sans-serif';
-  ctx.fillStyle = 'rgba(255,255,255,0.35)';
-  ctx.fillText('novapool.official · TikTok Community', W/2, H - 96);
+  // ── Footer ──────────────────────────────────────────────
+  ctx.font = '400 27px Inter, Arial, sans-serif';
+  ctx.fillStyle = 'rgba(255,255,255,0.28)';
+  ctx.fillText('novapool.official · TikTok Community', W/2, H - 88);
 }
 
 export function downloadStoryCard() {
