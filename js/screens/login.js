@@ -116,23 +116,29 @@ function _cleanup() {
   _pendingVal = null;
 }
 
-// ── Live stats (eyebrow + live-count) ────────────────
+// ── Live stats (three stat tiles) ────────────────────
 function _renderStats() {
-  const members  = state.db.members  || {};
+  const members = state.db.members || {};
+  const groups  = state.db.groups  || {};
+  const videos  = state.db.videos  || {};
+
+  const groupCount    = Object.keys(groups).length;
+  const totalSupports = Object.values(members).reduce(
+    (sum, m) => sum + (m.stats?.given || 0), 0
+  );
+  const openVideos = Object.values(videos).filter(v => v.status === 'open').length;
+
+  const _fmt = (n) => n >= 1000 ? (n / 1000).toFixed(1) + 'k' : String(n);
+
+  const gs = ge('login-stat-groups');   if (gs) gs.textContent = _fmt(groupCount);
+  const ss = ge('login-stat-supports'); if (ss) ss.textContent = _fmt(totalSupports);
+  const vs = ge('login-stat-videos');   if (vs) vs.textContent = _fmt(openVideos);
+
   const memberCount = Object.keys(members).length;
-
-  const countEl = ge('login-live-count');
-  if (countEl) {
-    const tpl = t('loginLiveMembers') || '{n} Mitglieder aktiv';
-    countEl.textContent = memberCount > 0
-      ? tpl.replace('{n}', memberCount)
-      : '...';
-  }
-
   const eyebrow = ge('login-eyebrow');
   if (eyebrow) {
     eyebrow.textContent = memberCount >= 3
-      ? t('loginEyebrowLive') || 'Mitglieder · Live'
+      ? t('loginEyebrowLive') || 'DEIN POOL · LIVE'
       : t('loginEyebrowStart') || 'Dein Pool startet';
   }
 }

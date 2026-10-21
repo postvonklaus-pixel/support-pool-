@@ -151,29 +151,32 @@
           <div class="login-h1" id="login-h1">Willkommen, Creator</div>
           <div class="login-h2" id="login-h2">Dein TikTok-Wachstum beginnt hier.</div>
 
-          <!-- Live row -->
-          <div class="login-live-row">
-            <div class="login-avatars" id="login-live-avatars">
-              <div class="login-av" style="background:hsl(320,65%,42%)">
-                <img src="images/avatar-1.png" alt="" loading="lazy"
-                     onerror="this.remove()">
-              </div>
-              <div class="login-av" style="background:hsl(270,65%,42%)">
-                <img src="images/avatar-2.png" alt="" loading="lazy"
-                     onerror="this.remove()">
-              </div>
-              <div class="login-av" style="background:hsl(185,65%,42%)">
-                <img src="images/avatar-3.png" alt="" loading="lazy"
-                     onerror="this.remove()">
-              </div>
-              <div class="login-av" style="background:hsl(145,65%,35%)">
-                <img src="images/avatar-4.png" alt="" loading="lazy"
-                     onerror="this.remove()">
-              </div>
+          <!-- Live stat tiles -->
+          <div class="login-stats-row" aria-label="Pool Statistiken">
+            <div class="login-stat-tile">
+              <svg class="login-stat-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+              </svg>
+              <div class="login-stat-val" id="login-stat-groups">–</div>
+              <div class="login-stat-label" id="login-stat-groups-lbl">Gruppen</div>
             </div>
-            <div class="login-live-text">
-              <span class="login-live-dot"></span>
-              <span id="login-live-count">...</span>
+            <div class="login-stat-tile login-stat-tile--mid">
+              <svg class="login-stat-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+              </svg>
+              <div class="login-stat-val" id="login-stat-supports">–</div>
+              <div class="login-stat-label" id="login-stat-supports-lbl">Supports</div>
+            </div>
+            <div class="login-stat-tile">
+              <svg class="login-stat-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="10"/>
+                <polygon points="10 8 16 12 10 16 10 8"/>
+              </svg>
+              <div class="login-stat-val" id="login-stat-videos">–</div>
+              <div class="login-stat-label" id="login-stat-videos-lbl">Videos</div>
             </div>
           </div>
 
