@@ -18,7 +18,9 @@ const R1_NEED = 10;
 const R2_NEED = 10;
 const _r1Need = () => state.db.settings?.r1Need || R1_NEED;
 const R1_MS   = 12 * 60 * 60 * 1000;
-const BAL_CAP = 20;
+const BAL_CAP        = 40;
+const SUPER_THRESH_H = 50;
+const SUPER_MS_H     =  6 * 60 * 60 * 1000;
 
 let _tab = 'feed'; // 'feed' | 'balance' | 'leaderboard'
 
@@ -75,8 +77,10 @@ export function render() {
   _startWeeklyChipTimer();
   _startPulseTimer();
 
-  if (_tab === 'balance' && u.lastPost && (Date.now() - u.lastPost) < R1_MS) {
-    startCircularTimer('home-ctimer');
+  if (_tab === 'balance' && u.lastPost) {
+    const _isSuper = (stats.given || 0) >= SUPER_THRESH_H;
+    const _cdMs    = _isSuper ? SUPER_MS_H : R1_MS;
+    if ((Date.now() - u.lastPost) < _cdMs) startCircularTimer('home-ctimer');
   }
 }
 
@@ -270,9 +274,11 @@ function _startPulseTimer() {
 
 // ── Balance Tab ────────────────────────────────────────────
 function _renderBalanceTab(given, recv, bal, u) {
-  const cooldown  = u.lastPost && (Date.now() - u.lastPost) < R1_MS;
-  const balPct    = Math.max(0, Math.min(100, ((bal + BAL_CAP) / (BAL_CAP * 2)) * 100));
-  const balClass  = bal > 0 ? 'positive' : bal < 0 ? 'negative' : 'neutral';
+  const isSuper    = given >= SUPER_THRESH_H;
+  const cooldownMs = isSuper ? SUPER_MS_H : R1_MS;
+  const cooldown   = u.lastPost && (Date.now() - u.lastPost) < cooldownMs;
+  const balPct     = Math.max(0, Math.min(100, ((bal + BAL_CAP) / (BAL_CAP * 2)) * 100));
+  const balClass   = bal > 0 ? 'positive' : bal < 0 ? 'negative' : 'neutral';
 
   return `
     <div class="balance-wrap">
@@ -296,7 +302,7 @@ function _renderBalanceTab(given, recv, bal, u) {
       ${cooldown ? `
         <div class="balance-cooldown">
           <div class="balance-cooldown__label">${t('cooldownLabel')}</div>
-          ${circularTimer(u.lastPost + R1_MS - Date.now(), R1_MS, { id: 'home-ctimer', size: 64, stroke: 5 })}
+          ${circularTimer(u.lastPost + cooldownMs - Date.now(), cooldownMs, { id: 'home-ctimer', size: 64, stroke: 5 })}
         </div>
       ` : `
         <button class="btn btn--primary btn--full" data-action="post:open" style="margin-top:8px">
