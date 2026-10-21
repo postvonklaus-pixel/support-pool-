@@ -297,20 +297,28 @@ function _setupHandlers() {
       setTimeout(() => ge('login-autocomplete')?.classList.remove('open'), 160);
     });
 
-    // When keyboard opens, scroll login screen so h1 stays visible below the topbar
+    // When keyboard opens: scroll so input + autocomplete (240px) clears the keyboard
     input.addEventListener('focus', () => {
-      setTimeout(() => {
+      const doScroll = () => {
         const screen = document.getElementById('screen-login');
-        const h1     = ge('login-h1');
-        if (!screen || !h1) return;
-        const screenTop = screen.getBoundingClientRect().top;
-        const h1Top     = h1.getBoundingClientRect().top;
-        // h1's absolute position within the scroll container
-        const h1InContainer = h1Top - screenTop + screen.scrollTop;
-        // Topbar is 56px + safe-area; target: h1 just below it with 8px gap
-        const topbarH = 56 + (window.visualViewport?.offsetTop || 0);
-        screen.scrollTo({ top: Math.max(0, h1InContainer - topbarH - 8), behavior: 'smooth' });
-      }, 420);
+        const wrap   = input.closest('.login-input-wrap') || input;
+        if (!screen || !wrap) return;
+        const vvh    = window.visualViewport?.height || window.innerHeight;
+        const rect   = wrap.getBoundingClientRect();
+        const excess = rect.bottom + 240 - (vvh - 8);
+        if (excess > 0) screen.scrollBy({ top: excess, behavior: 'smooth' });
+      };
+
+      if (window.visualViewport) {
+        let debounce;
+        const onResize = () => { clearTimeout(debounce); debounce = setTimeout(doScroll, 100); };
+        const cleanup  = () => { window.visualViewport.removeEventListener('resize', onResize); clearTimeout(debounce); };
+        window.visualViewport.addEventListener('resize', onResize);
+        const fallback = setTimeout(() => { cleanup(); doScroll(); }, 800);
+        input.addEventListener('blur', () => { cleanup(); clearTimeout(fallback); }, { once: true });
+      } else {
+        setTimeout(doScroll, 500);
+      }
     });
   }
 }

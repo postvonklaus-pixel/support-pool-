@@ -419,6 +419,8 @@
   outline: none;
   box-sizing: border-box;
   font-family: inherit;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
 }
 .login-input::placeholder { color: rgba(255,255,255,0.34); }
 .login-input:focus {
