@@ -11,8 +11,10 @@ import { on }      from '../events.js';
 import { goScreen } from '../router.js';
 import { addNotif } from './notifications.js';
 
-const R1_MS   = 12 * 60 * 60 * 1000;
-const R1_NEED = 10;
+const R1_MS        = 12 * 60 * 60 * 1000;
+const SUPER_MS     =  6 * 60 * 60 * 1000; // Super-Supporter (given >= 50)
+const SUPER_THRESH = 50;
+const R1_NEED      = 10;
 
 export function openPostModal() {
   const cu = state.currentUser;
@@ -25,12 +27,15 @@ export function openPostModal() {
   const bal   = given - recv;
   const tot   = u.postsTotal  || 0;
 
-  // Cooldown check
-  if (u.lastPost && (Date.now() - u.lastPost) < R1_MS) {
-    const rem = R1_MS - (Date.now() - u.lastPost);
+  // Cooldown check — Super-Supporter (given >= 50) get 6h instead of 12h
+  const isSuper   = (stats.given || 0) >= SUPER_THRESH;
+  const cooldownMs = isSuper ? SUPER_MS : R1_MS;
+  if (u.lastPost && (Date.now() - u.lastPost) < cooldownMs) {
+    const rem = cooldownMs - (Date.now() - u.lastPost);
     const h   = Math.floor(rem / 3600000);
     const m   = Math.floor((rem % 3600000) / 60000);
-    toast(`⏳ Noch ${h}h ${m}m warten`, 'warning', 4000);
+    const prefix = isSuper ? (t('superSupporterLabel') || 'Super-Supporter') + ': ' : '';
+    toast(`⏳ ${prefix}Noch ${h}h ${m}m warten`, 'warning', 4000);
     return;
   }
 

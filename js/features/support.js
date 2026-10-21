@@ -47,6 +47,26 @@ export function handleSupport(vidId) {
   const v = _findVideo(vidId);
   if (!v) { toast('Video nicht gefunden', 'error'); return; }
 
+  // Daily support cap: 20 base, 40 if user has an active video in pool
+  const cu = state.currentUser;
+  if (cu) {
+    const todayKey  = new Date().toISOString().slice(0, 10).replace(/-/g, '_');
+    const givenToday = state.db.members?.[cu]?.todayGiven?.[todayKey] || 0;
+    if (givenToday >= 20) {
+      const hasOpenVideo = Object.values(state.db.videos || {}).some(
+        vid => (vid.ownerKey === cu || vid.owner === cu) && vid.status === 'open'
+      );
+      if (!hasOpenVideo) {
+        toast(t('supportDailyLimit') || 'Max. 20 Supports heute — poste ein Video für mehr!', 'warning', 4000);
+        return;
+      }
+      if (givenToday >= 40) {
+        toast(t('supportDailyMax') || 'Tageslimit: 40 Supports erreicht.', 'warning', 4000);
+        return;
+      }
+    }
+  }
+
   _copied      = false;
   _videoOpened = false;
   _videoLink   = v.link || v.url || '';
