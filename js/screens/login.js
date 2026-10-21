@@ -147,6 +147,7 @@ function _renderStats() {
 function _updateTexts() {
   const set = (id, val) => { const e = ge(id); if (e) e.textContent = val; };
 
+  set('login-subtitle',     t('loginSubtitle')     || 'SUPPORT POOL');
   set('login-h1',           t('loginH1')           || 'Willkommen, Creator');
   set('login-h2',           t('loginH2')           || 'Dein TikTok-Wachstum beginnt hier.');
   set('login-micro-instant',t('loginMicroInstant') || 'Sofort');

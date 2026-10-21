@@ -329,63 +329,89 @@
   position: relative;
   margin-top: 22px;
   border-radius: 999px;
+  background: linear-gradient(180deg,
+    rgba(255,255,255,0.085) 0%,
+    rgba(255,255,255,0.022) 100%);
+  backdrop-filter: blur(28px) saturate(160%);
+  -webkit-backdrop-filter: blur(28px) saturate(160%);
+  border: 1px solid rgba(197,181,255,0.22);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.20),
+    0 0 36px rgba(120,60,255,0.18),
+    0 8px 32px rgba(0,0,0,0.30);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
-/* animated gradient ring — appears on focus */
-.login-input-wrap::before {
-  content: '';
-  position: absolute;
-  inset: -1.5px;
-  border-radius: 999px;
-  background: linear-gradient(90deg, #7c3aed, #06b6d4, #a78bfa, #7c3aed);
-  background-size: 300% 100%;
-  opacity: 0;
-  pointer-events: none;
-  z-index: 0;
-  transition: opacity 0.3s ease;
-  animation: loginGradShift 3s linear infinite;
-  animation-play-state: paused;
+.login-input-wrap::before { display: none; }
+
+.login-input-wrap:focus-within {
+  border-color: rgba(197,181,255,0.50);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.26),
+    0 0 0 1px rgba(124,58,237,0.20),
+    0 0 64px rgba(124,58,237,0.38),
+    0 0 24px rgba(103,232,249,0.16),
+    0 8px 40px rgba(0,0,0,0.40);
 }
 
-.login-input-wrap:focus-within::before {
-  opacity: 1;
-  animation-play-state: running;
-}
-
-@keyframes loginGradShift {
-  0%   { background-position: 0% 0%; }
-  100% { background-position: 300% 0%; }
-}
-
+/* ── @ Orb ───────────────────────────────────────────── */
 .login-at-icon {
   position: absolute;
   left: 8px;
   top: 50%;
   transform: translateY(-50%);
-  width: 36px; height: 36px;
+  width: 38px; height: 38px;
   border-radius: 50%;
-  background: #fff;
-  color: #000;
+  background: radial-gradient(circle at 34% 28%,
+    #ffffff 0%,
+    #b89eff 18%,
+    #7c3aed 48%,
+    #2d0d6e 80%,
+    #110430 100%);
+  box-shadow:
+    0 0 18px rgba(138,92,255,0.88),
+    0 0 8px  rgba(103,232,249,0.35),
+    inset -4px -5px 14px rgba(0,0,0,0.50);
+  color: rgba(255,255,255,0.95);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 800;
   z-index: 2;
   pointer-events: none;
   user-select: none;
   flex-shrink: 0;
+  animation: orbPulse 5s ease-in-out infinite;
 }
 
+@keyframes orbPulse {
+  0%, 100% {
+    box-shadow:
+      0 0 18px rgba(138,92,255,0.88),
+      0 0 8px  rgba(103,232,249,0.35),
+      inset -4px -5px 14px rgba(0,0,0,0.50);
+    filter: brightness(1);
+  }
+  50% {
+    box-shadow:
+      0 0 30px rgba(103,232,249,0.70),
+      0 0 14px rgba(138,92,255,0.55),
+      inset -4px -5px 14px rgba(0,0,0,0.50);
+    filter: brightness(1.14);
+  }
+}
+
+/* ── Text input ──────────────────────────────────────── */
 .login-input {
   position: relative;
   z-index: 1;
   width: 100%;
   height: 62px;
   border-radius: 999px;
-  background: rgba(12,6,26,0.85);
-  border: 1.5px solid rgba(255,255,255,0.10);
-  padding-inline-start: 56px;
+  background: transparent;
+  border: none;
+  padding-inline-start: 58px;
   padding-inline-end: 16px;
   font-size: 17px;
   font-weight: 500;
@@ -393,12 +419,10 @@
   outline: none;
   box-sizing: border-box;
   font-family: inherit;
-  transition: background 0.2s, border-color 0.2s;
 }
-.login-input::placeholder { color: rgba(255,255,255,0.30); }
+.login-input::placeholder { color: rgba(255,255,255,0.34); }
 .login-input:focus {
-  background: rgba(15,8,34,0.92);
-  border-color: transparent;
+  background: transparent;
 }
 
 /* ── Autocomplete ────────────────────────────────────── */
