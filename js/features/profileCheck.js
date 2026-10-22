@@ -329,8 +329,8 @@ export async function drawStoryCanvas() {
   const statsData = [
     { v: String(given),                       l: t('given') || 'Gegeben' },
     { v: (bal >= 0 ? '+' : '') + String(bal), l: t('balance') || 'Guthaben' },
-    { v: String(memberDays),                  l: t('daysInPool') || 'Tage im Pool' },
-    { v: activeLast7 + '/7',                  l: t('activeDays') || 'Aktiv' },
+    { v: String(memberDays),                  l: t('streakDays') },
+    { v: activeLast7 + '/7',                  l: t('storyActive') },
   ];
 
   const cW = 474, cH = 268, gap = 48;
