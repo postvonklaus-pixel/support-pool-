@@ -4,8 +4,8 @@
 
 :root {
   --login-bg:          #05030a;
-  --login-card-bg:     linear-gradient(180deg, rgba(255,255,255,0.085) 0%, rgba(255,255,255,0.028) 100%);
-  --login-card-border: rgba(255,255,255,0.11);
+  --login-card-bg:     rgba(20,10,50,0.58);
+  --login-card-border: rgba(180,150,255,0.32);
   --login-text-1:      #ffffff;
   --login-text-2:      rgba(255,255,255,0.65);
   --login-text-3:      rgba(255,255,255,0.40);
@@ -47,17 +47,20 @@
   inset: 0;
   pointer-events: none;
   z-index: 0;
-  background: radial-gradient(120% 80% at 50% -10%,
-    #1a1035 0%, #0a0614 40%, var(--login-bg) 100%);
+  background-image: url('/support-pool-/assets/login-bg.jpg');
+  background-size: cover;
+  background-position: center top;
+  background-repeat: no-repeat;
 }
 .login-bg::after {
   content: '';
   position: absolute;
   inset: 0;
-  background-image: url('/images/bg-texture.png');
-  background-size: 200px 200px;
-  opacity: 0.04;
-  mix-blend-mode: overlay;
+  background: linear-gradient(180deg,
+    rgba(5,2,15,0.18) 0%,
+    rgba(5,2,15,0.05) 40%,
+    rgba(5,2,15,0.28) 85%,
+    rgba(5,2,15,0.60) 100%);
 }
 
 .login-orb-1 {
@@ -152,8 +155,10 @@
   backdrop-filter: blur(32px) saturate(150%);
   -webkit-backdrop-filter: blur(32px) saturate(150%);
   box-shadow:
-    0 30px 80px rgba(0,0,0,0.6),
-    inset 0 1px 0 rgba(255,255,255,0.14);
+    0 0 0 1px rgba(100,60,200,0.18),
+    0 30px 80px rgba(0,0,0,0.65),
+    0 0 60px rgba(120,60,220,0.18),
+    inset 0 1px 0 rgba(255,255,255,0.18);
   box-sizing: border-box;
 }
 
@@ -742,4 +747,14 @@
 @media (max-width: 375px) {
   .login-card { padding: 24px 18px 18px; }
   .login-h1   { font-size: 20px; }
+}
+
+/* ── Counter pop on live update ──────────────────────── */
+.login-stat-val.pop {
+  animation: counterPop 0.35s ease-out forwards;
+}
+@keyframes counterPop {
+  0%   { transform: scale(1); }
+  45%  { transform: scale(1.22); text-shadow: 0 0 22px #a855f7, 0 0 40px #a855f7; }
+  100% { transform: scale(1); text-shadow: none; }
 }

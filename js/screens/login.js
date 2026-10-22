@@ -135,10 +135,14 @@ function _renderStats() {
   const gs = ge('login-stat-groups');   if (gs) gs.textContent = _fmt(groupCount);
   const ss = ge('login-stat-supports');
   const vs = ge('login-stat-videos');
+  const _pulse = (el) => { if (!el) return; el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop'); };
   if (!_statsAnimated && totalSupports > 0) {
     _statsAnimated = true;
     if (ss) { ss.textContent = '0'; setTimeout(() => _countUp(ss, totalSupports, 1600), 700); }
     if (vs) { vs.textContent = '0'; setTimeout(() => _countUp(vs, openVideos, 1000), 700); }
+  } else if (_statsAnimated) {
+    if (ss) { ss.textContent = totalSupports.toLocaleString('de-DE'); _pulse(ss); }
+    if (vs) { vs.textContent = String(openVideos); _pulse(vs); }
   } else {
     if (ss) ss.textContent = totalSupports.toLocaleString('de-DE');
     if (vs) vs.textContent = String(openVideos);
