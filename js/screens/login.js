@@ -26,15 +26,17 @@ const _LANG_META = {
   pl: { flag: '🇵🇱', name: 'Polski' },
 };
 
-let _step       = 'name';
-let _username   = '';
-let _pendingVal = null;
-let _unsubDB    = null;
-let _timeoutId  = null;
+let _step          = 'name';
+let _username      = '';
+let _pendingVal    = null;
+let _unsubDB       = null;
+let _timeoutId     = null;
+let _statsAnimated = false;
 
 // ── Main render ───────────────────────────────────────
 export function render() {
   _cleanup();
+  _statsAnimated = false;
   _updateLangBtn();
   _updateTexts();
   _renderLoginBroadcast();
@@ -131,8 +133,16 @@ function _renderStats() {
   const _fmt = (n) => n >= 1000 ? (n / 1000).toFixed(1) + 'k' : String(n);
 
   const gs = ge('login-stat-groups');   if (gs) gs.textContent = _fmt(groupCount);
-  const ss = ge('login-stat-supports'); if (ss) _countUp(ss, totalSupports, 1400);
-  const vs = ge('login-stat-videos');   if (vs) _countUp(vs, openVideos, 900);
+  const ss = ge('login-stat-supports');
+  const vs = ge('login-stat-videos');
+  if (!_statsAnimated && totalSupports > 0) {
+    _statsAnimated = true;
+    if (ss) { ss.textContent = '0'; setTimeout(() => _countUp(ss, totalSupports, 1600), 700); }
+    if (vs) { vs.textContent = '0'; setTimeout(() => _countUp(vs, openVideos, 1000), 700); }
+  } else {
+    if (ss) ss.textContent = totalSupports.toLocaleString('de-DE');
+    if (vs) vs.textContent = String(openVideos);
+  }
 
   const gl = ge('login-stat-groups-lbl');   if (gl) gl.textContent = t('statGroups')   || 'Gruppen';
   const sl = ge('login-stat-supports-lbl'); if (sl) sl.textContent = t('statSupports') || 'Supports';
@@ -152,8 +162,9 @@ function _updateTexts() {
   const set = (id, val) => { const e = ge(id); if (e) e.textContent = val; };
 
   set('login-subtitle',     t('loginSubtitle')     || 'SUPPORT POOL');
-  set('login-h1',           t('loginH1')           || 'Willkommen, Creator');
-  set('login-h2',           t('loginH2')           || 'Dein TikTok-Wachstum beginnt hier.');
+  const _strip = (s) => s.replace(/,\s*/g, ' ').replace(/\.$/,'').trim();
+  set('login-h1', _strip(t('loginH1') || 'Willkommen Creator'));
+  set('login-h2', _strip(t('loginH2') || 'Dein TikTok-Wachstum beginnt hier'));
   set('login-micro-instant',t('loginMicroInstant') || 'Sofort');
   set('login-micro-free',   t('loginMicroFree')    || 'Kostenlos');
   set('login-micro-secure', t('loginMicroSecure')  || 'Sicher');

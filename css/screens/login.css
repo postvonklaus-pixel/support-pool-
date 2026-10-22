@@ -216,18 +216,21 @@
   font-size: 22px;
   font-weight: 650;
   line-height: 1.18;
-  letter-spacing: -0.3px;
+  letter-spacing: 1px;
   text-align: center;
+  text-transform: uppercase;
   color: #fff;
 }
 
 .login-h2 {
   margin-top: 8px;
-  font-size: 14px;
-  font-weight: 500;
+  font-size: 11px;
+  font-weight: 600;
   color: rgba(255,255,255,0.45);
   line-height: 1.4;
+  letter-spacing: 1.5px;
   text-align: center;
+  text-transform: uppercase;
 }
 
 /* ── Stat tiles ──────────────────────────────────────── */
