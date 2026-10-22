@@ -3,6 +3,7 @@
    ═══════════════════════════════════════════════════════ */
 
 import { debounce } from './utils.js';
+import { toast } from './components/toast.js';
 
 const FIREBASE_CONFIG = {
   apiKey:            "AIzaSyCqJmrJOVbfY7t5pxCQXZSSMbH0nwVAjMs",
@@ -86,16 +87,23 @@ function _autoConnect(resolve) {
 }
 
 // ── Anonymous Auth ────────────────────────────────────────
+let _authUser = null;
+export function getAuthUser() { return _authUser; }
+
 function _signInAnonymously(app) {
   return new Promise(resolve => {
     try {
       const auth = firebase.auth(app);
       const unsub = auth.onAuthStateChanged(user => {
         unsub();
-        if (user) { resolve(); return; }
+        if (user) { _authUser = user; resolve(); return; }
         auth.signInAnonymously()
-          .then(resolve)
-          .catch(err => { console.warn('[firebase] anon auth failed (' + err.code + ')'); resolve(); });
+          .then(cred => { _authUser = cred.user || cred; resolve(); })
+          .catch(err => {
+            console.warn('[firebase] anon auth failed (' + err.code + ')');
+            toast('⚠️ Auth-Fehler: ' + err.code, 'error', 8000);
+            resolve();
+          });
       });
     } catch (e) {
       console.warn('[firebase] auth unavailable:', e.message);
@@ -142,13 +150,18 @@ const _flush = debounce(() => {
   _pendingWrites.clear();
   _db.ref(_base || '/').update(updates)
     .catch(err => {
-      console.error('[firebase] write error:', err.code || err.message);
+      const code = err.code || err.message || 'unknown';
+      console.error('[firebase] write error:', code);
+      toast('⚠️ Speicherfehler: ' + code, 'error', 8000);
       if (err.code === 'PERMISSION_DENIED') {
-        // Re-attempt anonymous sign-in and retry once
         const app = firebase.app();
         firebase.auth(app).signInAnonymously()
-          .then(() => _db.ref(_base || '/').update(updates))
-          .catch(e2 => console.error('[firebase] retry write failed:', e2.code));
+          .then(cred => { _authUser = cred.user || cred; return _db.ref(_base || '/').update(updates); })
+          .then(() => toast('✅ Erneut gespeichert', 'success', 3000))
+          .catch(e2 => {
+            console.error('[firebase] retry write failed:', e2.code);
+            toast('❌ Retry fehlgeschlagen: ' + e2.code, 'error', 8000);
+          });
       }
     });
 }, 300);

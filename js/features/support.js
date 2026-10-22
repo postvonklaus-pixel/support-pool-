@@ -5,7 +5,7 @@
 import { state }   from '../state.js';
 import { t }       from '../i18n.js';
 import { esc, openUrl } from '../utils.js';
-import { writeDB } from '../firebase.js';
+import { writeDB, getAuthUser } from '../firebase.js';
 import { toast }   from '../components/toast.js';
 import { openModal, closeModal } from '../components/modal.js';
 import { confetti } from '../components/confetti.js';
@@ -241,6 +241,11 @@ on('support:done', (el) => {
   const newSups = [...supporters, cu];
   const dbVidId = _findVideoId(vidId);
   const r1n     = v.r1Need || state.db.settings?.r1Need || 10;
+
+  // Debug: show auth status so iOS users can see if auth is missing
+  if (!getAuthUser()) {
+    toast('⚠️ Kein Auth-Token — Support wird lokal gespeichert, aber nicht in Firebase', 'warning', 6000);
+  }
 
   writeDB(`videos/${dbVidId}/${field}`, newSups);
 
