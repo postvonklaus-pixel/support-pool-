@@ -6,7 +6,6 @@ on:
     paths:
       - 'functions/**'
       - 'database.rules.json'
-      - 'firestore.rules'
   workflow_dispatch:
 
 jobs:
@@ -40,10 +39,3 @@ jobs:
         env:
           GCP_SA_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
 
-      - name: Deploy Firestore Rules
-        if: contains(toJson(github.event.commits.*.modified), 'firestore.rules') || github.event_name == 'workflow_dispatch'
-        uses: w9jds/firebase-action@master
-        with:
-          args: deploy --only firestore:rules
-        env:
-          GCP_SA_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
