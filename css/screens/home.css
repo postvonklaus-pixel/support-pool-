@@ -443,6 +443,67 @@
 }
 .lb-row__score { font-weight: var(--weight-bold); font-family: var(--font-display); color: var(--accent-primary); }
 
+/* Weekly pool-total counter */
+.lb-week-total {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin: 10px 0 2px;
+}
+.lb-week-total__ring {
+  position: relative;
+  width: 68px; height: 68px;
+  border-radius: 50%;
+  background: var(--accent-primary-soft);
+  border: 2px solid var(--accent-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: lbRingPulse 3s ease-in-out infinite;
+}
+.lb-week-total__ring::before,
+.lb-week-total__ring::after {
+  content: '';
+  position: absolute;
+  inset: -5px;
+  border-radius: 50%;
+  border: 1.5px solid var(--accent-primary);
+  opacity: 0;
+  animation: lbRipple 3s ease-out infinite;
+}
+.lb-week-total__ring::after {
+  inset: -10px;
+  animation-delay: 0.8s;
+}
+@keyframes lbRingPulse {
+  0%,100% { box-shadow: 0 0 8px rgba(124,58,237,0.25); }
+  50%      { box-shadow: 0 0 20px rgba(124,58,237,0.50); }
+}
+@keyframes lbRipple {
+  0%   { opacity: 0.55; transform: scale(1); }
+  100% { opacity: 0;    transform: scale(1.6); }
+}
+.lb-week-total__num {
+  font-size: 22px;
+  font-weight: 800;
+  font-family: var(--font-display);
+  color: var(--accent-primary);
+  line-height: 1;
+}
+.lb-week-total__label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  text-align: center;
+}
+
+/* Score format: weekly/total */
+.lb-score__sep   { color: var(--text-tertiary); font-weight: 400; margin: 0 1px; }
+.lb-score__total { color: var(--text-secondary); font-weight: 600; font-size: 0.82em; }
+
 /* ── Video-Boost Badge (B3.4) ─────────────────────────────── */
 .feed-card--boost {
   border-color: var(--accent-warning);

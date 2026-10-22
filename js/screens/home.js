@@ -316,9 +316,19 @@ function _renderBalanceTab(given, recv, bal, u) {
 
 // ── Leaderboard Tab ────────────────────────────────────────
 function _renderLeaderboardTab(cu) {
-  const members = Object.entries(state.db.members || {})
-    .filter(([, m]) => (m.weeklyGiven || 0) > 0)
-    .sort(([, a], [, b]) => (b.weeklyGiven || 0) - (a.weeklyGiven || 0))
+  const allEntries = Object.entries(state.db.members || {});
+
+  // Pool-wide weekly total
+  const weeklyTotal = allEntries.reduce((s, [, m]) => s + (m.weeklyGiven || 0), 0);
+
+  // Members with any history — primary sort: weeklyGiven DESC, tiebreaker: stats.given DESC
+  // This means: after reset all weeklyGiven=0 → order by total; during week leader rises instantly
+  const members = allEntries
+    .filter(([, m]) => (m.weeklyGiven || 0) > 0 || (m.stats?.given || 0) > 0)
+    .sort(([, a], [, b]) => {
+      const wDiff = (b.weeklyGiven || 0) - (a.weeklyGiven || 0);
+      return wDiff !== 0 ? wDiff : (b.stats?.given || 0) - (a.stats?.given || 0);
+    })
     .slice(0, 10)
     .map(([key, m]) => ({ key, ...m }));
 
@@ -326,17 +336,26 @@ function _renderLeaderboardTab(cu) {
     return emptyState('🏆', t('lbNoData'), t('lbNoDataSub'));
   }
 
-  const top3   = members.slice(0, 3);
-  const rest   = members.slice(3);
-  const medals = ['🥇', '🥈', '🥉'];
-  const podiumH= ['72px', '56px', '44px'];
+  // "55/320" — weekly in accent, total dimmed
+  const _score = (m) =>
+    `${m.weeklyGiven || 0}<span class="lb-score__sep">/</span><span class="lb-score__total">${m.stats?.given || 0}</span>`;
 
+  const top3      = members.slice(0, 3);
+  const rest      = members.slice(3);
+  const medals    = ['🥇', '🥈', '🥉'];
+  const podiumH   = ['72px', '56px', '44px'];
   const podiumOrder = [top3[1], top3[0], top3[2]].filter(Boolean);
 
   return `
     <div class="lb-wrap">
       <div class="lb-header">
         <div class="lb-header__title">${t('lbTitle')}</div>
+        <div class="lb-week-total">
+          <div class="lb-week-total__ring">
+            <span class="lb-week-total__num">${weeklyTotal}</span>
+          </div>
+          <div class="lb-week-total__label">${t('lbWeekTotal') || 'Pool-Supports diese Woche'}</div>
+        </div>
       </div>
 
       ${top3.length >= 2 ? `
@@ -348,7 +367,7 @@ function _renderLeaderboardTab(cu) {
             <div class="lb-podium__avatar" style="background:${grad}">${(m.name || m.key || '?').slice(0,2).toUpperCase()}</div>
             <div class="lb-podium__medal">${medals[orig]}</div>
             <div class="lb-podium__name">${esc((m.name || m.key || '').split(' ')[0])}</div>
-            <div class="lb-podium__score">${m.weeklyGiven || 0}</div>
+            <div class="lb-podium__score">${_score(m)}</div>
             <div class="lb-podium__bar" style="height:${podiumH[orig]}"></div>
           </div>`;
         }).join('')}
@@ -363,7 +382,7 @@ function _renderLeaderboardTab(cu) {
             <div class="lb-row__rank">${i + 4}</div>
             <div class="lb-row__avatar" style="background:${grad}">${(m.name || m.key || '?').slice(0,2).toUpperCase()}</div>
             <div class="lb-row__name">${esc(m.name || m.key || '?')}${isMe ? ` <span class="lb-row__you">${t('lbYou')}</span>` : ''}</div>
-            <div class="lb-row__score">${m.weeklyGiven || 0}</div>
+            <div class="lb-row__score">${_score(m)}</div>
           </div>`;
         }).join('')}
       </div>` : ''}
