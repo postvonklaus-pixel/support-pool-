@@ -4,7 +4,7 @@
 
 :root {
   --login-bg:          #000000;
-  --login-card-bg:     rgba(15,10,40,0.22);
+  --login-card-bg:     rgba(12,10,32,0.28);
   --login-card-border: rgba(200,180,255,0.28);
   --login-text-1:      #ffffff;
   --login-text-2:      rgba(255,255,255,0.65);
@@ -123,9 +123,9 @@
 /* ── NOVA rocket overlay ─────────────────────────────── */
 #nova-rocket {
   position: fixed;
-  left: -18px;
-  top: 6%;
-  width: 185px;
+  left: -35px;
+  top: 2%;
+  width: 200px;
   height: auto;
   z-index: 1;
   pointer-events: none;
@@ -152,14 +152,22 @@
 
 /* ── Text readability over background ───────────────── */
 .login-eyebrow,
-.login-h1,
-.login-h2,
 .login-subtitle,
 .login-micro,
 .login-footer {
   text-shadow: 0 2px 12px rgba(0,0,0,0.85), 0 0 24px rgba(0,0,0,0.55);
 }
-.login-h1 { color: #fff; }
+.login-h1 {
+  color: #ffffff;
+  font-weight: 800;
+  text-shadow: 0 2px 20px rgba(0,0,0,1), 0 0 40px rgba(0,0,0,0.9);
+}
+.login-h2 {
+  color: rgba(255,255,255,0.92);
+  font-weight: 600;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.9), 0 0 20px rgba(0,0,0,0.8);
+  opacity: 1;
+}
 
 /* ── Eyebrow ─────────────────────────────────────────── */
 .login-eyebrow {
