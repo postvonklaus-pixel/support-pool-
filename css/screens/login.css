@@ -3,7 +3,7 @@
    ═══════════════════════════════════════════════════════ */
 
 :root {
-  --login-bg:          #05030a;
+  --login-bg:          #000000;
   --login-card-bg:     rgba(15,10,40,0.22);
   --login-card-border: rgba(200,180,255,0.28);
   --login-text-1:      #ffffff;
@@ -47,7 +47,7 @@
   inset: 0;
   pointer-events: none;
   z-index: 0;
-  background-image: url('/support-pool-/assets/login-bg.jpg');
+  background-image: url('/support-pool-/assets/nova-final-bg.jpg');
   background-size: cover;
   background-position: 30% center;
   background-repeat: no-repeat;
@@ -57,10 +57,10 @@
   position: absolute;
   inset: 0;
   background: linear-gradient(180deg,
-    rgba(5,2,15,0.08) 0%,
-    rgba(5,2,15,0.02) 40%,
-    rgba(5,2,15,0.12) 85%,
-    rgba(5,2,15,0.32) 100%);
+    rgba(0,0,0,0.04) 0%,
+    rgba(0,0,0,0.00) 40%,
+    rgba(0,0,0,0.10) 85%,
+    rgba(0,0,0,0.30) 100%);
 }
 
 .login-orb-1,
