@@ -4,7 +4,7 @@
 
 :root {
   --login-bg:          #05030a;
-  --login-card-bg:     rgba(20,10,50,0.58);
+  --login-card-bg:     rgba(18,8,45,0.28);
   --login-card-border: rgba(180,150,255,0.32);
   --login-text-1:      #ffffff;
   --login-text-2:      rgba(255,255,255,0.65);
@@ -57,31 +57,15 @@
   position: absolute;
   inset: 0;
   background: linear-gradient(180deg,
-    rgba(5,2,15,0.18) 0%,
-    rgba(5,2,15,0.05) 40%,
-    rgba(5,2,15,0.28) 85%,
-    rgba(5,2,15,0.60) 100%);
+    rgba(5,2,15,0.08) 0%,
+    rgba(5,2,15,0.02) 40%,
+    rgba(5,2,15,0.12) 85%,
+    rgba(5,2,15,0.32) 100%);
 }
 
-.login-orb-1 {
-  position: absolute;
-  width: 720px; height: 720px;
-  top: -10%; left: 50%;
-  transform: translateX(-50%);
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(124,58,237,0.55) 0%, transparent 70%);
-  filter: blur(60px);
-  opacity: 0.9;
-}
-
+.login-orb-1,
 .login-orb-2 {
-  position: absolute;
-  width: 600px; height: 600px;
-  bottom: -15%; left: 10%;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(6,182,214,0.35) 0%, transparent 70%);
-  filter: blur(70px);
-  opacity: 0.7;
+  display: none;
 }
 
 /* ── Top bar ─────────────────────────────────────────── */
@@ -252,8 +236,10 @@
   align-items: center;
   gap: 3px;
   padding: 12px 6px 10px;
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.07);
+  background: rgba(40,20,90,0.45);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(180,160,255,0.30);
   border-radius: 18px;
   text-align: center;
   transition: border-color 0.25s;
