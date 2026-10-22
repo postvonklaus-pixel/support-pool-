@@ -180,7 +180,7 @@ function _rrect(ctx, x, y, w, h, r) {
   ctx.closePath();
 }
 
-export function drawStoryCanvas() {
+export async function drawStoryCanvas() {
   const canvas = document.getElementById('pc-story-canvas');
   if (!canvas) return;
 
@@ -205,427 +205,197 @@ export function drawStoryCanvas() {
   canvas.width = W; canvas.height = H;
   const ctx = canvas.getContext('2d');
 
-  const rng = (seed) => { let s = seed|0 || 1; return () => { s = Math.imul(s, 48271) >>> 0 || 1; return s / 4294967296; }; };
+  // Load background photo
+  await new Promise((resolve) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => { ctx.drawImage(img, 0, 0, W, H); resolve(); };
+    img.onerror = () => { ctx.fillStyle = '#010008'; ctx.fillRect(0, 0, W, H); resolve(); };
+    img.src = '/support-pool-/assets/story-bg.jpg';
+  });
 
-  // ═══════════════════════════════════════════════════════════
-  //  LAYER 1 — DEEP SPACE BACKGROUND
-  // ═══════════════════════════════════════════════════════════
-  ctx.fillStyle = '#010008';
-  ctx.fillRect(0, 0, W, H);
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
 
-  const bgG = ctx.createRadialGradient(W*0.5, H*0.3, 0, W*0.5, H*0.3, H*0.8);
-  bgG.addColorStop(0, 'rgba(30,10,80,0.9)');
-  bgG.addColorStop(0.5, 'rgba(10,3,40,0.7)');
-  bgG.addColorStop(1, 'rgba(0,0,8,0)');
-  ctx.fillStyle = bgG; ctx.fillRect(0, 0, W, H);
-
-  for (const [nx,ny,nr,nc] of [
-    [W*0.75, H*0.12, 480, 'rgba(90,20,200,0.45)'],
-    [W*0.88, H*0.28, 360, 'rgba(20,60,220,0.30)'],
-    [W*0.60, H*0.38, 550, 'rgba(124,58,237,0.22)'],
-    [W*0.80, H*0.60, 400, 'rgba(160,20,240,0.25)'],
-    [W*0.92, H*0.75, 380, 'rgba(40,10,180,0.28)'],
-    [W*0.55, H*0.85, 440, 'rgba(6,182,212,0.14)'],
-    [W*0.70, H*0.50, 280, 'rgba(200,50,240,0.10)'],
-  ]) {
-    const g = ctx.createRadialGradient(nx, ny, 0, nx, ny, nr);
-    g.addColorStop(0, nc); g.addColorStop(1, 'rgba(0,0,0,0)');
-    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
-  }
-
-  // ═══════════════════════════════════════════════════════════
-  //  LAYER 2 — 300 STARS with cross-flares + shooting stars
-  // ═══════════════════════════════════════════════════════════
-  const rand = rng(7919);
-  for (let i = 0; i < 300; i++) {
-    const x = rand()*W, y = rand()*H;
-    const r = rand() < 0.08 ? rand()*2.8+2.0 : rand()*1.4+0.2;
-    const a = rand()*0.7+0.1;
-    ctx.fillStyle = `rgba(255,255,255,${a.toFixed(2)})`;
-    ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI*2); ctx.fill();
-    if (r > 2.5) {
-      ctx.strokeStyle = `rgba(255,255,255,${(a*0.35).toFixed(2)})`;
-      ctx.lineWidth = 0.7;
-      ctx.beginPath(); ctx.moveTo(x-r*3.5,y); ctx.lineTo(x+r*3.5,y); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(x,y-r*3.5); ctx.lineTo(x,y+r*3.5); ctx.stroke();
-    }
-  }
-  for (const [x1,y1,x2,y2,op] of [[820,95,590,295,0.6],[260,340,440,180,0.4]]) {
-    const sg = ctx.createLinearGradient(x1,y1,x2,y2);
-    sg.addColorStop(0,'rgba(255,255,255,0)'); sg.addColorStop(0.6,`rgba(255,255,255,${op})`); sg.addColorStop(1,'rgba(255,255,255,0)');
-    ctx.save(); ctx.strokeStyle=sg; ctx.lineWidth=1.8;
-    ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke(); ctx.restore();
-  }
-
-  // ═══════════════════════════════════════════════════════════
-  //  LAYER 3 — GIANT ROCKET (hero element, upper-left)
-  // ═══════════════════════════════════════════════════════════
-  const _rocket = (rx, ry, sc, rot) => {
-    ctx.save(); ctx.translate(rx, ry); ctx.rotate(rot); ctx.scale(sc, sc);
-    const fhG = ctx.createRadialGradient(0,110,0,0,110,120);
-    fhG.addColorStop(0,'rgba(255,160,0,0.70)');
-    fhG.addColorStop(0.4,'rgba(255,80,0,0.40)');
-    fhG.addColorStop(1,'rgba(255,30,0,0)');
-    ctx.fillStyle=fhG; ctx.fillRect(-120,30,240,200);
-    ctx.beginPath(); ctx.ellipse(0, 0, 34, 82, 0, 0, Math.PI*2);
-    const bG=ctx.createLinearGradient(-34,-82,34,82);
-    bG.addColorStop(0,'#ede9fe'); bG.addColorStop(0.3,'#a78bfa'); bG.addColorStop(0.7,'#7c3aed'); bG.addColorStop(1,'#4c1d95');
-    ctx.fillStyle=bG; ctx.fill();
-    ctx.strokeStyle='rgba(255,255,255,0.40)'; ctx.lineWidth=2.5; ctx.stroke();
-    ctx.save(); ctx.beginPath(); ctx.ellipse(0,0,34,82,0,0,Math.PI*2); ctx.clip();
-    const bgl=ctx.createLinearGradient(-34,-60,14,60);
-    bgl.addColorStop(0,'rgba(255,255,255,0.42)'); bgl.addColorStop(0.5,'rgba(255,255,255,0.06)'); bgl.addColorStop(1,'rgba(255,255,255,0)');
-    ctx.fillStyle=bgl; ctx.fillRect(-34,-82,68,164); ctx.restore();
-    ctx.save(); ctx.beginPath(); ctx.ellipse(0,0,34,82,0,0,Math.PI*2); ctx.clip();
-    ctx.fillStyle='rgba(0,0,0,0.18)'; ctx.fillRect(-34,22,68,14); ctx.restore();
-    ctx.beginPath(); ctx.moveTo(0,-82); ctx.lineTo(-34,-22); ctx.lineTo(34,-22); ctx.closePath();
-    const nG=ctx.createLinearGradient(-34,-82,34,-22);
-    nG.addColorStop(0,'#f5f3ff'); nG.addColorStop(1,'#7c3aed');
-    ctx.fillStyle=nG; ctx.fill();
-    ctx.beginPath(); ctx.arc(0,-8,18,0,Math.PI*2);
-    const wG=ctx.createRadialGradient(-5,-13,2,-5,-13,18);
-    wG.addColorStop(0,'rgba(186,230,253,1)'); wG.addColorStop(0.5,'rgba(6,182,212,0.9)'); wG.addColorStop(1,'rgba(2,100,150,0.8)');
-    ctx.fillStyle=wG; ctx.fill();
-    ctx.strokeStyle='rgba(255,255,255,0.75)'; ctx.lineWidth=2.5; ctx.stroke();
-    ctx.beginPath(); ctx.arc(-6,-14,5,0,Math.PI*2);
-    ctx.fillStyle='rgba(255,255,255,0.65)'; ctx.fill();
-    for (const s of [-1,1]) {
-      ctx.beginPath(); ctx.moveTo(s*34,44); ctx.lineTo(s*78,96); ctx.lineTo(s*34,70); ctx.closePath();
-      const fG2=ctx.createLinearGradient(0,44,s*80,96);
-      fG2.addColorStop(0,'#c4b5fd'); fG2.addColorStop(1,'#5b21b6');
-      ctx.fillStyle=fG2; ctx.fill();
-      ctx.strokeStyle='rgba(255,255,255,0.22)'; ctx.lineWidth=1.5; ctx.stroke();
-    }
-    const flCoreG=ctx.createRadialGradient(0,100,0,0,100,28);
-    flCoreG.addColorStop(0,'rgba(255,255,220,1)'); flCoreG.addColorStop(0.4,'rgba(255,200,60,0.9)'); flCoreG.addColorStop(1,'rgba(255,120,0,0)');
-    ctx.fillStyle=flCoreG; ctx.beginPath(); ctx.ellipse(0,100,16,34,0,0,Math.PI*2); ctx.fill();
-    const flG=ctx.createRadialGradient(0,110,0,0,145,60);
-    flG.addColorStop(0,'rgba(255,160,10,0.90)'); flG.addColorStop(0.35,'rgba(255,80,0,0.65)'); flG.addColorStop(0.7,'rgba(255,40,0,0.30)'); flG.addColorStop(1,'rgba(255,20,0,0)');
-    ctx.fillStyle=flG; ctx.beginPath(); ctx.ellipse(0,118,26,56,0,0,Math.PI*2); ctx.fill();
-    ctx.restore();
-  };
-  _rocket(142, 700, 2.6, -Math.PI/16);
-
-  // ═══════════════════════════════════════════════════════════
-  //  LAYER 4 — SMOKE CLOUDS behind rocket exhaust
-  // ═══════════════════════════════════════════════════════════
-  const randSmk = rng(11111);
-  for (let i = 0; i < 9; i++) {
-    const sx = 60 + randSmk()*320;
-    const sy = 1000 + i*38 + randSmk()*20;
-    const sr = 80 + randSmk()*130;
-    const sa = 0.08 + randSmk()*0.14;
-    const scG = ctx.createRadialGradient(sx,sy,0,sx,sy,sr);
-    scG.addColorStop(0,`rgba(200,180,160,${sa})`);
-    scG.addColorStop(0.5,`rgba(160,140,120,${sa*0.5})`);
-    scG.addColorStop(1,'rgba(0,0,0,0)');
-    ctx.fillStyle=scG; ctx.fillRect(sx-sr,sy-sr,sr*2,sr*2);
-  }
-
-  // ═══════════════════════════════════════════════════════════
-  //  LAYER 5 — FIRE EMBERS
-  // ═══════════════════════════════════════════════════════════
-  const randEmb = rng(23456);
-  for (let i = 0; i < 55; i++) {
-    const ex = 60 + randEmb()*400, ey = 920 + randEmb()*520;
-    const er = 1.5 + randEmb()*4;
-    const ea = 0.4 + randEmb()*0.6;
-    const ec = randEmb() < 0.5
-      ? `rgba(255,${Math.floor(80+randEmb()*140)},0,${ea})`
-      : `rgba(255,${Math.floor(180+randEmb()*75)},20,${ea})`;
-    ctx.beginPath(); ctx.arc(ex, ey, er, 0, Math.PI*2);
-    ctx.fillStyle = ec; ctx.fill();
-  }
-
-  // ═══════════════════════════════════════════════════════════
-  //  LAYER 6 — EXPLOSION BURST behind avatar
-  // ═══════════════════════════════════════════════════════════
-  const cx = W/2, cy = H * 0.295;
-
-  const expG = ctx.createRadialGradient(cx,cy,0,cx,cy,430);
-  expG.addColorStop(0,   'rgba(255,220,60,0.75)');
-  expG.addColorStop(0.22,'rgba(255,160,20,0.55)');
-  expG.addColorStop(0.42,'rgba(200,60,10,0.38)');
-  expG.addColorStop(0.65,'rgba(100,20,160,0.28)');
-  expG.addColorStop(1,   'rgba(0,0,0,0)');
-  ctx.fillStyle=expG; ctx.beginPath(); ctx.arc(cx,cy,430,0,Math.PI*2); ctx.fill();
-
-  // ═══════════════════════════════════════════════════════════
-  //  LAYER 7 — 24-WEDGE SUNBURST (screen blend for additive glow)
-  // ═══════════════════════════════════════════════════════════
+  // ── BANNER PILL ─────────────────────────────────────────────
+  const banW = 800, banH = 76, banX = (W - banW) / 2, banY = 96;
+  // Glow behind pill
   ctx.save();
-  ctx.translate(cx, cy);
-  ctx.globalCompositeOperation = 'screen';
-  const rayLen = H * 1.6;
-  for (let k = 0; k < 24; k++) {
-    const angle = (k / 24) * Math.PI * 2;
-    const isGold = k % 3 === 0, isPurple = k % 3 === 2;
-    const col = isGold ? 'rgba(255,200,50,' : (isPurple ? 'rgba(120,40,220,' : 'rgba(255,255,255,');
-    const alpha0 = isGold ? 0.12 : (isPurple ? 0.08 : 0.07);
-    ctx.save();
-    ctx.rotate(angle);
-    const rayG = ctx.createLinearGradient(0,0,0,-rayLen);
-    rayG.addColorStop(0,   col+alpha0+')');
-    rayG.addColorStop(0.15,col+(alpha0*0.6)+')');
-    rayG.addColorStop(1,   col+'0)');
-    ctx.fillStyle = rayG;
-    const hw = 0.04 * rayLen;
-    ctx.beginPath();
-    ctx.moveTo(-hw*0.15,0); ctx.lineTo(hw*0.15,0);
-    ctx.lineTo(hw,-rayLen); ctx.lineTo(-hw,-rayLen);
-    ctx.closePath(); ctx.fill();
-    ctx.restore();
-  }
-  ctx.globalCompositeOperation = 'source-over';
+  ctx.shadowColor = 'rgba(167,139,250,0.55)'; ctx.shadowBlur = 32;
+  _rrect(ctx, banX, banY - banH/2, banW, banH, 38);
+  ctx.fillStyle = 'rgba(0,0,0,0.01)'; ctx.fill();
   ctx.restore();
-
-  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-
-  // ═══════════════════════════════════════════════════════════
-  //  LAYER 8 — TOP BANNER (glassmorphic pill)
-  // ═══════════════════════════════════════════════════════════
-  const banH = 82, banW = 740, banX = (W-banW)/2, banY = 96;
-  ctx.save(); ctx.shadowColor='rgba(167,139,250,0.5)'; ctx.shadowBlur=30;
-  _rrect(ctx, banX, banY-banH/2, banW, banH, banH/2);
-  ctx.fillStyle='rgba(0,0,0,0)'; ctx.fill(); ctx.restore();
-  _rrect(ctx, banX, banY-banH/2, banW, banH, banH/2);
-  ctx.fillStyle='rgba(12,4,38,0.82)'; ctx.fill();
-  _rrect(ctx, banX, banY-banH/2, banW, banH, banH/2);
-  const banBord = ctx.createLinearGradient(banX, banY-banH/2, banX, banY+banH/2);
-  banBord.addColorStop(0,'rgba(255,255,255,0.65)');
-  banBord.addColorStop(0.4,'rgba(167,139,250,0.55)');
-  banBord.addColorStop(1,'rgba(124,58,237,0.12)');
-  ctx.strokeStyle=banBord; ctx.lineWidth=2; ctx.stroke();
-  ctx.save(); _rrect(ctx, banX, banY-banH/2, banW, banH, banH/2); ctx.clip();
-  const bSh = ctx.createLinearGradient(banX, banY-banH/2, banX, banY);
-  bSh.addColorStop(0,'rgba(255,255,255,0.25)'); bSh.addColorStop(1,'rgba(255,255,255,0)');
-  ctx.fillStyle=bSh; ctx.fillRect(banX, banY-banH/2, banW, banH/2); ctx.restore();
+  // Glass fill
+  _rrect(ctx, banX, banY - banH/2, banW, banH, 38);
+  const banFill = ctx.createLinearGradient(banX, banY - banH/2, banX, banY + banH/2);
+  banFill.addColorStop(0, 'rgba(255,255,255,0.22)');
+  banFill.addColorStop(0.4, 'rgba(255,255,255,0.12)');
+  banFill.addColorStop(1, 'rgba(20,5,60,0.72)');
+  ctx.fillStyle = banFill; ctx.fill();
+  // Border
+  _rrect(ctx, banX, banY - banH/2, banW, banH, 38);
+  ctx.strokeStyle = 'rgba(255,255,255,0.55)'; ctx.lineWidth = 2; ctx.stroke();
+  // Inner top shine
+  ctx.save(); _rrect(ctx, banX, banY - banH/2, banW, banH, 38); ctx.clip();
+  const bSh = ctx.createLinearGradient(banX, banY - banH/2, banX, banY);
+  bSh.addColorStop(0, 'rgba(255,255,255,0.30)'); bSh.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.fillStyle = bSh; ctx.fillRect(banX, banY - banH/2, banW, banH/2); ctx.restore();
+  // Text
   ctx.font = 'bold 34px Inter, Arial, sans-serif';
   ctx.fillStyle = '#ffffff';
-  ctx.shadowColor = 'rgba(200,170,255,0.9)'; ctx.shadowBlur = 12;
+  ctx.shadowColor = 'rgba(200,170,255,0.90)'; ctx.shadowBlur = 14;
   ctx.fillText('⭐  NOVA SUPPORT POOL  ⭐', W/2, banY);
   ctx.shadowBlur = 0;
 
-  // ═══════════════════════════════════════════════════════════
-  //  LAYER 9 — AVATAR (large glass orb with gold explosion ring)
-  // ═══════════════════════════════════════════════════════════
-  const avR = 178;
+  // ── AVATAR ──────────────────────────────────────────────────
+  const cx = W/2, cy = 520, avR = 160;
 
-  const atmoG = ctx.createRadialGradient(cx,cy,avR,cx,cy,avR+220);
-  atmoG.addColorStop(0,'rgba(124,58,237,0.42)'); atmoG.addColorStop(0.5,'rgba(90,30,200,0.14)'); atmoG.addColorStop(1,'rgba(0,0,0,0)');
-  ctx.fillStyle=atmoG; ctx.beginPath(); ctx.arc(cx,cy,avR+220,0,Math.PI*2); ctx.fill();
-
-  for (const [rr,rw,ra,rc] of [
-    [avR+6,  3,   0.60, 'rgba(255,200,50,'],
-    [avR+22, 1.8, 0.32, 'rgba(167,139,250,'],
-    [avR+42, 1.2, 0.16, 'rgba(124,58,237,'],
-  ]) {
-    ctx.beginPath(); ctx.arc(cx,cy,rr,0,Math.PI*2);
-    ctx.strokeStyle=`${rc}${ra})`; ctx.lineWidth=rw; ctx.stroke();
+  // Outer glow rings
+  for (const [rr, rw, ra] of [[avR+12, 3.5, 0.65], [avR+28, 1.5, 0.30], [avR+52, 1, 0.14]]) {
+    ctx.beginPath(); ctx.arc(cx, cy, rr, 0, Math.PI*2);
+    ctx.strokeStyle = `rgba(200,170,255,${ra})`; ctx.lineWidth = rw; ctx.stroke();
   }
 
-  ctx.beginPath(); ctx.arc(cx,cy,avR,0,Math.PI*2);
-  const avG = ctx.createLinearGradient(cx-avR,cy-avR,cx+avR,cy+avR);
-  avG.addColorStop(0,'#b4a4ff'); avG.addColorStop(0.35,'#7c3aed'); avG.addColorStop(0.7,'#2563eb'); avG.addColorStop(1,'#06b6d4');
-  ctx.fillStyle=avG; ctx.fill();
-  ctx.strokeStyle='rgba(255,230,100,0.50)'; ctx.lineWidth=4; ctx.stroke();
+  // Avatar fill
+  ctx.beginPath(); ctx.arc(cx, cy, avR, 0, Math.PI*2);
+  const avG = ctx.createLinearGradient(cx - avR, cy - avR, cx + avR, cy + avR);
+  avG.addColorStop(0, '#a855f7'); avG.addColorStop(0.45, '#7c3aed'); avG.addColorStop(1, '#2563eb');
+  ctx.fillStyle = avG; ctx.fill();
+  ctx.strokeStyle = 'rgba(235,220,255,0.38)'; ctx.lineWidth = 3.5; ctx.stroke();
 
-  ctx.save(); ctx.beginPath(); ctx.arc(cx,cy,avR,0,Math.PI*2); ctx.clip();
-  const sphHi = ctx.createRadialGradient(cx-avR*0.38, cy-avR*0.44, 0, cx-avR*0.38, cy-avR*0.44, avR*1.1);
-  sphHi.addColorStop(0,'rgba(255,255,255,0.60)'); sphHi.addColorStop(0.35,'rgba(255,255,255,0.20)'); sphHi.addColorStop(0.7,'rgba(255,255,255,0.04)'); sphHi.addColorStop(1,'rgba(255,255,255,0)');
-  ctx.fillStyle=sphHi; ctx.fillRect(cx-avR,cy-avR,avR*2,avR*2);
-  const sphSh = ctx.createRadialGradient(cx+avR*0.42, cy+avR*0.40, 0, cx+avR*0.42, cy+avR*0.40, avR);
-  sphSh.addColorStop(0,'rgba(0,0,30,0.55)'); sphSh.addColorStop(1,'rgba(0,0,0,0)');
-  ctx.fillStyle=sphSh; ctx.fillRect(cx-avR,cy-avR,avR*2,avR*2); ctx.restore();
+  // 3D sphere shading
+  ctx.save(); ctx.beginPath(); ctx.arc(cx, cy, avR, 0, Math.PI*2); ctx.clip();
+  const sHi = ctx.createRadialGradient(cx - avR*0.42, cy - avR*0.45, 0, cx - avR*0.42, cy - avR*0.45, avR*1.1);
+  sHi.addColorStop(0, 'rgba(255,255,255,0.60)'); sHi.addColorStop(0.3, 'rgba(255,255,255,0.20)'); sHi.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.fillStyle = sHi; ctx.fillRect(cx - avR, cy - avR, avR*2, avR*2);
+  const sSh = ctx.createRadialGradient(cx + avR*0.45, cy + avR*0.42, 0, cx + avR*0.45, cy + avR*0.42, avR);
+  sSh.addColorStop(0, 'rgba(0,0,50,0.60)'); sSh.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = sSh; ctx.fillRect(cx - avR, cy - avR, avR*2, avR*2);
+  ctx.restore();
 
-  ctx.font = 'bold 118px Inter, Arial, sans-serif';
+  // Crown
+  if (verified) { ctx.font = '85px serif'; ctx.textBaseline = 'middle'; ctx.fillText('👑', cx, cy - avR - 44); }
+
+  // Initials
+  ctx.font = 'bold 115px Inter, Arial, sans-serif';
   ctx.fillStyle = '#ffffff';
-  ctx.shadowColor='rgba(0,0,0,0.6)'; ctx.shadowBlur=22;
-  ctx.fillText((cu||'?').slice(0,2).toUpperCase(), cx, cy);
-  ctx.shadowBlur=0;
+  ctx.shadowColor = 'rgba(0,0,0,0.60)'; ctx.shadowBlur = 22;
+  ctx.textBaseline = 'middle';
+  ctx.fillText((cu || '?').slice(0, 2).toUpperCase(), cx, cy);
+  ctx.shadowBlur = 0;
 
-  if (verified) {
-    ctx.font='90px serif';
-    ctx.textBaseline='middle';
-    ctx.fillText('👑', cx, cy-avR-42);
-  }
-
-  // ═══════════════════════════════════════════════════════════
-  //  LAYER 10 — USERNAME + TITLES
-  // ═══════════════════════════════════════════════════════════
-  const nameY = cy + avR + 78;
-
-  ctx.font = 'bold 70px Inter, Arial, sans-serif';
+  // ── USERNAME ────────────────────────────────────────────────
+  const nameY = 920;
+  ctx.font = 'bold 66px Inter, Arial, sans-serif';
   ctx.fillStyle = '#ffffff';
-  ctx.shadowColor = 'rgba(200,180,255,0.7)'; ctx.shadowBlur = 16;
+  ctx.textBaseline = 'middle';
+  ctx.shadowColor = 'rgba(255,255,255,0.85)'; ctx.shadowBlur = 22;
   const uname = '@' + (u.name || cu || '');
   ctx.fillText(uname, cx, nameY);
   ctx.shadowBlur = 0;
 
+  // Verified badge
   if (verified) {
     const tw = ctx.measureText(uname).width;
-    const bx = cx + tw/2 + 40, by2 = nameY;
+    const bx2 = cx + tw/2 + 42, by2 = nameY;
     ctx.save();
-    ctx.shadowColor='rgba(59,130,246,0.8)'; ctx.shadowBlur=12;
-    ctx.beginPath(); ctx.arc(bx,by2,26,0,Math.PI*2);
-    ctx.fillStyle='#3b82f6'; ctx.fill(); ctx.restore();
-    ctx.strokeStyle='rgba(255,255,255,0.90)'; ctx.lineWidth=3.5;
-    ctx.beginPath();
-    ctx.moveTo(bx-12,by2+2); ctx.lineTo(bx-3,by2+12); ctx.lineTo(bx+14,by2-9);
-    ctx.stroke();
+    ctx.shadowColor = 'rgba(59,130,246,0.90)'; ctx.shadowBlur = 14;
+    ctx.beginPath(); ctx.arc(bx2, by2, 24, 0, Math.PI*2);
+    ctx.fillStyle = '#3b82f6'; ctx.fill();
+    ctx.restore();
+    ctx.strokeStyle = 'rgba(255,255,255,0.92)'; ctx.lineWidth = 3.5;
+    ctx.beginPath(); ctx.moveTo(bx2 - 11, by2 + 2); ctx.lineTo(bx2 - 2, by2 + 12); ctx.lineTo(bx2 + 13, by2 - 9); ctx.stroke();
   }
 
+  // ── SUBTITLES ────────────────────────────────────────────────
   ctx.font = '600 38px Inter, Arial, sans-serif';
-  ctx.fillStyle = 'rgba(196,181,253,0.95)';
-  ctx.shadowColor='rgba(124,58,237,0.6)'; ctx.shadowBlur=10;
-  ctx.fillText('NOVA Support Pool', cx, nameY + 76);
+  ctx.fillStyle = 'rgba(196,181,253,0.96)';
+  ctx.shadowColor = 'rgba(124,58,237,0.65)'; ctx.shadowBlur = 12;
+  ctx.fillText('NOVA Support Pool', cx, 1008);
   ctx.shadowBlur = 0;
 
   ctx.font = '400 28px Inter, Arial, sans-serif';
-  ctx.fillStyle = 'rgba(255,255,255,0.38)';
-  ctx.fillText('novapool.official · TikTok Community', cx, nameY + 128);
+  ctx.fillStyle = 'rgba(255,255,255,0.42)';
+  ctx.fillText('novapool.official · TikTok Community', cx, 1058);
 
-  const divY = nameY + 180;
-  const divG2 = ctx.createLinearGradient(W/2-400,divY,W/2+400,divY);
-  divG2.addColorStop(0,'rgba(124,58,237,0)'); divG2.addColorStop(0.5,'rgba(196,181,253,0.80)'); divG2.addColorStop(1,'rgba(124,58,237,0)');
-  ctx.strokeStyle=divG2; ctx.lineWidth=1.8;
-  ctx.beginPath(); ctx.moveTo(W/2-400,divY); ctx.lineTo(W/2+400,divY); ctx.stroke();
+  // Divider
+  const divY = 1118;
+  const divG = ctx.createLinearGradient(cx - 410, divY, cx + 410, divY);
+  divG.addColorStop(0, 'rgba(196,181,253,0)'); divG.addColorStop(0.5, 'rgba(196,181,253,0.85)'); divG.addColorStop(1, 'rgba(196,181,253,0)');
+  ctx.strokeStyle = divG; ctx.lineWidth = 1.8;
+  ctx.beginPath(); ctx.moveTo(cx - 410, divY); ctx.lineTo(cx + 410, divY); ctx.stroke();
 
-  // ═══════════════════════════════════════════════════════════
-  //  LAYER 11 — STAT CARDS (dark glassmorphism)
-  // ═══════════════════════════════════════════════════════════
+  // ── STAT CARDS ───────────────────────────────────────────────
   const statsData = [
-    { v: String(given),                        l: t('given')      || 'Gegeben'    },
-    { v: (bal >= 0 ? '+' : '') + String(bal),  l: t('balance')    || 'Guthaben'   },
-    { v: String(memberDays),                   l: t('daysInPool') || 'daysInPool' },
-    { v: activeLast7 + '/7',                   l: t('activeDays') || 'activeDays' },
+    { v: String(given),                       l: t('given') || 'Gegeben' },
+    { v: (bal >= 0 ? '+' : '') + String(bal), l: t('balance') || 'Guthaben' },
+    { v: String(memberDays),                  l: t('daysInPool') || 'Tage im Pool' },
+    { v: activeLast7 + '/7',                  l: t('activeDays') || 'Aktiv' },
   ];
 
-  const cW = 474, cH = 270, gX = 48, gY = 46;
-  const startX = (W - (2*cW+gX)) / 2;
-  const startY = divY + 62;
+  const cW = 474, cH = 268, gap = 48;
+  const startX = (W - (2*cW + gap)) / 2;
+  const startY = 1148;
 
   statsData.forEach((s, i) => {
-    const col=i%2, row=Math.floor(i/2);
-    const bx=startX+col*(cW+gX), by=startY+row*(cH+gY);
-    const bcx=bx+cW/2, bcy=by+cH/2;
+    const col = i % 2, row = Math.floor(i / 2);
+    const bx = startX + col*(cW + gap), by = startY + row*(cH + gap);
+    const bcx = bx + cW/2, bcy = by + cH/2;
 
+    // Glow shadow
     ctx.save();
-    ctx.shadowColor='rgba(124,58,237,0.55)'; ctx.shadowBlur=40; ctx.shadowOffsetX=0; ctx.shadowOffsetY=16;
-    _rrect(ctx, bx, by+14, cW, cH, 32);
-    ctx.fillStyle='rgba(60,15,130,0.01)'; ctx.fill();
+    ctx.shadowColor = 'rgba(109,40,217,0.55)'; ctx.shadowBlur = 38; ctx.shadowOffsetY = 16;
+    _rrect(ctx, bx, by + 14, cW, cH, 24); ctx.fillStyle = 'rgba(45,20,90,0.01)'; ctx.fill();
     ctx.restore();
 
-    _rrect(ctx, bx, by, cW, cH, 32);
-    ctx.fillStyle='rgba(72,22,150,0.78)'; ctx.fill();
+    // Glass body
+    _rrect(ctx, bx, by, cW, cH, 24);
+    const cF = ctx.createLinearGradient(bx, by, bx + cW, by + cH);
+    cF.addColorStop(0, 'rgba(65,20,140,0.82)');
+    cF.addColorStop(0.5, 'rgba(30,8,72,0.88)');
+    cF.addColorStop(1, 'rgba(15,20,75,0.80)');
+    ctx.fillStyle = cF; ctx.fill();
 
-    _rrect(ctx, bx, by, cW, cH, 32);
-    const bord = ctx.createLinearGradient(bx,by,bx+cW,by+cH);
-    bord.addColorStop(0,   'rgba(255,255,255,0.75)');
-    bord.addColorStop(0.25,'rgba(196,181,253,0.88)');
-    bord.addColorStop(0.55,'rgba(34,211,238,0.50)');
-    bord.addColorStop(1,   'rgba(80,30,160,0.12)');
-    ctx.strokeStyle=bord; ctx.lineWidth=2.2; ctx.stroke();
+    // Gradient border
+    _rrect(ctx, bx, by, cW, cH, 24);
+    const bord = ctx.createLinearGradient(bx, by, bx + cW, by + cH);
+    bord.addColorStop(0,    'rgba(120,180,255,0.70)');
+    bord.addColorStop(0.35, 'rgba(196,181,253,0.80)');
+    bord.addColorStop(0.65, 'rgba(100,160,255,0.35)');
+    bord.addColorStop(1,    'rgba(55,18,120,0.12)');
+    ctx.strokeStyle = bord; ctx.lineWidth = 2; ctx.stroke();
 
-    ctx.save(); _rrect(ctx,bx,by,cW,cH,32); ctx.clip();
-    const rim = ctx.createLinearGradient(bx,by,bx,by+60);
-    rim.addColorStop(0,'rgba(255,255,255,0.28)'); rim.addColorStop(1,'rgba(255,255,255,0)');
-    ctx.fillStyle=rim; ctx.fillRect(bx,by,cW,60); ctx.restore();
+    // Top rim shine
+    ctx.save(); _rrect(ctx, bx, by, cW, cH, 24); ctx.clip();
+    const rim = ctx.createLinearGradient(bx, by, bx, by + 58);
+    rim.addColorStop(0, 'rgba(255,255,255,0.26)'); rim.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = rim; ctx.fillRect(bx, by, cW, 58); ctx.restore();
 
+    // Value
     ctx.save();
-    ctx.shadowColor='rgba(167,139,250,0.85)'; ctx.shadowBlur=28;
-    const valG = ctx.createLinearGradient(bx,by,bx+cW,by+cH);
-    valG.addColorStop(0,'#ffffff'); valG.addColorStop(0.35,'#c4b5fd'); valG.addColorStop(0.7,'#60a5fa'); valG.addColorStop(1,'#22d3ee');
-    ctx.font='bold 104px Inter, Arial, sans-serif';
-    ctx.fillStyle=valG;
-    ctx.textAlign='center'; ctx.textBaseline='middle';
-    ctx.fillText(s.v, bcx, bcy-16);
-    ctx.restore();
+    ctx.shadowColor = 'rgba(167,139,250,0.80)'; ctx.shadowBlur = 22;
+    const valG = ctx.createLinearGradient(bx, by, bx + cW, by + cH);
+    valG.addColorStop(0, '#c4b5fd'); valG.addColorStop(0.5, '#a78bfa'); valG.addColorStop(1, '#60a5fa');
+    ctx.font = 'bold 104px Inter, Arial, sans-serif';
+    ctx.fillStyle = valG; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(s.v, bcx, bcy - 14); ctx.restore();
 
-    ctx.font='600 32px Inter, Arial, sans-serif';
-    ctx.fillStyle='rgba(255,255,255,0.78)';
-    ctx.textAlign='center'; ctx.textBaseline='middle';
-    ctx.fillText(s.l, bcx, bcy+64);
+    // Label
+    ctx.font = '600 32px Inter, Arial, sans-serif';
+    ctx.fillStyle = 'rgba(255,255,255,0.78)';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(s.l, bcx, bcy + 66);
   });
 
-  // ═══════════════════════════════════════════════════════════
-  //  LAYER 12 — 4-POINT SPARKLES
-  // ═══════════════════════════════════════════════════════════
-  const _sparkle = (x, y, sz, a) => {
-    ctx.save(); ctx.translate(x, y); ctx.fillStyle = `rgba(255,255,255,${a})`;
-    for (let k = 0; k < 4; k++) {
-      ctx.rotate(Math.PI/2);
-      ctx.beginPath(); ctx.moveTo(0,0);
-      ctx.quadraticCurveTo(sz*0.2, sz*0.2, 0, sz);
-      ctx.quadraticCurveTo(-sz*0.2, sz*0.2, 0, 0); ctx.fill();
-    }
-    ctx.restore();
-  };
-  for (const [sx,sy,ss,sa] of [
-    [108,215,26,0.85],[956,288,18,0.70],[60,510,28,0.65],[1002,660,21,0.70],
-    [1040,1080,18,0.60],[980,1340,17,0.55],[42,1160,22,0.50],[130,1440,24,0.65],
-    [880,1560,15,0.55],[200,1650,18,0.50],[820,130,14,0.60],[38,370,16,0.45],
-    [930,480,20,0.55],[700,1720,15,0.45],[340,1800,18,0.50],
-  ]) _sparkle(sx, sy, ss, sa);
-
-  // ═══════════════════════════════════════════════════════════
-  //  LAYER 13 — ASTEROIDS (right side, irregular polygons)
-  // ═══════════════════════════════════════════════════════════
-  const randAst = rng(54321);
-  for (let i = 0; i < 12; i++) {
-    const ax = 660 + randAst()*360, ay = 300 + randAst()*1300;
-    const ar = 14 + randAst()*38;
-    const aAlpha = 0.25 + randAst()*0.35;
-    ctx.save();
-    ctx.translate(ax, ay);
-    ctx.rotate(randAst()*Math.PI*2);
-    ctx.beginPath();
-    for (let v = 0; v < 8; v++) {
-      const ang = (v/8)*Math.PI*2;
-      const rr2 = ar*(0.65+randAst()*0.55);
-      const vx = Math.cos(ang)*rr2, vy = Math.sin(ang)*rr2;
-      v===0 ? ctx.moveTo(vx,vy) : ctx.lineTo(vx,vy);
-    }
-    ctx.closePath();
-    const astG = ctx.createLinearGradient(-ar,-ar,ar,ar);
-    astG.addColorStop(0,`rgba(180,160,140,${aAlpha})`);
-    astG.addColorStop(1,`rgba(80,70,60,${aAlpha*0.5})`);
-    ctx.fillStyle=astG; ctx.fill();
-    ctx.strokeStyle=`rgba(220,200,180,${aAlpha*0.6})`; ctx.lineWidth=1.2; ctx.stroke();
-    ctx.restore();
-  }
-
-  // ═══════════════════════════════════════════════════════════
-  //  LAYER 14 — BOKEH DOTS (corners)
-  // ═══════════════════════════════════════════════════════════
-  for (const [bkx,bky,bkr,bka] of [
-    [90,  200, 28, 0.18],
-    [980, 180, 22, 0.14],
-    [60,  1700,32, 0.16],
-    [1010,1680,24, 0.13],
-    [200, 1100,18, 0.12],
-    [900, 1200,20, 0.14],
-  ]) {
-    const bkG = ctx.createRadialGradient(bkx,bky,0,bkx,bky,bkr);
-    bkG.addColorStop(0,`rgba(200,180,255,${bka})`);
-    bkG.addColorStop(0.6,`rgba(120,80,220,${bka*0.4})`);
-    bkG.addColorStop(1,'rgba(0,0,0,0)');
-    ctx.fillStyle=bkG; ctx.beginPath(); ctx.arc(bkx,bky,bkr,0,Math.PI*2); ctx.fill();
-    ctx.strokeStyle=`rgba(220,200,255,${bka*1.2})`; ctx.lineWidth=1.5;
-    ctx.beginPath(); ctx.arc(bkx,bky,bkr*0.7,0,Math.PI*2); ctx.stroke();
-  }
-
-  // ═══════════════════════════════════════════════════════════
-  //  LAYER 15 — FOOTER
-  // ═══════════════════════════════════════════════════════════
+  // ── FOOTER ───────────────────────────────────────────────────
   ctx.font = '400 27px Inter, Arial, sans-serif';
   ctx.fillStyle = 'rgba(255,255,255,0.28)';
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   ctx.fillText('✦  novapool.official  ·  TikTok Community  ✦', W/2, H - 90);
 }
 
-export function downloadStoryCard() {
-  drawStoryCanvas();
+export async function downloadStoryCard() {
+  await drawStoryCanvas();
   const canvas = document.getElementById('pc-story-canvas');
   if (!canvas) { toast('Canvas nicht gefunden', 'error'); return; }
 
@@ -663,7 +433,7 @@ export function downloadStoryCard() {
 on('profile:tab', (el) => switchTab(el.dataset.tab));
 
 // Story save
-on('story:save', () => downloadStoryCard());
+on('story:save', () => downloadStoryCard().catch(e => toast('Fehler: ' + e.message, 'error')));
 
 // Copy text summary
 on('profile:check:copy', () => {
