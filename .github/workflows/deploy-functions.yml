@@ -26,12 +26,12 @@ jobs:
           echo "rules=$(echo "$CHANGED" | grep -c 'database.rules.json' || true)" >> $GITHUB_OUTPUT
 
       - name: Install function dependencies
-        if: steps.changes.outputs.functions != '0' || github.event_name == 'workflow_dispatch'
+        if: steps.changes.outputs.functions != '0'
         run: npm install
         working-directory: functions
 
       - name: Deploy Functions
-        if: steps.changes.outputs.functions != '0' || github.event_name == 'workflow_dispatch'
+        if: steps.changes.outputs.functions != '0'
         uses: w9jds/firebase-action@master
         with:
           args: deploy --only functions:generateCaption
@@ -39,7 +39,7 @@ jobs:
           GCP_SA_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
 
       - name: Deploy Database Rules
-        if: steps.changes.outputs.rules != '0' || github.event_name == 'workflow_dispatch'
+        if: always() && (steps.changes.outputs.rules != '0' || github.event_name == 'workflow_dispatch')
         uses: w9jds/firebase-action@master
         with:
           args: deploy --only database
