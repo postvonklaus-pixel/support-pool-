@@ -141,7 +141,16 @@ const _flush = debounce(() => {
   _pendingWrites.forEach((val, path) => { updates[path] = val; });
   _pendingWrites.clear();
   _db.ref(_base || '/').update(updates)
-    .catch(err => console.error('[firebase] write error:', err));
+    .catch(err => {
+      console.error('[firebase] write error:', err.code || err.message);
+      if (err.code === 'PERMISSION_DENIED') {
+        // Re-attempt anonymous sign-in and retry once
+        const app = firebase.app();
+        firebase.auth(app).signInAnonymously()
+          .then(() => _db.ref(_base || '/').update(updates))
+          .catch(e2 => console.error('[firebase] retry write failed:', e2.code));
+      }
+    });
 }, 300);
 
 // ── Full save ─────────────────────────────────────────────
