@@ -123,10 +123,12 @@
 /* ── NOVA rocket overlay ─────────────────────────────── */
 #nova-rocket {
   position: fixed;
-  left: -35px;
-  top: 2%;
-  width: 200px;
-  height: auto;
+  left: -15px;
+  top: 0;
+  height: 100vh;
+  width: auto;
+  object-fit: contain;
+  object-position: top left;
   z-index: 1;
   pointer-events: none;
 }
