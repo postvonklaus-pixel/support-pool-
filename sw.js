@@ -4,7 +4,7 @@
    Responds to SKIP_WAITING message from the page.
    ═══════════════════════════════════════════════════════ */
 
-const CACHE = 'nova-v27';
+const CACHE = 'nova-v28';
 
 const STATIC_CSS = [
   '/support-pool-/css/tokens.css',

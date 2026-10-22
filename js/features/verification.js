@@ -9,8 +9,11 @@ export function isVerified(u) {
   if ((u.postsTotal || 0) < 50) return false;
   const days = u.supportDays;
   if (!Array.isArray(days) || days.length === 0) return false;
-  const cutoff = Date.now() - 7 * 24 * 60 * 60 * 1000;
-  const activeDays = days.filter(d => d >= cutoff).length;
+  const cutoffMs  = Date.now() - 7 * 24 * 60 * 60 * 1000;
+  const cutoffStr = new Date(cutoffMs).toISOString().slice(0, 10);
+  const activeDays = days.filter(d =>
+    typeof d === 'string' ? d >= cutoffStr : d >= cutoffMs
+  ).length;
   return activeDays >= 5;
 }
 
