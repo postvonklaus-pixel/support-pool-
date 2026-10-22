@@ -47,21 +47,10 @@
   inset: 0;
   pointer-events: none;
   z-index: 0;
-  background-image: url('/support-pool-/assets/nova-final-bg.jpg');
-  background-size: cover;
-  background-position: 30% center;
-  background-repeat: no-repeat;
+  background: radial-gradient(ellipse at center, #1a0f3a 0%, #0a0618 70%, #000000 100%);
+  background-image: none;
 }
-.login-bg::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg,
-    rgba(0,0,0,0.04) 0%,
-    rgba(0,0,0,0.00) 40%,
-    rgba(0,0,0,0.10) 85%,
-    rgba(0,0,0,0.30) 100%);
-}
+.login-bg::after { display: none; }
 
 .login-orb-1,
 .login-orb-2 {
