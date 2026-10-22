@@ -6,13 +6,13 @@ import { debounce } from './utils.js';
 import { toast } from './components/toast.js';
 
 const FIREBASE_CONFIG = {
-  apiKey:            "AIzaSyCqJmrJOVbfY7t5pxCQXZSSMbH0nwVAjMs",
-  authDomain:        "nova-support-pool.firebaseapp.com",
+  apiKey:            "AIzaSyAwtRKoqHRpdwjXbtTUmUAuadgJIgkyleQ",
+  authDomain:        "support-pool.firebaseapp.com",
   databaseURL:       "https://support-pool-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId:         "nova-support-pool",
-  storageBucket:     "nova-support-pool.appspot.com",
-  messagingSenderId: "856327571658",
-  appId:             "1:856327571658:web:ba09f7e24f70b28a6f44fa"
+  projectId:         "support-pool",
+  storageBucket:     "support-pool.firebasestorage.app",
+  messagingSenderId: "620989491854",
+  appId:             "1:620989491854:web:ab99c2cb7864e63a98f7df"
 };
 
 const DB_PATHS = ['members', 'videos', 'messages', 'settings', 'groups', 'chat'];
