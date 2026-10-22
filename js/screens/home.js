@@ -363,10 +363,11 @@ function _renderLeaderboardTab(cu) {
         ${podiumOrder.map((m, i) => {
           const orig = top3.indexOf(m);
           const grad = avatarGradient(m.key);
+          const badge = isVerified(state.db.members?.[m.key]) ? VERIFIED_BADGE : '';
           return `<div class="lb-podium__place lb-podium__place--${orig + 1}">
             <div class="lb-podium__avatar" style="background:${grad}">${(m.name || m.key || '?').slice(0,2).toUpperCase()}</div>
             <div class="lb-podium__medal">${medals[orig]}</div>
-            <div class="lb-podium__name">${esc((m.name || m.key || '').split(' ')[0])}</div>
+            <div class="lb-podium__name">${esc((m.name || m.key || '').split(' ')[0])}${badge}</div>
             <div class="lb-podium__score">${_score(m)}</div>
             <div class="lb-podium__bar" style="height:${podiumH[orig]}"></div>
           </div>`;
@@ -378,10 +379,11 @@ function _renderLeaderboardTab(cu) {
         ${rest.map((m, i) => {
           const grad = avatarGradient(m.key);
           const isMe = m.key === cu;
+          const badge = isVerified(state.db.members?.[m.key]) ? VERIFIED_BADGE : '';
           return `<div class="lb-row${isMe ? ' lb-row--me' : ''}">
             <div class="lb-row__rank">${i + 4}</div>
             <div class="lb-row__avatar" style="background:${grad}">${(m.name || m.key || '?').slice(0,2).toUpperCase()}</div>
-            <div class="lb-row__name">${esc(m.name || m.key || '?')}${isMe ? ` <span class="lb-row__you">${t('lbYou')}</span>` : ''}</div>
+            <div class="lb-row__name">${esc(m.name || m.key || '?')}${badge}${isMe ? ` <span class="lb-row__you">${t('lbYou')}</span>` : ''}</div>
             <div class="lb-row__score">${_score(m)}</div>
           </div>`;
         }).join('')}

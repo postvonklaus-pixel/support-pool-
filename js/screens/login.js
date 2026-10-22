@@ -131,8 +131,8 @@ function _renderStats() {
   const _fmt = (n) => n >= 1000 ? (n / 1000).toFixed(1) + 'k' : String(n);
 
   const gs = ge('login-stat-groups');   if (gs) gs.textContent = _fmt(groupCount);
-  const ss = ge('login-stat-supports'); if (ss) ss.textContent = _fmt(totalSupports);
-  const vs = ge('login-stat-videos');   if (vs) vs.textContent = _fmt(openVideos);
+  const ss = ge('login-stat-supports'); if (ss) _countUp(ss, totalSupports, 1400);
+  const vs = ge('login-stat-videos');   if (vs) _countUp(vs, openVideos, 900);
 
   const gl = ge('login-stat-groups-lbl');   if (gl) gl.textContent = t('statGroups')   || 'Gruppen';
   const sl = ge('login-stat-supports-lbl'); if (sl) sl.textContent = t('statSupports') || 'Supports';
@@ -512,6 +512,21 @@ function _handleForgot() {
     const u = state.db.members?.[_username] || {};
     _showPinStep(_username, u);
   });
+}
+
+// ── Count-up animation ────────────────────────────────
+function _countUp(el, target, duration) {
+  if (!el) return;
+  if (target === 0) { el.textContent = '0'; return; }
+  const start = performance.now();
+  const easeOut = (t) => 1 - Math.pow(1 - t, 3);
+  const tick = (now) => {
+    const progress = Math.min((now - start) / duration, 1);
+    el.textContent = Math.round(easeOut(progress) * target).toLocaleString('de-DE');
+    if (progress < 1) requestAnimationFrame(tick);
+    else el.textContent = target.toLocaleString('de-DE');
+  };
+  requestAnimationFrame(tick);
 }
 
 // ── Reset ─────────────────────────────────────────────
