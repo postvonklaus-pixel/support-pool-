@@ -202,249 +202,359 @@ export function drawStoryCanvas() {
   const verified = isVerified(u);
 
   const W = 1080, H = 1920;
-  canvas.width  = W;
-  canvas.height = H;
+  canvas.width = W; canvas.height = H;
   const ctx = canvas.getContext('2d');
 
-  const rng = (seed) => { let s = seed; return () => { s = (s * 16807) % 2147483647; return (s - 1) / 2147483646; }; };
-  const rand = rng(42);
+  const rng = (seed) => { let s = seed|0 || 1; return () => { s = Math.imul(s, 48271) >>> 0 || 1; return s / 4294967296; }; };
+  const rand = rng(7919);
 
-  // ── Background ─────────────────────────────────────────────
-  const bg = ctx.createLinearGradient(0, 0, W * 0.4, H);
-  bg.addColorStop(0,   '#030110');
-  bg.addColorStop(0.3, '#0f0428');
-  bg.addColorStop(0.65,'#08031a');
-  bg.addColorStop(1,   '#020109');
-  ctx.fillStyle = bg;
+  // ═══════════════════════════════════════════════════════════
+  //  LAYER 1 — DEEP SPACE BACKGROUND
+  // ═══════════════════════════════════════════════════════════
+  ctx.fillStyle = '#020010';
   ctx.fillRect(0, 0, W, H);
 
-  // Nebula clouds
-  for (const [nx, ny, nr, nc] of [
-    [W*0.15, H*0.12, 460, 'rgba(100,30,210,0.38)'],
-    [W*0.85, H*0.28, 320, 'rgba(30,90,230,0.22)'],
-    [W*0.5,  H*0.52, 400, 'rgba(6,182,212,0.14)'],
-    [W*0.1,  H*0.75, 280, 'rgba(170,30,230,0.18)'],
-    [W*0.9,  H*0.82, 340, 'rgba(70,10,190,0.24)'],
-    [W*0.6,  H*0.95, 300, 'rgba(124,58,237,0.15)'],
+  // Rich nebula — 7 overlapping clouds
+  for (const [nx,ny,nr,nc] of [
+    [W*0.08, H*0.07, 520, 'rgba(90,20,200,0.55)'],
+    [W*0.92, H*0.15, 380, 'rgba(20,60,220,0.35)'],
+    [W*0.5,  H*0.32, 600, 'rgba(124,58,237,0.28)'],
+    [W*0.15, H*0.62, 340, 'rgba(160,20,240,0.30)'],
+    [W*0.85, H*0.70, 420, 'rgba(40,10,180,0.35)'],
+    [W*0.5,  H*0.82, 480, 'rgba(6,182,212,0.18)'],
+    [W*0.35, H*0.50, 300, 'rgba(200,50,240,0.12)'],
   ]) {
     const g = ctx.createRadialGradient(nx, ny, 0, nx, ny, nr);
     g.addColorStop(0, nc); g.addColorStop(1, 'rgba(0,0,0,0)');
     ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
   }
 
-  // Starfield – varied sizes
-  for (let i = 0; i < 220; i++) {
-    const x = rand()*W, y = rand()*H, r = rand()*2.8+0.25, a = rand()*0.65+0.07;
+  // ═══════════════════════════════════════════════════════════
+  //  LAYER 2 — LIGHT RAYS from avatar centre (depth illusion)
+  // ═══════════════════════════════════════════════════════════
+  const cx = W/2, cy = H * 0.295;
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.globalCompositeOperation = 'screen';
+  for (let k = 0; k < 14; k++) {
+    const angle = (k / 14) * Math.PI * 2;
+    const len = H * 1.4;
+    const wedge = 0.055;
+    ctx.save();
+    ctx.rotate(angle);
+    const rayG = ctx.createLinearGradient(0, 0, 0, -len);
+    rayG.addColorStop(0,   'rgba(124,58,237,0.09)');
+    rayG.addColorStop(0.2, 'rgba(124,58,237,0.04)');
+    rayG.addColorStop(1,   'rgba(0,0,0,0)');
+    ctx.fillStyle = rayG;
+    ctx.beginPath();
+    ctx.moveTo(-wedge*100, 0); ctx.lineTo(wedge*100, 0);
+    ctx.lineTo(wedge*len*1.1, -len); ctx.lineTo(-wedge*len*1.1, -len);
+    ctx.closePath(); ctx.fill();
+    ctx.restore();
+  }
+  ctx.globalCompositeOperation = 'source-over';
+  ctx.restore();
+
+  // ═══════════════════════════════════════════════════════════
+  //  LAYER 3 — STARFIELD + SPARKLES
+  // ═══════════════════════════════════════════════════════════
+  for (let i = 0; i < 280; i++) {
+    const x = rand()*W, y = rand()*H;
+    const r = rand() < 0.08 ? rand()*2.5+1.8 : rand()*1.4+0.2;
+    const a = rand()*0.7+0.08;
     ctx.fillStyle = `rgba(255,255,255,${a.toFixed(2)})`;
     ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI*2); ctx.fill();
+    // Tiny cross on bright stars
+    if (r > 2.2) {
+      ctx.strokeStyle = `rgba(255,255,255,${(a*0.4).toFixed(2)})`;
+      ctx.lineWidth = 0.8;
+      ctx.beginPath(); ctx.moveTo(x-r*3,y); ctx.lineTo(x+r*3,y); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(x,y-r*3); ctx.lineTo(x,y+r*3); ctx.stroke();
+    }
   }
 
-  // 4-point sparkles
+  // 4-point sparkle crosses (decorative accents)
   const _sparkle = (x, y, sz, a) => {
     ctx.save(); ctx.translate(x, y); ctx.fillStyle = `rgba(255,255,255,${a})`;
     for (let k = 0; k < 4; k++) {
       ctx.rotate(Math.PI/2);
       ctx.beginPath(); ctx.moveTo(0,0);
-      ctx.quadraticCurveTo(sz*0.22, sz*0.22, 0, sz);
-      ctx.quadraticCurveTo(-sz*0.22, sz*0.22, 0, 0); ctx.fill();
+      ctx.quadraticCurveTo(sz*0.2, sz*0.2, 0, sz);
+      ctx.quadraticCurveTo(-sz*0.2, sz*0.2, 0, 0); ctx.fill();
     }
     ctx.restore();
   };
-  for (const [sx,sy,ss,sa] of [[115,210,20,0.75],[940,260,15,0.65],[68,500,24,0.55],[990,680,17,0.60],[145,1380,22,0.60],[930,1280,13,0.52],[48,1120,18,0.42],[1030,1050,15,0.58],[820,140,12,0.5]]) _sparkle(sx,sy,ss,sa);
+  for (const [sx,sy,ss,sa] of [
+    [108,215,26,0.85],[956,288,18,0.70],[60,510,28,0.65],[1002,660,21,0.70],
+    [1040,1080,18,0.60],[980,1340,17,0.55],[42,1160,22,0.50],[130,1440,24,0.65],
+    [880,1560,15,0.55],[200,1650,18,0.50],[820,130,14,0.60],[38,370,16,0.45],
+  ]) _sparkle(sx, sy, ss, sa);
 
-  // Shooting star
-  ctx.save();
-  const ssG = ctx.createLinearGradient(820,110, 600,290);
-  ssG.addColorStop(0,'rgba(255,255,255,0)'); ssG.addColorStop(0.7,'rgba(255,255,255,0.55)'); ssG.addColorStop(1,'rgba(255,255,255,0)');
-  ctx.strokeStyle = ssG; ctx.lineWidth = 2;
-  ctx.beginPath(); ctx.moveTo(820,110); ctx.lineTo(600,290); ctx.stroke();
-  ctx.restore();
+  // Shooting stars
+  for (const [x1,y1,x2,y2,op] of [[820,95,590,295,0.6],[260,340,440,180,0.4]]) {
+    const sg = ctx.createLinearGradient(x1,y1,x2,y2);
+    sg.addColorStop(0,'rgba(255,255,255,0)'); sg.addColorStop(0.6,`rgba(255,255,255,${op})`); sg.addColorStop(1,'rgba(255,255,255,0)');
+    ctx.save(); ctx.strokeStyle=sg; ctx.lineWidth=1.8;
+    ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke(); ctx.restore();
+  }
 
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
 
-  // ── Top banner pill ─────────────────────────────────────────
-  const banH = 78, banW = 700, banX = (W-banW)/2, banY = 94;
+  // ═══════════════════════════════════════════════════════════
+  //  TOP BANNER — glassmorphic pill
+  // ═══════════════════════════════════════════════════════════
+  const banH = 82, banW = 740, banX = (W-banW)/2, banY = 96;
+  // Outer glow
+  ctx.save(); ctx.shadowColor='rgba(167,139,250,0.5)'; ctx.shadowBlur=30;
   _rrect(ctx, banX, banY-banH/2, banW, banH, banH/2);
-  ctx.fillStyle = 'rgba(255,255,255,0.07)'; ctx.fill();
-  ctx.strokeStyle = 'rgba(167,139,250,0.55)'; ctx.lineWidth = 1.8; ctx.stroke();
+  ctx.fillStyle='rgba(0,0,0,0)'; ctx.fill(); ctx.restore();
+  // Glass fill
+  _rrect(ctx, banX, banY-banH/2, banW, banH, banH/2);
+  ctx.fillStyle='rgba(255,255,255,0.08)'; ctx.fill();
+  // Top-edge rim (key to glass look)
+  _rrect(ctx, banX, banY-banH/2, banW, banH, banH/2);
+  const banBord = ctx.createLinearGradient(banX, banY-banH/2, banX, banY+banH/2);
+  banBord.addColorStop(0,'rgba(255,255,255,0.60)');
+  banBord.addColorStop(0.4,'rgba(167,139,250,0.50)');
+  banBord.addColorStop(1,'rgba(124,58,237,0.10)');
+  ctx.strokeStyle=banBord; ctx.lineWidth=2; ctx.stroke();
+  // Inner shine
   ctx.save(); _rrect(ctx, banX, banY-banH/2, banW, banH, banH/2); ctx.clip();
-  const banShine = ctx.createLinearGradient(banX, banY-banH/2, banX, banY);
-  banShine.addColorStop(0,'rgba(255,255,255,0.14)'); banShine.addColorStop(1,'rgba(255,255,255,0)');
-  ctx.fillStyle = banShine; ctx.fillRect(banX, banY-banH/2, banW, banH/2); ctx.restore();
-  ctx.font = 'bold 32px Inter, Arial, sans-serif';
-  ctx.fillStyle = '#ffffff'; ctx.shadowColor='rgba(167,139,250,0.6)'; ctx.shadowBlur=8;
+  const bSh = ctx.createLinearGradient(banX, banY-banH/2, banX, banY);
+  bSh.addColorStop(0,'rgba(255,255,255,0.22)'); bSh.addColorStop(1,'rgba(255,255,255,0)');
+  ctx.fillStyle=bSh; ctx.fillRect(banX, banY-banH/2, banW, banH/2); ctx.restore();
+  // Text
+  ctx.font = 'bold 34px Inter, Arial, sans-serif';
+  ctx.fillStyle = '#ffffff';
+  ctx.shadowColor = 'rgba(200,170,255,0.9)'; ctx.shadowBlur = 12;
   ctx.fillText('⭐  NOVA SUPPORT POOL  ⭐', W/2, banY);
   ctx.shadowBlur = 0;
 
-  // ── Rocket ─────────────────────────────────────────────────
-  const _rocket = (rx, ry, sc) => {
-    ctx.save(); ctx.translate(rx, ry); ctx.rotate(-Math.PI/5); ctx.scale(sc, sc);
-    // body
-    ctx.beginPath(); ctx.ellipse(0, 0, 28, 70, 0, 0, Math.PI*2);
-    const bG = ctx.createLinearGradient(-28,-70,28,70);
-    bG.addColorStop(0,'#c4b5fd'); bG.addColorStop(1,'#6d28d9');
+  // ═══════════════════════════════════════════════════════════
+  //  ROCKET — large, vibrant, bottom-left area
+  // ═══════════════════════════════════════════════════════════
+  const _rocket = (rx, ry, sc, rot) => {
+    ctx.save(); ctx.translate(rx, ry); ctx.rotate(rot); ctx.scale(sc, sc);
+    // Flame glow behind
+    const fhG = ctx.createRadialGradient(0,95,0,0,95,70);
+    fhG.addColorStop(0,'rgba(255,140,0,0.50)'); fhG.addColorStop(1,'rgba(255,60,0,0)');
+    ctx.fillStyle=fhG; ctx.fillRect(-70,40,140,110);
+    // Body
+    ctx.beginPath(); ctx.ellipse(0, 0, 34, 82, 0, 0, Math.PI*2);
+    const bG=ctx.createLinearGradient(-34,-82,34,82);
+    bG.addColorStop(0,'#ddd6fe'); bG.addColorStop(0.4,'#8b5cf6'); bG.addColorStop(1,'#4c1d95');
     ctx.fillStyle=bG; ctx.fill();
-    ctx.strokeStyle='rgba(255,255,255,0.22)'; ctx.lineWidth=2.5; ctx.stroke();
-    // nose
-    ctx.beginPath(); ctx.moveTo(0,-70); ctx.lineTo(-28,-18); ctx.lineTo(28,-18); ctx.closePath();
-    const nG=ctx.createLinearGradient(-28,-70,28,-18); nG.addColorStop(0,'#ddd6fe'); nG.addColorStop(1,'#7c3aed');
+    ctx.strokeStyle='rgba(255,255,255,0.30)'; ctx.lineWidth=2.5; ctx.stroke();
+    // Body gloss (left-side highlight)
+    ctx.save(); ctx.beginPath(); ctx.ellipse(0,0,34,82,0,0,Math.PI*2); ctx.clip();
+    const bgl=ctx.createLinearGradient(-34,-60,14,60);
+    bgl.addColorStop(0,'rgba(255,255,255,0.35)'); bgl.addColorStop(0.5,'rgba(255,255,255,0.05)'); bgl.addColorStop(1,'rgba(255,255,255,0)');
+    ctx.fillStyle=bgl; ctx.fillRect(-34,-82,68,164); ctx.restore();
+    // Nose cone
+    ctx.beginPath(); ctx.moveTo(0,-82); ctx.lineTo(-34,-22); ctx.lineTo(34,-22); ctx.closePath();
+    const nG=ctx.createLinearGradient(-34,-82,34,-22);
+    nG.addColorStop(0,'#f5f3ff'); nG.addColorStop(1,'#7c3aed');
     ctx.fillStyle=nG; ctx.fill();
-    // window
-    ctx.beginPath(); ctx.arc(0,-6,15,0,Math.PI*2);
-    ctx.fillStyle='rgba(6,182,212,0.85)'; ctx.fill();
-    ctx.strokeStyle='rgba(255,255,255,0.6)'; ctx.lineWidth=2.5; ctx.stroke();
-    // fins
+    // Window
+    ctx.beginPath(); ctx.arc(0,-8,18,0,Math.PI*2);
+    const wG=ctx.createRadialGradient(-5,-13,2,-5,-13,18);
+    wG.addColorStop(0,'rgba(186,230,253,1)'); wG.addColorStop(0.5,'rgba(6,182,212,0.9)'); wG.addColorStop(1,'rgba(2,100,150,0.8)');
+    ctx.fillStyle=wG; ctx.fill();
+    ctx.strokeStyle='rgba(255,255,255,0.70)'; ctx.lineWidth=2.5; ctx.stroke();
+    // Window glare
+    ctx.beginPath(); ctx.arc(-6,-14,5,0,Math.PI*2);
+    ctx.fillStyle='rgba(255,255,255,0.60)'; ctx.fill();
+    // Fins
     for (const s of [-1,1]) {
-      ctx.beginPath(); ctx.moveTo(s*28,38); ctx.lineTo(s*64,82); ctx.lineTo(s*28,58); ctx.closePath();
-      ctx.fillStyle='#9f60ff'; ctx.fill();
+      ctx.beginPath(); ctx.moveTo(s*34,44); ctx.lineTo(s*76,92); ctx.lineTo(s*34,68); ctx.closePath();
+      const fG2=ctx.createLinearGradient(0,44,s*76,92);
+      fG2.addColorStop(0,'#a78bfa'); fG2.addColorStop(1,'#6d28d9');
+      ctx.fillStyle=fG2; ctx.fill();
+      ctx.strokeStyle='rgba(255,255,255,0.18)'; ctx.lineWidth=1.5; ctx.stroke();
     }
-    // flame
-    const fG=ctx.createRadialGradient(0,88,0,0,115,48);
-    fG.addColorStop(0,'rgba(255,210,50,0.95)'); fG.addColorStop(0.4,'rgba(255,90,10,0.70)'); fG.addColorStop(1,'rgba(255,40,0,0)');
-    ctx.fillStyle=fG; ctx.beginPath(); ctx.ellipse(0,102,20,44,0,0,Math.PI*2); ctx.fill();
+    // Flame
+    const flG=ctx.createRadialGradient(0,98,0,0,130,55);
+    flG.addColorStop(0,'rgba(255,230,60,1)'); flG.addColorStop(0.25,'rgba(255,120,10,0.85)'); flG.addColorStop(0.6,'rgba(255,50,0,0.5)'); flG.addColorStop(1,'rgba(255,20,0,0)');
+    ctx.fillStyle=flG; ctx.beginPath(); ctx.ellipse(0,112,24,52,0,0,Math.PI*2); ctx.fill();
     ctx.restore();
   };
-  _rocket(108, 830, 1.45);
+  _rocket(88, 1320, 1.7, -Math.PI/6);
 
-  // ── Avatar ─────────────────────────────────────────────────
-  const cx = W/2, cy = H*0.30;
-  const avR = 162;
+  // ═══════════════════════════════════════════════════════════
+  //  AVATAR — large glass orb
+  // ═══════════════════════════════════════════════════════════
+  const avR = 178;
 
-  // Outer halo
-  const hG = ctx.createRadialGradient(cx,cy,avR-20,cx,cy,avR+90);
-  hG.addColorStop(0,'rgba(124,58,237,0.48)'); hG.addColorStop(1,'rgba(124,58,237,0)');
-  ctx.fillStyle=hG; ctx.beginPath(); ctx.arc(cx,cy,avR+90,0,Math.PI*2); ctx.fill();
+  // Far outer glow (atmospheric)
+  const atmoG = ctx.createRadialGradient(cx,cy,avR,cx,cy,avR+200);
+  atmoG.addColorStop(0,'rgba(124,58,237,0.38)'); atmoG.addColorStop(0.5,'rgba(90,30,200,0.12)'); atmoG.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=atmoG; ctx.beginPath(); ctx.arc(cx,cy,avR+200,0,Math.PI*2); ctx.fill();
 
-  // Ripple rings
-  for (const [rr,ra] of [[avR+14,0.28],[avR+32,0.13]]) {
+  // Pulsing rings
+  for (const [rr,rw,ra,rc] of [
+    [avR+6,  3,   0.55, 'rgba(167,139,250,'],
+    [avR+20, 1.5, 0.28, 'rgba(124,58,237,'],
+    [avR+38, 1,   0.14, 'rgba(124,58,237,'],
+  ]) {
     ctx.beginPath(); ctx.arc(cx,cy,rr,0,Math.PI*2);
-    ctx.strokeStyle=`rgba(124,58,237,${ra})`; ctx.lineWidth=2; ctx.stroke();
+    ctx.strokeStyle=`${rc}${ra})`; ctx.lineWidth=rw; ctx.stroke();
   }
 
-  // Avatar fill
+  // Avatar gradient fill
   ctx.beginPath(); ctx.arc(cx,cy,avR,0,Math.PI*2);
   const avG = ctx.createLinearGradient(cx-avR,cy-avR,cx+avR,cy+avR);
-  avG.addColorStop(0,'#9f60ff'); avG.addColorStop(1,'#06b6d4');
+  avG.addColorStop(0,'#b4a4ff'); avG.addColorStop(0.35,'#7c3aed'); avG.addColorStop(0.7,'#2563eb'); avG.addColorStop(1,'#06b6d4');
   ctx.fillStyle=avG; ctx.fill();
-  ctx.strokeStyle='rgba(255,255,255,0.22)'; ctx.lineWidth=4; ctx.stroke();
 
-  // Glossy highlight
+  // Crisp border
+  ctx.strokeStyle='rgba(220,200,255,0.35)'; ctx.lineWidth=4; ctx.stroke();
+
+  // 3-D sphere highlight: bright top-left radial
   ctx.save(); ctx.beginPath(); ctx.arc(cx,cy,avR,0,Math.PI*2); ctx.clip();
-  const gloss=ctx.createLinearGradient(cx-avR,cy-avR,cx+avR*0.35,cy+avR*0.4);
-  gloss.addColorStop(0,'rgba(255,255,255,0.28)'); gloss.addColorStop(0.5,'rgba(255,255,255,0.05)'); gloss.addColorStop(1,'rgba(255,255,255,0)');
-  ctx.fillStyle=gloss; ctx.fillRect(cx-avR,cy-avR,avR*2,avR*2); ctx.restore();
+  const sphHi = ctx.createRadialGradient(cx-avR*0.38, cy-avR*0.44, 0, cx-avR*0.38, cy-avR*0.44, avR*1.1);
+  sphHi.addColorStop(0,'rgba(255,255,255,0.55)'); sphHi.addColorStop(0.35,'rgba(255,255,255,0.18)'); sphHi.addColorStop(0.7,'rgba(255,255,255,0.04)'); sphHi.addColorStop(1,'rgba(255,255,255,0)');
+  ctx.fillStyle=sphHi; ctx.fillRect(cx-avR,cy-avR,avR*2,avR*2);
+  // Bottom-right inner shadow (sphere depth)
+  const sphSh = ctx.createRadialGradient(cx+avR*0.42, cy+avR*0.40, 0, cx+avR*0.42, cy+avR*0.40, avR);
+  sphSh.addColorStop(0,'rgba(0,0,30,0.50)'); sphSh.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=sphSh; ctx.fillRect(cx-avR,cy-avR,avR*2,avR*2);
+  ctx.restore();
 
   // Initials
-  ctx.font='bold 108px Inter, Arial, sans-serif';
-  ctx.fillStyle='#ffffff'; ctx.shadowColor='rgba(0,0,0,0.5)'; ctx.shadowBlur=18;
+  ctx.font = 'bold 118px Inter, Arial, sans-serif';
+  ctx.fillStyle = '#ffffff';
+  ctx.shadowColor='rgba(0,0,0,0.6)'; ctx.shadowBlur=22;
   ctx.fillText((cu||'?').slice(0,2).toUpperCase(), cx, cy);
   ctx.shadowBlur=0;
 
-  // Crown for verified
+  // Crown (verified)
   if (verified) {
-    ctx.font='82px serif';
-    ctx.fillText('👑', cx, cy-avR-36);
+    ctx.font='90px serif';
+    ctx.textBaseline='middle';
+    ctx.fillText('👑', cx, cy-avR-42);
   }
 
-  // ── Username ───────────────────────────────────────────────
-  const nameY = cy + avR + 72;
-  ctx.font = 'bold 64px Inter, Arial, sans-serif';
+  // ═══════════════════════════════════════════════════════════
+  //  USERNAME + TITLES
+  // ═══════════════════════════════════════════════════════════
+  const nameY = cy + avR + 78;
+
+  // Username with glow
+  ctx.font = 'bold 70px Inter, Arial, sans-serif';
   ctx.fillStyle = '#ffffff';
+  ctx.shadowColor = 'rgba(200,180,255,0.7)'; ctx.shadowBlur = 16;
   const uname = '@' + (u.name || cu || '');
   ctx.fillText(uname, cx, nameY);
+  ctx.shadowBlur = 0;
 
-  // Verified badge on canvas
+  // Verified badge
   if (verified) {
     const tw = ctx.measureText(uname).width;
-    const bx = cx + tw/2 + 36, by = nameY;
-    ctx.beginPath(); ctx.arc(bx, by, 24, 0, Math.PI*2);
-    ctx.fillStyle='#3b82f6'; ctx.fill();
-    ctx.strokeStyle='rgba(255,255,255,0.85)'; ctx.lineWidth=3;
+    const bx = cx + tw/2 + 40, by2 = nameY;
+    ctx.save();
+    ctx.shadowColor='rgba(59,130,246,0.8)'; ctx.shadowBlur=12;
+    ctx.beginPath(); ctx.arc(bx,by2,26,0,Math.PI*2);
+    ctx.fillStyle='#3b82f6'; ctx.fill(); ctx.restore();
+    ctx.strokeStyle='rgba(255,255,255,0.90)'; ctx.lineWidth=3.5;
     ctx.beginPath();
-    ctx.moveTo(bx-11,by+1); ctx.lineTo(bx-2,by+11); ctx.lineTo(bx+13,by-8);
+    ctx.moveTo(bx-12,by2+2); ctx.lineTo(bx-3,by2+12); ctx.lineTo(bx+14,by2-9);
     ctx.stroke();
   }
 
-  // Subtitle
-  ctx.font='500 34px Inter, Arial, sans-serif';
-  ctx.fillStyle='rgba(167,139,250,0.92)';
-  ctx.fillText('NOVA Support Pool', cx, nameY+70);
+  // Subtitle "NOVA Support Pool"
+  ctx.font = '600 38px Inter, Arial, sans-serif';
+  ctx.fillStyle = 'rgba(196,181,253,0.95)';
+  ctx.shadowColor='rgba(124,58,237,0.6)'; ctx.shadowBlur=10;
+  ctx.fillText('NOVA Support Pool', cx, nameY + 76);
+  ctx.shadowBlur = 0;
 
-  // novapool.official
-  ctx.font='400 26px Inter, Arial, sans-serif';
-  ctx.fillStyle='rgba(255,255,255,0.30)';
-  ctx.fillText('novapool.official · TikTok Community', cx, nameY+118);
+  // Community line
+  ctx.font = '400 28px Inter, Arial, sans-serif';
+  ctx.fillStyle = 'rgba(255,255,255,0.38)';
+  ctx.fillText('novapool.official · TikTok Community', cx, nameY + 128);
 
   // Divider
-  const divY = nameY + 164;
-  const divG2 = ctx.createLinearGradient(W/2-360,divY,W/2+360,divY);
-  divG2.addColorStop(0,'rgba(124,58,237,0)'); divG2.addColorStop(0.5,'rgba(167,139,250,0.7)'); divG2.addColorStop(1,'rgba(124,58,237,0)');
-  ctx.strokeStyle=divG2; ctx.lineWidth=1.5;
-  ctx.beginPath(); ctx.moveTo(W/2-360,divY); ctx.lineTo(W/2+360,divY); ctx.stroke();
+  const divY = nameY + 180;
+  const divG2 = ctx.createLinearGradient(W/2-400,divY,W/2+400,divY);
+  divG2.addColorStop(0,'rgba(124,58,237,0)'); divG2.addColorStop(0.5,'rgba(196,181,253,0.80)'); divG2.addColorStop(1,'rgba(124,58,237,0)');
+  ctx.strokeStyle=divG2; ctx.lineWidth=1.8;
+  ctx.beginPath(); ctx.moveTo(W/2-400,divY); ctx.lineTo(W/2+400,divY); ctx.stroke();
 
-  // ── Stats Grid ─────────────────────────────────────────────
+  // ═══════════════════════════════════════════════════════════
+  //  STAT CARDS — full glassmorphism with 3-D depth
+  // ═══════════════════════════════════════════════════════════
   const statsData = [
-    { v: String(given),                        l: t('given')      || 'Gegeben'     },
-    { v: (bal >= 0 ? '+' : '') + String(bal),  l: t('balance')    || 'Guthaben'    },
-    { v: String(memberDays),                   l: t('daysInPool') || 'daysInPool'  },
-    { v: activeLast7 + '/7',                   l: t('activeDays') || 'activeDays'  },
+    { v: String(given),                        l: t('given')      || 'Gegeben'    },
+    { v: (bal >= 0 ? '+' : '') + String(bal),  l: t('balance')    || 'Guthaben'   },
+    { v: String(memberDays),                   l: t('daysInPool') || 'daysInPool' },
+    { v: activeLast7 + '/7',                   l: t('activeDays') || 'activeDays' },
   ];
 
-  const cW=448, cH=242, gX=44, gY=40;
-  const startX=(W-(2*cW+gX))/2;
-  const startY=divY+58;
+  const cW = 474, cH = 268, gX = 48, gY = 46;
+  const startX = (W - (2*cW+gX)) / 2;
+  const startY = divY + 62;
 
   statsData.forEach((s, i) => {
     const col=i%2, row=Math.floor(i/2);
     const bx=startX+col*(cW+gX), by=startY+row*(cH+gY);
     const bcx=bx+cW/2, bcy=by+cH/2;
 
-    // 3D drop shadow
+    // Coloured outer glow (depth illusion)
     ctx.save();
-    ctx.shadowColor='rgba(124,58,237,0.35)'; ctx.shadowBlur=28; ctx.shadowOffsetY=10;
-    _rrect(ctx, bx+5, by+10, cW, cH, 30);
-    ctx.fillStyle='rgba(70,20,150,0.30)'; ctx.fill();
+    ctx.shadowColor='rgba(124,58,237,0.50)'; ctx.shadowBlur=36; ctx.shadowOffsetX=0; ctx.shadowOffsetY=14;
+    _rrect(ctx, bx, by+14, cW, cH, 32);
+    ctx.fillStyle='rgba(60,15,130,0.01)'; ctx.fill();
     ctx.restore();
 
-    // Glass card fill
-    _rrect(ctx, bx, by, cW, cH, 30);
-    const cardFill = ctx.createLinearGradient(bx, by, bx+cW, by+cH);
-    cardFill.addColorStop(0,'rgba(255,255,255,0.09)');
-    cardFill.addColorStop(1,'rgba(255,255,255,0.04)');
-    ctx.fillStyle=cardFill; ctx.fill();
+    // Dark glass body (tinted dark purple — NOT transparent white)
+    _rrect(ctx, bx, by, cW, cH, 32);
+    const cardF = ctx.createLinearGradient(bx,by,bx+cW,by+cH);
+    cardF.addColorStop(0,'rgba(80,30,160,0.72)');
+    cardF.addColorStop(0.5,'rgba(20,8,70,0.80)');
+    cardF.addColorStop(1,'rgba(12,30,90,0.70)');
+    ctx.fillStyle=cardF; ctx.fill();
 
-    // Gradient border
-    const bord=ctx.createLinearGradient(bx,by,bx+cW,by+cH);
-    bord.addColorStop(0,'rgba(167,139,250,0.6)'); bord.addColorStop(0.5,'rgba(34,211,238,0.35)'); bord.addColorStop(1,'rgba(167,139,250,0.2)');
-    ctx.strokeStyle=bord; ctx.lineWidth=1.8; ctx.stroke();
+    // Border: bright top+left → fade bottom+right (KEY to glass look)
+    _rrect(ctx, bx, by, cW, cH, 32);
+    const bord = ctx.createLinearGradient(bx,by,bx+cW,by+cH);
+    bord.addColorStop(0,   'rgba(255,255,255,0.70)');
+    bord.addColorStop(0.25,'rgba(196,181,253,0.85)');
+    bord.addColorStop(0.55,'rgba(34,211,238,0.45)');
+    bord.addColorStop(1,   'rgba(80,30,160,0.12)');
+    ctx.strokeStyle=bord; ctx.lineWidth=2.2; ctx.stroke();
 
-    // Inner top shine
-    ctx.save(); _rrect(ctx, bx, by, cW, cH, 30); ctx.clip();
-    const shine=ctx.createLinearGradient(bx,by,bx,by+70);
-    shine.addColorStop(0,'rgba(255,255,255,0.14)'); shine.addColorStop(1,'rgba(255,255,255,0)');
-    ctx.fillStyle=shine; ctx.fillRect(bx,by,cW,70); ctx.restore();
+    // Inner top-edge rim highlight
+    ctx.save(); _rrect(ctx,bx,by,cW,cH,32); ctx.clip();
+    const rim = ctx.createLinearGradient(bx,by,bx,by+55);
+    rim.addColorStop(0,'rgba(255,255,255,0.22)'); rim.addColorStop(1,'rgba(255,255,255,0)');
+    ctx.fillStyle=rim; ctx.fillRect(bx,by,cW,55); ctx.restore();
 
-    // Value
-    const valG=ctx.createLinearGradient(bx,by,bx+cW,by+cH);
-    valG.addColorStop(0,'#c4b5fd'); valG.addColorStop(0.5,'#60a5fa'); valG.addColorStop(1,'#22d3ee');
-    ctx.font='bold 90px Inter, Arial, sans-serif';
+    // Value — huge, glowing gradient text
+    ctx.save();
+    ctx.shadowColor='rgba(167,139,250,0.80)'; ctx.shadowBlur=22;
+    const valG = ctx.createLinearGradient(bx,by,bx+cW,by+cH);
+    valG.addColorStop(0,'#f5f3ff'); valG.addColorStop(0.35,'#a78bfa'); valG.addColorStop(0.7,'#60a5fa'); valG.addColorStop(1,'#22d3ee');
+    ctx.font='bold 102px Inter, Arial, sans-serif';
     ctx.fillStyle=valG;
     ctx.textAlign='center'; ctx.textBaseline='middle';
-    ctx.fillText(s.v, bcx, bcy-18);
+    ctx.fillText(s.v, bcx, bcy-16);
+    ctx.restore();
 
-    // Label
-    ctx.font='400 28px Inter, Arial, sans-serif';
-    ctx.fillStyle='rgba(255,255,255,0.50)';
-    ctx.fillText(s.l, bcx, bcy+58);
+    // Label — larger and bolder
+    ctx.font='600 32px Inter, Arial, sans-serif';
+    ctx.fillStyle='rgba(255,255,255,0.72)';
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(s.l, bcx, bcy+64);
   });
 
-  // ── Bottom footer ───────────────────────────────────────────
-  const footY = H - 82;
-  ctx.font='400 25px Inter, Arial, sans-serif';
-  ctx.fillStyle='rgba(255,255,255,0.22)';
-  ctx.textAlign='center'; ctx.textBaseline='middle';
-  ctx.fillText('✦  novapool.official  ·  TikTok Community  ✦', W/2, footY);
+  // ═══════════════════════════════════════════════════════════
+  //  FOOTER
+  // ═══════════════════════════════════════════════════════════
+  ctx.font = '400 27px Inter, Arial, sans-serif';
+  ctx.fillStyle = 'rgba(255,255,255,0.28)';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText('✦  novapool.official  ·  TikTok Community  ✦', W/2, H - 90);
 }
 
 export function downloadStoryCard() {
