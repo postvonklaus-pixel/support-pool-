@@ -123,12 +123,17 @@
 /* ── NOVA rocket overlay ─────────────────────────────── */
 #nova-rocket {
   position: fixed;
-  left: -8px;
+  left: -18px;
   top: 6%;
   width: 185px;
   height: auto;
   z-index: 1;
   pointer-events: none;
+}
+
+.login-card > * {
+  position: relative;
+  z-index: 2;
 }
 
 .login-card {
