@@ -131,7 +131,6 @@
   object-position: top left;
   z-index: 1;
   pointer-events: none;
-  mix-blend-mode: multiply;
 }
 
 .login-card > * {
