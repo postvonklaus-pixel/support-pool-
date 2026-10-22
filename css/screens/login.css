@@ -68,6 +68,25 @@
   display: none;
 }
 
+/* ── Rocket overlay ──────────────────────────────────── */
+#rocket-wrapper {
+  position: fixed;
+  left: -28px;
+  top: 10%;
+  width: 170px;
+  height: 540px;
+  z-index: 5;
+  pointer-events: none;
+  overflow: visible;
+}
+#rocket-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  mix-blend-mode: screen;
+  filter: drop-shadow(0 0 24px rgba(255,140,0,0.85));
+}
+
 /* ── Top bar ─────────────────────────────────────────── */
 .login-topbar {
   position: fixed;
@@ -113,7 +132,7 @@
 /* ── Main scroll container ───────────────────────────── */
 .login-main {
   position: relative;
-  z-index: 1;
+  z-index: 2;
   max-width: 420px;
   width: 100%;
   margin: 0 auto;
@@ -121,6 +140,7 @@
     calc(88px + env(safe-area-inset-top, 0px))
     16px
     calc(32px + env(safe-area-inset-bottom, 0px));
+  padding-left: 100px;
   display: flex;
   flex-direction: column;
   align-items: center;
