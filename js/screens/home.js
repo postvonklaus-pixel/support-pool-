@@ -340,6 +340,13 @@ function _renderLeaderboardTab(cu) {
   const _score = (m) =>
     `${m.weeklyGiven || 0}<span class="lb-score__sep">/</span><span class="lb-score__total">${m.stats?.given || 0}</span>`;
 
+  const _streak = (m) => {
+    const days = m.supportDays || m.activeDays || [];
+    let n = 0; const d = new Date();
+    while (days.includes(d.toISOString().slice(0, 10))) { n++; d.setDate(d.getDate() - 1); }
+    return n;
+  };
+
   const top3      = members.slice(0, 3);
   const rest      = members.slice(3);
   const medals    = ['🥇', '🥈', '🥉'];
@@ -364,10 +371,12 @@ function _renderLeaderboardTab(cu) {
           const orig = top3.indexOf(m);
           const grad = avatarGradient(m.key);
           const badge = isVerified(state.db.members?.[m.key]) ? VERIFIED_BADGE : '';
+          const s = _streak(m);
           return `<div class="lb-podium__place lb-podium__place--${orig + 1}">
             <div class="lb-podium__avatar" style="background:${grad}">${(m.name || m.key || '?').slice(0,2).toUpperCase()}</div>
             <div class="lb-podium__medal">${medals[orig]}</div>
             <div class="lb-podium__name">${esc((m.name || m.key || '').split(' ')[0])}${badge}</div>
+            ${s > 0 ? `<div class="lb-streak">🔥 ${s}</div>` : ''}
             <div class="lb-podium__score">${_score(m)}</div>
             <div class="lb-podium__bar" style="height:${podiumH[orig]}"></div>
           </div>`;
@@ -380,10 +389,11 @@ function _renderLeaderboardTab(cu) {
           const grad = avatarGradient(m.key);
           const isMe = m.key === cu;
           const badge = isVerified(state.db.members?.[m.key]) ? VERIFIED_BADGE : '';
+          const s = _streak(m);
           return `<div class="lb-row${isMe ? ' lb-row--me' : ''}">
             <div class="lb-row__rank">${i + 4}</div>
             <div class="lb-row__avatar" style="background:${grad}">${(m.name || m.key || '?').slice(0,2).toUpperCase()}</div>
-            <div class="lb-row__name">${esc(m.name || m.key || '?')}${badge}${isMe ? ` <span class="lb-row__you">${t('lbYou')}</span>` : ''}</div>
+            <div class="lb-row__name">${esc(m.name || m.key || '?')}${badge}${isMe ? ` <span class="lb-row__you">${t('lbYou')}</span>` : ''}${s > 0 ? ` <span class="lb-streak">🔥 ${s}</span>` : ''}</div>
             <div class="lb-row__score">${_score(m)}</div>
           </div>`;
         }).join('')}

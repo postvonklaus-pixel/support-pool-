@@ -61,6 +61,14 @@ export function render() {
   const isAdmin  = u.role === 'admin';
   const weeklyGiven = u.weeklyGiven || 0;
 
+  // Streak: count consecutive days with support activity (today + yesterday + ...)
+  const streak = (() => {
+    const days = u.supportDays || u.activeDays || [];
+    let n = 0; const d = new Date();
+    while (days.includes(d.toISOString().slice(0, 10))) { n++; d.setDate(d.getDate() - 1); }
+    return n;
+  })();
+
   const openCnt = Object.values(state.db.videos || {}).filter(v => {
     if (v.status === 'done' || v.status === 'expired') return false;
     if ((v.ownerKey || v.owner || '').toLowerCase() === myKey) return false;
@@ -203,9 +211,9 @@ export function render() {
         <div class="dash-tile dash-tile--weekly" data-action="dash:leaderboard"
           role="button" tabindex="0" ${delay(7)}>
           <div class="dash-tile__ic dash-tile__ic--gray">${IC.weekly}</div>
-          <div class="dash-tile__value" style="font-size:var(--text-xl)">${weeklyGiven}</div>
-          <div class="dash-tile__label">${t('dashTileActivity') || 'AKTIVITÄT'}</div>
-          <div class="dash-tile__sub">${weeklyGiven} ${t('given') || 'gegeben'}</div>
+          <div class="dash-tile__value" style="font-size:var(--text-xl)">${streak > 0 ? `🔥 ${streak}` : weeklyGiven}</div>
+          <div class="dash-tile__label">${streak > 0 ? (t('actStreak') || '🔥 STREAK') : (t('dashTileActivity') || 'AKTIVITÄT')}</div>
+          <div class="dash-tile__sub">${t('wkLabel') || 'Woche'}: ${weeklyGiven}</div>
         </div>`}
 
       </div>
