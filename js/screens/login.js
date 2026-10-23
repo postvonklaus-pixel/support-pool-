@@ -310,29 +310,43 @@ function _setupHandlers() {
     });
     input.addEventListener('blur', () => {
       setTimeout(() => ge('login-autocomplete')?.classList.remove('open'), 160);
+      // Remove extra padding once keyboard is closed
+      setTimeout(() => {
+        const screen = document.getElementById('screen-login');
+        if (screen) screen.style.paddingBottom = '';
+      }, 300);
     });
 
-    // When keyboard opens: scroll so input + autocomplete (240px) clears the keyboard
+    // iOS keyboard fix: scroll so input + iOS autocomplete bar (≈160px) clear the keyboard.
+    // padding-bottom on the screen gives iOS room to scroll into on FIRST tap.
+    const scrollInputHigh = () => {
+      const screen = document.getElementById('screen-login');
+      const wrap   = input.closest('.login-input-wrap') || input;
+      if (!screen || !wrap) return;
+      const vvh    = window.visualViewport?.height || window.innerHeight;
+      const rect   = wrap.getBoundingClientRect();
+      // 240px autocomplete dropdown + 160px iOS password/suggestion bar
+      const excess = rect.bottom + 400 - (vvh - 8);
+      if (excess > 0) screen.scrollBy({ top: excess, behavior: 'smooth' });
+    };
+
+    // On touchstart: inject padding so the screen can scroll on first keyboard open
+    input.addEventListener('touchstart', () => {
+      const screen = document.getElementById('screen-login');
+      if (screen) screen.style.paddingBottom = '500px';
+    }, { passive: true });
+
     input.addEventListener('focus', () => {
-      const doScroll = () => {
-        const screen = document.getElementById('screen-login');
-        const wrap   = input.closest('.login-input-wrap') || input;
-        if (!screen || !wrap) return;
-        const vvh    = window.visualViewport?.height || window.innerHeight;
-        const rect   = wrap.getBoundingClientRect();
-        const excess = rect.bottom + 240 - (vvh - 8);
-        if (excess > 0) screen.scrollBy({ top: excess, behavior: 'smooth' });
-      };
+      // Double-fire: 100ms catches fast keyboards, 400ms catches slow/first-open
+      setTimeout(scrollInputHigh, 100);
+      setTimeout(scrollInputHigh, 400);
 
       if (window.visualViewport) {
         let debounce;
-        const onResize = () => { clearTimeout(debounce); debounce = setTimeout(doScroll, 100); };
+        const onResize = () => { clearTimeout(debounce); debounce = setTimeout(scrollInputHigh, 80); };
         const cleanup  = () => { window.visualViewport.removeEventListener('resize', onResize); clearTimeout(debounce); };
         window.visualViewport.addEventListener('resize', onResize);
-        const fallback = setTimeout(() => { cleanup(); doScroll(); }, 800);
-        input.addEventListener('blur', () => { cleanup(); clearTimeout(fallback); }, { once: true });
-      } else {
-        setTimeout(doScroll, 500);
+        input.addEventListener('blur', () => { cleanup(); }, { once: true });
       }
     });
   }
