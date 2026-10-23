@@ -213,7 +213,7 @@ export function render() {
           <div class="dash-tile__ic dash-tile__ic--gray">${IC.weekly}</div>
           <div class="dash-tile__value" style="font-size:var(--text-xl)">${streak > 0 ? `🔥 ${streak}` : weeklyGiven}</div>
           <div class="dash-tile__label">${streak > 0 ? (t('actStreak') || '🔥 STREAK') : (t('dashTileActivity') || 'AKTIVITÄT')}</div>
-          <div class="dash-tile__sub">${t('wkLabel') || 'Woche'}: ${weeklyGiven}</div>
+          <div class="dash-tile__sub">${t('wkLabel') || 'Woche'}: ${weeklyGiven}${(u.streakRecord || 0) > (streak || 0) ? ` · 🏅 ${u.streakRecord}` : ''}</div>
         </div>`}
 
       </div>

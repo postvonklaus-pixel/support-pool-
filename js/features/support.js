@@ -275,6 +275,17 @@ on('support:done', (el) => {
   const newTodayGiven = (u.todayGiven?.[todayKey] || 0) + 1;
   writeDB(`members/${cu}/todayGiven/${todayKey}`, newTodayGiven);
 
+  // Calculate current streak and update all-time record if exceeded
+  const currentStreak = (() => {
+    let n = 0; const d = new Date();
+    while (days.includes(d.toISOString().slice(0, 10))) { n++; d.setDate(d.getDate() - 1); }
+    return n;
+  })();
+  const newRecord = Math.max(currentStreak, u.streakRecord || 0);
+  if (newRecord > (u.streakRecord || 0)) {
+    writeDB(`members/${cu}/streakRecord`, newRecord);
+  }
+
   // Optimistic local state update for member stats so counters render immediately
   if (state.db.members?.[cu]) {
     if (!state.db.members[cu].stats) state.db.members[cu].stats = {};
@@ -283,6 +294,7 @@ on('support:done', (el) => {
     state.db.members[cu].supportDays = days;
     if (!state.db.members[cu].todayGiven) state.db.members[cu].todayGiven = {};
     state.db.members[cu].todayGiven[todayKey] = newTodayGiven;
+    if (newRecord > (u.streakRecord || 0)) state.db.members[cu].streakRecord = newRecord;
   }
 
   // Increment owner's received counter.

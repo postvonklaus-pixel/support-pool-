@@ -98,7 +98,10 @@ export function render() {
       <div class="profile-section">
         <div class="profile-section__head">
           <span class="profile-section__title">${t('actStreak')}</span>
-          ${streak > 0 ? `<span class="streak-badge">${t('streakDayBadge').replace('{n}', streak)}</span>` : ''}
+          <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+            ${streak > 0 ? `<span class="streak-badge">${t('streakDayBadge').replace('{n}', streak)}</span>` : ''}
+            ${(u.streakRecord || 0) > 0 ? `<span class="streak-record-badge">${(t('streakRecord') || '🏅 Rekord: {n} Tage').replace('{n}', u.streakRecord)}</span>` : ''}
+          </div>
         </div>
         ${streakFlames(u.supportDays || u.activeDays || [])}
       </div>
