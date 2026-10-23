@@ -112,7 +112,8 @@
   padding:
     calc(88px + env(safe-area-inset-top, 0px))
     16px
-    calc(32px + env(safe-area-inset-bottom, 0px));
+    calc(32px + env(safe-area-inset-bottom, 0px))
+    28px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -122,19 +123,7 @@
 }
 
 /* ── Card ────────────────────────────────────────────── */
-/* ── NOVA rocket overlay ─────────────────────────────── */
-#nova-rocket {
-  position: absolute;
-  top: -30px;
-  left: -10px;
-  width: 110px;
-  height: auto;
-  z-index: 3;
-  pointer-events: none;
-  transform: rotate(-12deg);
-  mix-blend-mode: screen;
-  filter: drop-shadow(0 0 12px rgba(255,140,0,0.5));
-}
+/* (border + shadow + blur are baked into bg image) */
 
 .login-card > * {
   position: relative;
@@ -155,27 +144,21 @@
   box-sizing: border-box;
 }
 
-/* ── Static text hidden — baked into bg image ────────── */
+/* ── Text readability inside glass frame ─────────────── */
 .login-eyebrow,
-.login-logo,
-.login-logo-fallback,
 .login-subtitle,
-.login-divider,
-.login-h1,
-.login-h2 {
-  visibility: hidden;
-  height: 0;
-  margin: 0;
-  padding: 0;
-  overflow: hidden;
+.login-micro,
+.login-footer {
+  text-shadow: 0 1px 8px rgba(0,0,0,0.6);
 }
-
-/* ── Tiles: transparent so bg image shows through ───── */
-.login-stat-tile {
-  background: transparent !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  border: none !important;
+.login-h1 {
+  color: #ffffff;
+  font-weight: 800;
+  text-shadow: 0 2px 16px rgba(0,0,0,0.8);
+}
+.login-h2 {
+  color: rgba(255,255,255,0.85);
+  text-shadow: 0 1px 10px rgba(0,0,0,0.7);
 }
 
 /* ── Eyebrow ─────────────────────────────────────────── */
