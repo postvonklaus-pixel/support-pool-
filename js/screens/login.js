@@ -323,10 +323,13 @@ function _setupHandlers() {
       const screen = document.getElementById('screen-login');
       const wrap   = input.closest('.login-input-wrap') || input;
       if (!screen || !wrap) return;
-      const vvh    = window.visualViewport?.height || window.innerHeight;
-      const rect   = wrap.getBoundingClientRect();
-      // 240px autocomplete dropdown + 44px iOS password/suggestion bar
-      const excess = rect.bottom + 284 - (vvh - 8);
+      const vvh  = window.visualViewport?.height || window.innerHeight;
+      const rect = wrap.getBoundingClientRect();
+      // How much we need to scroll to clear keyboard + autocomplete + iOS suggestion bar
+      const needed  = rect.bottom + 226 - (vvh - 8);
+      // Never push input above topbar (56px) + 16px gap
+      const maxSafe = rect.top - 72;
+      const excess  = Math.max(0, Math.min(needed, maxSafe));
       if (excess > 0) screen.scrollBy({ top: excess, behavior: 'smooth' });
     };
 
