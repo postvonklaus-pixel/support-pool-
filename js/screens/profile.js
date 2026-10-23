@@ -45,6 +45,19 @@ export function render() {
   const streak   = _currentStreak(u);
   const nextRank = ranks[ranks.indexOf(rank) + 1] || null;
   const toNext   = nextRank ? nextRank.min - given : 0;
+
+  // Weekly leaderboard position
+  const _lbEntries = Object.entries(state.db.members || {})
+    .filter(([, m]) => (m.weeklyGiven || 0) > 0 || (m.stats?.given || 0) > 0)
+    .sort(([, a], [, b]) => {
+      const w = (b.weeklyGiven || 0) - (a.weeklyGiven || 0);
+      return w !== 0 ? w : (b.stats?.given || 0) - (a.stats?.given || 0);
+    });
+  const lbRank    = _lbEntries.findIndex(([k]) => k === cu) + 1;
+  const lbTotal   = _lbEntries.length;
+  // 5-row window centered on the current user (2 above, self, 2 below)
+  const lbStart   = Math.max(0, Math.min(lbRank - 3, lbTotal - 5));
+  const lbWindow  = _lbEntries.slice(lbStart, lbStart + 5);
   // Real video count as fallback (handles reset/new accounts where postsTotal = 0)
   const _realVids  = Object.values(state.db.videos || {}).filter(v =>
     (v.ownerKey || v.owner || '').toLowerCase() === cu.toLowerCase()
@@ -105,6 +118,30 @@ export function render() {
         </div>
         ${streakFlames(u.supportDays || u.activeDays || [])}
       </div>
+
+      <!-- ── Leaderboard Position ── -->
+      ${lbRank > 0 ? `
+      <div class="profile-section">
+        <div class="profile-section__head">
+          <span class="profile-section__title">🏆 ${t('lbTitle') || 'Top-Supporter der Woche'}</span>
+          <span class="profile-section__sub">#${lbRank} / ${lbTotal}</span>
+        </div>
+        <div class="profile-lb-list">
+          ${lbWindow.map(([key, m], i) => {
+            const pos    = lbStart + i + 1;
+            const isMe   = key === cu;
+            const grad   = avatarGradient(key);
+            const medals = { 1:'🥇', 2:'🥈', 3:'🥉' };
+            const posLabel = medals[pos] || `#${pos}`;
+            return `<div class="profile-lb-row${isMe ? ' profile-lb-row--me' : ''}">
+              <div class="profile-lb-row__pos">${posLabel}</div>
+              <div class="profile-lb-row__avatar" style="background:${grad}">${(m.name || key || '?').slice(0,2).toUpperCase()}</div>
+              <div class="profile-lb-row__name">${esc(m.name || fbDec(key) || key)}${isMe ? ` <span class="lb-row__you">${t('lbYou')}</span>` : ''}</div>
+              <div class="profile-lb-row__score">${m.weeklyGiven || 0}<span class="lb-score__sep">/</span><span class="lb-score__total">${m.stats?.given || 0}</span></div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>` : ''}
 
       <!-- ── Rang Fortschritt ── -->
       ${nextRank ? `
