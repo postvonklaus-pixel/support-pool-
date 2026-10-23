@@ -325,8 +325,8 @@ function _setupHandlers() {
       if (!screen || !wrap) return;
       const vvh    = window.visualViewport?.height || window.innerHeight;
       const rect   = wrap.getBoundingClientRect();
-      // 240px autocomplete dropdown + 160px iOS password/suggestion bar
-      const excess = rect.bottom + 400 - (vvh - 8);
+      // 240px autocomplete dropdown + 44px iOS password/suggestion bar
+      const excess = rect.bottom + 284 - (vvh - 8);
       if (excess > 0) screen.scrollBy({ top: excess, behavior: 'smooth' });
     };
 
