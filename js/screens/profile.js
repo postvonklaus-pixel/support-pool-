@@ -8,6 +8,7 @@ import { esc, avatarGradient, getNextFridayWIB, fbDec } from '../utils.js';
 import { on }         from '../events.js';
 import { progressRing, streakFlames } from '../components/progress.js';
 import { renderAchievements } from '../features/achievements.js';
+import { isVerified, VERIFIED_BADGE } from '../features/verification.js';
 
 function _ranks() {
   return [
@@ -75,7 +76,7 @@ export function render() {
           <div class="profile-avatar" style="background:${gradient}">${initial}</div>
           <div class="profile-rank-badge" title="${rank.label}">${rank.icon}</div>
         </div>
-        <div class="profile-name">${esc(u.name || cu)}</div>
+        <div class="profile-name">${esc(u.name || cu)}${isVerified(u) ? '<span class="verified-badge verified-badge--lg" title="Verifiziert" aria-label="Verifiziert"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="#3b82f6"/><polyline points="7 12 10.5 15.5 17 9" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>' : ''}</div>
         <div class="profile-handle">@${esc(fbDec(cu))}</div>
         <div class="profile-rank-label" style="color:${rank.color}">${rank.icon} ${rank.label}</div>
         <div class="profile-weekly-chip" id="profile-weekly-chip">${_weeklyChipText()}</div>
@@ -133,10 +134,12 @@ export function render() {
             const grad   = avatarGradient(key);
             const medals = { 1:'🥇', 2:'🥈', 3:'🥉' };
             const posLabel = medals[pos] || `#${pos}`;
+            const mbr    = state.db.members?.[key];
+            const vBadge = mbr && isVerified(mbr) ? VERIFIED_BADGE : '';
             return `<div class="profile-lb-row${isMe ? ' profile-lb-row--me' : ''}">
               <div class="profile-lb-row__pos">${posLabel}</div>
               <div class="profile-lb-row__avatar" style="background:${grad}">${(m.name || key || '?').slice(0,2).toUpperCase()}</div>
-              <div class="profile-lb-row__name">${esc(m.name || fbDec(key) || key)}${isMe ? ` <span class="lb-row__you">${t('lbYou')}</span>` : ''}</div>
+              <div class="profile-lb-row__name">${esc(m.name || fbDec(key) || key)}${vBadge}${isMe ? ` <span class="lb-row__you">${t('lbYou')}</span>` : ''}</div>
               <div class="profile-lb-row__score">${m.weeklyGiven || 0}<span class="lb-score__sep">/</span><span class="lb-score__total">${m.stats?.given || 0}</span></div>
             </div>`;
           }).join('')}

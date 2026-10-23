@@ -216,6 +216,12 @@
   font-weight: var(--weight-bold);
   color: var(--accent-warning);
 }
+/* Larger verified badge for profile hero name */
+.verified-badge--lg {
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
 .streak-record-badge {
   display: inline-flex;
   align-items: center;
