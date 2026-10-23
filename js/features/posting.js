@@ -148,24 +148,34 @@ on('post:submit', () => {
 });
 
 // ── Client-Side Fallback: activate scheduled videos ───────
-// The Cloud Function (processScheduledVideos) is the primary poster.
-// This runs on boot as a safety net in case the CF missed a run.
+// Any logged-in client can activate any due scheduled video.
+// First writer wins — Firebase handles concurrent activations safely.
 export function checkPendingOnBoot() {
+  checkScheduledVideos();
+}
+
+export function checkScheduledVideos() {
   const cu  = state.currentUser;
+  if (!cu) return;
   const now = Date.now();
   const videos = state.db.videos || {};
 
   Object.entries(videos).forEach(([vidId, v]) => {
-    if (v.status !== 'scheduled')   return;
-    if (!v.scheduledFor)            return;
-    if (v.scheduledFor > now)       return;
-    if ((v.ownerKey || v.owner) !== cu) return;
+    if (v.status !== 'scheduled') return;
+    if (!v.scheduledFor)          return;
+    if (v.scheduledFor > now)     return;
 
-    // Activate: mark as open
+    // Activate — any member can trigger this
     writeDB(`videos/${vidId}/status`,  'open');
     writeDB(`videos/${vidId}/postedAt`, now);
 
-    addNotif(cu, '📹', '', 'postConfirm', { msgKey: 'schedPosted' });
-    toast(t('schedPosted') || '🎉 Dein geplantes Video ist jetzt live!', 'success', 4000);
+    // Notify the owner (whoever's online activates it on their behalf)
+    const owner = v.ownerKey || v.owner;
+    if (owner) addNotif(owner, '📹', '', 'postConfirm', { msgKey: 'schedPosted' });
+
+    // Show toast only to the owner's own session
+    if (owner === cu) {
+      toast(t('schedPosted') || '🎉 Dein geplantes Video ist jetzt live!', 'success', 4000);
+    }
   });
 }

@@ -267,6 +267,10 @@ function checkBroadcast() {
 // ── Tick (periodic render refresh) ───────────────────────
 function tick() {
   if (!state.currentUser) return;
+
+  // Always check scheduled videos regardless of UI state
+  import('./features/posting.js').then(m => m.checkScheduledVideos());
+
   // Skip while user is actively typing
   const ae = document.activeElement;
   if (ae && (ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA')) return;
