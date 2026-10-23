@@ -49,7 +49,7 @@
   z-index: 0;
   background-image: url('/support-pool-/assets/nova-design-bg.jpg');
   background-size: cover;
-  background-position: center top;
+  background-position: center 8%;
   background-repeat: no-repeat;
 }
 .login-bg::after { display: none; }
