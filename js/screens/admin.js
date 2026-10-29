@@ -6,7 +6,7 @@ import { state }   from '../state.js';
 import { t }       from '../i18n.js';
 import { esc, avatarGradient, timeAgo } from '../utils.js';
 import { on }      from '../events.js';
-import { writeDB } from '../firebase.js';
+import { writeDB, dbIncrement } from '../firebase.js';
 import { toast }   from '../components/toast.js';
 import { confirm, openModal, closeModal } from '../components/modal.js';
 import { getTemplates, TEMPLATES } from '../features/adminTemplates.js';
@@ -729,22 +729,22 @@ function _registerHandlers() {
     Object.entries(state.db.messages || {}).forEach(([mid, msg]) => {
       if (msg.to === key || msg.from === key) writeDB(`messages/${mid}`, null);
     });
-    // Preserve stats contribution to pool-wide totals before deletion
-    // Read from data attributes (set at render time) to avoid key-encoding lookup issues
-    const _arch  = state.db.archivedStats || {};
+    // Preserve stats contribution to pool-wide totals before deletion.
+    // Use server-side increments — never a stale local read — so restarts
+    // and concurrent deletes can't corrupt the accumulated total.
     const _wg    = parseInt(el.dataset.wg,    10) || 0;
     const _given = parseInt(el.dataset.given, 10) || 0;
     const _recv  = parseInt(el.dataset.recv,  10) || 0;
     if (_wg + _given + _recv > 0) {
       // Optimistic local update so render() sees correct totals immediately
-      // (Firebase onValue for archivedStats arrives slightly after members onValue)
       if (!state.db.archivedStats) state.db.archivedStats = {};
-      state.db.archivedStats.weeklyGiven = (_arch.weeklyGiven || 0) + _wg;
-      state.db.archivedStats.given       = (_arch.given       || 0) + _given;
-      state.db.archivedStats.received    = (_arch.received    || 0) + _recv;
-      writeDB('archivedStats/weeklyGiven', state.db.archivedStats.weeklyGiven);
-      writeDB('archivedStats/given',       state.db.archivedStats.given);
-      writeDB('archivedStats/received',    state.db.archivedStats.received);
+      state.db.archivedStats.weeklyGiven = (state.db.archivedStats.weeklyGiven || 0) + _wg;
+      state.db.archivedStats.given       = (state.db.archivedStats.given       || 0) + _given;
+      state.db.archivedStats.received    = (state.db.archivedStats.received    || 0) + _recv;
+      // Atomic server-side increments — safe against stale reads on restart
+      if (_wg)    writeDB('archivedStats/weeklyGiven', dbIncrement(_wg));
+      if (_given) writeDB('archivedStats/given',       dbIncrement(_given));
+      if (_recv)  writeDB('archivedStats/received',    dbIncrement(_recv));
     }
     // Delete member record (makes username available again)
     writeDB(`members/${key}`, null);
