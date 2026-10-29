@@ -160,6 +160,7 @@ function _renderOverview() {
           <button class="btn btn--ghost btn--sm" data-action="admin:vid:cleanup">🧹 ${t('adminExpiredBtn')}</button>
           <button class="btn btn--ghost btn--sm" data-action="admin:week:recap">📊 ${t('adminRecapBtn')}</button>
           <button class="btn btn--ghost btn--sm" data-action="admin:group:clean">🧹 ${t('adminGroupCleanBtn') || 'Gruppen bereinigen'}</button>
+          <button class="btn btn--ghost btn--sm" data-action="admin:reactivate:all">✅ ${t('adminReactivateAllBtn') || 'Alle reaktivieren'}</button>
         </div>
       </div>
     </div>
@@ -588,6 +589,23 @@ function _registerHandlers() {
     } else {
       _debounceRender();
     }
+  });
+
+  on('admin:reactivate:all', async () => {
+    const members = state.db.members || {};
+    const inactive = Object.entries(members).filter(([, m]) => m.status === 'inactive');
+    if (!inactive.length) {
+      toast('✅ Keine inaktiven Mitglieder gefunden', 'info', 3000);
+      return;
+    }
+    const ok = await confirm(
+      `${inactive.length} inaktive Mitglieder reaktivieren?`,
+      'Alle werden wieder auf Status "aktiv" gesetzt.'
+    );
+    if (!ok) return;
+    inactive.forEach(([k]) => writeDB(`members/${k}/status`, 'active'));
+    toast(`✅ ${inactive.length} Mitglieder reaktiviert`, 'success', 4000);
+    setTimeout(render, 400);
   });
 
   on('admin:member:reactivate', async (el) => {
