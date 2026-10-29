@@ -6,7 +6,7 @@ import { state }   from '../state.js';
 import { t }       from '../i18n.js';
 import { esc, avatarGradient, timeAgo } from '../utils.js';
 import { on }      from '../events.js';
-import { writeDB, dbIncrement } from '../firebase.js';
+import { writeDB } from '../firebase.js';
 import { toast }   from '../components/toast.js';
 import { confirm, openModal, closeModal } from '../components/modal.js';
 import { getTemplates, TEMPLATES } from '../features/adminTemplates.js';
@@ -736,15 +736,13 @@ function _registerHandlers() {
     const _given = parseInt(el.dataset.given, 10) || 0;
     const _recv  = parseInt(el.dataset.recv,  10) || 0;
     if (_wg + _given + _recv > 0) {
-      // Optimistic local update so render() sees correct totals immediately
       if (!state.db.archivedStats) state.db.archivedStats = {};
       state.db.archivedStats.weeklyGiven = (state.db.archivedStats.weeklyGiven || 0) + _wg;
       state.db.archivedStats.given       = (state.db.archivedStats.given       || 0) + _given;
       state.db.archivedStats.received    = (state.db.archivedStats.received    || 0) + _recv;
-      // Atomic server-side increments — safe against stale reads on restart
-      if (_wg)    writeDB('archivedStats/weeklyGiven', dbIncrement(_wg));
-      if (_given) writeDB('archivedStats/given',       dbIncrement(_given));
-      if (_recv)  writeDB('archivedStats/received',    dbIncrement(_recv));
+      writeDB('archivedStats/weeklyGiven', state.db.archivedStats.weeklyGiven);
+      writeDB('archivedStats/given',       state.db.archivedStats.given);
+      writeDB('archivedStats/received',    state.db.archivedStats.received);
     }
     // Delete member record (makes username available again)
     writeDB(`members/${key}`, null);

@@ -127,13 +127,6 @@ function _subscribeIndividualPaths() {
   });
 }
 
-// ── Server-side atomic increment ─────────────────────────
-// Wraps firebase.database.ServerValue.increment so callers
-// never need to touch the global firebase object directly.
-export function dbIncrement(n) {
-  return firebase.database.ServerValue.increment(n);
-}
-
 // ── Write (debounced) ─────────────────────────────────────
 const _pendingWrites = new Map();
 
