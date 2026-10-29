@@ -129,7 +129,13 @@
 .myvids-how-step__text {
   font-size: var(--text-sm); color: var(--text-primary); font-weight: var(--weight-medium);
 }
-.myvid-card { padding: var(--sp-4); margin-bottom: var(--sp-3); }
+.myvid-card {
+  padding: var(--sp-4);
+  margin-bottom: var(--sp-3);
+  border-color: var(--border-default);
+  border-left: 3px solid var(--accent-primary);
+  box-shadow: var(--shadow-sm);
+}
 .myvid-card__header { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-2); margin-bottom: var(--sp-3); }
 .myvid-card__link   { font-size: var(--text-sm); color: var(--accent-secondary); text-decoration: none; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .myvid-card__progress { margin-bottom: var(--sp-2); }

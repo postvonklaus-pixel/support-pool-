@@ -10,7 +10,7 @@ import { openModal, closeModal } from '../components/modal.js';
 import { on }         from '../events.js';
 import { goScreen }   from '../router.js';
 import { addNotif }   from './notifications.js';
-import { getNextFridayWIB } from '../utils.js';
+import { getNextFridayWIB, getLastFridayWIB } from '../utils.js';
 
 const R1_MS        = 12 * 60 * 60 * 1000;
 const SUPER_MS     =  6 * 60 * 60 * 1000;
@@ -330,5 +330,26 @@ export function checkScheduledVideos() {
 
     if (owner) addNotif(owner, '📹', '', 'postConfirm', { msgKey: 'schedPosted' });
     if (owner === cu) toast(t('schedPosted') || '🎉 Dein geplantes Video ist jetzt live!', 'success', 4000);
+  });
+
+  // After processing activations, also expire stale pre-reset videos
+  _checkWeeklyCleanup();
+}
+
+// Expire open/scheduled videos from before the last Friday reset
+// that are also older than 24h (grace period so freshly posted videos
+// still get some visibility even if the reset just happened).
+function _checkWeeklyCleanup() {
+  const now       = Date.now();
+  const lastReset = getLastFridayWIB();
+  const cutoff24h = now - 24 * 3600000;
+  const videos    = state.db.videos || {};
+
+  Object.entries(videos).forEach(([vidId, v]) => {
+    if (v.status !== 'open' && v.status !== 'scheduled') return;
+    const postedAt = v.postedAt || 0;
+    if (postedAt >= lastReset) return;   // current week — keep
+    if (postedAt >= cutoff24h) return;   // <24h old — grace period
+    writeDB(`videos/${vidId}/status`, 'expired');
   });
 }
