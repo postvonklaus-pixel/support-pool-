@@ -106,7 +106,8 @@ function _renderOverview() {
   const allVids  = Object.values(state.db.videos || {});
   const openVids = allVids.filter(v => v.status !== 'done' && v.status !== 'expired').length;
   const totalMsg = Object.keys(state.db.messages || {}).length;
-  const weeklyTotal = members.reduce((s, m) => s + (m.weeklyGiven || 0), 0);
+  const weeklyTotal = members.reduce((s, m) => s + (m.weeklyGiven || 0), 0)
+    + (state.db.archivedStats?.weeklyGiven || 0);
 
   const topThisWeek = members
     .filter(m => (m.weeklyGiven || 0) > 0)
@@ -702,6 +703,17 @@ function _registerHandlers() {
     Object.entries(state.db.messages || {}).forEach(([mid, msg]) => {
       if (msg.to === key || msg.from === key) writeDB(`messages/${mid}`, null);
     });
+    // Preserve stats contribution to pool-wide totals before deletion
+    const _m = state.db.members?.[key] || {};
+    const _arch = state.db.archivedStats || {};
+    const _wg = _m.weeklyGiven || 0;
+    const _given = _m.stats?.given || 0;
+    const _recv  = _m.stats?.received || 0;
+    if (_wg + _given + _recv > 0) {
+      writeDB('archivedStats/weeklyGiven', (_arch.weeklyGiven || 0) + _wg);
+      writeDB('archivedStats/given',       (_arch.given       || 0) + _given);
+      writeDB('archivedStats/received',    (_arch.received    || 0) + _recv);
+    }
     // Delete member record (makes username available again)
     writeDB(`members/${key}`, null);
     toast(`@${key} dauerhaft gelöscht`, 'success');
@@ -886,6 +898,7 @@ function _registerHandlers() {
     const updates = {};
     Object.keys(members).forEach(k => { updates[`members/${k}/weeklyGiven`] = 0; });
     Object.entries(updates).forEach(([p, v]) => writeDB(p, v));
+    writeDB('archivedStats/weeklyGiven', 0);
     toast(t('adminWeekResetDone'), 'success');
   });
 

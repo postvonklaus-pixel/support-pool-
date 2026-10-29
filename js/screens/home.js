@@ -319,7 +319,8 @@ function _renderLeaderboardTab(cu) {
   const allEntries = Object.entries(state.db.members || {});
 
   // Pool-wide weekly total
-  const weeklyTotal = allEntries.reduce((s, [, m]) => s + (m.weeklyGiven || 0), 0);
+  const weeklyTotal = allEntries.reduce((s, [, m]) => s + (m.weeklyGiven || 0), 0)
+    + (state.db.archivedStats?.weeklyGiven || 0);
 
   // Members with any history — primary sort: weeklyGiven DESC, tiebreaker: stats.given DESC
   // This means: after reset all weeklyGiven=0 → order by total; during week leader rises instantly
