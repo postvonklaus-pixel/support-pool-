@@ -159,6 +159,7 @@ function _renderOverview() {
           <button class="btn btn--ghost btn--sm" data-action="admin:week:reset">🔄 ${t('adminWeekResetBtn')}</button>
           <button class="btn btn--ghost btn--sm" data-action="admin:vid:cleanup">🧹 ${t('adminExpiredBtn')}</button>
           <button class="btn btn--ghost btn--sm" data-action="admin:week:recap">📊 ${t('adminRecapBtn')}</button>
+          <button class="btn btn--ghost btn--sm" data-action="admin:group:clean">🧹 ${t('adminGroupCleanBtn') || 'Gruppen bereinigen'}</button>
         </div>
       </div>
     </div>
@@ -941,6 +942,32 @@ function _registerHandlers() {
       if (v.status === 'expired') writeDB(`videos/${id}`, null);
     });
     toast(t('adminExpiredDone'), 'success');
+    setTimeout(render, 300);
+  });
+
+  on('admin:group:clean', async () => {
+    const ok = await confirm(
+      t('adminGroupCleanConfirm') || 'Verwaiste Mitglieder aus Gruppen entfernen?',
+      'Einträge ohne zugehörigen Mitgliedsdatensatz werden aus allen Gruppen-Arrays gelöscht.'
+    );
+    if (!ok) return;
+
+    const knownMembers = new Set(Object.keys(state.db.members || {}));
+    const groups = state.db.groups || {};
+    let removed = 0;
+
+    Object.entries(groups).forEach(([gid, g]) => {
+      const arr = Array.isArray(g.members) ? g.members : Object.values(g.members || {});
+      const clean = arr.filter(k => knownMembers.has(k));
+      if (clean.length !== arr.length) {
+        removed += arr.length - clean.length;
+        writeDB(`groups/${gid}/members`, clean);
+      }
+    });
+
+    const msg = (t('adminGroupCleanDone') || 'Gruppen bereinigt — {n} verwaiste Einträge entfernt')
+      .replace('{n}', removed);
+    toast(removed > 0 ? msg : '✅ Keine verwaisten Einträge gefunden', 'success', 4000);
     setTimeout(render, 300);
   });
 
