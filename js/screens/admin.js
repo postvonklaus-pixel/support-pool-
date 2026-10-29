@@ -502,11 +502,16 @@ function _renderGroups() {
 
   return `<div class="admin-groups-list">
     ${groups.map(g => {
-      const memberCount = (g.members || []).length;
+      const keys    = Array.isArray(g.members) ? g.members : Object.values(g.members || {});
+      const active  = keys.filter(k => state.db.members?.[k]?.status === 'active').length;
+      const inactive = keys.length - active;
+      const badge   = inactive > 0
+        ? `${active} aktiv · <span style="opacity:.6">${inactive} inaktiv</span>`
+        : `${active} ${t('adminTabMembers')}`;
       return `<div class="admin-group-card">
         <div class="admin-group-card__head">
           <div class="admin-group-card__name">${esc(g.name)}</div>
-          <span class="badge badge--primary">${memberCount} ${t('adminTabMembers')}</span>
+          <span class="badge badge--primary">${badge}</span>
         </div>
         <div class="admin-group-card__meta">
           ${g.id ? `<span class="admin-group-card__id">ID: ${esc(g.id)}</span>` : ''}
