@@ -15,7 +15,7 @@ const FIREBASE_CONFIG = {
   appId:             "1:620989491854:web:ab99c2cb7864e63a98f7df"
 };
 
-const DB_PATHS = ['members', 'videos', 'messages', 'settings', 'groups', 'chat'];
+const DB_PATHS = ['members', 'videos', 'messages', 'settings', 'groups', 'chat', 'archivedStats'];
 
 // Set at runtime: 'sp6' if data lives under /sp6/, '' for database root
 let _base = 'sp6';
