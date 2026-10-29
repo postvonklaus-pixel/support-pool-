@@ -323,7 +323,9 @@ function _adminMemberRow(key, m) {
           ✓
         </button>
         <button class="btn btn--danger btn--icon btn--sm"
-          data-action="admin:member:delete" data-key="${esc(key)}" title="Endgültig löschen" aria-label="Löschen">
+          data-action="admin:member:delete" data-key="${esc(key)}"
+          data-wg="${m.weeklyGiven||0}" data-given="${m.stats?.given||0}" data-recv="${m.stats?.received||0}"
+          title="Endgültig löschen" aria-label="Löschen">
           🗑️
         </button>
       ` : `
@@ -704,11 +706,11 @@ function _registerHandlers() {
       if (msg.to === key || msg.from === key) writeDB(`messages/${mid}`, null);
     });
     // Preserve stats contribution to pool-wide totals before deletion
-    const _m = state.db.members?.[key] || {};
-    const _arch = state.db.archivedStats || {};
-    const _wg = _m.weeklyGiven || 0;
-    const _given = _m.stats?.given || 0;
-    const _recv  = _m.stats?.received || 0;
+    // Read from data attributes (set at render time) to avoid key-encoding lookup issues
+    const _arch  = state.db.archivedStats || {};
+    const _wg    = parseInt(el.dataset.wg,    10) || 0;
+    const _given = parseInt(el.dataset.given, 10) || 0;
+    const _recv  = parseInt(el.dataset.recv,  10) || 0;
     if (_wg + _given + _recv > 0) {
       writeDB('archivedStats/weeklyGiven', (_arch.weeklyGiven || 0) + _wg);
       writeDB('archivedStats/given',       (_arch.given       || 0) + _given);
