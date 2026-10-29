@@ -717,6 +717,9 @@ function _registerHandlers() {
     // Delete member record (makes username available again)
     writeDB(`members/${key}`, null);
     toast(`@${key} dauerhaft gelöscht`, 'success');
+    if (_wg + _given + _recv > 0) {
+      setTimeout(() => toast(`📦 Archiviert: ${_wg} wöchentl. · ${_given} gegeben · ${_recv} erhalten`, 'info', 5000), 600);
+    }
     setTimeout(render, 400);
   });
 
