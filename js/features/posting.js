@@ -57,8 +57,10 @@ function _fmtRem(ms) {
   return h > 0 ? `${h}h ${m}min` : `${m}min`;
 }
 
+const _LOCALES = { de:'de-DE', en:'en-GB', id:'id-ID', it:'it-IT', es:'es-ES', tr:'tr-TR', ar:'ar-SA', zh:'zh-CN', ja:'ja-JP', pl:'pl-PL' };
 function _fmtDate(ts) {
-  return new Date(ts).toLocaleString('de-DE', {
+  const locale = _LOCALES[state.lang] || undefined;
+  return new Date(ts).toLocaleString(locale, {
     weekday: 'short', day: '2-digit', month: '2-digit',
     hour: '2-digit', minute: '2-digit',
   });
@@ -99,37 +101,41 @@ function _openQueueManager(cu, u, queue) {
     const vid       = v.id || v._key || '';
     const link      = (v.link || v.url || '');
     const shortLink = link.replace(/^https?:\/\/(www\.)?tiktok\.com\//i, '@').slice(0, 38);
+    const cooldownStr = (t('queueCooldown') || '⏳ Cooldown: {t}').replace('{t}', _fmtRem(remaining));
 
     return `
     <div class="queue-row${isOpen ? ' queue-row--active' : ''}">
       <div class="queue-row__head">
         <span class="queue-row__status">${isOpen
-          ? '<span class="queue-row__live">🟢 Live</span>'
+          ? `<span class="queue-row__live">${t('queueLive') || '🟢 Live'}</span>`
           : `<span class="queue-row__sched">⏰ ${_fmtDate(v.scheduledFor || 0)}</span>`
         }</span>
         ${!isOpen && vid
-          ? `<button class="btn btn--sm btn--ghost" data-action="queue:delete" data-vid="${vid}" style="padding:2px 8px;color:var(--accent-danger);font-size:12px">🗑 Löschen</button>`
+          ? `<button class="btn btn--sm btn--ghost" data-action="queue:delete" data-vid="${vid}" style="padding:2px 8px;color:var(--accent-danger);font-size:12px">${t('queueDelBtn') || '🗑 Löschen'}</button>`
           : ''}
       </div>
       <div class="queue-row__link">${shortLink}</div>
-      ${remaining > 0 ? `<div class="queue-row__timer">⏳ Cooldown: ${_fmtRem(remaining)}</div>` : ''}
+      ${remaining > 0 ? `<div class="queue-row__timer">${cooldownStr}</div>` : ''}
     </div>`;
   });
 
+  const resetStr  = (t('queueResetInfo') || '🔄 Reset: {d}').replace('{d}', _fmtDate(reset));
+  const addBtnTxt = isNow
+    ? (t('queuePostNow') || '▶ Jetzt neues Video posten')
+    : (t('queueScheduleBtn') || '+ Vormerken · {d}').replace('{d}', _fmtDate(nextSlot));
+  const balWarnHtml = (t('queueBalWarnText') || '⚠️ <strong>Guthaben: {n}</strong> — Gib Supports damit deine Videos live gehen!').replace('{n}', bal);
+
   openModal({
     id: 'queue-modal',
-    title: `📹 Warteschlange (${queue.length})`,
+    title: (t('queueTitle') || '📹 Warteschlange ({n})').replace('{n}', queue.length),
     body: `
-      ${balWarn ? `<div class="queue-bal-warn">⚠️ <strong>Guthaben: ${bal}</strong> — Gib Supports damit deine Videos live gehen!</div>` : ''}
+      ${balWarn ? `<div class="queue-bal-warn">${balWarnHtml}</div>` : ''}
       <div class="queue-list">${rows.join('')}</div>
-      <div class="queue-reset-info">🔄 Reset: ${_fmtDate(reset)}</div>
-      ${canAdd ? `
-        <button class="btn btn--primary btn--full" data-action="queue:add" style="margin-top:10px">
-          ${isNow ? '▶ Jetzt neues Video posten' : `+ Vormerken · ${_fmtDate(nextSlot)}`}
-        </button>
-      ` : `
-        <div class="queue-full-msg">✅ Alle Slots bis zum Reset belegt</div>
-      `}
+      <div class="queue-reset-info">${resetStr}</div>
+      ${canAdd
+        ? `<button class="btn btn--primary btn--full" data-action="queue:add" style="margin-top:10px">${addBtnTxt}</button>`
+        : `<div class="queue-full-msg">${t('queueFull') || '✅ Alle Slots bis zum Reset belegt'}</div>`
+      }
     `,
   });
 }
@@ -214,7 +220,7 @@ on('queue:delete', (el) => {
   writeDB(`videos/${vidId}`, null);
   if (state.db.videos?.[vidId]) delete state.db.videos[vidId];
   closeModal('queue-modal');
-  toast('🗑 Video aus Warteschlange entfernt', 'info', 2500);
+  toast(t('queueDeletedToast') || '🗑 Video aus Warteschlange entfernt', 'info', 2500);
   setTimeout(() => {
     const cu = state.currentUser;
     if (!cu) return;

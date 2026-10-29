@@ -893,6 +893,26 @@ function _registerHandlers() {
     const ok = await confirm(t('adminExpiredConfirm'), 'Alle Videos mit Status "expired" werden gelöscht.');
     if (!ok) return;
     const vids = state.db.videos || {};
+
+    // Snapshot postsTotal for every affected owner BEFORE deleting videos.
+    // profile.js uses Math.max(u.postsTotal, _realVids) as fallback — once
+    // expired videos are removed _realVids drops, so we persist the correct
+    // total first to prevent the displayed count from shrinking.
+    const affectedOwners = new Set();
+    Object.values(vids).forEach(v => {
+      if (v.status === 'expired') {
+        const owner = v.ownerKey || v.owner;
+        if (owner) affectedOwners.add(owner);
+      }
+    });
+    affectedOwners.forEach(owner => {
+      const m = state.db.members?.[owner] || {};
+      const stored  = m.postsTotal || 0;
+      const counted = Object.values(vids).filter(v => (v.ownerKey || v.owner || '') === owner).length;
+      const correct = Math.max(stored, counted);
+      if (correct > stored) writeDB(`members/${owner}/postsTotal`, correct);
+    });
+
     Object.entries(vids).forEach(([id, v]) => {
       if (v.status === 'expired') writeDB(`videos/${id}`, null);
     });
