@@ -712,9 +712,15 @@ function _registerHandlers() {
     const _given = parseInt(el.dataset.given, 10) || 0;
     const _recv  = parseInt(el.dataset.recv,  10) || 0;
     if (_wg + _given + _recv > 0) {
-      writeDB('archivedStats/weeklyGiven', (_arch.weeklyGiven || 0) + _wg);
-      writeDB('archivedStats/given',       (_arch.given       || 0) + _given);
-      writeDB('archivedStats/received',    (_arch.received    || 0) + _recv);
+      // Optimistic local update so render() sees correct totals immediately
+      // (Firebase onValue for archivedStats arrives slightly after members onValue)
+      if (!state.db.archivedStats) state.db.archivedStats = {};
+      state.db.archivedStats.weeklyGiven = (_arch.weeklyGiven || 0) + _wg;
+      state.db.archivedStats.given       = (_arch.given       || 0) + _given;
+      state.db.archivedStats.received    = (_arch.received    || 0) + _recv;
+      writeDB('archivedStats/weeklyGiven', state.db.archivedStats.weeklyGiven);
+      writeDB('archivedStats/given',       state.db.archivedStats.given);
+      writeDB('archivedStats/received',    state.db.archivedStats.received);
     }
     // Delete member record (makes username available again)
     writeDB(`members/${key}`, null);
