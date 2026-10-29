@@ -127,7 +127,7 @@ function _renderStats() {
   const groupCount    = Object.keys(groups).length;
   const totalSupports = Object.values(members).reduce(
     (sum, m) => sum + (m.stats?.given || 0), 0
-  );
+  ) + (state.db.archivedStats?.given || 0);
   const openVideos = Object.values(videos).filter(v => v.status === 'open').length;
 
   const _fmt = (n) => n >= 1000 ? (n / 1000).toFixed(1) + 'k' : String(n);
