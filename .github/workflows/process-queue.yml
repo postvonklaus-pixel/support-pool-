@@ -1,0 +1,24 @@
+name: Process Video Queue
+
+on:
+  schedule:
+    # Every 2 hours — ensures queued videos go live without needing a user login.
+    # WIB (UTC+7): 00:00 = 17:00 UTC, so any slot within 2h window is covered.
+    - cron: '0 */2 * * *'
+  workflow_dispatch:   # Allow manual trigger from Actions tab
+
+jobs:
+  process-queue:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Process scheduled & expired videos
+        env:
+          FIREBASE_DATABASE_URL: https://support-pool-default-rtdb.asia-southeast1.firebasedatabase.app
+          FIREBASE_DB_SECRET: ${{ secrets.FIREBASE_DB_SECRET }}
+        run: node scripts/process-queue.js
