@@ -38,12 +38,25 @@ export function render() {
   const cu = state.currentUser;
   if (!cu) return;
 
-  // Save scroll position and input value so a DB-triggered re-render
-  // (e.g. another member posts) doesn't reset them unexpectedly.
-  const prevInput     = document.getElementById('chat-pool-input')?.value ||
-                        document.getElementById('chat-dm-input')?.value || '';
-  const msgsBox       = document.getElementById('pool-messages');
-  const atBottom      = !msgsBox || msgsBox.scrollTop + msgsBox.clientHeight >= msgsBox.scrollHeight - 40;
+  const msgsBox  = document.getElementById('pool-messages');
+  const atBottom = !msgsBox || msgsBox.scrollTop + msgsBox.clientHeight >= msgsBox.scrollHeight - 40;
+  const prevInput = document.getElementById('chat-pool-input')?.value ||
+                    document.getElementById('chat-dm-input')?.value || '';
+
+  // If the chat input is focused during a DB-triggered re-render, only patch
+  // the message list instead of replacing the entire DOM. Replacing innerHTML
+  // destroys the focused <form> which causes iOS to close the keyboard.
+  const inputFocused = document.activeElement?.id === 'chat-pool-input';
+  if (inputFocused && _chatTab === 'pool' && !_dmPartner && el.classList.contains('active')) {
+    const poolMsgs = _poolMessages();
+    if (msgsBox) {
+      msgsBox.innerHTML = poolMsgs.length === 0
+        ? '<div class="pool-messages-empty"></div>'
+        : poolMsgs.map(m => _poolBubble(m, cu)).join('');
+      if (atBottom) _scrollToBottom();
+    }
+    return;
+  }
 
   if (_dmPartner) {
     _renderDMThread(el, cu, _dmPartner);
