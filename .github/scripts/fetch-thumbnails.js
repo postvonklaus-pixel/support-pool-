@@ -13,51 +13,39 @@ const THUMB_CACHE_MS = 7 * 24 * 60 * 60 * 1000;
 
 const BROWSER_UA = 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1';
 
-function _extractMeta(html, prop) {
-  const re = new RegExp('<meta[^>]+(?:property|name)=["\']' + prop + '["\'][^>]+content=["\']([^"\']+)["\']', 'i');
-  const m  = html.match(re)
-          || html.match(new RegExp('<meta[^>]+content=["\']([^"\']+)["\'][^>]+(?:property|name)=["\']' + prop + '["\']', 'i'));
-  return m ? m[1] : null;
-}
-
 async function fetchOne(url) {
   if (!url.includes('tiktok.com')) throw new Error('Not a TikTok URL');
 
-  // Fetch the TikTok video page — og:image is server-side rendered for SEO
-  const pageRes = await fetch(url, {
-    timeout: 15000,
-    headers: {
-      'User-Agent': BROWSER_UA,
-      'Accept': 'text/html,application/xhtml+xml',
-      'Accept-Language': 'en-US,en;q=0.9',
-    }
+  // tikwm.com public API — reliably returns cover, title, author for TikTok URLs
+  const apiUrl = 'https://www.tikwm.com/api/?url=' + encodeURIComponent(url);
+  const apiRes = await fetch(apiUrl, {
+    timeout: 20000,
+    headers: { 'User-Agent': BROWSER_UA, 'Accept': 'application/json' }
   });
-  if (!pageRes.ok) throw new Error('Page fetch ' + pageRes.status);
+  if (!apiRes.ok) throw new Error('API fetch ' + apiRes.status);
 
-  const html = await pageRes.text();
+  let data;
+  try { data = await apiRes.json(); } catch (e) { throw new Error('API non-JSON'); }
 
-  const thumbUrl   = _extractMeta(html, 'og:image');
-  const videoTitle = _extractMeta(html, 'og:title')    || '';
-  const author     = _extractMeta(html, 'og:site_name') || '';
+  if (data.code !== 0 || !data.data) throw new Error('API error: ' + (data.msg || JSON.stringify(data)));
 
-  if (!thumbUrl) throw new Error('No og:image found in page');
+  const coverUrl = data.data.cover || data.data.origin_cover;
+  if (!coverUrl) throw new Error('No cover URL in API response');
 
-  const thumbRes = await fetch(thumbUrl, {
-    timeout: 12000,
+  const thumbRes = await fetch(coverUrl, {
+    timeout: 15000,
     headers: { 'User-Agent': BROWSER_UA }
   });
   if (!thumbRes.ok) throw new Error('Thumb fetch ' + thumbRes.status);
 
   const buffer = await thumbRes.buffer();
-  if (buffer.length > 200 * 1024) {
-    throw new Error('Thumbnail too large: ' + buffer.length + ' bytes');
-  }
+  if (buffer.length > 200 * 1024) throw new Error('Thumbnail too large: ' + buffer.length + ' bytes');
 
-  const mime = thumbUrl.includes('.webp') ? 'image/webp' : 'image/jpeg';
+  const mime = coverUrl.includes('.webp') ? 'image/webp' : 'image/jpeg';
   return {
     thumbnail:   `data:${mime};base64,` + buffer.toString('base64'),
-    videoTitle:  videoTitle.replace(' | TikTok', '').trim(),
-    videoAuthor: author
+    videoTitle:  data.data.title || '',
+    videoAuthor: data.data.author?.nickname || ''
   };
 }
 
