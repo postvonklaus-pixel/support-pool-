@@ -325,9 +325,18 @@ function _focusInput() {
 
 // ── Handlers ───────────────────────────────────────────────
 function _registerHandlers(cu) {
-  // Prevent send buttons from stealing focus on touch (keeps keyboard open)
+  // On iOS, tapping the send button fires touchstart → touchend → mousedown → click.
+  // The synthetic mousedown is what blurs the textarea and closes the keyboard.
+  // Preventing mousedown keeps focus while still allowing click to fire.
+  // On touch: additionally handle touchend directly so send works even if click is suppressed.
   document.querySelectorAll('.chat-send-btn').forEach(btn => {
-    btn.addEventListener('pointerdown', e => e.preventDefault(), { passive: false });
+    btn.addEventListener('mousedown', e => e.preventDefault(), { passive: false });
+    btn.addEventListener('touchend', (e) => {
+      e.preventDefault(); // prevent synthetic click double-fire
+      const action = btn.dataset.action;
+      if (action === 'chat:pool:send') _sendPool(cu);
+      else if (action === 'chat:dm:send') _sendDM(cu, _dmPartner);
+    }, { passive: false });
   });
 
   on('chat:tab', (el) => {
