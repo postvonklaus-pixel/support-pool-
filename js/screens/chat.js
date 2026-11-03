@@ -94,7 +94,7 @@ function _renderPool(cu, msgs) {
         : msgs.map(m => _poolBubble(m, cu)).join('')
       }
     </div>
-    <div class="chat-input-bar">
+    <form class="chat-input-bar" id="chat-pool-form" action="javascript:void(0)">
       <textarea
         class="chat-input" id="chat-pool-input"
         rows="1" maxlength="400"
@@ -102,10 +102,10 @@ function _renderPool(cu, msgs) {
         data-action="chat:pool:input"
         autocomplete="off"
       ></textarea>
-      <button class="chat-send-btn" data-action="chat:pool:send" tabindex="-1" aria-label="${t('chatSend') || 'Senden'}">
+      <button type="submit" class="chat-send-btn" aria-label="${t('chatSend') || 'Senden'}">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
       </button>
-    </div>
+    </form>
   `;
 }
 
@@ -210,7 +210,7 @@ function _renderDMThread(el, cu, partner) {
         }
       </div>
 
-      <div class="chat-input-bar">
+      <form class="chat-input-bar" id="chat-dm-form" action="javascript:void(0)">
         <textarea
           class="chat-input" id="chat-dm-input"
           rows="1" maxlength="400"
@@ -218,10 +218,10 @@ function _renderDMThread(el, cu, partner) {
           data-action="chat:dm:input"
           autocomplete="off"
         ></textarea>
-        <button class="chat-send-btn" data-action="chat:dm:send" tabindex="-1" aria-label="${t('chatSend') || 'Senden'}">
+        <button type="submit" class="chat-send-btn" aria-label="${t('chatSend') || 'Senden'}">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
         </button>
-      </div>
+      </form>
     </div>
   `;
 
@@ -325,20 +325,15 @@ function _focusInput() {
 
 // ── Handlers ───────────────────────────────────────────────
 function _registerHandlers(cu) {
-  // On iOS Safari the textarea blurs at touchstart (not mousedown).
-  // touchstart.preventDefault() stops that blur → keyboard stays open.
-  // Since preventing touchstart also suppresses the synthetic click,
-  // we fire the send action directly from touchend.
-  document.querySelectorAll('.chat-send-btn').forEach(btn => {
-    btn.addEventListener('touchstart', e => e.preventDefault(), { passive: false });
-    btn.addEventListener('touchend', (e) => {
-      e.preventDefault();
-      const inputEl = document.getElementById('chat-pool-input') || document.getElementById('chat-dm-input');
-      if (inputEl) inputEl.focus();
-      const action = btn.dataset.action;
-      if (action === 'chat:pool:send') _sendPool(cu);
-      else if (action === 'chat:dm:send') _sendDM(cu, _dmPartner);
-    }, { passive: false });
+  // iOS Safari only keeps keyboard open on form submit — not on button tap.
+  // Wrapping the input bar in <form> with type="submit" button is the only reliable fix.
+  document.getElementById('chat-pool-form')?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    _sendPool(cu);
+  });
+  document.getElementById('chat-dm-form')?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    _sendDM(cu, _dmPartner);
   });
 
   on('chat:tab', (el) => {
