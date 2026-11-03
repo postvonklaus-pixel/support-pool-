@@ -20,6 +20,7 @@ const STATIC_CSS = [
   '/support-pool-/css/screens/myvideos.css',
   '/support-pool-/css/screens/caption.css',
   '/support-pool-/css/screens/chat.css',
+  '/support-pool-/css/components/video-preview.css',
 ];
 
 self.addEventListener('install', e => {
