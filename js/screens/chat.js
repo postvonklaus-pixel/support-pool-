@@ -325,14 +325,16 @@ function _focusInput() {
 
 // ── Handlers ───────────────────────────────────────────────
 function _registerHandlers(cu) {
-  // On iOS, tapping the send button fires touchstart → touchend → mousedown → click.
-  // The synthetic mousedown is what blurs the textarea and closes the keyboard.
-  // Preventing mousedown keeps focus while still allowing click to fire.
-  // On touch: additionally handle touchend directly so send works even if click is suppressed.
+  // On iOS Safari the textarea blurs at touchstart (not mousedown).
+  // touchstart.preventDefault() stops that blur → keyboard stays open.
+  // Since preventing touchstart also suppresses the synthetic click,
+  // we fire the send action directly from touchend.
   document.querySelectorAll('.chat-send-btn').forEach(btn => {
-    btn.addEventListener('mousedown', e => e.preventDefault(), { passive: false });
+    btn.addEventListener('touchstart', e => e.preventDefault(), { passive: false });
     btn.addEventListener('touchend', (e) => {
-      e.preventDefault(); // prevent synthetic click double-fire
+      e.preventDefault();
+      const inputEl = document.getElementById('chat-pool-input') || document.getElementById('chat-dm-input');
+      if (inputEl) inputEl.focus();
       const action = btn.dataset.action;
       if (action === 'chat:pool:send') _sendPool(cu);
       else if (action === 'chat:dm:send') _sendDM(cu, _dmPartner);
