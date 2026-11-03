@@ -175,42 +175,59 @@ function _videoCard(v, locked = false) {
   const ctaClass    = locked ? 'btn btn--ghost btn--full feed-card__cta feed-card__cta--locked'
                               : 'btn btn--primary btn--full feed-card__cta';
 
+  const vidId    = v.id || link;
+  const thumbSrc = v.thumbnail;
+  const vidTitle = v.videoTitle;
+
+  const thumbHtml = thumbSrc
+    ? `<img class="vc-thumb" src="${esc(thumbSrc)}" alt="${esc(vidTitle || '')}" loading="lazy"/>`
+    : `<div class="vc-thumb-fallback">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        <span class="vc-thumb-fallback-text">${t('videoWatch') || 'Video'}</span>
+       </div>`;
+
   return `
-    <article class="${cardClass}" data-vid="${esc(v.id || link)}">
+    <article class="${cardClass}" data-vid="${esc(vidId)}">
       ${boost ? `<div class="boost-banner">${t('boostBanner') || '⚡ Fast fertig — noch 1 Support!'}</div>` : ''}
-      <div class="feed-card__head">
-        <div class="feed-card__avatar" style="background:${gradient}" aria-hidden="true">
-          ${owner.slice(0, 2).toUpperCase()}
+
+      <div class="vc-main">
+        <div class="vc-thumb-wrap" data-action="video:preview" data-vid="${esc(vidId)}"
+             role="button" tabindex="0" aria-label="Vorschau">
+          ${thumbHtml}
+          <div class="vc-thumb-overlay" aria-hidden="true">
+            <svg class="vc-play-icon" width="26" height="26" viewBox="0 0 24 24" fill="white"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          </div>
         </div>
-        <div class="feed-card__owner-info">
-          <div class="feed-card__owner">${trust}${verBadge} @${esc(owner)}</div>
+
+        <div class="vc-info">
+          <div class="vc-badges">
+            ${sentiment}
+            <span class="round-pill round-pill--r${round}">R${round}</span>
+          </div>
+          <div class="vc-owner">
+            <div class="feed-card__avatar feed-card__avatar--sm" style="background:${gradient}" aria-hidden="true">
+              ${owner.slice(0, 2).toUpperCase()}
+            </div>
+            <span class="vc-owner-name">${trust}${verBadge} @${esc(owner)}</span>
+          </div>
+          ${vidTitle
+            ? `<div class="vc-title">${esc(vidTitle)}</div>`
+            : `<div class="vc-url-row">
+                <span class="feed-card__url-icon">${isTikTok ? _ttIcon() : _linkIcon()}</span>
+                <span class="vc-url-text">${esc(urlShort)}${urlShort.length >= 38 ? '…' : ''}</span>
+               </div>`}
           ${v.postedAt ? `<div class="feed-card__time">${timeAgo(v.postedAt, state.lang)}</div>` : ''}
-        </div>
-        <div class="feed-card__head-right">
-          ${sentiment}
-          <span class="round-pill round-pill--r${round}">R${round}</span>
-        </div>
-      </div>
-
-      <a class="feed-card__url" href="${esc(link)}" target="_blank" rel="noopener noreferrer" aria-label="Video öffnen">
-        <span class="feed-card__url-icon">${isTikTok ? _ttIcon() : _linkIcon()}</span>
-        <span class="feed-card__url-text">${esc(urlShort)}${urlShort.length >= 38 ? '…' : ''}</span>
-        <span class="feed-card__url-arrow">↗</span>
-      </a>
-
-      <div class="feed-card__progress">
-        <div class="feed-card__prog-header">
-          <span class="feed-card__prog-label">
-            ${urgent ? `<span style="color:var(--accent-danger)">${t('feedUrgent').replace('{n}', slotsLeft)}</span>` : 'Supports'}
-          </span>
-          ${goalPill(round >= 2 ? r2 : r1, round >= 2 ? r2n : r1n, 'Slots', { urgent })}
+          <div class="vc-progress-row">
+            ${goalPill(round >= 2 ? r2 : r1, round >= 2 ? r2n : r1n, 'Slots', { urgent })}
+            ${urgent ? `<span class="vc-urgent">${t('feedUrgent').replace('{n}', slotsLeft)}</span>` : ''}
+          </div>
         </div>
       </div>
 
       ${locked ? `<div class="feed-lock-hint">${t('supportLocked') || '🔒 Erst Video posten, dann supporten'}</div>` : ''}
 
       <button class="${ctaClass}" ${ctaDisabled}
-        data-action="${locked ? '' : 'support:open'}" data-vid="${esc(v.id || link)}">
+        data-action="${locked ? '' : 'support:open'}" data-vid="${esc(vidId)}">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
         ${locked ? (t('supportLockedBtn') || 'Support gesperrt') : t('supportBtn')}
       </button>

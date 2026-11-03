@@ -684,3 +684,149 @@
   font-size: var(--text-xs);
   color: var(--text-tertiary);
 }
+
+/* ── Video Card with Thumbnail ────────────────────────────── */
+.vc-main {
+  display: flex;
+  gap: 10px;
+  padding: 12px 12px 8px;
+  align-items: flex-start;
+}
+
+/* Small avatar variant used inside the new card layout */
+.feed-card__avatar--sm {
+  width: 22px;
+  height: 22px;
+  font-size: 10px;
+  flex-shrink: 0;
+}
+
+/* ── Thumbnail ──────────────────────────────────────────── */
+.vc-thumb-wrap {
+  position: relative;
+  width: 78px;
+  min-width: 78px;
+  height: 139px;
+  border-radius: 10px;
+  overflow: hidden;
+  cursor: pointer;
+  background: var(--bg-overlay);
+  flex-shrink: 0;
+}
+
+.vc-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.vc-thumb-fallback {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  background: linear-gradient(135deg,
+    rgba(124, 58, 237, 0.14),
+    rgba(6, 182, 212, 0.14));
+  color: var(--text-tertiary);
+}
+
+.vc-thumb-fallback-text {
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  text-align: center;
+  padding: 0 4px;
+}
+
+.vc-thumb-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, transparent 40%, rgba(0,0,0,0.35) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.18s ease;
+}
+
+.vc-thumb-wrap:active .vc-thumb-overlay,
+.vc-thumb-wrap:hover  .vc-thumb-overlay  { opacity: 1; }
+
+.vc-play-icon { filter: drop-shadow(0 2px 6px rgba(0,0,0,0.5)); }
+
+/* ── Info column ────────────────────────────────────────── */
+.vc-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.vc-badges {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.vc-owner {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  overflow: hidden;
+}
+
+.vc-owner-name {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.vc-title {
+  font-size: 11px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.vc-url-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  overflow: hidden;
+}
+
+.vc-url-text {
+  font-size: 10px;
+  color: var(--accent-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.vc-progress-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: auto;
+}
+
+.vc-urgent {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--accent-danger);
+}

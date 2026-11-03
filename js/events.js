@@ -55,6 +55,11 @@ function handleChange(e) {
 // ── Keydown ───────────────────────────────────────────────
 function handleKeydown(e) {
   if (e.key === 'Escape') {
+    const vpm = document.querySelector('.video-preview-modal');
+    if (vpm) {
+      import('./features/videoPreview.js').then(m => m.closeVideoPreview());
+      return;
+    }
     import('./components/modal.js').then(m => m.closeTopModal());
   }
   if (e.key === 'Enter') {
@@ -112,6 +117,22 @@ on('pin:forgot', () => {});
 // ── Post video ────────────────────────────────────────────
 on('post:open', () => {
   import('./features/posting.js').then(m => m.openPostModal());
+});
+
+// ── Video preview modal ───────────────────────────────────
+on('video:preview', (el) => {
+  import('./features/videoPreview.js').then(m => m.openVideoPreview(el.dataset.vid));
+});
+
+on('vpm:close', () => {
+  import('./features/videoPreview.js').then(m => m.closeVideoPreview());
+});
+
+on('vpm:support', (el) => {
+  import('./features/videoPreview.js').then(m => m.closeVideoPreview());
+  setTimeout(() => {
+    import('./features/support.js').then(m => m.handleSupport(el.dataset.vid));
+  }, 200);
 });
 
 // ── Support actions ───────────────────────────────────────
