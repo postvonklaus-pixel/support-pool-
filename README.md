@@ -58,3 +58,37 @@ firebase functions:log --only generateCaption
 - Prüft Videos mit `status:'scheduled'` + abgelaufenem `scheduledFor`
 - Aktiviert sie falls die Cloud Function sie verpasst hat
 - Zeigt dem User eine Benachrichtigung
+
+---
+
+## TikTok Thumbnails
+
+Automatisches Laden von Video-Thumbnails via GitHub Action.
+
+### Setup
+
+1. Firebase Service Account erstellen:
+   - Firebase Console → Projekt-Einstellungen → Dienstkonten → Neuen privaten Schlüssel generieren
+
+2. In GitHub hinterlegen:
+   - Repo → Settings → Secrets and variables → Actions
+   - Name: `FIREBASE_SERVICE_ACCOUNT`
+   - Wert: Der komplette JSON-Inhalt der heruntergeladenen Datei
+
+3. Action läuft automatisch alle 30 Minuten
+4. Manuell triggerbar: Actions → TikTok Thumbnails → Run workflow
+
+### Wie es funktioniert
+
+- Action liest alle Videos mit `status: open` oder `done` aus Firebase
+- Ruft TikTok oEmbed API auf (`tiktok.com/oembed?url=...`)
+- Lädt Thumbnail herunter und speichert als Base64 in Firebase
+- Speichert zusätzlich `videoTitle` und `videoAuthor`
+- Client liest nur noch aus Firebase — kein CORS-Problem
+
+### Cache
+
+- 7 Tage Cache für erfolgreiche Thumbnails
+- 24 Stunden Cooldown nach Fehlern
+- Automatischer Retry nach Ablauf
+- Thumbnails > 100 KB werden übersprungen
