@@ -13,40 +13,51 @@ const THUMB_CACHE_MS = 7 * 24 * 60 * 60 * 1000;
 
 const BROWSER_UA = 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1';
 
+function _extractMeta(html, prop) {
+  const re = new RegExp('<meta[^>]+(?:property|name)=["\']' + prop + '["\'][^>]+content=["\']([^"\']+)["\']', 'i');
+  const m  = html.match(re)
+          || html.match(new RegExp('<meta[^>]+content=["\']([^"\']+)["\'][^>]+(?:property|name)=["\']' + prop + '["\']', 'i'));
+  return m ? m[1] : null;
+}
+
 async function fetchOne(url) {
   if (!url.includes('tiktok.com')) throw new Error('Not a TikTok URL');
 
-  const oembedUrl = 'https://www.tiktok.com/oembed?url=' + encodeURIComponent(url);
-  const res = await fetch(oembedUrl, {
-    timeout: 12000,
-    headers: { 'User-Agent': BROWSER_UA, 'Accept': 'application/json' }
+  // Fetch the TikTok video page — og:image is server-side rendered for SEO
+  const pageRes = await fetch(url, {
+    timeout: 15000,
+    headers: {
+      'User-Agent': BROWSER_UA,
+      'Accept': 'text/html,application/xhtml+xml',
+      'Accept-Language': 'en-US,en;q=0.9',
+    }
   });
-  if (!res.ok) throw new Error('oEmbed ' + res.status);
+  if (!pageRes.ok) throw new Error('Page fetch ' + pageRes.status);
 
-  let data;
-  try { data = await res.json(); }
-  catch (e) { throw new Error('oEmbed non-JSON response'); }
+  const html = await pageRes.text();
 
-  if (!data.thumbnail_url) {
-    console.log('  oEmbed keys:', Object.keys(data).join(', '));
-    throw new Error('No thumbnail_url in response');
-  }
+  const thumbUrl   = _extractMeta(html, 'og:image');
+  const videoTitle = _extractMeta(html, 'og:title')    || '';
+  const author     = _extractMeta(html, 'og:site_name') || '';
 
-  const thumbRes = await fetch(data.thumbnail_url, {
+  if (!thumbUrl) throw new Error('No og:image found in page');
+
+  const thumbRes = await fetch(thumbUrl, {
     timeout: 12000,
     headers: { 'User-Agent': BROWSER_UA }
   });
   if (!thumbRes.ok) throw new Error('Thumb fetch ' + thumbRes.status);
 
   const buffer = await thumbRes.buffer();
-  if (buffer.length > 150 * 1024) {
+  if (buffer.length > 200 * 1024) {
     throw new Error('Thumbnail too large: ' + buffer.length + ' bytes');
   }
 
+  const mime = thumbUrl.includes('.webp') ? 'image/webp' : 'image/jpeg';
   return {
-    thumbnail:   'data:image/jpeg;base64,' + buffer.toString('base64'),
-    videoTitle:  data.title || '',
-    videoAuthor: data.author_name || ''
+    thumbnail:   `data:${mime};base64,` + buffer.toString('base64'),
+    videoTitle:  videoTitle.replace(' | TikTok', '').trim(),
+    videoAuthor: author
   };
 }
 
