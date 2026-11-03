@@ -45,10 +45,11 @@ async function main() {
     if (video.status !== 'open' && video.status !== 'done') { skipped++; continue; }
     if (video.thumbnail && video.thumbnailUpdated > now - THUMB_CACHE_MS) { skipped++; continue; }
     if (video.thumbnailFailed && video.thumbnailFailedAt > now - 86400000) { skipped++; continue; }
-    if (!video.url) { skipped++; continue; }
+    const videoUrl = video.link || video.url;
+    if (!videoUrl) { skipped++; continue; }
 
     try {
-      const data = await fetchOne(video.url);
+      const data = await fetchOne(videoUrl);
       updates[vid + '/thumbnail']         = data.thumbnail;
       updates[vid + '/thumbnailUpdated']  = now;
       updates[vid + '/videoTitle']        = data.videoTitle;
