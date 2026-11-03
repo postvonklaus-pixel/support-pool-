@@ -102,7 +102,7 @@ function _renderPool(cu, msgs) {
         data-action="chat:pool:input"
         autocomplete="off"
       ></textarea>
-      <button class="chat-send-btn" data-action="chat:pool:send" aria-label="${t('chatSend') || 'Senden'}">
+      <button class="chat-send-btn" data-action="chat:pool:send" tabindex="-1" aria-label="${t('chatSend') || 'Senden'}">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
       </button>
     </div>
@@ -218,7 +218,7 @@ function _renderDMThread(el, cu, partner) {
           data-action="chat:dm:input"
           autocomplete="off"
         ></textarea>
-        <button class="chat-send-btn" data-action="chat:dm:send" aria-label="${t('chatSend') || 'Senden'}">
+        <button class="chat-send-btn" data-action="chat:dm:send" tabindex="-1" aria-label="${t('chatSend') || 'Senden'}">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
         </button>
       </div>
@@ -325,6 +325,11 @@ function _focusInput() {
 
 // ── Handlers ───────────────────────────────────────────────
 function _registerHandlers(cu) {
+  // Prevent send buttons from stealing focus on touch (keeps keyboard open)
+  document.querySelectorAll('.chat-send-btn').forEach(btn => {
+    btn.addEventListener('pointerdown', e => e.preventDefault(), { passive: false });
+  });
+
   on('chat:tab', (el) => {
     _chatTab   = el.dataset.tab || 'pool';
     _dmPartner = null;
