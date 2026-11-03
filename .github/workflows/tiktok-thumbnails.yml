@@ -4,6 +4,13 @@ on:
   schedule:
     - cron: '*/30 * * * *'
   workflow_dispatch:
+    inputs:
+      retry:
+        description: 'Retry failed videos (ignore 24h cooldown)'
+        required: false
+        default: 'false'
+        type: choice
+        options: ['false', 'true']
 
 jobs:
   fetch-thumbnails:
@@ -24,4 +31,5 @@ jobs:
       - name: Fetch thumbnails
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          RETRY: ${{ github.event.inputs.retry == 'true' && '1' || '0' }}
         run: node .github/scripts/fetch-thumbnails.js
