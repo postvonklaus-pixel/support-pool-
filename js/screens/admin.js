@@ -111,13 +111,15 @@ function _getLangFlag(lang) {
 }
 
 function _collectAnalytics() {
+  const now      = Date.now();
   const members   = Object.values(state.db.members || {});
   const allVids   = Object.values(state.db.videos  || {});
   const msgCount  = Object.keys(state.db.messages  || {}).length;
   const poolMsgs  = Object.keys(state.db.chat?.pool?.messages || {}).length;
 
   const active  = members.filter(m => m.status === 'active' && m.role !== 'admin');
-  const online  = members.filter(m => m.online === true).length;
+  const tenMinAgo = now - 10 * 60 * 1000;
+  const online  = members.filter(m => (m.lastSeen || 0) > tenMinAgo).length;
   const total   = members.filter(m => m.role !== 'admin').length;
   const inactive = members.filter(m => m.status === 'inactive' && m.role !== 'admin').length;
 
@@ -156,15 +158,14 @@ function _collectAnalytics() {
     .sort((a, b) => b.suppCount - a.suppCount)
     .slice(0, 5);
 
-  // 7-day trend: count members who gave support per day (using lastActive or simple proxy)
-  const now = Date.now();
+  // 7-day trend: new member registrations per day
   const dayMs = 86400000;
   const trend = Array.from({ length: 7 }, (_, i) => {
     const dayStart = now - (6 - i) * dayMs;
     const dayEnd   = dayStart + dayMs;
     return members.filter(m => {
-      const la = m.lastActive || 0;
-      return la >= dayStart && la < dayEnd;
+      const joinTs = m.joinedAt || m.joined || 0;
+      return joinTs >= dayStart && joinTs < dayEnd;
     }).length;
   });
 
@@ -183,16 +184,18 @@ function _collectAnalytics() {
 function _renderAnalytics() {
   const a = _collectAnalytics();
   const trendMax = Math.max(...a.trend, 1);
-  const days = (state.lang === 'de' ? ['Mo','Di','Mi','Do','Fr','Sa','So'] :
-                ['Mon','Tue','Wed','Thu','Fri','Sat','Sun']);
-  const today = new Date().getDay(); // 0=Sun
-  const dayIdx = (d) => (today - 6 + d + 7) % 7;
+  const locale = _ADMIN_LOCALE_MAP[state.lang] || 'de-DE';
+  // Build labels for the last 7 days (oldest first)
+  const trendLabels = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(Date.now() - (6 - i) * 86400000);
+    return d.toLocaleDateString(locale, { weekday: 'short' });
+  });
 
   const trendBars = a.trend.map((v, i) => {
     const h = Math.round((v / trendMax) * 48);
     return `<div class="an-trend-col">
       <div class="an-trend-bar" style="height:${h}px" title="${v}"></div>
-      <div class="an-trend-label">${days[dayIdx(i)]}</div>
+      <div class="an-trend-label">${trendLabels[i]}</div>
     </div>`;
   }).join('');
 
@@ -276,7 +279,7 @@ function _renderAnalytics() {
       </div>
 
       <div class="an-card">
-        <div class="an-section-title">${t('analyticsTrend') || '📈 7-Tage Trend'}</div>
+        <div class="an-section-title">${t('analyticsTrend') || '📈 Neue Mitglieder (7 Tage)'}</div>
         <div class="an-trend">${trendBars}</div>
       </div>
 
@@ -303,7 +306,7 @@ export function renderAnalyticsTab() {
 function _renderOverview() {
   const members  = Object.values(state.db.members || {});
   const active   = members.filter(m => m.status === 'active' && m.role !== 'admin').length;
-  const online   = members.filter(m => m.online === true).length;
+  const online   = members.filter(m => (m.lastSeen || 0) > Date.now() - 10 * 60 * 1000).length;
   const groups   = Object.keys(state.db.groups || {}).length;
   const allVids  = Object.values(state.db.videos || {});
   const openVids = allVids.filter(v => v.status !== 'done' && v.status !== 'expired').length;
@@ -504,7 +507,7 @@ function _adminMemberRow(key, m) {
   const grad     = avatarGradient(key);
   const initials = key.slice(0, 2).toUpperCase();
   const balCls   = bal > 0 ? 'pos' : bal < 0 ? 'neg' : '';
-  const online   = m.online === true;
+  const online   = (m.lastSeen || 0) > Date.now() - 10 * 60 * 1000;
   const inactive = m.status === 'inactive';
 
   return `<div class="admin-member-row${inactive ? ' admin-member-row--inactive' : ''}">

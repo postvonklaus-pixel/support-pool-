@@ -142,6 +142,14 @@ export async function loginAs(username, { silent = false, isNew = false } = {}) 
 
   setState('currentUser', username);
 
+  // Track presence: write lastSeen + online flag, start heartbeat
+  writeDB(`members/${username}/lastSeen`, Date.now());
+  writeDB(`members/${username}/online`, true);
+  if (window._lastSeenInterval) clearInterval(window._lastSeenInterval);
+  window._lastSeenInterval = setInterval(() => {
+    if (state.currentUser) writeDB(`members/${state.currentUser}/lastSeen`, Date.now());
+  }, 5 * 60 * 1000);
+
   // Language priority: explicit login-screen selection > DB stored value > 'de'
   const selected = state.userSelectedLang;
   const targetLang = selected || u.lang || 'de';
@@ -228,6 +236,8 @@ function _checkAutoWeekReset() {
 
 // ── Logout ────────────────────────────────────────────────
 export function logout() {
+  if (state.currentUser) writeDB(`members/${state.currentUser}/online`, false);
+  if (window._lastSeenInterval) { clearInterval(window._lastSeenInterval); window._lastSeenInterval = null; }
   setState('currentUser', null);
   import('./storage.js').then(m => m.clearSession());
   const header = ge('app-header');
