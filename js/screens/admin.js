@@ -13,7 +13,7 @@ import { getTemplates, TEMPLATES } from '../features/adminTemplates.js';
 import { progressRing } from '../components/progress.js';
 import { renderFairnessMeter } from '../features/fairnessMeter.js';
 
-const TABS = ['overview', 'members', 'templates', 'videos', 'broadcast', 'groups', 'messages'];
+const TABS = ['overview', 'analytics', 'members', 'templates', 'videos', 'broadcast', 'groups', 'messages'];
 const _ADMIN_LOCALE_MAP = { de:'de-DE', en:'en-GB', id:'id-ID', it:'it-IT', es:'es-ES', tr:'tr-TR', ar:'ar-SA', zh:'zh-CN', ja:'ja-JP', pl:'pl-PL' };
 let _tab          = 'overview';
 let _memberSearch = '';
@@ -62,6 +62,7 @@ export function render() {
     </div>
     <div class="admin-content">
       ${_tab === 'overview'   ? _renderOverview()   : ''}
+      ${_tab === 'analytics'  ? _renderAnalytics()  : ''}
       ${_tab === 'members'    ? _renderMembers()    : ''}
       ${_tab === 'templates'  ? _renderTemplates()  : ''}
       ${_tab === 'videos'     ? _renderVideos()     : ''}
@@ -75,6 +76,7 @@ export function render() {
 }
 
 export function switchAdminTab(tab) {
+  if (window._analyticsInterval) { clearInterval(window._analyticsInterval); window._analyticsInterval = null; }
   if (TABS.includes(tab)) _tab = tab;
   render();
 }
@@ -88,6 +90,7 @@ export function toggleGroupAccordion(groupId) {
 function _tabLabel(tab) {
   return {
     overview:   t('adminTabOverview'),
+    analytics:  t('adminTabAnalytics') || 'Analytik',
     members:    t('adminTabMembers'),
     templates:  t('adminTabTemplates') || 'Kommentare',
     videos:     t('videos') || 'Videos',
@@ -95,6 +98,205 @@ function _tabLabel(tab) {
     groups:     t('adminTabGroups'),
     messages:   t('weeklyMsgTitle') || 'Nachrichten',
   }[tab] || tab;
+}
+
+// ── Analytics helpers ──────────────────────────────────────
+function _pct(part, total) {
+  return total > 0 ? Math.round(part / total * 100) : 0;
+}
+
+function _getLangFlag(lang) {
+  const flags = { de:'🇩🇪', en:'🇬🇧', id:'🇮🇩', it:'🇮🇹', es:'🇪🇸', tr:'🇹🇷', ar:'🇸🇦', zh:'🇨🇳', ja:'🇯🇵', pl:'🇵🇱' };
+  return flags[lang] || '🏳️';
+}
+
+function _collectAnalytics() {
+  const members   = Object.values(state.db.members || {});
+  const allVids   = Object.values(state.db.videos  || {});
+  const msgCount  = Object.keys(state.db.messages  || {}).length;
+  const poolMsgs  = Object.keys(state.db.chat?.pool?.messages || {}).length;
+
+  const active  = members.filter(m => m.status === 'active' && m.role !== 'admin');
+  const online  = members.filter(m => m.online === true).length;
+  const total   = members.filter(m => m.role !== 'admin').length;
+  const inactive = members.filter(m => m.status === 'inactive' && m.role !== 'admin').length;
+
+  const openVids = allVids.filter(v => v.status === 'open').length;
+  const doneVids = allVids.filter(v => v.status === 'done').length;
+  const expVids  = allVids.filter(v => v.status === 'expired').length;
+
+  const totalGiven = active.reduce((s, m) => s + (m.stats?.given || 0), 0);
+  const totalRecv  = active.reduce((s, m) => s + (m.stats?.received || 0), 0);
+  const avgBal     = active.length ? ((totalGiven - totalRecv) / active.length).toFixed(1) : '0';
+
+  // Weekly total
+  const weeklyTotal = members.reduce((s, m) => s + (m.weeklyGiven || 0), 0)
+    + (state.db.archivedStats?.weeklyGiven || 0);
+
+  // Language distribution
+  const langMap = {};
+  members.filter(m => m.role !== 'admin' && m.status === 'active').forEach(m => {
+    const l = m.lang || 'de';
+    langMap[l] = (langMap[l] || 0) + 1;
+  });
+  const langDist = Object.entries(langMap)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 6);
+
+  // Top users by weeklyGiven
+  const topUsers = [...active]
+    .filter(m => (m.weeklyGiven || 0) > 0)
+    .sort((a, b) => (b.weeklyGiven || 0) - (a.weeklyGiven || 0))
+    .slice(0, 5);
+
+  // Top videos by r1Supporters count
+  const topVids = allVids
+    .filter(v => v.status === 'open')
+    .map(v => ({ ...v, suppCount: (v.r1Supporters || []).length }))
+    .sort((a, b) => b.suppCount - a.suppCount)
+    .slice(0, 5);
+
+  // 7-day trend: count members who gave support per day (using lastActive or simple proxy)
+  const now = Date.now();
+  const dayMs = 86400000;
+  const trend = Array.from({ length: 7 }, (_, i) => {
+    const dayStart = now - (6 - i) * dayMs;
+    const dayEnd   = dayStart + dayMs;
+    return members.filter(m => {
+      const la = m.lastActive || 0;
+      return la >= dayStart && la < dayEnd;
+    }).length;
+  });
+
+  // Warnings
+  const warnings = [];
+  const negBal = active.filter(m => (m.stats?.given || 0) - (m.stats?.received || 0) < -5);
+  if (negBal.length > 0) warnings.push(`⚠️ ${negBal.length} Mitglieder mit Balance < −5`);
+  const soonExp = allVids.filter(v => v.status === 'open' && v.expiresAt && v.expiresAt - now < 2 * dayMs).length;
+  if (soonExp > 0) warnings.push(`⏰ ${soonExp} Videos laufen in < 48h ab`);
+  if (inactive > active.length * 0.3) warnings.push(`📉 ${inactive} inaktive Mitglieder (>${Math.round(inactive/(inactive+active.length)*100)}%)`);
+
+  return { active: active.length, online, total, inactive, openVids, doneVids, expVids,
+    msgCount, poolMsgs, avgBal, weeklyTotal, langDist, topUsers, topVids, trend, warnings };
+}
+
+function _renderAnalytics() {
+  const a = _collectAnalytics();
+  const trendMax = Math.max(...a.trend, 1);
+  const days = (state.lang === 'de' ? ['Mo','Di','Mi','Do','Fr','Sa','So'] :
+                ['Mon','Tue','Wed','Thu','Fri','Sat','Sun']);
+  const today = new Date().getDay(); // 0=Sun
+  const dayIdx = (d) => (today - 6 + d + 7) % 7;
+
+  const trendBars = a.trend.map((v, i) => {
+    const h = Math.round((v / trendMax) * 48);
+    return `<div class="an-trend-col">
+      <div class="an-trend-bar" style="height:${h}px" title="${v}"></div>
+      <div class="an-trend-label">${days[dayIdx(i)]}</div>
+    </div>`;
+  }).join('');
+
+  const topUsersHTML = a.topUsers.length ? a.topUsers.map((m, i) => {
+    const medals = ['🥇','🥈','🥉','4.','5.'];
+    const grad = avatarGradient(m.name || '?');
+    return `<div class="an-row">
+      <span class="an-medal">${medals[i]}</span>
+      <div class="an-av" style="background:${grad}">${(m.name||'?').slice(0,2).toUpperCase()}</div>
+      <span class="an-name">${esc(m.name||'?')}</span>
+      <span class="an-val">${m.weeklyGiven||0}</span>
+    </div>`;
+  }).join('') : `<div class="an-empty">—</div>`;
+
+  const topVidsHTML = a.topVids.length ? a.topVids.map(v => {
+    const owner = v.ownerKey || v.owner || '?';
+    const grad = avatarGradient(owner);
+    const pct = Math.min(100, Math.round(v.suppCount / (v.r1Need || 10) * 100));
+    return `<div class="an-row">
+      <div class="an-av" style="background:${grad}">${owner.slice(0,2).toUpperCase()}</div>
+      <div class="an-row__body">
+        <span class="an-name">@${esc(owner)}</span>
+        <div class="admin-vid-prog"><div class="admin-vid-prog__bar"><div style="width:${pct}%"></div></div><span>${v.suppCount}/${v.r1Need||10}</span></div>
+      </div>
+    </div>`;
+  }).join('') : `<div class="an-empty">—</div>`;
+
+  const langHTML = a.langDist.length ? a.langDist.map(([lang, count]) => {
+    const pct = _pct(count, a.active);
+    return `<div class="an-lang-row">
+      <span class="an-lang-flag">${_getLangFlag(lang)}</span>
+      <span class="an-lang-name">${lang.toUpperCase()}</span>
+      <div class="an-lang-bar"><div style="width:${pct}%"></div></div>
+      <span class="an-lang-count">${count}</span>
+    </div>`;
+  }).join('') : `<div class="an-empty">—</div>`;
+
+  const warningsHTML = a.warnings.length
+    ? a.warnings.map(w => `<div class="an-warning">${w}</div>`).join('')
+    : `<div class="an-no-warn">✅ ${t('analyticsNoWarnings') || 'Keine Warnungen'}</div>`;
+
+  // Start auto-refresh (interval is cleared in switchAdminTab)
+  if (!window._analyticsInterval) {
+    window._analyticsInterval = setInterval(renderAnalyticsTab, 60000);
+  }
+
+  return `
+    <div class="admin-analytics">
+      <div class="an-header">
+        <span class="an-title">${t('analyticsTitle') || '📊 Live-Analytik'}</span>
+        <button class="btn btn--ghost btn--sm" data-action="analytics:refresh">${t('analyticsRefresh') || '🔄 Aktualisieren'}</button>
+      </div>
+
+      <div class="admin-stat-grid">
+        ${_kpi('👥', a.active, t('analyticsMembers') || 'Aktive')}
+        ${_kpi('🟢', a.online, t('analyticsOnline') || 'Online')}
+        ${_kpi('🎬', a.openVids, t('analyticsVideos') || 'Videos offen')}
+        ${_kpi('📊', a.weeklyTotal, t('analyticsSupports') || 'Supports/Woche')}
+        ${_kpi('💬', a.poolMsgs, t('analyticsMessages') || 'Pool-Nachrichten')}
+        ${_kpi('⚖️', a.avgBal, t('analyticsAvgBal') || 'Ø Balance')}
+      </div>
+
+      <div class="an-funnel">
+        <div class="an-section-title">${t('analyticsFunnel') || 'Pool-Funnel'}</div>
+        <div class="an-funnel-row">
+          <div class="an-funnel-item" style="width:100%"><span>${a.total}</span>${t('adminTabMembers')||'Gesamt'}</div>
+          <div class="an-funnel-item" style="width:${_pct(a.active,a.total)}%"><span>${a.active}</span>Aktiv (${_pct(a.active,a.total)}%)</div>
+          <div class="an-funnel-item" style="width:${_pct(a.online,a.total)}%"><span>${a.online}</span>Online (${_pct(a.online,a.total)}%)</div>
+        </div>
+      </div>
+
+      <div class="an-two-col">
+        <div class="an-card">
+          <div class="an-section-title">${t('analyticsTopUsers') || '🏆 Top Mitglieder'}</div>
+          ${topUsersHTML}
+        </div>
+        <div class="an-card">
+          <div class="an-section-title">${t('analyticsTopVideos') || '🎬 Top Videos'}</div>
+          ${topVidsHTML}
+        </div>
+      </div>
+
+      <div class="an-card">
+        <div class="an-section-title">${t('analyticsTrend') || '📈 7-Tage Trend'}</div>
+        <div class="an-trend">${trendBars}</div>
+      </div>
+
+      <div class="an-card">
+        <div class="an-section-title">${t('analyticsLangDist') || '🌍 Sprachverteilung'}</div>
+        ${langHTML}
+      </div>
+
+      <div class="an-card">
+        <div class="an-section-title">${t('analyticsWarnings') || '⚠️ Warnungen'}</div>
+        ${warningsHTML}
+      </div>
+    </div>
+  `;
+}
+
+export function renderAnalyticsTab() {
+  if (_tab !== 'analytics') return;
+  const content = document.querySelector('.admin-content');
+  if (content) content.innerHTML = _renderAnalytics();
 }
 
 // ── Overview ───────────────────────────────────────────────
@@ -545,6 +747,10 @@ function _registerHandlers() {
   on('admin:tab', (el) => {
     _tab = el.dataset.tab || 'overview';
     render();
+  });
+
+  on('analytics:refresh', () => {
+    renderAnalyticsTab();
   });
 
   on('admin:group:toggle', (el) => {

@@ -206,3 +206,7 @@ on('settings:logout', () => {
 });
 
 on('settings:lang-toggle', () => {});  // overridden by settings.js on load
+
+on('analytics:refresh', () => {
+  import('./screens/admin.js').then(m => m.renderAnalyticsTab?.());
+});
