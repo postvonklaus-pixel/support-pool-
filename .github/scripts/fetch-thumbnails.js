@@ -51,6 +51,11 @@ async function fetchOne(url) {
 
   if (data.code !== 0 || !data.data) throw new Error('API error: ' + (data.msg || JSON.stringify(data)));
 
+  // Debug: log all cover-related fields to understand API response
+  console.log('  cover:', data.data.cover);
+  console.log('  origin_cover:', data.data.origin_cover);
+  console.log('  cover_hd:', data.data.cover_hd);
+
   // Prefer origin_cover (direct TikTok CDN URL — publicly loadable by any browser).
   // Fall back to cover (tikwm.com cached URL) if origin_cover is missing.
   // The workflow runs every 30 min so expiring TikTok CDN tokens are always fresh.
