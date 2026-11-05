@@ -32,7 +32,7 @@ jobs:
         run: |
           cd .github/scripts
           npm init -y
-          npm install firebase-admin node-fetch@2
+          npm install firebase-admin node-fetch@2 sharp
 
       - name: Fetch thumbnails
         env:

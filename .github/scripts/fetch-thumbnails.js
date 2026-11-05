@@ -1,5 +1,6 @@
 const admin = require('firebase-admin');
 const fetch = require('node-fetch');
+const sharp = require('sharp');
 
 admin.initializeApp({
   credential: admin.credential.cert(
@@ -10,7 +11,7 @@ admin.initializeApp({
 
 const db = admin.database();
 
-// Refresh every 20h so CDN URLs never expire (TikTok URLs last ~24h)
+// Cache 20h — workflow runs every 30 min so thumbnails are always fresh
 const THUMB_CACHE_MS = 20 * 60 * 60 * 1000;
 
 const BROWSER_UA = 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1';
@@ -18,7 +19,7 @@ const BROWSER_UA = 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) Apple
 async function fetchOne(url) {
   if (!url.includes('tiktok.com')) throw new Error('Not a TikTok URL');
 
-  // tikwm.com public API — try POST first (less likely to be IP-blocked than GET)
+  // Step 1: get video metadata from tikwm.com API
   let apiRes = await fetch('https://www.tikwm.com/api/', {
     method: 'POST',
     timeout: 20000,
@@ -32,7 +33,6 @@ async function fetchOne(url) {
     },
     body: 'url=' + encodeURIComponent(url) + '&count=12&cursor=0&web=1&hd=1',
   });
-  // Fallback to GET if POST is also blocked
   if (!apiRes.ok) {
     apiRes = await fetch('https://www.tikwm.com/api/?url=' + encodeURIComponent(url), {
       timeout: 20000,
@@ -48,36 +48,45 @@ async function fetchOne(url) {
 
   let data;
   try { data = await apiRes.json(); } catch (e) { throw new Error('API non-JSON'); }
-
   if (data.code !== 0 || !data.data) throw new Error('API error: ' + (data.msg || JSON.stringify(data)));
 
-  // Debug: log all cover-related fields to understand API response
-  console.log('  cover:', data.data.cover);
-  console.log('  origin_cover:', data.data.origin_cover);
-  console.log('  cover_hd:', data.data.cover_hd);
+  const coverPath = data.data.cover;
+  if (!coverPath) throw new Error('No cover in API response');
+  const imageUrl = coverPath.startsWith('/') ? 'https://www.tikwm.com' + coverPath : coverPath;
 
-  // Prefer origin_cover (direct TikTok CDN URL — publicly loadable by any browser).
-  // Fall back to cover (tikwm.com cached URL) if origin_cover is missing.
-  // The workflow runs every 30 min so expiring TikTok CDN tokens are always fresh.
-  const originCover = data.data.origin_cover;
-  const coverUrl    = data.data.cover || '';
-  const rawUrl      = originCover || coverUrl;
-  if (!rawUrl) throw new Error('No cover URL in API response');
+  // Step 2: download the image (GH runner can reach tikwm.com)
+  const imgRes = await fetch(imageUrl, {
+    timeout: 15000,
+    headers: {
+      'User-Agent': BROWSER_UA,
+      'Referer': 'https://www.tikwm.com/',
+      'Accept': 'image/webp,image/*,*/*',
+    },
+  });
+  if (!imgRes.ok) throw new Error('Image download ' + imgRes.status);
+  const imgBuf = Buffer.from(await imgRes.arrayBuffer());
 
-  const absoluteUrl = rawUrl.startsWith('/') ? 'https://www.tikwm.com' + rawUrl : rawUrl;
+  // Step 3: resize to 120px wide (keeps aspect ratio), encode as small WebP
+  const resized = await sharp(imgBuf)
+    .resize(120, null, { withoutEnlargement: true })
+    .webp({ quality: 72 })
+    .toBuffer();
+
+  const base64 = 'data:image/webp;base64,' + resized.toString('base64');
+  console.log('  image size:', imgBuf.length, 'bytes ->', resized.length, 'bytes');
 
   return {
-    thumbnail:   absoluteUrl,
+    thumbnail:   base64,
     videoTitle:  data.data.title || '',
-    videoAuthor: data.data.author?.nickname || ''
+    videoAuthor: data.data.author?.nickname || '',
   };
 }
 
 async function main() {
-  // RETRY=1 env var skips the cache check (use after fixing a bug)
-  const retryFailed = process.env.RETRY === '1';
+  const retryFailed  = process.env.RETRY === '1';
   const forceRefresh = process.env.FORCE === '1';
-  console.log('Fetching thumbnails' + (retryFailed ? ' (retry mode)' : '') + (forceRefresh ? ' (force refresh)' : '') + '...');
+  console.log('Fetching thumbnails' + (retryFailed ? ' (retry)' : '') + (forceRefresh ? ' (force)' : '') + '...');
+
   const snap   = await db.ref('sp6/videos').once('value');
   const videos = snap.val() || {};
   const now    = Date.now();
@@ -86,23 +95,25 @@ async function main() {
 
   for (const [vid, video] of Object.entries(videos)) {
     if (video.status !== 'open' && video.status !== 'done') { skipped++; continue; }
-    // Skip only if thumbnail is a fresh CDN URL (not a stale base64 or old URL)
     const isBase64 = typeof video.thumbnail === 'string' && video.thumbnail.startsWith('data:');
+    // Skip if we have a fresh small base64 thumbnail (< 20h old)
+    if (!forceRefresh && isBase64 && video.thumbnailUpdated > now - THUMB_CACHE_MS) { skipped++; continue; }
+    // Skip non-base64 thumbnails only if cache is fresh (CDN URLs from before the fix)
     if (!forceRefresh && !isBase64 && video.thumbnail && video.thumbnailUpdated > now - THUMB_CACHE_MS) { skipped++; continue; }
     if (!forceRefresh && !retryFailed && video.thumbnailFailed && video.thumbnailFailedAt > now - 86400000) { skipped++; continue; }
     const videoUrl = video.link || video.url;
     if (!videoUrl) { skipped++; continue; }
 
     try {
-      const data = await fetchOne(videoUrl);
-      updates[vid + '/thumbnail']         = data.thumbnail;
+      const result = await fetchOne(videoUrl);
+      updates[vid + '/thumbnail']         = result.thumbnail;
       updates[vid + '/thumbnailUpdated']  = now;
-      updates[vid + '/videoTitle']        = data.videoTitle;
-      updates[vid + '/videoAuthor']       = data.videoAuthor;
+      updates[vid + '/videoTitle']        = result.videoTitle;
+      updates[vid + '/videoAuthor']       = result.videoAuthor;
       updates[vid + '/thumbnailFailed']   = null;
       updates[vid + '/thumbnailFailedAt'] = null;
       fetched++;
-      console.log('OK:', vid, '->', data.videoAuthor, coverUrlShort(data.thumbnail));
+      console.log('OK:', vid, '->', result.videoAuthor, '(' + Math.round(result.thumbnail.length / 1024) + 'KB)');
       await new Promise(r => setTimeout(r, 800));
     } catch (err) {
       updates[vid + '/thumbnailFailed']   = err.message;
@@ -118,11 +129,6 @@ async function main() {
 
   console.log(`Done: ${fetched} fetched, ${failed} failed, ${skipped} skipped`);
   await admin.app().delete();
-}
-
-function coverUrlShort(url) {
-  if (!url) return '';
-  return url.length > 60 ? url.slice(0, 60) + '...' : url;
 }
 
 main().catch(err => { console.error('Fatal:', err); process.exit(1); });
