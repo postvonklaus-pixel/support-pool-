@@ -96,7 +96,9 @@ async function fetchOne(url) {
   const coverPath = data.data.cover;
   if (!coverPath) throw new Error('No cover in API response');
   const absoluteUrl = coverPath.startsWith('/') ? 'https://www.tikwm.com' + coverPath : coverPath;
-  return { thumbnail: absoluteUrl, videoTitle: data.data.title || '', videoAuthor: data.data.author?.nickname || '' };
+  // Proxy through wsrv.nl to bypass tikwm.com hotlink protection in the browser
+  const proxiedUrl = 'https://wsrv.nl/?url=' + encodeURIComponent(absoluteUrl) + '&output=webp&w=320';
+  return { thumbnail: proxiedUrl, videoTitle: data.data.title || '', videoAuthor: data.data.author?.nickname || '' };
 }
 
 async function main() {
