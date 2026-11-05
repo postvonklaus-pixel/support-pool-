@@ -16,42 +16,29 @@ const THUMB_CACHE_MS = 20 * 60 * 60 * 1000; // 20h cache
 
 const BROWSER_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
 
-// Download image URL → base64 data URI (resized to max 320px wide via ImageMagick)
-async function downloadAsBase64(imageUrl) {
-  const tmpIn  = path.join(os.tmpdir(), 'thumb_in_'  + Date.now() + '.webp');
-  const tmpOut = path.join(os.tmpdir(), 'thumb_out_' + Date.now() + '.webp');
+// Try TikTok embed page to extract thumbnail CDN URL
+async function fetchViaEmbed(videoId) {
+  if (!videoId) return null;
   try {
-    // Download with curl (supports all HTTP features, respects headers)
-    const dl = spawnSync('curl', [
-      '-s', '-L', '--max-time', '15',
-      '-H', 'User-Agent: ' + BROWSER_UA,
-      '-H', 'Referer: https://www.tikwm.com/',
-      '-H', 'Accept: image/webp,image/*,*/*;q=0.8',
-      '-o', tmpIn, imageUrl
-    ], { timeout: 20000 });
-    if (dl.status !== 0) { console.log('  [download] curl exit', dl.status); return null; }
-    const stat = fs.statSync(tmpIn);
-    if (stat.size < 500) { console.log('  [download] too small:', stat.size, 'bytes'); return null; }
-
-    // Resize to max 320px wide with ImageMagick (available on ubuntu-latest)
-    const im = spawnSync('convert', [tmpIn, '-resize', '320x320>', tmpOut], { timeout: 10000 });
-    const outFile = im.status === 0 ? tmpOut : tmpIn;
-
-    const buf = fs.readFileSync(outFile);
-    // Check magic bytes: WebP starts with RIFF...WEBP, JPEG with FF D8, PNG with 89 50 4E 47
-    let mime = 'image/webp';
-    if (buf[0] === 0xFF && buf[1] === 0xD8) mime = 'image/jpeg';
-    else if (buf[0] === 0x89 && buf[1] === 0x50) mime = 'image/png';
-    const dataUri = 'data:' + mime + ';base64,' + buf.toString('base64');
-    console.log('  [download] OK', buf.length, 'bytes → base64', dataUri.length, 'chars');
-    return dataUri;
+    const res = await fetch(`https://www.tiktok.com/embed/v2/${videoId}`, {
+      timeout: 20000,
+      headers: { 'User-Agent': BROWSER_UA, 'Accept': 'text/html,*/*' }
+    });
+    if (!res.ok) { console.log('  [embed] status:', res.status); return null; }
+    const html = await res.text();
+    // TikTok CDN URLs: p16-sign-*.tiktokcdn.com or p77-sign.tiktokcdn.com
+    const m = html.match(/https:\/\/p\d+-sign[^"'<\s\\]+\.(?:webp|jpg|jpeg)[^"'<\s\\]*/i)
+           || html.match(/https:\\u002Fp\d+-sign[^\\"]+\.(?:webp|jpg|jpeg)[^\\"]*"/)
+    if (m) {
+      const thumb = m[0].replace(/\\u002F/g, '/').replace(/"/g, '');
+      console.log('  [embed] CDN URL:', thumb.slice(0, 80));
+      return thumb;
+    }
+    console.log('  [embed] no CDN URL found, length:', html.length);
   } catch (e) {
-    console.log('  [download] error:', e.message.slice(0, 100));
-    return null;
-  } finally {
-    try { fs.unlinkSync(tmpIn); } catch {}
-    try { fs.unlinkSync(tmpOut); } catch {}
+    console.log('  [embed] error:', e.message.slice(0, 100));
   }
+  return null;
 }
 
 async function fetchOgImage(url) {
@@ -67,17 +54,33 @@ async function fetchOgImage(url) {
       }
     });
     if (!res.ok) { console.log('  [og] status:', res.status); return null; }
+
+    // Extract video ID from final URL after redirect
+    const videoIdMatch = res.url.match(/\/video\/(\d{10,20})/);
+    const videoId = videoIdMatch?.[1] || null;
+    if (videoId) console.log('  [og] video ID:', videoId);
+
     const html = await res.text();
+
+    // og:image meta tag
     const imgMatch   = html.match(/<meta\s[^>]*property="og:image"\s[^>]*content="([^"]+)"/i)
                     || html.match(/<meta\s[^>]*content="([^"]+)"\s[^>]*property="og:image"/i);
     const titleMatch = html.match(/<meta\s[^>]*property="og:title"\s[^>]*content="([^"]+)"/i)
                     || html.match(/<meta\s[^>]*content="([^"]+)"\s[^>]*property="og:title"/i);
     if (imgMatch) {
       console.log('  [og] found:', imgMatch[1].slice(0, 80));
-      return { imgUrl: imgMatch[1], title: titleMatch ? titleMatch[1] : '' };
+      return { imgUrl: imgMatch[1], title: titleMatch?.[1] || '', videoId };
     }
-    console.log('  [og] not found, html length:', html.length, '| snippet:', html.slice(0, 100));
-    return null;
+
+    // TikTok CDN URLs embedded in page data
+    const cdnMatch = html.match(/https:\/\/p\d+-sign[^"'<\s\\]+\.(?:webp|jpg|jpeg)[^"'<\s\\]*/i);
+    if (cdnMatch) {
+      console.log('  [og] CDN URL in page:', cdnMatch[0].slice(0, 80));
+      return { imgUrl: cdnMatch[0], title: titleMatch?.[1] || '', videoId };
+    }
+
+    console.log('  [og] not found, html length:', html.length, '| video ID:', videoId);
+    return videoId ? { videoId } : null;
   } catch (e) {
     console.log('  [og] error:', e.message.slice(0, 100));
     return null;
@@ -110,10 +113,15 @@ function fetchViaYtdlp(url) {
 async function fetchOne(url) {
   if (!url.includes('tiktok.com')) throw new Error('Not a TikTok URL');
 
-  // Strategy 1: TikTok og:image (server-side rendered, direct CDN URL)
-  const ogResult = await fetchOgImage(url);
-  if (ogResult?.imgUrl) {
-    return { thumbnail: ogResult.imgUrl, videoTitle: ogResult.title || '', videoAuthor: '' };
+  // Strategy 1: TikTok video page → extract video ID → try embed page for CDN URL
+  const pageResult = await fetchOgImage(url);
+  if (pageResult?.imgUrl) {
+    return { thumbnail: pageResult.imgUrl, videoTitle: pageResult.title || '', videoAuthor: '' };
+  }
+  // If we got the video ID from the redirect, try the embed page
+  if (pageResult?.videoId) {
+    const embedThumb = await fetchViaEmbed(pageResult.videoId);
+    if (embedThumb) return { thumbnail: embedThumb, videoTitle: pageResult.title || '', videoAuthor: '' };
   }
 
   // Strategy 2: yt-dlp
@@ -170,9 +178,18 @@ async function fetchOne(url) {
   if (!coverPath) throw new Error('No cover in API response');
   const absoluteUrl = coverPath.startsWith('/') ? 'https://www.tikwm.com' + coverPath : coverPath;
 
-  // wsrv.nl proxy URL (browser-side proxy, bypasses hotlink Referer check)
+  // Try the embed page with the video ID from tikwm response
+  const tikwmVideoId = String(data.data.id || '');
+  if (tikwmVideoId) {
+    const embedThumb = await fetchViaEmbed(tikwmVideoId);
+    if (embedThumb) {
+      return { thumbnail: embedThumb, videoTitle: data.data.title || '', videoAuthor: data.data.author?.nickname || '' };
+    }
+  }
+
+  // wsrv.nl proxy URL as final fallback
   const proxiedUrl = 'https://wsrv.nl/?url=' + encodeURIComponent(absoluteUrl) + '&output=webp&w=320';
-  console.log('  [tikwm] proxy URL:', proxiedUrl.slice(0, 80));
+  console.log('  [tikwm] wsrv.nl fallback:', proxiedUrl.slice(0, 80));
   return { thumbnail: proxiedUrl, videoTitle: data.data.title || '', videoAuthor: data.data.author?.nickname || '' };
 }
 

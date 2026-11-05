@@ -179,10 +179,15 @@ function _videoCard(v, locked = false) {
   const thumbSrc = v.thumbnail;
   const vidTitle = v.videoTitle;
 
-  // Lazily fetch thumbnail from TikTok oEmbed if missing (browser-side, no IP blocking)
-  if (!thumbSrc || !v.thumbnailUpdated || v.thumbnailUpdated < Date.now() - 20 * 3600000) {
+  // Lazily fetch thumbnail from TikTok oEmbed if missing or invalid (browser-side, no IP blocking)
+  // Also retry if stored as data: URI (bad base64 from a failed download)
+  const thumbNeedsRefresh = !thumbSrc
+    || thumbSrc.startsWith('data:')
+    || !v.thumbnailUpdated
+    || v.thumbnailUpdated < Date.now() - 20 * 3600000;
+  if (thumbNeedsRefresh) {
     import('../features/thumbnails.js').then(m =>
-      m.fetchMissingThumbnail(vidId, link, thumbSrc, v.thumbnailUpdated)
+      m.fetchMissingThumbnail(vidId, link, null, 0)
     );
   }
 
