@@ -54,6 +54,36 @@ async function downloadAsBase64(imageUrl) {
   }
 }
 
+async function fetchOgImage(url) {
+  try {
+    const res = await fetch(url, {
+      timeout: 20000,
+      redirect: 'follow',
+      headers: {
+        'User-Agent': BROWSER_UA,
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.5',
+        'Cache-Control': 'no-cache',
+      }
+    });
+    if (!res.ok) { console.log('  [og] status:', res.status); return null; }
+    const html = await res.text();
+    const imgMatch   = html.match(/<meta\s[^>]*property="og:image"\s[^>]*content="([^"]+)"/i)
+                    || html.match(/<meta\s[^>]*content="([^"]+)"\s[^>]*property="og:image"/i);
+    const titleMatch = html.match(/<meta\s[^>]*property="og:title"\s[^>]*content="([^"]+)"/i)
+                    || html.match(/<meta\s[^>]*content="([^"]+)"\s[^>]*property="og:title"/i);
+    if (imgMatch) {
+      console.log('  [og] found:', imgMatch[1].slice(0, 80));
+      return { imgUrl: imgMatch[1], title: titleMatch ? titleMatch[1] : '' };
+    }
+    console.log('  [og] not found, html length:', html.length, '| snippet:', html.slice(0, 100));
+    return null;
+  } catch (e) {
+    console.log('  [og] error:', e.message.slice(0, 100));
+    return null;
+  }
+}
+
 function fetchViaYtdlp(url) {
   try {
     const out = execSync(
@@ -80,11 +110,17 @@ function fetchViaYtdlp(url) {
 async function fetchOne(url) {
   if (!url.includes('tiktok.com')) throw new Error('Not a TikTok URL');
 
-  // Strategy 1: yt-dlp
+  // Strategy 1: TikTok og:image (server-side rendered, direct CDN URL)
+  const ogResult = await fetchOgImage(url);
+  if (ogResult?.imgUrl) {
+    return { thumbnail: ogResult.imgUrl, videoTitle: ogResult.title || '', videoAuthor: '' };
+  }
+
+  // Strategy 2: yt-dlp
   const ytResult = fetchViaYtdlp(url);
   if (ytResult) return ytResult;
 
-  // Strategy 2: TikTok oEmbed API
+  // Strategy 3: TikTok oEmbed API
   try {
     const oRes = await fetch(
       'https://www.tiktok.com/oembed?url=' + encodeURIComponent(url),
@@ -108,7 +144,7 @@ async function fetchOne(url) {
     console.log('  [oembed] error:', e.message);
   }
 
-  // Strategy 3: tikwm.com API (POST) + download as base64
+  // Strategy 4: tikwm.com API (POST) + proxy URL
   let apiRes = await fetch('https://www.tikwm.com/api/', {
     method: 'POST', timeout: 20000,
     headers: {
@@ -134,15 +170,9 @@ async function fetchOne(url) {
   if (!coverPath) throw new Error('No cover in API response');
   const absoluteUrl = coverPath.startsWith('/') ? 'https://www.tikwm.com' + coverPath : coverPath;
 
-  // Try to download as base64 (bypasses all hotlink protection in browsers)
-  const b64 = await downloadAsBase64(absoluteUrl);
-  if (b64) {
-    return { thumbnail: b64, videoTitle: data.data.title || '', videoAuthor: data.data.author?.nickname || '' };
-  }
-
-  // Fallback: wsrv.nl proxy URL
+  // wsrv.nl proxy URL (browser-side proxy, bypasses hotlink Referer check)
   const proxiedUrl = 'https://wsrv.nl/?url=' + encodeURIComponent(absoluteUrl) + '&output=webp&w=320';
-  console.log('  [proxy] wsrv.nl fallback:', proxiedUrl.slice(0, 80));
+  console.log('  [tikwm] proxy URL:', proxiedUrl.slice(0, 80));
   return { thumbnail: proxiedUrl, videoTitle: data.data.title || '', videoAuthor: data.data.author?.nickname || '' };
 }
 
