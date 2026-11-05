@@ -35,7 +35,7 @@ export function openVideoPreview(vidId) {
   const link      = v.link || v.url || '#';
 
   const thumbHtml = v.thumbnail
-    ? `<img class="vpm-thumb" src="${esc(v.thumbnail)}" alt="${esc(v.videoTitle || '')}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling&&(this.nextElementSibling.style.display='')"/>`
+    ? `<img class="vpm-thumb" src="${esc(v.thumbnail)}" alt="${esc(v.videoTitle || '')}" loading="lazy" referrerpolicy="no-referrer" onerror="this.style.display='none';this.nextElementSibling&&(this.nextElementSibling.style.display='')"/>`
     : `<div class="vpm-thumb-fallback">
         <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
         <span>${t('videoPreviewUnavailable') || 'Vorschau nicht verfügbar'}</span>
