@@ -18,12 +18,32 @@ const BROWSER_UA = 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) Apple
 async function fetchOne(url) {
   if (!url.includes('tiktok.com')) throw new Error('Not a TikTok URL');
 
-  // tikwm.com public API — returns cover URL, title, author for TikTok URLs
-  const apiUrl = 'https://www.tikwm.com/api/?url=' + encodeURIComponent(url);
-  const apiRes = await fetch(apiUrl, {
+  // tikwm.com public API — try POST first (less likely to be IP-blocked than GET)
+  let apiRes = await fetch('https://www.tikwm.com/api/', {
+    method: 'POST',
     timeout: 20000,
-    headers: { 'User-Agent': BROWSER_UA, 'Accept': 'application/json' }
+    headers: {
+      'User-Agent': BROWSER_UA,
+      'Accept': 'application/json, text/javascript, */*; q=0.01',
+      'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+      'Referer': 'https://www.tikwm.com/',
+      'Origin': 'https://www.tikwm.com',
+      'X-Requested-With': 'XMLHttpRequest',
+    },
+    body: 'url=' + encodeURIComponent(url) + '&count=12&cursor=0&web=1&hd=1',
   });
+  // Fallback to GET if POST is also blocked
+  if (!apiRes.ok) {
+    apiRes = await fetch('https://www.tikwm.com/api/?url=' + encodeURIComponent(url), {
+      timeout: 20000,
+      headers: {
+        'User-Agent': BROWSER_UA,
+        'Accept': 'application/json',
+        'Referer': 'https://www.tikwm.com/',
+        'Origin': 'https://www.tikwm.com',
+      },
+    });
+  }
   if (!apiRes.ok) throw new Error('API fetch ' + apiRes.status);
 
   let data;
