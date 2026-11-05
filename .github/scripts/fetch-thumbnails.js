@@ -79,7 +79,7 @@ async function main() {
     // Skip only if thumbnail is a fresh CDN URL (not a stale base64 or old URL)
     const isBase64 = typeof video.thumbnail === 'string' && video.thumbnail.startsWith('data:');
     if (!forceRefresh && !isBase64 && video.thumbnail && video.thumbnailUpdated > now - THUMB_CACHE_MS) { skipped++; continue; }
-    if (!retryFailed && video.thumbnailFailed && video.thumbnailFailedAt > now - 86400000) { skipped++; continue; }
+    if (!forceRefresh && !retryFailed && video.thumbnailFailed && video.thumbnailFailedAt > now - 86400000) { skipped++; continue; }
     const videoUrl = video.link || video.url;
     if (!videoUrl) { skipped++; continue; }
 
