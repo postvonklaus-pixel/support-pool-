@@ -158,10 +158,13 @@ function _collectAnalytics() {
     .sort((a, b) => b.suppCount - a.suppCount)
     .slice(0, 5);
 
-  // 7-day trend: new member registrations per day
+  // 7-day trend: new member registrations per day (midnight boundaries)
   const dayMs = 86400000;
   const trend = Array.from({ length: 7 }, (_, i) => {
-    const dayStart = now - (6 - i) * dayMs;
+    const d = new Date(now);
+    d.setDate(d.getDate() - (6 - i));
+    d.setHours(0, 0, 0, 0);
+    const dayStart = d.getTime();
     const dayEnd   = dayStart + dayMs;
     return members.filter(m => {
       const joinTs = m.joinedAt || m.joined || 0;

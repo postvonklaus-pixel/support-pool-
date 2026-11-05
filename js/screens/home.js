@@ -180,7 +180,7 @@ function _videoCard(v, locked = false) {
   const vidTitle = v.videoTitle;
 
   const thumbHtml = thumbSrc
-    ? `<img class="vc-thumb" src="${esc(thumbSrc)}" alt="${esc(vidTitle || '')}" loading="lazy"/>`
+    ? `<img class="vc-thumb" src="${esc(thumbSrc)}" alt="${esc(vidTitle || '')}" loading="lazy" onerror="this.parentNode.innerHTML='<div class=vc-thumb-fallback><svg width=22 height=22 viewBox=\\'0 0 24 24\\' fill=none stroke=currentColor stroke-width=1.5 stroke-linecap=round stroke-linejoin=round><polygon points=\\'5 3 19 12 5 21 5 3\\'/></svg></div>'" />`
     : `<div class="vc-thumb-fallback">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
         <span class="vc-thumb-fallback-text">${t('videoWatch') || 'Video'}</span>

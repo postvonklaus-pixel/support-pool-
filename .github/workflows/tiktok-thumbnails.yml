@@ -11,6 +11,12 @@ on:
         default: 'false'
         type: choice
         options: ['false', 'true']
+      force:
+        description: 'Force re-fetch all (replace base64 with fresh CDN URLs)'
+        required: false
+        default: 'false'
+        type: choice
+        options: ['false', 'true']
 
 jobs:
   fetch-thumbnails:
@@ -32,4 +38,5 @@ jobs:
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
           RETRY: ${{ github.event.inputs.retry == 'true' && '1' || '0' }}
+          FORCE: ${{ github.event.inputs.force == 'true' && '1' || '0' }}
         run: node .github/scripts/fetch-thumbnails.js
