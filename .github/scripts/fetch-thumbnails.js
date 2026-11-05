@@ -1,6 +1,5 @@
 const admin = require('firebase-admin');
 const fetch = require('node-fetch');
-const sharp = require('sharp');
 
 admin.initializeApp({
   credential: admin.credential.cert(
@@ -11,15 +10,44 @@ admin.initializeApp({
 
 const db = admin.database();
 
-// Cache 20h — workflow runs every 30 min so thumbnails are always fresh
+// Cache 20h — workflow runs every 30 min; TikTok CDN URLs expire ~24h
 const THUMB_CACHE_MS = 20 * 60 * 60 * 1000;
 
-const BROWSER_UA = 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1';
+const BROWSER_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
 
 async function fetchOne(url) {
   if (!url.includes('tiktok.com')) throw new Error('Not a TikTok URL');
 
-  // Step 1: get video metadata from tikwm.com API
+  // ── Strategy 1: TikTok official oEmbed API ─────────────────────────────
+  // Returns thumbnail_url — a direct TikTok CDN URL publicly loadable by browsers.
+  try {
+    const oRes = await fetch(
+      'https://www.tiktok.com/oembed?url=' + encodeURIComponent(url),
+      {
+        timeout: 15000,
+        headers: { 'User-Agent': BROWSER_UA, 'Accept': 'application/json' },
+      }
+    );
+    if (oRes.ok) {
+      const od = await oRes.json();
+      if (od.thumbnail_url) {
+        console.log('  [oembed] thumbnail_url:', od.thumbnail_url.slice(0, 80));
+        return {
+          thumbnail:   od.thumbnail_url,
+          videoTitle:  od.title || '',
+          videoAuthor: od.author_name || '',
+        };
+      }
+    } else {
+      console.log('  [oembed] status:', oRes.status);
+    }
+  } catch (e) {
+    console.log('  [oembed] error:', e.message);
+  }
+
+  // ── Strategy 2: tikwm.com API (POST) ───────────────────────────────────
+  // Cover URL is relative (/video/cover/xxx.webp) — served by tikwm.com CDN.
+  // Store it and let the app load with referrerpolicy=no-referrer.
   let apiRes = await fetch('https://www.tikwm.com/api/', {
     method: 'POST',
     timeout: 20000,
@@ -40,7 +68,6 @@ async function fetchOne(url) {
         'User-Agent': BROWSER_UA,
         'Accept': 'application/json',
         'Referer': 'https://www.tikwm.com/',
-        'Origin': 'https://www.tikwm.com',
       },
     });
   }
@@ -52,31 +79,10 @@ async function fetchOne(url) {
 
   const coverPath = data.data.cover;
   if (!coverPath) throw new Error('No cover in API response');
-  const imageUrl = coverPath.startsWith('/') ? 'https://www.tikwm.com' + coverPath : coverPath;
-
-  // Step 2: download the image (GH runner can reach tikwm.com)
-  const imgRes = await fetch(imageUrl, {
-    timeout: 15000,
-    headers: {
-      'User-Agent': BROWSER_UA,
-      'Referer': 'https://www.tikwm.com/',
-      'Accept': 'image/webp,image/*,*/*',
-    },
-  });
-  if (!imgRes.ok) throw new Error('Image download ' + imgRes.status);
-  const imgBuf = Buffer.from(await imgRes.arrayBuffer());
-
-  // Step 3: resize to 120px wide (keeps aspect ratio), encode as small WebP
-  const resized = await sharp(imgBuf)
-    .resize(120, null, { withoutEnlargement: true })
-    .webp({ quality: 72 })
-    .toBuffer();
-
-  const base64 = 'data:image/webp;base64,' + resized.toString('base64');
-  console.log('  image size:', imgBuf.length, 'bytes ->', resized.length, 'bytes');
+  const absoluteUrl = coverPath.startsWith('/') ? 'https://www.tikwm.com' + coverPath : coverPath;
 
   return {
-    thumbnail:   base64,
+    thumbnail:   absoluteUrl,
     videoTitle:  data.data.title || '',
     videoAuthor: data.data.author?.nickname || '',
   };
@@ -95,11 +101,7 @@ async function main() {
 
   for (const [vid, video] of Object.entries(videos)) {
     if (video.status !== 'open' && video.status !== 'done') { skipped++; continue; }
-    const isBase64 = typeof video.thumbnail === 'string' && video.thumbnail.startsWith('data:');
-    // Skip if we have a fresh small base64 thumbnail (< 20h old)
-    if (!forceRefresh && isBase64 && video.thumbnailUpdated > now - THUMB_CACHE_MS) { skipped++; continue; }
-    // Skip non-base64 thumbnails only if cache is fresh (CDN URLs from before the fix)
-    if (!forceRefresh && !isBase64 && video.thumbnail && video.thumbnailUpdated > now - THUMB_CACHE_MS) { skipped++; continue; }
+    if (!forceRefresh && video.thumbnail && video.thumbnailUpdated > now - THUMB_CACHE_MS) { skipped++; continue; }
     if (!forceRefresh && !retryFailed && video.thumbnailFailed && video.thumbnailFailedAt > now - 86400000) { skipped++; continue; }
     const videoUrl = video.link || video.url;
     if (!videoUrl) { skipped++; continue; }
@@ -113,8 +115,9 @@ async function main() {
       updates[vid + '/thumbnailFailed']   = null;
       updates[vid + '/thumbnailFailedAt'] = null;
       fetched++;
-      console.log('OK:', vid, '->', result.videoAuthor, '(' + Math.round(result.thumbnail.length / 1024) + 'KB)');
-      await new Promise(r => setTimeout(r, 800));
+      const short = result.thumbnail.length > 80 ? result.thumbnail.slice(0, 80) + '...' : result.thumbnail;
+      console.log('OK:', vid, '->', result.videoAuthor, '|', short);
+      await new Promise(r => setTimeout(r, 600));
     } catch (err) {
       updates[vid + '/thumbnailFailed']   = err.message;
       updates[vid + '/thumbnailFailedAt'] = now;
