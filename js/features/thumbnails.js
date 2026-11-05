@@ -1,9 +1,3 @@
-/* ═══════════════════════════════════════════════════════
-   NOVA Support Pool — Client-side thumbnail fetching
-   Calls TikTok oEmbed from the user's browser (no IP blocking).
-   Writes thumbnail URLs back to Firebase for all users to benefit.
-   ═══════════════════════════════════════════════════════ */
-
 const _pending  = new Set();
 const _failed   = new Set();
 const CACHE_MS  = 20 * 60 * 60 * 1000; // 20h
@@ -27,6 +21,15 @@ export function fetchMissingThumbnail(vid, videoUrl, currentThumb, thumbnailUpda
       if (!res.ok) { _failed.add(vid); return; }
       const d = await res.json();
       if (d?.thumbnail_url) {
+        // Update DOM immediately so thumbnail appears without page reload
+        try {
+          const escaped = CSS.escape(String(vid));
+          document.querySelectorAll(`[data-vid="${escaped}"] .vc-thumb`).forEach(img => {
+            img.src = d.thumbnail_url;
+          });
+        } catch (_) {}
+
+        // Write to Firebase so other users benefit on next load
         const { writeDB } = await import('../firebase.js');
         const now = Date.now();
         writeDB(`videos/${vid}/thumbnail`,        d.thumbnail_url);
@@ -36,8 +39,8 @@ export function fetchMissingThumbnail(vid, videoUrl, currentThumb, thumbnailUpda
       } else {
         _failed.add(vid);
       }
-    } catch (e) {
-      _failed.add(vid);
+    } catch (_e) {
+      // Network/CORS error — don't permanently mark failed so next load retries
     } finally {
       _pending.delete(vid);
     }

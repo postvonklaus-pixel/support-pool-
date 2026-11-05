@@ -26,15 +26,21 @@ async function fetchViaEmbed(videoId) {
     });
     if (!res.ok) { console.log('  [embed] status:', res.status); return null; }
     const html = await res.text();
-    // TikTok CDN URLs: p16-sign-*.tiktokcdn.com or p77-sign.tiktokcdn.com
-    const m = html.match(/https:\/\/p\d+-sign[^"'<\s\\]+\.(?:webp|jpg|jpeg)[^"'<\s\\]*/i)
-           || html.match(/https:\\u002Fp\d+-sign[^\\"]+\.(?:webp|jpg|jpeg)[^\\"]*"/)
+    // Any tiktokcdn.com URL ending in an image extension (covers all regional CDNs)
+    const m = html.match(/https?:\/\/[a-zA-Z0-9._-]*tiktokcdn[a-zA-Z0-9._-]*\.com\/[^\s"'<>\\]+\.(?:webp|jpg|jpeg)[^\s"'<>\\]*/i)
+           || html.match(/https?:\\u002F\\u002F[^\\"]*tiktokcdn[^\\"]*\.(?:webp|jpeg|jpg)[^"\s\\]*/i);
     if (m) {
-      const thumb = m[0].replace(/\\u002F/g, '/').replace(/"/g, '');
-      console.log('  [embed] CDN URL:', thumb.slice(0, 80));
+      const thumb = m[0].replace(/\\u002F/g, '/').replace(/\\u003D/g, '=').replace(/"/g, '');
+      console.log('  [embed] CDN URL:', thumb.slice(0, 100));
       return thumb;
     }
-    console.log('  [embed] no CDN URL found, length:', html.length);
+    // Log snippet to help debug the HTML structure
+    const tiktokIdx = html.indexOf('tiktokcdn');
+    if (tiktokIdx >= 0) {
+      console.log('  [embed] tiktokcdn found at', tiktokIdx, ':', html.slice(Math.max(0, tiktokIdx-20), tiktokIdx+120));
+    } else {
+      console.log('  [embed] no tiktokcdn in HTML, length:', html.length, '| start:', html.slice(0, 120).replace(/\n/g, ' '));
+    }
   } catch (e) {
     console.log('  [embed] error:', e.message.slice(0, 100));
   }
@@ -174,6 +180,8 @@ async function fetchOne(url) {
   let data;
   try { data = await apiRes.json(); } catch (e) { throw new Error('API non-JSON'); }
   if (data.code !== 0 || !data.data) throw new Error('API error: ' + (data.msg || JSON.stringify(data)));
+  console.log('  [tikwm] data keys:', Object.keys(data.data).join(','));
+  if (data.data.origin_cover) console.log('  [tikwm] origin_cover:', String(data.data.origin_cover).slice(0, 120));
   const coverPath = data.data.cover;
   if (!coverPath) throw new Error('No cover in API response');
   const absoluteUrl = coverPath.startsWith('/') ? 'https://www.tikwm.com' + coverPath : coverPath;
