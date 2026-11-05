@@ -51,12 +51,15 @@ async function fetchOne(url) {
 
   if (data.code !== 0 || !data.data) throw new Error('API error: ' + (data.msg || JSON.stringify(data)));
 
-  // Store the CDN URL directly — far smaller than base64 in Firebase RTDB.
-  // The workflow runs every 30 min so the URL is always refreshed before it expires.
-  const coverUrl = data.data.cover || data.data.origin_cover;
-  if (!coverUrl) throw new Error('No cover URL in API response');
+  // Prefer origin_cover (direct TikTok CDN URL — publicly loadable by any browser).
+  // Fall back to cover (tikwm.com cached URL) if origin_cover is missing.
+  // The workflow runs every 30 min so expiring TikTok CDN tokens are always fresh.
+  const originCover = data.data.origin_cover;
+  const coverUrl    = data.data.cover || '';
+  const rawUrl      = originCover || coverUrl;
+  if (!rawUrl) throw new Error('No cover URL in API response');
 
-  const absoluteUrl = coverUrl.startsWith('/') ? 'https://www.tikwm.com' + coverUrl : coverUrl;
+  const absoluteUrl = rawUrl.startsWith('/') ? 'https://www.tikwm.com' + rawUrl : rawUrl;
 
   return {
     thumbnail:   absoluteUrl,
