@@ -56,8 +56,10 @@ async function fetchOne(url) {
   const coverUrl = data.data.cover || data.data.origin_cover;
   if (!coverUrl) throw new Error('No cover URL in API response');
 
+  const absoluteUrl = coverUrl.startsWith('/') ? 'https://www.tikwm.com' + coverUrl : coverUrl;
+
   return {
-    thumbnail:   coverUrl,
+    thumbnail:   absoluteUrl,
     videoTitle:  data.data.title || '',
     videoAuthor: data.data.author?.nickname || ''
   };
