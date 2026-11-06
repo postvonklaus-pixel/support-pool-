@@ -3,7 +3,7 @@
    ═══════════════════════════════════════════════════════ */
 
 import { state, setState, subscribe } from './state.js';
-import { storage, loadSession, getLang } from './storage.js';
+import { storage, loadSession, getLang, clearSession, saveSession } from './storage.js';
 import { initTheme } from './features/theme.js';
 import { ge, toast, getLastFridayWIB, fbDec } from './utils.js';
 import { initFirebase, saveDB, writeDB, getPendingPaths } from './firebase.js';
@@ -117,14 +117,19 @@ function onDBUpdate(snapshot) {
 
   // Auto-redirect returning user: fires whenever members become available
   // while user is still on login screen and not yet logged in.
-  // Intentionally NOT gated on a first-load flag — the individual-path fallback
-  // may call onDBUpdate multiple times before all data arrives, so we check
-  // on every update and rely on state.currentUser to prevent duplicate redirects.
+  // Normalize savedUser against DB keys (handles @ prefix mismatch from old sessions).
   const savedUser = loadSession();
-  if (savedUser && state.db.members?.[savedUser] &&
-      state.ui.activeScreen === 'login' && !state.currentUser) {
-    loginAs(savedUser, { silent: true });
-    return;
+  if (savedUser && state.ui.activeScreen === 'login' && !state.currentUser) {
+    const normSaved = savedUser.replace(/^@+/, '').toLowerCase();
+    const matchKey  = state.db.members?.[savedUser]
+      ? savedUser
+      : Object.keys(state.db.members || {}).find(k =>
+          k.replace(/^@+/, '').toLowerCase() === normSaved
+        );
+    if (matchKey) {
+      loginAs(matchKey, { silent: true });
+      return;
+    }
   }
 
   // Re-render active screen
@@ -185,8 +190,8 @@ export async function loginAs(username, { silent = false, isNew = false } = {}) 
   // Go to dashboard
   goScreen('dashboard');
 
-  // Save session
-  import('./storage.js').then(m => m.saveSession(username));
+  // Save session synchronously so loadSession() reflects it immediately
+  saveSession(username);
 
   // New-member setup (group + notifications) — runs here because Firebase is
   // guaranteed to be connected by login time, unlike at registration time
@@ -250,7 +255,7 @@ export function logout() {
   if (window._lastSeenInterval) { clearInterval(window._lastSeenInterval); window._lastSeenInterval = null; }
   import('./features/presence.js').then(m => m.cleanupPresence());
   setState('currentUser', null);
-  import('./storage.js').then(m => m.clearSession());
+  clearSession(); // synchronous — must run before goScreen so onDBUpdate sees no session
   const header = ge('app-header');
   const nav    = ge('app-nav');
   if (header) header.classList.add('hidden');
