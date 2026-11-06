@@ -144,6 +144,10 @@ on('support:copy', (el) => {
   import('./features/support.js').then(m => m.copyComment(el.dataset.comment));
 });
 
+on('support:skip-comment', () => {
+  import('./features/support.js').then(m => m.skipComment());
+});
+
 on('support:video-opened', () => {});  // overridden by support.js after load
 
 // ── Notification actions ──────────────────────────────────

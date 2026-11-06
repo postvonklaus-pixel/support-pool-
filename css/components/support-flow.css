@@ -154,6 +154,13 @@
   background: rgba(16, 185, 129, 0.08);
 }
 
+.sf-comment-btn--skip {
+  border-color: var(--success, #10b981);
+  background: rgba(16, 185, 129, 0.08);
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
 .sf-comment-btn__icon { flex-shrink: 0; font-size: 1rem; }
 .sf-comment-btn__txt  { flex: 1; line-height: 1.3; }
 

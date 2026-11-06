@@ -129,6 +129,9 @@ function _buildStep1(vidId, link, pool, owner, slotsLeft, urgent) {
       <div class="sf-body hidden" id="sf-body-2">
         <p class="sf-inst">${t('sfInst2')}</p>
         <div class="sf-comments">
+          <button class="sf-comment-btn sf-comment-btn--skip" data-action="support:skip-comment">
+            <span class="sf-comment-btn__txt">${t('sfSkipComment') || '✅ Support fertig — ohne Kommentar'}</span>
+          </button>
           ${pool.map((c, i) => {
             const filled = _fillPlaceholders(c, owner);
             return `
@@ -160,6 +163,10 @@ function _buildStep1(vidId, link, pool, owner, slotsLeft, urgent) {
       </div>
     </div>
   `;
+}
+
+export function skipComment() {
+  _advanceToStep3();
 }
 
 export function copyComment(comment) {

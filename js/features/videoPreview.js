@@ -70,6 +70,8 @@ export function openVideoPreview(vidId) {
           ${goalPill(current, total, 'Slots', { urgent: (total - current) <= 3 })}
         </div>
 
+        <p class="vpm-hint">${t('vpmHint') || 'Öffne das TikTok-Video, schau es an und komme dann zurück.'}</p>
+
         <a class="vpm-open-link btn" href="${esc(link)}" target="_blank" rel="noopener noreferrer"
            data-action="vpm:support" data-vid="${esc(vidId)}">
           ${t('supportOpen') || 'Support geben & TikTok öffnen'} →

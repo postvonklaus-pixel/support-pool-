@@ -202,6 +202,15 @@
   letter-spacing: 0.05em;
 }
 
+/* ── Hint text ──────────────────────────────────────────── */
+.vpm-hint {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin: 0 0 12px;
+  text-align: center;
+}
+
 /* ── CTA button ─────────────────────────────────────────── */
 .vpm-open-link {
   display: flex;
