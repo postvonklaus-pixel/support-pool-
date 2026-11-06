@@ -428,8 +428,11 @@ function _handleNameSubmit() {
   }
 
   if (!u.memberPin) {
-    const key = found; // capture locally — _username module var could change
-    import('../main.js').then(m => m.loginAs(key));
+    const key = found;
+    // window._nova is set synchronously at module load — avoids the async
+    // import().then() gap during which state.db.members could change.
+    if (window._nova?.loginAs) window._nova.loginAs(key);
+    else import('../main.js').then(m => m.loginAs(key));
     return;
   }
 

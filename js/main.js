@@ -146,17 +146,29 @@ function onDBUpdate(snapshot) {
 }
 
 // ── Login ─────────────────────────────────────────────────
+function _resolveMemberKey(username) {
+  if (state.db.members[username]) return username;
+  const norm = username.replace(/^@+/, '').toLowerCase();
+  return Object.keys(state.db.members || {}).find(
+    k => k.replace(/^@+/, '').toLowerCase() === norm
+  ) || null;
+}
+
 export async function loginAs(username, { silent = false, isNew = false } = {}) {
-  let u = state.db.members[username];
+  let resolvedKey = _resolveMemberKey(username);
+  let u = resolvedKey ? state.db.members[resolvedKey] : null;
   if (!u) {
-    // Members may still be settling after page load — poll up to 3 s before
-    // giving up. Handles a race where Firebase delivers the initial snapshot
-    // after the first login attempt begins (common on slow mobile connections).
-    for (let i = 0; i < 15 && !state.db.members[username]; i++) {
+    // Members may still be settling — poll up to 5 s with case-insensitive
+    // key resolution. Handles races where Firebase delivers the full snapshot
+    // slightly after the first login attempt begins.
+    for (let i = 0; i < 25; i++) {
       await new Promise(r => setTimeout(r, 200));
+      resolvedKey = _resolveMemberKey(username);
+      u = resolvedKey ? state.db.members[resolvedKey] : null;
+      if (u) break;
     }
-    u = state.db.members[username];
   }
+  if (resolvedKey && resolvedKey !== username) username = resolvedKey;
   if (!u) {
     if (!silent) {
       import('./i18n.js').then(({ t }) => toast(t('loginNotFound') || 'Nutzer nicht gefunden', 'error'));
