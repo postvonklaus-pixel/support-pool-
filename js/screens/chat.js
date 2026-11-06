@@ -15,6 +15,10 @@ let _chatTab        = 'pool';  // 'pool' | 'dm'
 let _dmPartner      = null;    // username of open DM thread
 let _skipNextRender = false;   // set after in-place send to skip DB-echo re-render
 let _renderTimer    = null;    // debounce handle for DB-triggered re-renders
+let _replyTo        = null;    // { from, text } | null — pending reply context
+let _activeBubbleId = null;    // id of bubble whose action bar is open
+
+const REACT_EMOJIS = ['👍','❤️','😂','😮','🔥','👏'];
 
 export function scheduleRender() {
   clearTimeout(_renderTimer);
@@ -49,6 +53,7 @@ export function render() {
   // destroys the focused <form> which causes iOS to close the keyboard.
   const inputFocused = document.activeElement?.id === 'chat-pool-input';
   if (inputFocused && _chatTab === 'pool' && !_dmPartner && el.classList.contains('active')) {
+    _activeBubbleId = null; // close any open action bar on external update
     const poolMsgs = _poolMessages();
     if (msgsBox) {
       msgsBox.innerHTML = poolMsgs.length === 0
@@ -63,6 +68,8 @@ export function render() {
     _renderDMThread(el, cu, _dmPartner);
     return;
   }
+
+  _activeBubbleId = null;
 
   const poolMsgs  = _poolMessages();
   const dmThreads = _dmThreads(cu);
@@ -94,6 +101,8 @@ export function render() {
     // Restore input text typed before the DB-triggered re-render
     const inp = document.getElementById('chat-pool-input');
     if (inp && prevInput) inp.value = prevInput;
+    // Re-inject reply bar if still pending
+    if (_replyTo) _showReplyBar();
     // Scroll to bottom only if we were already there
     if (atBottom) _scrollToBottom();
   }
@@ -131,7 +140,7 @@ function _renderPool(cu, msgs) {
   `;
 }
 
-function _poolBubble(m, cu) {
+function _poolBubble(m, cu, { roomKey = '' } = {}) {
   // System messages (Tickets 2+3) — no avatar, no reply, no reactions
   if (m.type === 'system') {
     return `
@@ -150,18 +159,60 @@ function _poolBubble(m, cu) {
   const initials = (m.from || '?').slice(0, 2).toUpperCase();
   const textHtml = esc(m.text || '').replace(/\n/g, '<br>');
 
+  // Reply quote block
+  const quoteHtml = m.replyTo ? `
+    <div class="bubble-quote">
+      <span class="bubble-quote__from">@${esc(m.replyTo.from || '')}</span>
+      <span class="bubble-quote__text">${esc((m.replyTo.text || '').slice(0, 60))}</span>
+    </div>
+  ` : '';
+
+  // Reactions row
+  const reactHtml = _reactionsHtml(m, cu, roomKey);
+
+  // Action bar (emoji picker + reply)
+  const showActions = m.id && _activeBubbleId === m.id;
+  const actionsHtml = showActions ? `
+    <div class="bubble-actions${isMe ? ' bubble-actions--me' : ''}">
+      ${REACT_EMOJIS.map(e => `<button class="bubble-action-emoji" data-action="chat:react" data-msg-id="${m.id}" data-emoji="${e}" data-room-key="${roomKey}">${e}</button>`).join('')}
+      <button class="bubble-action-reply" data-action="chat:reply" data-msg-from="${esc(m.from || '')}" data-msg-text="${esc(m.text || '')}">↩</button>
+    </div>
+  ` : '';
+
   return `
     <div class="bubble-row ${isMe ? 'bubble-row--me' : ''}">
       ${!isMe ? `<div class="bubble-avatar" style="background:${grad}" title="@${esc(m.from || '')}">${initials}</div>` : ''}
       <div class="bubble-col">
         ${!isMe ? `<div class="bubble-meta"><span class="bubble-username">@${esc(name)}</span><span class="bubble-time-inline">${m.ts ? timeAgo(m.ts, state.lang) : ''}</span></div>` : ''}
-        <div class="bubble ${isMe ? 'bubble--me' : 'bubble--them'}">
-          ${textHtml}
+        <div class="bubble ${isMe ? 'bubble--me' : 'bubble--them'}"
+          data-action="chat:bubble:tap" data-msg-id="${m.id || ''}">
+          ${quoteHtml}${textHtml}
         </div>
+        ${reactHtml}
+        ${actionsHtml}
         ${isMe ? `<div class="bubble-time">${m.ts ? timeAgo(m.ts, state.lang) : ''}</div>` : ''}
       </div>
     </div>
   `;
+}
+
+function _reactionsHtml(m, cu, roomKey) {
+  const r = m.reactions;
+  if (!r || typeof r !== 'object') return '';
+  const entries = Object.entries(r).filter(([, users]) =>
+    users && typeof users === 'object' && Object.keys(users).length > 0
+  );
+  if (!entries.length) return '';
+  return `<div class="bubble-reactions">
+    ${entries.map(([emoji, users]) => {
+      const count = Object.keys(users).length;
+      const mine  = !!users[cu];
+      return `<button class="reaction-chip${mine ? ' reaction-chip--mine' : ''}"
+        data-action="chat:react" data-msg-id="${m.id}" data-emoji="${emoji}" data-room-key="${roomKey}">
+        ${emoji}${count > 1 ? ` ${count}` : ''}
+      </button>`;
+    }).join('')}
+  </div>`;
 }
 
 // ── DM List ────────────────────────────────────────────────
@@ -216,10 +267,12 @@ function _renderDMThread(el, cu, partner) {
   const u       = state.db.members?.[partner] || {};
   const name    = u.name || partner;
   const grad    = avatarGradient(partner);
+  const roomKey = [cu, partner].sort().join('__');
   const msgs    = _dmMessages(cu, partner);
 
+  _activeBubbleId = null;
+
   // Mark all incoming unread messages as read so the DM pip clears
-  const roomKey = [cu, partner].sort().join('__');
   const raw = state.db.chat?.dm?.[roomKey]?.messages || {};
   Object.entries(raw)
     .filter(([, m]) => m.from !== cu && !m.read)
@@ -239,7 +292,7 @@ function _renderDMThread(el, cu, partner) {
       <div class="pool-messages" id="pool-messages" style="flex:1">
         ${msgs.length === 0
           ? emptyState('✉️', `@${esc(name)}`, t('chatDMEmpty'), { size: 'sm' })
-          : msgs.map(m => _poolBubble(m, cu)).join('')
+          : msgs.map(m => _poolBubble(m, cu, { roomKey })).join('')
         }
       </div>
 
@@ -259,6 +312,7 @@ function _renderDMThread(el, cu, partner) {
   `;
 
   _registerHandlers(cu);
+  if (_replyTo) _showReplyBar();
   _scrollToBottom();
   document.getElementById('chat-dm-input')?.focus();
 }
@@ -296,6 +350,45 @@ function _dmThreads(cu) {
     });
 }
 
+// ── Re-render messages area only (preserves input / reply bar) ──
+function _rerenderMessages() {
+  const cu = state.currentUser;
+  if (!cu) return;
+  const msgsBox = document.getElementById('pool-messages');
+  if (!msgsBox) return;
+
+  if (_dmPartner) {
+    const roomKey = [cu, _dmPartner].sort().join('__');
+    const msgs = _dmMessages(cu, _dmPartner);
+    msgsBox.innerHTML = msgs.length === 0
+      ? emptyState('✉️', `@${esc(_dmPartner)}`, t('chatDMEmpty'), { size: 'sm' })
+      : msgs.map(m => _poolBubble(m, cu, { roomKey })).join('');
+  } else {
+    const msgs = _poolMessages();
+    msgsBox.innerHTML = msgs.length === 0
+      ? '<div class="pool-messages-empty"></div>'
+      : msgs.map(m => _poolBubble(m, cu)).join('');
+  }
+}
+
+// ── Reply bar ──────────────────────────────────────────────
+function _showReplyBar() {
+  document.getElementById('reply-bar')?.remove();
+  if (!_replyTo) return;
+  const form = document.getElementById('chat-pool-form') || document.getElementById('chat-dm-form');
+  if (!form) return;
+  form.insertAdjacentHTML('beforebegin', `
+    <div class="reply-bar" id="reply-bar">
+      <span class="reply-bar__icon">↩</span>
+      <div class="reply-bar__body">
+        <div class="reply-bar__from">@${esc(_replyTo.from)}</div>
+        <div class="reply-bar__text">${esc((_replyTo.text || '').slice(0, 60))}</div>
+      </div>
+      <button class="reply-bar__close" data-action="chat:reply:cancel">✕</button>
+    </div>
+  `);
+}
+
 // ── Send helpers ───────────────────────────────────────────
 function _sendPool(cu) {
   const input = document.getElementById('chat-pool-input');
@@ -305,6 +398,13 @@ function _sendPool(cu) {
   input.style.height = '';
   const msgId = `${Date.now()}_${cu}`;
   const msg   = { from: cu, text, ts: Date.now() };
+
+  if (_replyTo) {
+    msg.replyTo = { from: _replyTo.from, text: _replyTo.text.slice(0, 80) };
+    _replyTo = null;
+    document.getElementById('reply-bar')?.remove();
+  }
+
   // Skip the DB-echo re-render so the keyboard / input bar stay intact
   _skipNextRender = true;
   writeDB(`chat/pool/messages/${msgId}`, msg);
@@ -327,13 +427,20 @@ function _sendDM(cu, partner) {
   const roomKey = [cu, partner].sort().join('__');
   const msgId   = `${Date.now()}_${cu}`;
   const msg     = { from: cu, to: partner, text, ts: Date.now() };
+
+  if (_replyTo) {
+    msg.replyTo = { from: _replyTo.from, text: _replyTo.text.slice(0, 80) };
+    _replyTo = null;
+    document.getElementById('reply-bar')?.remove();
+  }
+
   _skipNextRender = true;
   writeDB(`chat/dm/${roomKey}/messages/${msgId}`, msg);
   const msgs = document.getElementById('pool-messages');
   if (msgs) {
     const empty = msgs.querySelector('.empty-state');
     if (empty) empty.remove();
-    msgs.insertAdjacentHTML('beforeend', _poolBubble(msg, cu));
+    msgs.insertAdjacentHTML('beforeend', _poolBubble(msg, cu, { roomKey }));
   }
   _scrollToBottom();
   input.focus();
@@ -352,10 +459,6 @@ function _scrollToBottom() {
   }));
 }
 
-function _focusInput() {
-  setTimeout(() => document.getElementById('chat-pool-input')?.focus(), 50);
-}
-
 // ── Handlers ───────────────────────────────────────────────
 function _registerHandlers(cu) {
   // iOS Safari only keeps keyboard open on form submit — not on button tap.
@@ -372,6 +475,8 @@ function _registerHandlers(cu) {
   on('chat:tab', (el) => {
     _chatTab   = el.dataset.tab || 'pool';
     _dmPartner = null;
+    _replyTo   = null;
+    _activeBubbleId = null;
     render();
   });
 
@@ -388,11 +493,15 @@ function _registerHandlers(cu) {
 
   on('chat:dm:open', (el) => {
     _dmPartner = el.dataset.partner;
+    _replyTo   = null;
+    _activeBubbleId = null;
     render();
   });
 
   on('chat:dm:back', () => {
     _dmPartner = null;
+    _replyTo   = null;
+    _activeBubbleId = null;
     render();
   });
 
@@ -405,5 +514,52 @@ function _registerHandlers(cu) {
     } else if (e.type === 'input') {
       _autoResize(el);
     }
+  });
+
+  // ── Ticket 4: Bubble tap → action bar ───────────────────
+  on('chat:bubble:tap', (el) => {
+    const msgId = el.dataset.msgId;
+    if (!msgId) return;
+    _activeBubbleId = (_activeBubbleId === msgId) ? null : msgId;
+    _rerenderMessages();
+  });
+
+  // ── Ticket 4: Emoji reaction toggle ─────────────────────
+  on('chat:react', (el) => {
+    const msgId   = el.dataset.msgId;
+    const emoji   = el.dataset.emoji;
+    const roomKey = el.dataset.roomKey || '';
+    if (!msgId || !emoji) return;
+
+    _activeBubbleId = null;
+
+    const path = roomKey
+      ? `chat/dm/${roomKey}/messages/${msgId}/reactions/${emoji}/${cu}`
+      : `chat/pool/messages/${msgId}/reactions/${emoji}/${cu}`;
+
+    // Check current reaction state
+    const already = roomKey
+      ? !!state.db.chat?.dm?.[roomKey]?.messages?.[msgId]?.reactions?.[emoji]?.[cu]
+      : !!state.db.chat?.pool?.messages?.[msgId]?.reactions?.[emoji]?.[cu];
+
+    writeDB(path, already ? null : true);
+    _rerenderMessages();
+  });
+
+  // ── Ticket 4: Reply ──────────────────────────────────────
+  on('chat:reply', (el) => {
+    _replyTo = { from: el.dataset.msgFrom || '', text: el.dataset.msgText || '' };
+    _activeBubbleId = null;
+    _rerenderMessages();
+    _showReplyBar();
+    setTimeout(() => {
+      (document.getElementById('chat-pool-input') ||
+       document.getElementById('chat-dm-input'))?.focus();
+    }, 50);
+  });
+
+  on('chat:reply:cancel', () => {
+    _replyTo = null;
+    document.getElementById('reply-bar')?.remove();
   });
 }
