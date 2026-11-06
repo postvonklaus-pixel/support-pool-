@@ -225,7 +225,9 @@ function _currentStreak(u) {
 }
 
 function _registerHandlers() {
-  // handlers delegated to events.js
+  on('settings:logout', () => {
+    import('../main.js').then(m => m.logout());
+  });
 }
 
 function _weeklyChipText() {
