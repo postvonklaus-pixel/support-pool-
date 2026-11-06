@@ -529,7 +529,8 @@ function _handlePinDel() {
 function _checkPin(entered, stored) {
   if (btoa(entered) === stored) {
     haptic('success');
-    import('../main.js').then(m => m.loginAs(_username));
+    if (window._nova?.loginAs) window._nova.loginAs(_username);
+    else import('../main.js').then(m => m.loginAs(_username));
   } else {
     shakePin();
     resetPin(4);

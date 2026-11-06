@@ -171,9 +171,7 @@ export async function loginAs(username, { silent = false, isNew = false } = {}) 
   if (resolvedKey && resolvedKey !== username) username = resolvedKey;
   if (!u) {
     if (!silent) {
-      const dbgKeys = Object.keys(state.db.members || {}).join(', ') || '(leer)';
-      const dbgMsg = `Nicht gefunden: "${username}" | ${Object.keys(state.db.members||{}).length} Members: ${dbgKeys.slice(0,80)}`;
-      toast(dbgMsg, 'error', 10000);
+      import('./i18n.js').then(({ t }) => toast(t('loginNotFound') || 'Nutzer nicht gefunden', 'error'));
     }
     return false;
   }
@@ -200,6 +198,11 @@ export async function loginAs(username, { silent = false, isNew = false } = {}) 
   setState('userSelectedLang', null);
   await setLang(targetLang);
   setState('lang', targetLang);
+
+  // Abort if logout() ran while we were awaiting setLang (concurrent logout/re-login race).
+  // Without this check, loginAs would call goScreen('dashboard') + saveSession AFTER
+  // logout cleared the session, re-logging the user in unintentionally.
+  if (state.currentUser !== username) return false;
 
   // Show chrome
   const header = ge('app-header');
