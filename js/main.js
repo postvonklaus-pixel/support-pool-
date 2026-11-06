@@ -149,10 +149,12 @@ function onDBUpdate(snapshot) {
 export async function loginAs(username, { silent = false, isNew = false } = {}) {
   let u = state.db.members[username];
   if (!u) {
-    // Members may still be settling after page load — retry once after a brief
-    // delay before giving up. Handles a race where state.db.members is
-    // momentarily incomplete on the very first login attempt.
-    await new Promise(r => setTimeout(r, 350));
+    // Members may still be settling after page load — poll up to 3 s before
+    // giving up. Handles a race where Firebase delivers the initial snapshot
+    // after the first login attempt begins (common on slow mobile connections).
+    for (let i = 0; i < 15 && !state.db.members[username]; i++) {
+      await new Promise(r => setTimeout(r, 200));
+    }
     u = state.db.members[username];
   }
   if (!u) {

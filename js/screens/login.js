@@ -428,7 +428,8 @@ function _handleNameSubmit() {
   }
 
   if (!u.memberPin) {
-    import('../main.js').then(m => m.loginAs(_username));
+    const key = found; // capture locally — _username module var could change
+    import('../main.js').then(m => m.loginAs(key));
     return;
   }
 
