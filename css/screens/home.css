@@ -761,6 +761,8 @@
 .vc-thumb-wrap:active .vc-thumb-overlay,
 .vc-thumb-wrap:hover  .vc-thumb-overlay  { opacity: 1; }
 
+.vc-thumb-wrap--locked { cursor: default; }
+
 .vc-play-icon { filter: drop-shadow(0 2px 6px rgba(0,0,0,0.5)); }
 
 /* ── Info column ────────────────────────────────────────── */

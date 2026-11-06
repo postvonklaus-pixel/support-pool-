@@ -208,8 +208,8 @@ function _videoCard(v, locked = false) {
       ${boost ? `<div class="boost-banner">${t('boostBanner') || '⚡ Fast fertig — noch 1 Support!'}</div>` : ''}
 
       <div class="vc-main">
-        <div class="vc-thumb-wrap" data-action="video:preview" data-vid="${esc(vidId)}"
-             role="button" tabindex="0" aria-label="Vorschau">
+        <div class="vc-thumb-wrap${locked ? ' vc-thumb-wrap--locked' : ''}"
+             ${locked ? '' : `data-action="video:preview" data-vid="${esc(vidId)}" role="button" tabindex="0" aria-label="Vorschau"`}>
           ${thumbHtml}
           <div class="vc-thumb-overlay" aria-hidden="true">
             <svg class="vc-play-icon" width="26" height="26" viewBox="0 0 24 24" fill="white"><polygon points="5 3 19 12 5 21 5 3"/></svg>
