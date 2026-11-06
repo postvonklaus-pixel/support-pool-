@@ -147,7 +147,14 @@ function onDBUpdate(snapshot) {
 
 // ── Login ─────────────────────────────────────────────────
 export async function loginAs(username, { silent = false, isNew = false } = {}) {
-  const u = state.db.members[username];
+  let u = state.db.members[username];
+  if (!u) {
+    // Members may still be settling after page load — retry once after a brief
+    // delay before giving up. Handles a race where state.db.members is
+    // momentarily incomplete on the very first login attempt.
+    await new Promise(r => setTimeout(r, 350));
+    u = state.db.members[username];
+  }
   if (!u) {
     if (!silent) {
       import('./i18n.js').then(({ t }) => toast(t('loginNotFound') || 'Nutzer nicht gefunden', 'error'));
