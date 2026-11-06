@@ -398,17 +398,20 @@ function _handleNameSubmit() {
   if (!val) { toast(t('loginNameRequired') || 'Benutzername eingeben', 'warning'); return; }
 
   if (!_isDBReady()) {
-    _pendingVal = val;
+    _pendingVal = val.replace(/^@+/, '');
     toast(t('loginConnecting') || 'Verbinde mit Server... bitte warten', 'info', 5000);
     if (!_unsubDB) _watchDB();
     return;
   }
 
+  // Normalize: strip leading @ (users often type @username, TikTok-style)
+  const valNorm = val.replace(/^@+/, '');
+  const valEnc  = fbEnc(valNorm);
   const members = state.db.members || {};
-  const valEnc  = fbEnc(val);
-  const found   = Object.keys(members).find(k =>
-    k.toLowerCase() === val.toLowerCase() || k.toLowerCase() === valEnc.toLowerCase()
-  );
+  const found   = Object.keys(members).find(k => {
+    const kn = k.replace(/^@+/, '').toLowerCase();
+    return kn === valNorm.toLowerCase() || kn === valEnc.toLowerCase();
+  });
 
   if (!found) {
     _username = val;

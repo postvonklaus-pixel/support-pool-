@@ -80,7 +80,6 @@ function _showApp() {
 }
 
 // ── Firebase DB update handler ────────────────────────────
-let _dbFirstLoad = true;
 
 // Re-applies queued writes (paths like 'members/key/stats/given') after
 // Firebase replaces state.db, so optimistic updates survive the next snapshot.
@@ -113,14 +112,16 @@ function onDBUpdate(snapshot) {
   // Notify all subscribers
   setState('db', state.db);
 
-  // On first load: if we have a valid session, redirect to dashboard
-  if (_dbFirstLoad) {
-    _dbFirstLoad = false;
-    const savedUser = loadSession();
-    if (savedUser && state.db.members?.[savedUser] && state.ui.activeScreen === 'login') {
-      loginAs(savedUser, { silent: true });
-      return;
-    }
+  // Auto-redirect returning user: fires whenever members become available
+  // while user is still on login screen and not yet logged in.
+  // Intentionally NOT gated on a first-load flag — the individual-path fallback
+  // may call onDBUpdate multiple times before all data arrives, so we check
+  // on every update and rely on state.currentUser to prevent duplicate redirects.
+  const savedUser = loadSession();
+  if (savedUser && state.db.members?.[savedUser] &&
+      state.ui.activeScreen === 'login' && !state.currentUser) {
+    loginAs(savedUser, { silent: true });
+    return;
   }
 
   // Re-render active screen
