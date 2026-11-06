@@ -129,9 +129,13 @@ on('vpm:close', () => {
 });
 
 on('vpm:support', (el) => {
+  // Open TikTok immediately (e.preventDefault() blocks the href navigation)
+  const link = el.getAttribute('href');
+  if (link && link !== '#') window.open(link, '_blank', 'noopener,noreferrer');
   import('./features/videoPreview.js').then(m => m.closeVideoPreview());
+  // Open support modal directly at Step 2 — TikTok already opened above
   setTimeout(() => {
-    import('./features/support.js').then(m => m.handleSupport(el.dataset.vid));
+    import('./features/support.js').then(m => m.handleSupportStep2(el.dataset.vid));
   }, 200);
 });
 

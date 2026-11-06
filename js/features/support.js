@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════
-   NOVA Support Pool — Support Flow (Part I Redesign)
+   NOVA Support Pool — Support Flow
    ═══════════════════════════════════════════════════════ */
 
 import { state }   from '../state.js';
@@ -40,63 +40,105 @@ function _fillPlaceholders(text, owner) {
 
 let _copied      = false;
 let _videoOpened = false;
-let _videoLink   = '';   // saved so copyComment can re-open TikTok
+let _videoLink   = '';
+let _currentVidId = '';
 
 export function handleSupport(vidId) {
   if (!vidId) return;
   const v = _findVideo(vidId);
   if (!v) { toast('Video nicht gefunden', 'error'); return; }
 
-  // Daily support cap: 20 base, 40 if user has an active video in pool
-  const cu = state.currentUser;
-  if (cu) {
-    const todayKey  = new Date().toISOString().slice(0, 10).replace(/-/g, '_');
-    const givenToday = state.db.members?.[cu]?.todayGiven?.[todayKey] || 0;
-    if (givenToday >= 20) {
-      const hasOpenVideo = Object.values(state.db.videos || {}).some(
-        vid => (vid.ownerKey === cu || vid.owner === cu) && vid.status === 'open'
-      );
-      if (!hasOpenVideo) {
-        toast(t('supportDailyLimit') || 'Max. 20 Supports heute — poste ein Video für mehr!', 'warning', 4000);
-        return;
-      }
-      if (givenToday >= 40) {
-        toast(t('supportDailyMax') || 'Tageslimit: 40 Supports erreicht.', 'warning', 4000);
-        return;
-      }
-    }
-  }
+  if (!_checkDailyLimit()) return;
 
-  _copied      = false;
-  _videoOpened = false;
-  _videoLink   = v.link || v.url || '';
+  _copied       = false;
+  _videoOpened  = false;
+  _videoLink    = v.link || v.url || '';
+  _currentVidId = vidId;
 
-  const link = v.link || v.url || '#';
-  const lang = state.lang;
-  const pool = _getCommentPool(lang);
+  const link  = v.link || v.url || '#';
+  const lang  = state.lang;
+  const pool  = _getCommentPool(lang);
   const owner = fbDec(v.ownerKey || v.owner || '?');
-  const r1    = (v.r1Supporters || []).length;
   const r1n   = v.r1Need || state.db.settings?.r1Need || 10;
+  const r1    = (v.r1Supporters || []).length;
   const slotsLeft = r1n - r1;
   const urgent = slotsLeft <= 3 && slotsLeft > 0;
 
   openModal({
     id:    'support-modal',
     title: '',
-    body:  _buildStep1(vidId, link, pool, owner, slotsLeft, urgent),
+    body:  _buildModal(vidId, link, pool, owner, slotsLeft, urgent),
   });
 }
 
-function _buildStep1(vidId, link, pool, owner, slotsLeft, urgent) {
+// Called from vpm:support — TikTok is already opened by the preview modal CTA.
+// Opens the support modal directly at Step 2 (skip Step 1).
+export function handleSupportStep2(vidId) {
+  if (!vidId) return;
+  const v = _findVideo(vidId);
+  if (!v) { toast('Video nicht gefunden', 'error'); return; }
+
+  if (!_checkDailyLimit()) return;
+
+  _copied       = false;
+  _videoOpened  = true;
+  _videoLink    = v.link || v.url || '';
+  _currentVidId = vidId;
+
+  const link  = v.link || v.url || '#';
+  const lang  = state.lang;
+  const pool  = _getCommentPool(lang);
+  const owner = fbDec(v.ownerKey || v.owner || '?');
+  const r1n   = v.r1Need || state.db.settings?.r1Need || 10;
+  const r1    = (v.r1Supporters || []).length;
+  const slotsLeft = r1n - r1;
+  const urgent = slotsLeft <= 3 && slotsLeft > 0;
+
+  openModal({
+    id:    'support-modal',
+    title: '',
+    body:  _buildModal(vidId, link, pool, owner, slotsLeft, urgent),
+  });
+
+  // Skip directly to Step 2 after the modal DOM is ready
+  setTimeout(() => {
+    _setStep(1, 2);
+    const s1 = document.getElementById('sf-s1');
+    if (s1) { s1.classList.remove('sf-step--active'); s1.classList.add('sf-step--done'); }
+    const s2 = document.getElementById('sf-s2');
+    if (s2) s2.classList.add('sf-step--active');
+  }, 50);
+}
+
+function _checkDailyLimit() {
+  const cu = state.currentUser;
+  if (!cu) return true;
+  const todayKey    = new Date().toISOString().slice(0, 10).replace(/-/g, '_');
+  const givenToday  = state.db.members?.[cu]?.todayGiven?.[todayKey] || 0;
+  if (givenToday >= 20) {
+    const hasOpenVideo = Object.values(state.db.videos || {}).some(
+      vid => (vid.ownerKey === cu || vid.owner === cu) && vid.status === 'open'
+    );
+    if (!hasOpenVideo) {
+      toast(t('supportDailyLimit') || 'Max. 20 Supports heute — poste ein Video für mehr!', 'warning', 4000);
+      return false;
+    }
+    if (givenToday >= 40) {
+      toast(t('supportDailyMax') || 'Tageslimit: 40 Supports erreicht.', 'warning', 4000);
+      return false;
+    }
+  }
+  return true;
+}
+
+function _buildModal(vidId, link, pool, owner, slotsLeft, urgent) {
   return `
     <div class="sf-modal" id="sf-modal">
-      <!-- Header -->
       <div class="sf-header">
         <div class="sf-header__owner">@${esc(owner)}</div>
         ${urgent ? `<span class="sf-urgent-badge">⚡ ${slotsLeft} Slot${slotsLeft === 1 ? '' : 's'}!</span>` : ''}
       </div>
 
-      <!-- Step indicators -->
       <div class="sf-steps">
         <div class="sf-step sf-step--active" id="sf-s1">
           <div class="sf-step__dot">1</div>
@@ -106,11 +148,6 @@ function _buildStep1(vidId, link, pool, owner, slotsLeft, urgent) {
         <div class="sf-step" id="sf-s2">
           <div class="sf-step__dot">2</div>
           <div class="sf-step__label">${t('sfStep2')}</div>
-        </div>
-        <div class="sf-steps__line"></div>
-        <div class="sf-step" id="sf-s3">
-          <div class="sf-step__dot">3</div>
-          <div class="sf-step__label">${t('sfStep3')}</div>
         </div>
       </div>
 
@@ -125,7 +162,7 @@ function _buildStep1(vidId, link, pool, owner, slotsLeft, urgent) {
         </a>
       </div>
 
-      <!-- Step 2: Choose comment -->
+      <!-- Step 2: Choose comment — clicking any option registers support immediately -->
       <div class="sf-body hidden" id="sf-body-2">
         <p class="sf-inst">${t('sfInst2')}</p>
         <div class="sf-comments">
@@ -146,41 +183,23 @@ function _buildStep1(vidId, link, pool, owner, slotsLeft, urgent) {
           ${t('sfCopyHint')}
         </div>
       </div>
-
-      <!-- Step 3: Confirm -->
-      <div class="sf-body hidden" id="sf-body-3">
-        <div class="sf-confirm-icon">✅</div>
-        <p class="sf-inst">${t('sfInst3')}</p>
-        <button class="btn btn--success btn--full sf-done-btn"
-          data-action="support:done" data-vid="${esc(vidId)}">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-          ${t('sfDoneBtn')}
-        </button>
-        <button class="btn btn--ghost btn--full" style="margin-top:8px"
-          data-action="support:back">
-          ${t('sfBack')}
-        </button>
-      </div>
     </div>
   `;
 }
 
+// Skip comment: register support immediately
 export function skipComment() {
-  _advanceToStep3();
+  _doSupport(_currentVidId);
 }
 
+// Copy comment: copy + re-open TikTok + register support immediately
 export function copyComment(comment) {
   if (!comment) return;
 
   const _afterCopy = () => {
     _copied = true;
-    // Re-open TikTok so user can paste the comment immediately
-    if (_videoLink && _videoLink !== '#') {
-      openUrl(_videoLink);
-    }
-    _advanceToStep3();
-    const hint = document.getElementById('sf-copy-hint');
-    if (hint) hint.classList.remove('hidden');
+    if (_videoLink && _videoLink !== '#') openUrl(_videoLink);
+    // Visual feedback on the button
     const btns = document.querySelectorAll('.sf-comment-btn');
     btns.forEach(b => {
       if (b.dataset.comment === comment) {
@@ -188,46 +207,23 @@ export function copyComment(comment) {
         b.querySelector('.sf-comment-btn__icon').textContent = '✅';
       }
     });
+    const hint = document.getElementById('sf-copy-hint');
+    if (hint) hint.classList.remove('hidden');
+    // Brief delay so the ✅ feedback is visible before modal closes
+    setTimeout(() => _doSupport(_currentVidId), 400);
   };
 
   navigator.clipboard?.writeText(comment)
     .then(_afterCopy)
     .catch(() => {
-      // Clipboard API blocked — show comment text so user can copy manually
       toast('📋 ' + comment, 'info', 8000);
       _afterCopy();
     });
 }
 
-function _advanceToStep3() {
-  _setStep(2, 3);
-  // activate step 3 dot
-  const s3 = document.getElementById('sf-s3');
-  if (s3) s3.classList.add('sf-step--active');
-}
-
-on('support:video-opened', (el) => {
-  // events.js calls e.preventDefault() on all data-action clicks, which
-  // blocks the <a href> from navigating. Open the link manually instead.
-  const link = el.getAttribute('href') || el.dataset.link;
-  if (link && link !== '#') openUrl(link);
-
-  _videoOpened = true;
-  _setStep(1, 2);
-  const s2 = document.getElementById('sf-s2');
-  if (s2) s2.classList.add('sf-step--active');
-  const s1 = document.getElementById('sf-s1');
-  if (s1) s1.classList.add('sf-step--done');
-});
-
-on('support:back', () => {
-  _setStep(3, 2);
-});
-
-on('support:done', (el) => {
-  const vidId = el.dataset.vid;
+// Core support logic — called by skipComment and copyComment
+function _doSupport(vidId) {
   if (!vidId) return;
-
   const cu = state.currentUser;
   if (!cu) return;
 
@@ -249,40 +245,34 @@ on('support:done', (el) => {
   const dbVidId = _findVideoId(vidId);
   const r1n     = v.r1Need || state.db.settings?.r1Need || 10;
 
-  // Debug: show auth status so iOS users can see if auth is missing
   if (!getAuthUser()) {
     toast('⚠️ Kein Auth-Token — Support wird lokal gespeichert, aber nicht in Firebase', 'warning', 6000);
   }
 
   writeDB(`videos/${dbVidId}/${field}`, newSups);
-
-  // Advance to round 2 when R1 is now full
   if (rnd === 1 && newSups.length >= r1n) {
     writeDB(`videos/${dbVidId}/round`, 2);
   }
 
-  // Optimistic local state update so feed re-renders immediately
   if (state.db.videos?.[dbVidId]) {
     state.db.videos[dbVidId][field] = newSups;
     if (rnd === 1 && newSups.length >= r1n) state.db.videos[dbVidId].round = 2;
   }
 
-  // Supporter stats
   const u = state.db.members?.[cu] || {};
   const stats = u.stats || {};
   const newGiven = (stats.given || 0) + 1;
   writeDB(`members/${cu}/stats/given`, newGiven);
   writeDB(`members/${cu}/weeklyGiven`,  (u.weeklyGiven || 0) + 1);
 
-  const today = new Date().toISOString().slice(0, 10);
-  const days  = [...new Set([...(u.supportDays || []), today])];
+  const today  = new Date().toISOString().slice(0, 10);
+  const days   = [...new Set([...(u.supportDays || []), today])];
   writeDB(`members/${cu}/supportDays`, days);
 
-  const todayKey = today.replace(/-/g, '_');
+  const todayKey      = today.replace(/-/g, '_');
   const newTodayGiven = (u.todayGiven?.[todayKey] || 0) + 1;
   writeDB(`members/${cu}/todayGiven/${todayKey}`, newTodayGiven);
 
-  // Calculate current streak and update all-time record if exceeded
   const currentStreak = (() => {
     let n = 0; const d = new Date();
     while (days.includes(d.toISOString().slice(0, 10))) { n++; d.setDate(d.getDate() - 1); }
@@ -293,48 +283,56 @@ on('support:done', (el) => {
     writeDB(`members/${cu}/streakRecord`, newRecord);
   }
 
-  // Optimistic local state update for member stats so counters render immediately
   if (state.db.members?.[cu]) {
     if (!state.db.members[cu].stats) state.db.members[cu].stats = {};
-    state.db.members[cu].stats.given = newGiven;
-    state.db.members[cu].weeklyGiven = (u.weeklyGiven || 0) + 1;
-    state.db.members[cu].supportDays = days;
+    state.db.members[cu].stats.given        = newGiven;
+    state.db.members[cu].weeklyGiven        = (u.weeklyGiven || 0) + 1;
+    state.db.members[cu].supportDays        = days;
     if (!state.db.members[cu].todayGiven) state.db.members[cu].todayGiven = {};
     state.db.members[cu].todayGiven[todayKey] = newTodayGiven;
     if (newRecord > (u.streakRecord || 0)) state.db.members[cu].streakRecord = newRecord;
   }
 
-  // Increment owner's received counter.
-  // ownerKey was historically stored lowercase — resolve to the real member key.
   let owner = v.ownerKey || v.owner || '';
   if (owner && !state.db.members?.[owner]) {
-    const match = Object.keys(state.db.members || {}).find(
-      k => k.toLowerCase() === owner.toLowerCase()
-    );
+    const match = Object.keys(state.db.members || {}).find(k => k.toLowerCase() === owner.toLowerCase());
     if (match) owner = match;
   }
   if (owner && owner !== cu) {
     const ownerData  = state.db.members?.[owner] || {};
     const ownerStats = ownerData.stats || {};
     writeDB(`members/${owner}/stats/received`, (ownerStats.received || 0) + 1);
-
     const senderName = state.db.members?.[cu]?.name || fbDec(cu);
     addNotif(owner, '💬', '', 'support', {
-      from: cu,
-      msgKey: 'supportMsg',
-      params: { from: senderName },
+      from: cu, msgKey: 'supportMsg', params: { from: senderName },
     });
   }
 
   closeModal('support-modal');
   confetti();
   toast(t('sfSuccess'), 'success');
-
-  // Re-render feed immediately with the optimistic state update
   import('../router.js').then(m => m.renderActive());
-
-  // Check achievements after a brief delay (so DB write propagates to state)
   setTimeout(() => checkAchievements(cu), 600);
+}
+
+on('support:video-opened', (el) => {
+  const link = el.getAttribute('href') || el.dataset.link;
+  if (link && link !== '#') openUrl(link);
+
+  _videoOpened = true;
+  _setStep(1, 2);
+  const s2 = document.getElementById('sf-s2');
+  if (s2) s2.classList.add('sf-step--active');
+  const s1 = document.getElementById('sf-s1');
+  if (s1) { s1.classList.remove('sf-step--active'); s1.classList.add('sf-step--done'); }
+});
+
+on('support:back', () => {
+  _setStep(2, 1);
+  const s1 = document.getElementById('sf-s1');
+  if (s1) { s1.classList.remove('sf-step--done'); s1.classList.add('sf-step--active'); }
+  const s2 = document.getElementById('sf-s2');
+  if (s2) s2.classList.remove('sf-step--active');
 });
 
 // ── Helpers ────────────────────────────────────────────────
