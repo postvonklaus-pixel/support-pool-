@@ -97,17 +97,8 @@ export function handleSupportStep2(vidId) {
   openModal({
     id:    'support-modal',
     title: '',
-    body:  _buildModal(vidId, link, pool, owner, slotsLeft, urgent),
+    body:  _buildModal(vidId, link, pool, owner, slotsLeft, urgent, 2),
   });
-
-  // Skip directly to Step 2 after the modal DOM is ready
-  setTimeout(() => {
-    _setStep(1, 2);
-    const s1 = document.getElementById('sf-s1');
-    if (s1) { s1.classList.remove('sf-step--active'); s1.classList.add('sf-step--done'); }
-    const s2 = document.getElementById('sf-s2');
-    if (s2) s2.classList.add('sf-step--active');
-  }, 50);
 }
 
 function _checkDailyLimit() {
@@ -131,7 +122,9 @@ function _checkDailyLimit() {
   return true;
 }
 
-function _buildModal(vidId, link, pool, owner, slotsLeft, urgent) {
+function _buildModal(vidId, link, pool, owner, slotsLeft, urgent, startStep = 1) {
+  const step1Active = startStep === 1 ? ' sf-step--active' : ' sf-step--done';
+  const step2Active = startStep === 2 ? ' sf-step--active' : '';
   return `
     <div class="sf-modal" id="sf-modal">
       <div class="sf-header">
@@ -140,19 +133,19 @@ function _buildModal(vidId, link, pool, owner, slotsLeft, urgent) {
       </div>
 
       <div class="sf-steps">
-        <div class="sf-step sf-step--active" id="sf-s1">
+        <div class="sf-step${step1Active}" id="sf-s1">
           <div class="sf-step__dot">1</div>
           <div class="sf-step__label">${t('sfStep1')}</div>
         </div>
         <div class="sf-steps__line"></div>
-        <div class="sf-step" id="sf-s2">
+        <div class="sf-step${step2Active}" id="sf-s2">
           <div class="sf-step__dot">2</div>
           <div class="sf-step__label">${t('sfStep2')}</div>
         </div>
       </div>
 
       <!-- Step 1: Open video -->
-      <div class="sf-body" id="sf-body-1">
+      <div class="sf-body${startStep !== 1 ? ' hidden' : ''}" id="sf-body-1">
         <p class="sf-inst">${t('sfInst1')}</p>
         <a class="btn btn--primary btn--full sf-open-btn"
            href="${esc(link)}" target="_blank" rel="noopener"
@@ -163,7 +156,7 @@ function _buildModal(vidId, link, pool, owner, slotsLeft, urgent) {
       </div>
 
       <!-- Step 2: Choose comment — clicking any option registers support immediately -->
-      <div class="sf-body hidden" id="sf-body-2">
+      <div class="sf-body${startStep !== 2 ? ' hidden' : ''}" id="sf-body-2">
         <p class="sf-inst">${t('sfInst2')}</p>
         <div class="sf-comments">
           <button class="sf-comment-btn sf-comment-btn--skip" data-action="support:skip-comment">

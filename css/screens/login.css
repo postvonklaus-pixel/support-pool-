@@ -744,6 +744,10 @@
 .login-lang-item__flag { font-size: 22px; flex-shrink: 0; line-height: 1; }
 .login-lang-item__check { margin-left: auto; color: var(--login-accent); font-weight: 700; }
 
+/* ── Logo hidden — only background shown ─────────────── */
+.login-logo,
+.login-logo-fallback { display: none !important; }
+
 /* ── Responsive: iPhone SE ───────────────────────────── */
 @media (max-width: 375px) {
   .login-card { padding: 24px 18px 18px; }
