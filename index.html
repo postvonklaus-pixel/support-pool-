@@ -40,6 +40,29 @@
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
   <link rel="manifest" href="manifest.json">
 
+  <!-- Preload Firebase SDK — start parallel fetch before <body> is parsed -->
+  <link rel="preload" href="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js" as="script">
+  <link rel="preload" href="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js" as="script">
+  <link rel="preload" href="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js" as="script">
+  <link rel="preload" href="https://www.gstatic.com/firebasejs/9.23.0/firebase-functions-compat.js" as="script">
+  <!-- Modulepreload critical JS — resolve ES-module cascade in parallel -->
+  <link rel="modulepreload" href="js/main.js?v=20261106g">
+  <link rel="modulepreload" href="js/state.js">
+  <link rel="modulepreload" href="js/storage.js">
+  <link rel="modulepreload" href="js/utils.js">
+  <link rel="modulepreload" href="js/firebase.js">
+  <link rel="modulepreload" href="js/i18n.js">
+  <link rel="modulepreload" href="js/events.js">
+  <link rel="modulepreload" href="js/router.js">
+  <link rel="modulepreload" href="js/features/theme.js">
+  <link rel="modulepreload" href="js/features/offline.js">
+  <link rel="modulepreload" href="js/screens/login.js">
+  <link rel="modulepreload" href="js/screens/dashboard.js">
+  <link rel="modulepreload" href="js/screens/chat.js">
+  <link rel="modulepreload" href="js/components/toast.js">
+  <link rel="modulepreload" href="js/components/pinpad.js">
+  <link rel="modulepreload" href="js/features/notifications.js">
+
   <!-- CSS — ?v= busts browser cache on each deploy -->
   <link rel="stylesheet" href="css/tokens.css?v=20261106">
   <link rel="stylesheet" href="css/base.css?v=20261106">
@@ -358,37 +381,29 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-functions-compat.js"></script>
 
 <!-- ── App Entry Point ──────────────────────────────────── -->
-<script type="module" src="js/main.js?v=20261106f"></script>
+<script type="module" src="js/main.js?v=20261106g"></script>
 
 <!-- ── Hard fallback: if splash still visible after 4s, force-show app ── -->
 <script>
 (function() {
   // Attach immediately; fires even if module loading is slow
-  window.addEventListener('load', function() {
-    setTimeout(function() {
-      var loading = document.getElementById('app-loading');
-      var app     = document.getElementById('app');
-      if (loading && loading.parentNode) {
-        loading.style.opacity = '0';
-        loading.style.pointerEvents = 'none';
-        setTimeout(function() { if (loading.parentNode) loading.parentNode.removeChild(loading); }, 300);
-      }
-      if (app) app.style.display = 'flex';
-      // If no screen is active yet, activate login
-      var loginScreen = document.getElementById('screen-login');
-      var hasActive   = document.querySelector('.screen.active');
-      if (loginScreen && !hasActive) {
-        loginScreen.classList.add('active');
-      }
-    }, 4000);
-  });
-  // Also fire on DOMContentLoaded in case load never fires
-  document.addEventListener('DOMContentLoaded', function() {
-    setTimeout(function() {
-      var app = document.getElementById('app');
-      if (app && app.style.display === 'none') app.style.display = 'flex';
-    }, 5000);
-  });
+  function _forceShowApp() {
+    var loading = document.getElementById('app-loading');
+    var app     = document.getElementById('app');
+    if (loading && loading.parentNode) {
+      loading.style.opacity = '0';
+      loading.style.pointerEvents = 'none';
+      setTimeout(function() { if (loading.parentNode) loading.parentNode.removeChild(loading); }, 300);
+    }
+    if (app) app.style.display = 'flex';
+    var loginScreen = document.getElementById('screen-login');
+    var hasActive   = document.querySelector('.screen.active');
+    if (loginScreen && !hasActive) loginScreen.classList.add('active');
+  }
+  // Fire 1s after full page load (normal path)
+  window.addEventListener('load', function() { setTimeout(_forceShowApp, 1000); });
+  // Fire 4s after DOM ready — catches slow Firebase SDK scenarios
+  document.addEventListener('DOMContentLoaded', function() { setTimeout(_forceShowApp, 4000); });
 })();
 </script>
 

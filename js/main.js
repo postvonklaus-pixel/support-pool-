@@ -44,9 +44,9 @@ async function boot() {
     goScreen('login');
   }
 
-  // 6. Connect to Firebase in the background (non-blocking, max 8s)
+  // 6. Connect to Firebase in the background (non-blocking, max 10s)
   const fbTimeout = new Promise((_, reject) =>
-    setTimeout(() => reject(new Error('Firebase timeout')), 12000)
+    setTimeout(() => reject(new Error('Firebase timeout')), 10000)
   );
   try {
     await Promise.race([initFirebase(onDBUpdate), fbTimeout]);

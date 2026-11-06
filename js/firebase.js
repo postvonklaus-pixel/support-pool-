@@ -49,14 +49,17 @@ export function initFirebase(onUpdate) {
 }
 
 // Try /sp6/ and root in PARALLEL — first path that returns members wins.
-// No per-path timeout: we let Firebase take as long as it needs.
-// A hard 11 s deadline ensures resolve() is always called before
-// login.js shows the red error button at 12 s.
+// Hard 7 s deadline ensures resolve() is called even on slow connections.
+// Late-arriving data (after deadline) is still accepted: _dbRef being null
+// after the deadline signals "setup not done yet", so accept() proceeds.
 function _autoConnect(resolve) {
   let resolved = false;
 
   const accept = (val, base) => {
-    if (resolved) return;
+    // After the hard deadline, resolved=true but _dbRef=null — still process data.
+    // Once a valid ref is set up, ignore any second accept() call (redundant path).
+    if (resolved && _dbRef) return;
+    const firstTime = !resolved;
     resolved = true;
     _base  = base;
     _dbRef = _db.ref(base || '/');
@@ -65,7 +68,7 @@ function _autoConnect(resolve) {
       () => { _usingIndividual = true; _subscribeIndividualPaths(); }
     );
     if (_onUpdate) _onUpdate(val);
-    resolve();
+    if (firstTime) resolve();
   };
 
   const tryPath = (base) => {
@@ -82,8 +85,8 @@ function _autoConnect(resolve) {
   tryPath('sp6');
   tryPath('');  // database root (legacy layout)
 
-  // Hard deadline just before login.js shows the error button
-  setTimeout(() => { if (!resolved) resolve(); }, 11000);
+  // Unblock main.js boot early; accept() still fires when once() resolves later.
+  setTimeout(() => { if (!resolved) resolve(); }, 7000);
 }
 
 // ── Anonymous Auth ────────────────────────────────────────

@@ -56,7 +56,7 @@ function _watchDB() {
   if (_isDBReady()) {
     _renderStats();
     _renderLoginBroadcast();
-    setTimeout(() => _setLoginReady(true), 750);
+    _setLoginReady(true);
     return;
   }
 
@@ -76,12 +76,21 @@ function _watchDB() {
     }
   });
 
+  // Stage 1 at 8s: warn but keep trying (subscribe still active)
   _timeoutId = setTimeout(() => {
     if (!_isDBReady()) {
-      _cleanup();
-      _setLoginReady('error');
+      import('../components/toast.js').then(m =>
+        m.toast(t('loginSlowConn') || '⚠️ Verbindung langsam – noch einen Moment…', 'warning', 12000)
+      );
+      // Stage 2 at 20s total: show error, clean up
+      _timeoutId = setTimeout(() => {
+        if (!_isDBReady()) {
+          _cleanup();
+          _setLoginReady('error');
+        }
+      }, 12000);
     }
-  }, 12000);
+  }, 8000);
 }
 
 function _setLoginReady(s) {
@@ -97,6 +106,8 @@ function _setLoginReady(s) {
     btn.style.opacity = '';
     btn.style.background = '';
     btn.style.color = '';
+    btn.onclick = null;
+    if (!btn.dataset.action) btn.dataset.action = 'login:submit';
     if (label) label.textContent = t('loginBtnEnter') || t('loginBtn') || 'Pool betreten';
   } else if (s === 'loading') {
     btn.disabled = true;
@@ -107,8 +118,10 @@ function _setLoginReady(s) {
     btn.style.opacity = '';
     btn.style.background = 'var(--login-danger)';
     btn.style.color = '#fff';
-    if (label) label.textContent = t('loginNoConn') || 'Keine Verbindung — Reload';
-    btn.onclick = () => location.reload();
+    if (label) label.textContent = t('loginNoConn') || '↺ Reload';
+    btn.onclick = () => location.reload(); // in this state DB never arrived — reload is correct
+    // Remove the data-action so event delegation doesn't also fire _handleNameSubmit
+    btn.removeAttribute('data-action');
   }
 }
 
