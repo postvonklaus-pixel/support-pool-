@@ -4,7 +4,7 @@
 
 import { state }   from '../state.js';
 import { t }       from '../i18n.js';
-import { esc, openUrl } from '../utils.js';
+import { esc, openUrl, todayWIB } from '../utils.js';
 import { writeDB, getAuthUser } from '../firebase.js';
 import { toast }   from '../components/toast.js';
 import { openModal, closeModal } from '../components/modal.js';
@@ -104,7 +104,7 @@ export function handleSupportStep2(vidId) {
 function _checkDailyLimit() {
   const cu = state.currentUser;
   if (!cu) return true;
-  const todayKey    = new Date().toISOString().slice(0, 10).replace(/-/g, '_');
+  const todayKey    = todayWIB().replace(/-/g, '_');
   const givenToday  = state.db.members?.[cu]?.todayGiven?.[todayKey] || 0;
   if (givenToday >= 20) {
     const hasOpenVideo = Object.values(state.db.videos || {}).some(
@@ -258,7 +258,7 @@ function _doSupport(vidId) {
   writeDB(`members/${cu}/stats/given`, newGiven);
   writeDB(`members/${cu}/weeklyGiven`,  (u.weeklyGiven || 0) + 1);
 
-  const today  = new Date().toISOString().slice(0, 10);
+  const today  = todayWIB();
   const days   = [...new Set([...(u.supportDays || []), today])];
   writeDB(`members/${cu}/supportDays`, days);
 
@@ -267,8 +267,12 @@ function _doSupport(vidId) {
   writeDB(`members/${cu}/todayGiven/${todayKey}`, newTodayGiven);
 
   const currentStreak = (() => {
-    let n = 0; const d = new Date();
-    while (days.includes(d.toISOString().slice(0, 10))) { n++; d.setDate(d.getDate() - 1); }
+    let n = 0;
+    let cur = new Date(Date.now() + 7 * 3600000);
+    while (days.includes(cur.toISOString().slice(0, 10))) {
+      n++;
+      cur = new Date(+cur - 86400000);
+    }
     return n;
   })();
   const newRecord = Math.max(currentStreak, u.streakRecord || 0);

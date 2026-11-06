@@ -107,16 +107,19 @@ export function startCircularTimer(id) {
 
 // ── Streak Flames ──────────────────────────────────────────
 // days: array of 'YYYY-MM-DD' strings; shows last 7 days
+const _WIB_MS = 7 * 3600000;
+
 export function streakFlames(activeDays = [], { showLabels = true } = {}) {
-  const today = new Date();
   const slots = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(today);
-    d.setDate(today.getDate() - (6 - i));
+    // Use WIB (UTC+7) for both date key and weekday label
+    const wibMs  = Date.now() + _WIB_MS - (6 - i) * 86400000;
+    const d      = new Date(wibMs);
     const key    = d.toISOString().slice(0, 10);
     const active = activeDays.includes(key);
     const _wd    = t('weekDays');
     const _days  = Array.isArray(_wd) ? _wd : ['Mo','Di','Mi','Do','Fr','Sa','So'];
-    const label  = _days[d.getDay() === 0 ? 6 : d.getDay() - 1];
+    const dow    = d.getUTCDay(); // weekday in WIB
+    const label  = _days[dow === 0 ? 6 : dow - 1];
     return { key, active, label, isToday: i === 6 };
   });
 

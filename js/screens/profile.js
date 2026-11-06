@@ -4,7 +4,7 @@
 
 import { state }      from '../state.js';
 import { t }          from '../i18n.js';
-import { esc, avatarGradient, getNextFridayWIB, fbDec } from '../utils.js';
+import { esc, avatarGradient, getNextFridayWIB, todayWIB, fbDec } from '../utils.js';
 import { on }         from '../events.js';
 import { progressRing, streakFlames } from '../components/progress.js';
 import { renderAchievements } from '../features/achievements.js';
@@ -216,10 +216,10 @@ function _startWeeklyChipTimer() {
 function _currentStreak(u) {
   const days = u.supportDays || u.activeDays || [];
   let streak = 0;
-  const d = new Date();
-  while (days.includes(d.toISOString().slice(0, 10))) {
+  let cur = new Date(Date.now() + 7 * 3600000); // WIB (UTC+7)
+  while (days.includes(cur.toISOString().slice(0, 10))) {
     streak++;
-    d.setDate(d.getDate() - 1);
+    cur = new Date(+cur - 86400000);
   }
   return streak;
 }

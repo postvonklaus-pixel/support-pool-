@@ -227,3 +227,7 @@ export function getLastFridayWIB() {
 export function getNextFridayWIB() {
   return getLastFridayWIB() + 7 * 86400000;
 }
+
+export function todayWIB() {
+  return new Date(Date.now() + WIB_OFFSET_MS).toISOString().slice(0, 10);
+}
