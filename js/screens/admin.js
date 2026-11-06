@@ -512,24 +512,27 @@ function _adminMemberRow(key, m) {
   const balCls   = bal > 0 ? 'pos' : bal < 0 ? 'neg' : '';
   const online   = (m.lastSeen || 0) > Date.now() - 10 * 60 * 1000;
   const inactive = m.status === 'inactive';
+  const banned   = m.status === 'banned';
+  const dimmed   = inactive || banned;
 
-  return `<div class="admin-member-row${inactive ? ' admin-member-row--inactive' : ''}">
+  return `<div class="admin-member-row${dimmed ? ' admin-member-row--inactive' : ''}">
     <div class="admin-member-row__av-wrap">
-      <div class="admin-member-row__av" style="background:${grad};opacity:${inactive?'0.45':'1'}">${initials}</div>
-      ${online && !inactive ? '<span class="admin-member-row__online"></span>' : ''}
+      <div class="admin-member-row__av" style="background:${grad};opacity:${dimmed?'0.45':'1'}">${initials}</div>
+      ${online && !dimmed ? '<span class="admin-member-row__online"></span>' : ''}
     </div>
     <div class="admin-member-row__body">
       <div class="admin-member-row__name">
         ${esc(m.name || key)}${m.role==='admin'?' 👑':''}
         ${inactive ? `<span class="badge badge--warning" style="margin-left:4px;font-size:10px">${t('memberInactive') || 'inaktiv'}</span>` : ''}
+        ${banned   ? `<span class="badge badge--danger"  style="margin-left:4px;font-size:10px">🚫 gesperrt</span>` : ''}
       </div>
       <div class="admin-member-row__meta">G:${m.stats?.given||0} · R:${m.stats?.received||0} · W:${m.weeklyGiven||0}</div>
     </div>
     <div class="admin-member-row__bal admin-member-row__bal--${balCls}">${bal > 0 ? '+' : ''}${bal}</div>
     <div class="admin-member-row__actions">
-      ${inactive ? `
+      ${inactive || banned ? `
         <button class="btn btn--ghost btn--icon btn--sm"
-          data-action="admin:member:reactivate" data-key="${esc(key)}" title="Reaktivieren" aria-label="Reaktivieren">
+          data-action="admin:member:reactivate" data-key="${esc(key)}" title="${banned ? 'Entsperren' : 'Reaktivieren'}" aria-label="Reaktivieren">
           ✓
         </button>
         <button class="btn btn--danger btn--icon btn--sm"
@@ -550,6 +553,10 @@ function _adminMemberRow(key, m) {
         <button class="btn btn--ghost btn--icon btn--sm"
           data-action="admin:member:view-as" data-key="${esc(key)}" title="Als Mitglied anzeigen" aria-label="Ansehen">
           👁
+        </button>
+        <button class="btn btn--ghost btn--icon btn--sm"
+          data-action="admin:member:ban" data-key="${esc(key)}" title="Sperren" aria-label="Sperren">
+          🚫
         </button>
         <button class="btn btn--ghost btn--icon btn--sm"
           data-action="admin:member:kick" data-key="${esc(key)}" title="Entfernen" aria-label="Entfernen">
@@ -919,6 +926,21 @@ function _registerHandlers() {
       }
     });
     toast(`@${key} entfernt`, 'success');
+    setTimeout(render, 300);
+  });
+
+  on('admin:member:ban', async (el) => {
+    const key = el.dataset.key;
+    if (!key) return;
+    const ok = await confirm(`@${key} sperren?`, 'Das Mitglied kann sich nicht mehr einloggen. Kann jederzeit entsperrt werden.');
+    if (!ok) return;
+    writeDB(`members/${key}/status`, 'banned');
+    // Remove from groups so the member doesn't occupy a slot
+    Object.entries(state.db.groups || {}).forEach(([gid, g]) => {
+      const members = g.members || [];
+      if (members.includes(key)) writeDB(`groups/${gid}/members`, members.filter(m => m !== key));
+    });
+    toast(`🚫 @${key} gesperrt`, 'success');
     setTimeout(render, 300);
   });
 

@@ -370,6 +370,22 @@
 }
 .bubble-action-reply:hover { background: var(--bg-glass); color: var(--accent-primary); }
 
+.bubble-action-delete {
+  font-size: 15px;
+  background: none;
+  border: none;
+  border-left: 1px solid var(--border-subtle);
+  cursor: pointer;
+  padding: 4px 8px;
+  margin-left: 2px;
+  border-radius: 0 12px 12px 0;
+  transition: background 0.1s;
+  display: flex;
+  align-items: center;
+  opacity: 0.7;
+}
+.bubble-action-delete:hover { background: color-mix(in srgb, var(--accent-danger, #ef4444) 15%, transparent); opacity: 1; }
+
 /* ── Ticket 4: Reaction chips ────────────────────────────── */
 .bubble-reactions {
   display: flex;

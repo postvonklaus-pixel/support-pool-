@@ -60,7 +60,10 @@ async function boot() {
     import('./components/toast.js').then(m => m.toast('Offline-Modus — bitte reload', 'warning', 5000));
   }
 
-  // 7. Start periodic render tick (15s)
+  // 7. Cleanup chat messages older than 30 days (once per 24h)
+  _checkChatCleanup();
+
+  // 8. Start periodic render tick (15s)
   setInterval(tick, 15000);
 
   // 8. Start global countdown ticker (updates [data-expires] spans every 1s)
@@ -139,6 +142,12 @@ function onDBUpdate(snapshot) {
     }
   }
 
+  // Auto-logout if current user was banned while online
+  if (state.currentUser && state.db.members?.[state.currentUser]?.status === 'banned') {
+    logout();
+    return;
+  }
+
   // Re-render active screen
   tick();
 
@@ -173,6 +182,13 @@ export async function loginAs(username, { silent = false, isNew = false } = {}) 
   if (!u) {
     if (!silent) {
       import('./i18n.js').then(({ t }) => toast(t('loginNotFound') || 'Nutzer nicht gefunden', 'error'));
+    }
+    return false;
+  }
+
+  if (u.status === 'banned') {
+    if (!silent) {
+      import('./i18n.js').then(({ t }) => toast(t('loginBanned') || 'Dein Konto wurde gesperrt.', 'error', 5000));
     }
     return false;
   }
@@ -269,6 +285,27 @@ function _setupNewMember(key, u) {
       import('./features/systemMessages.js').then(m => m.postNewMemberActivity(key));
     });
   });
+}
+
+// ── Auto Chat Cleanup (messages > 30 days, once per 24h) ─
+function _checkChatCleanup() {
+  const lastCleanup = state.db.settings?.lastChatCleanup || 0;
+  if (Date.now() - lastCleanup < 86400000) return;
+
+  const cutoff = Date.now() - 30 * 86400000;
+  let count = 0;
+
+  Object.entries(state.db.chat?.pool?.messages || {}).forEach(([id, m]) => {
+    if ((m.ts || 0) < cutoff) { writeDB(`chat/pool/messages/${id}`, null); count++; }
+  });
+  Object.entries(state.db.chat?.dm || {}).forEach(([roomKey, room]) => {
+    Object.entries(room.messages || {}).forEach(([id, m]) => {
+      if ((m.ts || 0) < cutoff) { writeDB(`chat/dm/${roomKey}/messages/${id}`, null); count++; }
+    });
+  });
+
+  writeDB('settings/lastChatCleanup', Date.now());
+  if (count > 0) console.log(`[cleanup] ${count} Nachrichten > 30 Tage gelöscht`);
 }
 
 // ── Auto Weekly Reset (Friday 00:00 WIB) ─────────────────

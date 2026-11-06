@@ -170,12 +170,14 @@ function _poolBubble(m, cu, { roomKey = '' } = {}) {
   // Reactions row
   const reactHtml = _reactionsHtml(m, cu, roomKey);
 
-  // Action bar (emoji picker + reply)
+  // Action bar (emoji picker + reply + admin delete)
   const showActions = m.id && _activeBubbleId === m.id;
+  const isAdmin = state.db.members?.[cu]?.role === 'admin';
   const actionsHtml = showActions ? `
     <div class="bubble-actions${isMe ? ' bubble-actions--me' : ''}">
       ${REACT_EMOJIS.map(e => `<button class="bubble-action-emoji" data-action="chat:react" data-msg-id="${m.id}" data-emoji="${e}" data-room-key="${roomKey}">${e}</button>`).join('')}
       <button class="bubble-action-reply" data-action="chat:reply" data-msg-from="${esc(m.from || '')}" data-msg-text="${esc(m.text || '')}">↩</button>
+      ${isAdmin ? `<button class="bubble-action-delete" data-action="chat:msg:delete" data-msg-id="${m.id}" data-room-key="${roomKey}" title="Löschen">🗑</button>` : ''}
     </div>
   ` : '';
 
@@ -561,5 +563,21 @@ function _registerHandlers(cu) {
   on('chat:reply:cancel', () => {
     _replyTo = null;
     document.getElementById('reply-bar')?.remove();
+  });
+
+  // ── Admin: delete message ────────────────────────────────
+  on('chat:msg:delete', async (el) => {
+    const msgId   = el.dataset.msgId;
+    const roomKey = el.dataset.roomKey || '';
+    if (!msgId) return;
+    const { confirm } = await import('../components/modal.js');
+    const ok = await confirm('Nachricht löschen?', 'Diese Aktion ist nicht rückgängig zu machen.');
+    if (!ok) return;
+    _activeBubbleId = null;
+    const path = roomKey
+      ? `chat/dm/${roomKey}/messages/${msgId}`
+      : `chat/pool/messages/${msgId}`;
+    writeDB(path, null);
+    _rerenderMessages();
   });
 }
