@@ -171,7 +171,9 @@ export async function loginAs(username, { silent = false, isNew = false } = {}) 
   if (resolvedKey && resolvedKey !== username) username = resolvedKey;
   if (!u) {
     if (!silent) {
-      import('./i18n.js').then(({ t }) => toast(t('loginNotFound') || 'Nutzer nicht gefunden', 'error'));
+      const dbgKeys = Object.keys(state.db.members || {}).join(', ') || '(leer)';
+      const dbgMsg = `Nicht gefunden: "${username}" | ${Object.keys(state.db.members||{}).length} Members: ${dbgKeys.slice(0,80)}`;
+      toast(dbgMsg, 'error', 10000);
     }
     return false;
   }
