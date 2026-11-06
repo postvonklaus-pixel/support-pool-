@@ -226,7 +226,8 @@ function _currentStreak(u) {
 
 function _registerHandlers() {
   on('settings:logout', () => {
-    import('../main.js').then(m => m.logout());
+    if (window._nova?.logout) window._nova.logout();
+    else import('../main.js').then(m => m.logout());
   });
 }
 

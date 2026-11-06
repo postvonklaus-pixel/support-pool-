@@ -50,8 +50,9 @@ async function boot() {
   );
   try {
     await Promise.race([initFirebase(onDBUpdate), fbTimeout]);
-    // If session exists and DB is now loaded, redirect to dashboard
-    if (savedUser && state.db.members?.[savedUser]) {
+    // If session exists and DB is now loaded, redirect to dashboard.
+    // Skip if onDBUpdate's auto-redirect already called loginAs and set currentUser.
+    if (savedUser && state.db.members?.[savedUser] && !state.currentUser) {
       await loginAs(savedUser, { silent: true });
     }
   } catch (err) {
