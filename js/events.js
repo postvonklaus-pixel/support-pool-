@@ -29,8 +29,10 @@ function handleClick(e) {
   const action = target.dataset.action;
   const handler = _handlers[action];
   if (handler) {
-    e.preventDefault();
-    handler(target, e);
+    // Handler returning false skips preventDefault — lets <a href> open natively.
+    // Needed for iOS Safari where window.open() after preventDefault opens a blank tab.
+    const result = handler(target, e);
+    if (result !== false) e.preventDefault();
   }
 }
 
@@ -129,14 +131,12 @@ on('vpm:close', () => {
 });
 
 on('vpm:support', (el) => {
-  // Open TikTok immediately (e.preventDefault() blocks the href navigation)
-  const link = el.getAttribute('href');
-  if (link && link !== '#') window.open(link, '_blank', 'noopener,noreferrer');
   import('./features/videoPreview.js').then(m => m.closeVideoPreview());
-  // Open support modal directly at Step 2 — TikTok already opened above
+  // Open support modal directly at Step 2 — TikTok opens via native href (return false below)
   setTimeout(() => {
     import('./features/support.js').then(m => m.handleSupportStep2(el.dataset.vid));
   }, 200);
+  return false; // let <a href> navigate natively — iOS Safari safe
 });
 
 // ── Support actions ───────────────────────────────────────

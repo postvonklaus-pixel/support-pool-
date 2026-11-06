@@ -308,16 +308,14 @@ function _doSupport(vidId) {
   setTimeout(() => checkAchievements(cu), 600);
 }
 
-on('support:video-opened', (el) => {
-  const link = el.getAttribute('href') || el.dataset.link;
-  if (link && link !== '#') openUrl(link);
-
+on('support:video-opened', () => {
   _videoOpened = true;
   _setStep(1, 2);
   const s2 = document.getElementById('sf-s2');
   if (s2) s2.classList.add('sf-step--active');
   const s1 = document.getElementById('sf-s1');
   if (s1) { s1.classList.remove('sf-step--active'); s1.classList.add('sf-step--done'); }
+  return false; // let <a href> navigate natively → opens TikTok on iOS Safari
 });
 
 on('support:back', () => {
