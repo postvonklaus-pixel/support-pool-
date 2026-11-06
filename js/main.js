@@ -102,10 +102,16 @@ function onDBUpdate(snapshot) {
   const data    = snapshot || {};
   const pending = getPendingPaths(); // capture before overwriting state
   state.db.groups   = data.groups   || state.db.groups   || {};
-  // Never wipe existing members with an empty snapshot (can happen when
-  // _subscribeIndividualPaths fires partial updates before members path resolves,
-  // causing loginAs to fail mid-PIN-entry with "Benutzer nicht gefunden").
-  state.db.members  = (data.members  && Object.keys(data.members).length  > 0) ? data.members  : (state.db.members  || {});
+  // Merge incoming members with existing — prevents partial _subscribeIndividualPaths
+  // snapshots from dropping members not yet in the partial set, which would cause
+  // loginAs to fail with "Benutzer nicht gefunden" for those members.
+  // Full snapshots (from _dbRef.on) always win since they contain all members.
+  if (data.members && Object.keys(data.members).length > 0) {
+    state.db.members = { ...(state.db.members || {}), ...data.members };
+  } else if (!state.db.members || Object.keys(state.db.members).length === 0) {
+    state.db.members = {};
+  }
+  // (If data.members is empty/absent and we already have members, keep them unchanged)
   state.db.videos   = data.videos   || state.db.videos   || {};
   state.db.messages = data.messages || state.db.messages || {};
   state.db.chat     = data.chat     || state.db.chat     || {};

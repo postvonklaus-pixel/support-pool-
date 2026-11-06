@@ -120,10 +120,14 @@ function _subscribeIndividualPaths() {
   if (!_db) return;
   _partialData = {};
   const pfx = _base ? _base + '/' : '';
+  // Only call _onUpdate once 'members' has resolved — prevents early partial
+  // updates (before members path fires) from replacing state.db.members with
+  // an incomplete set, which causes loginAs to fail for members not yet in
+  // the partial snapshot.
   DB_PATHS.forEach(path => {
     _db.ref(pfx + path).on('value', snap => {
       _partialData[path] = snap.val() || {};
-      if (_onUpdate) _onUpdate({ ..._partialData });
+      if (_partialData.members && _onUpdate) _onUpdate({ ..._partialData });
     }, err => {
       console.error('[firebase]', pfx + path, 'blocked:', err.code || err.message);
     });
