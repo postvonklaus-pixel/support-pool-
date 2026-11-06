@@ -50,6 +50,50 @@
   border-radius: var(--radius-full);
 }
 
+/* ── Pool chat header (online count) ──────────────────────── */
+.pool-chat-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px 16px;
+  border-bottom: 1px solid var(--border-subtle);
+  flex-shrink: 0;
+  background: var(--bg-elevated);
+}
+
+.pool-online-badge {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  letter-spacing: 0.2px;
+}
+
+/* ── System messages (Tickets 2+3) ───────────────────────── */
+.sys-msg {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 2px 0;
+  align-self: stretch;
+  pointer-events: none;
+  user-select: none;
+}
+
+.sys-msg__line {
+  flex: 1;
+  height: 1px;
+  background: var(--border-subtle);
+  opacity: 0.6;
+}
+
+.sys-msg__text {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  white-space: nowrap;
+  padding: 0 4px;
+}
+
 /* ── Chat area ────────────────────────────────────────────── */
 .chat-content {
   flex: 1;

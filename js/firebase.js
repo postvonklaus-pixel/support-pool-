@@ -189,6 +189,10 @@ export async function readOnce(path) {
   return snap.val();
 }
 
+// ── Accessors for sub-modules ─────────────────────────────
+export function getDB()      { return _db; }
+export function getDBBase()  { return _base; }
+
 // ── Presence ──────────────────────────────────────────────
 export function setPresence(username, online) {
   if (!_db || !username) return;

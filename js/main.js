@@ -150,6 +150,9 @@ export async function loginAs(username, { silent = false, isNew = false } = {}) 
     if (state.currentUser) writeDB(`members/${state.currentUser}/lastSeen`, Date.now());
   }, 5 * 60 * 1000);
 
+  // Ticket 1: RTDB presence (online count in pool chat header)
+  import('./features/presence.js').then(m => m.initPresence(username));
+
   // Language priority: explicit login-screen selection > DB stored value > 'de'
   const selected = state.userSelectedLang;
   const targetLang = selected || u.lang || 'de';
@@ -219,6 +222,9 @@ function _setupNewMember(key, u) {
         if (m.status === 'inactive' || m.status === 'kicked') return;
         addNotif(mKey, '👋', null, null, { msgKey: 'notifNewMember', params: { name } });
       });
+
+      // Ticket 3: System message "👋 @username ist dem Pool beigetreten"
+      import('./features/systemMessages.js').then(m => m.postNewMemberActivity(key));
     });
   });
 }
@@ -238,6 +244,7 @@ function _checkAutoWeekReset() {
 export function logout() {
   if (state.currentUser) writeDB(`members/${state.currentUser}/online`, false);
   if (window._lastSeenInterval) { clearInterval(window._lastSeenInterval); window._lastSeenInterval = null; }
+  import('./features/presence.js').then(m => m.cleanupPresence());
   setState('currentUser', null);
   import('./storage.js').then(m => m.clearSession());
   const header = ge('app-header');

@@ -301,6 +301,12 @@ function _doSupport(vidId) {
     });
   }
 
+  // Ticket 2+3: support activity + milestone in pool chat
+  import('./systemMessages.js').then(m => {
+    m.postSupportActivity(cu, owner);
+    m.postMilestoneActivity(owner, newSups.length);
+  });
+
   closeModal('support-modal');
   confetti();
   toast(t('sfSuccess'), 'success');

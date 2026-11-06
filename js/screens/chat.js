@@ -9,6 +9,7 @@ import { esc, timeAgo, avatarGradient } from '../utils.js';
 import { on }       from '../events.js';
 import { writeDB }  from '../firebase.js';
 import { emptyState } from '../components/empty-state.js';
+import { getOnlineCount } from '../features/presence.js';
 
 let _chatTab        = 'pool';  // 'pool' | 'dm'
 let _dmPartner      = null;    // username of open DM thread
@@ -100,7 +101,15 @@ export function render() {
 
 // ── Pool Chat ──────────────────────────────────────────────
 function _renderPool(cu, msgs) {
+  const onlineCount = getOnlineCount();
+  const onlineTxt   = onlineCount === 0
+    ? '— niemand online'
+    : `🟢 ${onlineCount} online`;
+
   return `
+    <div class="pool-chat-header">
+      <span class="pool-online-badge" id="pool-online-count">${onlineTxt}</span>
+    </div>
     <div class="pool-messages" id="pool-messages">
       ${msgs.length === 0
         ? emptyState('💬', t('chatPoolEmpty'), t('chatPoolEmptySub'), { size: 'sm' })
@@ -123,13 +132,24 @@ function _renderPool(cu, msgs) {
 }
 
 function _poolBubble(m, cu) {
-  const isMe   = m.from === cu;
-  const u      = state.db.members?.[m.from] || {};
-  const name   = u.name || m.from || '?';
-  const grad   = avatarGradient(m.from || '');
-  const initials = (m.from || '?').slice(0, 2).toUpperCase();
+  // System messages (Tickets 2+3) — no avatar, no reply, no reactions
+  if (m.type === 'system') {
+    return `
+      <div class="sys-msg" role="status">
+        <span class="sys-msg__line"></span>
+        <span class="sys-msg__text">${esc(m.text || '')}</span>
+        <span class="sys-msg__line"></span>
+      </div>
+    `;
+  }
 
+  const isMe     = m.from === cu;
+  const u        = state.db.members?.[m.from] || {};
+  const name     = u.name || m.from || '?';
+  const grad     = avatarGradient(m.from || '');
+  const initials = (m.from || '?').slice(0, 2).toUpperCase();
   const textHtml = esc(m.text || '').replace(/\n/g, '<br>');
+
   return `
     <div class="bubble-row ${isMe ? 'bubble-row--me' : ''}">
       ${!isMe ? `<div class="bubble-avatar" style="background:${grad}" title="@${esc(m.from || '')}">${initials}</div>` : ''}
@@ -248,7 +268,7 @@ function _poolMessages() {
   const raw = state.db.chat?.pool?.messages || {};
   return Object.entries(raw)
     .map(([id, m]) => ({ id, ...m }))
-    .filter(m => m.text && m.from)
+    .filter(m => m.text && (m.from || m.type === 'system'))
     .sort((a, b) => (a.ts || 0) - (b.ts || 0))
     .slice(-60);
 }
