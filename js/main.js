@@ -101,12 +101,15 @@ function _applyPendingWrites(pending) {
 function onDBUpdate(snapshot) {
   const data    = snapshot || {};
   const pending = getPendingPaths(); // capture before overwriting state
-  state.db.groups   = data.groups   || {};
-  state.db.members  = data.members  || {};
-  state.db.videos   = data.videos   || {};
-  state.db.messages = data.messages || {};
-  state.db.chat     = data.chat     || {};
-  state.db.settings = data.settings || {};
+  state.db.groups   = data.groups   || state.db.groups   || {};
+  // Never wipe existing members with an empty snapshot (can happen when
+  // _subscribeIndividualPaths fires partial updates before members path resolves,
+  // causing loginAs to fail mid-PIN-entry with "Benutzer nicht gefunden").
+  state.db.members  = (data.members  && Object.keys(data.members).length  > 0) ? data.members  : (state.db.members  || {});
+  state.db.videos   = data.videos   || state.db.videos   || {};
+  state.db.messages = data.messages || state.db.messages || {};
+  state.db.chat     = data.chat     || state.db.chat     || {};
+  state.db.settings = data.settings || state.db.settings || {};
   _applyPendingWrites(pending); // re-apply unconfirmed optimistic writes
 
   // Notify all subscribers
