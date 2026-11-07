@@ -306,6 +306,7 @@ const LANGS = {
     expireWarnCta:'Jetzt 3 Videos supporten →',
     sysExpireGateMsg:'Dein Video wurde entfernt (Balance-Gate). Das ist kein Ban — poste ein neues Video, sobald du 3 Videos supportet hast. So bleibt der Pool fair für alle.',
     notifWeeklyTouch:'🔄 Der Pool hat sich nach dem Weekly Reset neu sortiert! Jetzt neue Videos entdecken und supporten.',
+    backSupportBtn:'Support zurück →',
     faqItems:[
       {q:'Was ist der NOVA Support Pool?',a:'Eine gegenseitige TikTok-Community. Du kommentierst auf Videos anderer — sie auf deinen. Kein Algorithmus, nur echte Menschen.'},
       {q:'Wie berechnet sich das Guthaben?',a:'Guthaben = Gegeben minus Erhalten (max. +20). Support geben = +1, Video erhalten = −1. Negatives Guthaben sperrt neue Posts.'},
@@ -616,6 +617,7 @@ const LANGS = {
     expireWarnCta:'Support 3 videos now →',
     sysExpireGateMsg:'Your video was removed (balance gate). This is not a ban — post a new video after supporting 3 videos. This keeps the pool fair for everyone.',
     notifWeeklyTouch:'🔄 The pool has reshuffled after the weekly reset! Discover and support new videos now.',
+    backSupportBtn:'Support back →',
     faqItems:[
       {q:'What is the NOVA Support Pool?',a:'A mutual TikTok community. Comment on other videos and get comments on yours. No algorithm, just real people.'},
       {q:'How is the balance calculated?',a:'Balance = Given minus Received (max +20). Giving support = +1, receiving a video = -1. Negative balance blocks new posts.'},
@@ -944,6 +946,7 @@ const LANGS = {
     expireWarnCta:'Dukung 3 video sekarang →',
     sysExpireGateMsg:'Video kamu dihapus (balance gate). Ini bukan ban — posting video baru setelah mendukung 3 video. Ini menjaga pool tetap adil untuk semua.',
     notifWeeklyTouch:'🔄 Pool telah diurutkan ulang setelah reset mingguan! Temukan dan dukung video baru sekarang.',
+    backSupportBtn:'Balas dukungan →',
     faqItems:[
       {q:'Apa itu NOVA Support Pool?',a:'Komunitas TikTok saling mendukung. Komentar di video orang lain, mereka komentar di videomu. Tanpa algoritma, hanya manusia nyata.'},
       {q:'Bagaimana saldo dihitung?',a:'Saldo = Diberikan dikurangi Diterima (maks +20). Memberi support = +1, video diterima = -1. Saldo negatif memblokir postingan baru.'},
@@ -1238,6 +1241,7 @@ const LANGS = {
     expireWarnCta:'Supporta 3 video ora →',
     sysExpireGateMsg:'Il tuo video è stato rimosso (limite saldo). Non è un ban — pubblica un nuovo video dopo aver supportato 3 video. Questo mantiene il pool equo per tutti.',
     notifWeeklyTouch:'🔄 Il pool si è riorganizzato dopo il reset settimanale! Scopri e supporta nuovi video ora.',
+    backSupportBtn:'Supporta di ritorno →',
     faqItems:[
       {q:'Cosa è il NOVA Support Pool?',a:'Una community TikTok reciproca. Commenta i video degli altri, loro commentano i tuoi. Nessun algoritmo, solo persone reali.'},
       {q:'Come si calcola il saldo?',a:'Saldo = Dato meno Ricevuto (max +20). Dare supporto = +1, ricevere video = -1. Saldo negativo blocca nuovi post.'},
@@ -1532,6 +1536,7 @@ const LANGS = {
     expireWarnCta:'Apoyar 3 videos ahora →',
     sysExpireGateMsg:'Tu video fue eliminado (límite de saldo). No es un ban — publica un nuevo video después de apoyar 3 videos. Esto mantiene el pool justo para todos.',
     notifWeeklyTouch:'🔄 ¡El pool se ha reorganizado tras el reinicio semanal! Descubre y apoya nuevos videos ahora.',
+    backSupportBtn:'Apoyar de vuelta →',
     faqItems:[
       {q:'¿Qué es el NOVA Support Pool?',a:'Una comunidad TikTok mutua. Comenta los videos de otros y ellos comentan los tuyos. Sin algoritmo, solo personas reales.'},
       {q:'¿Cómo se calcula el saldo?',a:'Saldo = Dado menos Recibido (máx +20). Dar soporte = +1, recibir video = -1. El saldo negativo bloquea nuevas publicaciones.'},
@@ -1826,6 +1831,7 @@ const LANGS = {
     expireWarnCta:'Şimdi 3 video destekle →',
     sysExpireGateMsg:'Videon kaldırıldı (bakiye kilidi). Bu bir ban değil — 3 video destekledikten sonra yeni bir video paylaş. Bu havuzu herkes için adil tutar.',
     notifWeeklyTouch:'🔄 Haftalık sıfırlamadan sonra havuz yeniden düzenlendi! Şimdi yeni videoları keşfet ve destekle.',
+    backSupportBtn:'Desteği geri ver →',
     faqItems:[
       {q:'NOVA Support Pool nedir?',a:'Karşılıklı bir TikTok topluluğu. Diğerlerinin videolarını yorumlarsın — onlar da seninkileri. Algoritma yok, sadece gerçek insanlar.'},
       {q:'Bakiye nasıl hesaplanır?',a:'Bakiye = Verilen eksi Alınan (maks +20). Destek vermek = +1, video almak = -1. Negatif bakiye yeni yayınları engeller.'},
@@ -2120,6 +2126,7 @@ const LANGS = {
     expireWarnCta:'ادعم 3 مقاطع الآن ←',
     sysExpireGateMsg:'تم حذف فيديوك (بوابة الرصيد). هذا ليس حظراً — انشر فيديو جديداً بعد دعم 3 مقاطع. هذا يحافظ على عدالة المجموعة.',
     notifWeeklyTouch:'🔄 أُعيد ترتيب المجموعة بعد إعادة الضبط الأسبوعي! اكتشف ودعم مقاطع فيديو جديدة الآن.',
+    backSupportBtn:'ادعم بالمقابل →',
     faqItems:[
       {q:'ما هو NOVA Support Pool؟',a:'مجتمع TikTok تبادلي. علق على فيديوهات الآخرين وهم يعلقون على فيديوهاتك. لا خوارزمية، فقط أشخاص حقيقيون.'},
       {q:'كيف يحسب الرصيد؟',a:'الرصيد = المعطى ناقص المستلم (حد أقصى +20). دعم = +1، استلام فيديو = -1. الرصيد السلبي يحجب المنشورات.'},
@@ -2414,6 +2421,7 @@ const LANGS = {
     expireWarnCta:'立即支持 3 个视频 →',
     sysExpireGateMsg:'你的视频已被删除（余额门）。这不是封禁——在支持 3 个视频后发布新视频。这让所有人的池子保持公平。',
     notifWeeklyTouch:'🔄 每周重置后，池子已重新排列！现在发现并支持新视频。',
+    backSupportBtn:'回赠支持 →',
     faqItems:[
       {q:'什么是NOVA Support Pool？',a:'一个互助TikTok社区。评论别人的视频，他们评论你的。没有算法，只有真实的人。'},
       {q:'余额如何计算？',a:'余额 = 给出减去获得（最多+20）。给予支持 = +1，接收视频 = -1。负余额会阻止发布新视频。'},
@@ -2708,6 +2716,7 @@ const LANGS = {
     expireWarnCta:'今すぐ3つの動画をサポート →',
     sysExpireGateMsg:'あなたの動画が削除されました（バランスゲート）。これはBANではありません — 3つの動画をサポートした後、新しい動画を投稿してください。プールをみんなに公平に保ちます。',
     notifWeeklyTouch:'🔄 ウィークリーリセット後にプールが再整理されました！新しい動画を発見してサポートしましょう。',
+    backSupportBtn:'お返しサポート →',
     faqItems:[
       {q:'NOVA Support Poolとは？',a:'相互サポートのTikTokコミュニティ。他の人の動画にコメント — 彼らはあなたの動画に。アルゴリズムなし、本物の人たちだけ。'},
       {q:'残高はどう計算されますか？',a:'残高 = 与えた マイナス 受け取った（最大+20）。サポート = +1、動画受け取り = -1。マイナス残高は新規投稿をブロック。'},
@@ -3002,6 +3011,7 @@ const LANGS = {
     expireWarnCta:'Wesprzyj 3 filmy teraz →',
     sysExpireGateMsg:'Twój film został usunięty (blokada salda). To nie jest ban — opublikuj nowy film po wsparciu 3 filmów. To utrzymuje pool uczciwy dla wszystkich.',
     notifWeeklyTouch:'🔄 Pula została przetasowana po tygodniowym resecie! Odkryj i wesprzyj nowe filmy teraz.',
+    backSupportBtn:'Wesprzyj w zamian →',
     faqItems:[
       {q:'Czym jest NOVA Support Pool?',a:'Wzajemna społeczność TikTok. Komentujesz filmy innych — oni komentują twoje. Bez algorytmu, tylko prawdziwi ludzie.'},
       {q:'Jak obliczane jest saldo?',a:'Saldo = Dane minus Otrzymane (maks +20). Danie wsparcia = +1, otrzymanie wideo = -1. Ujemne saldo blokuje nowe posty.'},

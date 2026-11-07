@@ -202,6 +202,7 @@
   font-size: 10px; font-weight: 700;
   border-radius: 99px;
 }
+.notif-pip--back { background: var(--accent-primary, #6366f1); }
 .myvid-notif-item {
   display: flex;
   align-items: flex-start;

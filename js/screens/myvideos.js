@@ -138,18 +138,71 @@ function _getNotifs(cu) {
     .map(([id, m]) => ({ ...m, _id: id }));
 }
 
+// ── Ticket 8: Back-Support Candidates ─────────────────────
+// Returns Map<fromKeyLower, { vidId, name }> for supporters who have
+// an open video the current user hasn't supported yet.
+function _getBackSupportCandidates(cu) {
+  const cuLow  = cu.toLowerCase();
+  const msgs   = state.db.messages || {};
+  const videos = state.db.videos   || {};
+  const fromKeys = new Set();
+  Object.values(msgs).forEach(m => {
+    if ((m.to === cu || m.recipient === cu) &&
+        m.type === 'notif' && m.subtype === 'support' && m.from) {
+      fromKeys.add(m.from);
+    }
+  });
+  const candidates = new Map();
+  fromKeys.forEach(fromKey => {
+    if (fromKey.toLowerCase() === cuLow) return;
+    const vid = Object.values(videos).find(v => {
+      if (v.status === 'done' || v.status === 'expired' || v.status === 'scheduled') return false;
+      if ((v.ownerKey || v.owner || '').toLowerCase() !== fromKey.toLowerCase()) return false;
+      const r1 = (v.r1Supporters || []).map(k => k.toLowerCase());
+      const r2 = (v.r2Supporters || []).map(k => k.toLowerCase());
+      return !r1.includes(cuLow) && !r2.includes(cuLow);
+    });
+    if (vid) {
+      const name = state.db.members?.[fromKey]?.name || fromKey;
+      candidates.set(fromKey.toLowerCase(), { vidId: vid.id, name });
+    }
+  });
+  return candidates;
+}
+
+// ── Ticket 8: update #nav-meine-pip ───────────────────────
+export function updateMeinePip(cu) {
+  const pipEl = document.getElementById('nav-meine-pip');
+  if (!pipEl) return;
+  if (!cu || !state.db) { pipEl.classList.add('hidden'); return; }
+  const n = _getBackSupportCandidates(cu).size;
+  if (n > 0) {
+    pipEl.textContent = n;
+    pipEl.classList.remove('hidden');
+  } else {
+    pipEl.textContent = '';
+    pipEl.classList.add('hidden');
+  }
+}
+
 function _renderNotifSection(notifs, cu) {
-  const unread = notifs.filter(n => !n.read).length;
-  const userLang = state.db.members?.[cu]?.lang || state.lang;
+  const unread     = notifs.filter(n => !n.read && !n.skipUnread).length;
+  const candidates = _getBackSupportCandidates(cu);
+  const backCount  = candidates.size;
+  const userLang   = state.db.members?.[cu]?.lang || state.lang;
   return `
     <div class="myvid-notif-section">
       <div class="myvid-notif-section__head">
         <span class="myvid-notif-section__title">
-          🔔 ${t('notifs')}${unread > 0 ? ` <span class="notif-pip">${unread}</span>` : ''}
+          🔔 ${t('notifs')}${unread > 0 ? ` <span class="notif-pip">${unread}</span>` : ''}${backCount > 0 ? ` <span class="notif-pip notif-pip--back">${backCount} ↩</span>` : ''}
         </span>
         <button class="btn btn--ghost btn--sm" data-action="myvid:notif:clear">${t('notifsDelAll')}</button>
       </div>
-      ${notifs.map(n => `
+      ${notifs.map(n => {
+        const fromLow  = (n.from || '').toLowerCase();
+        const backCand = n.subtype === 'support' && fromLow && candidates.has(fromLow)
+          ? candidates.get(fromLow) : null;
+        return `
         <div class="myvid-notif-item${n.read ? '' : (!n.skipUnread ? ' myvid-notif-item--unread' : '')}" data-notif-id="${esc(n._id)}">
           <div class="myvid-notif-item__icon">${n.icon || '🔔'}</div>
           <div class="myvid-notif-item__body">
@@ -158,10 +211,14 @@ function _renderNotifSection(notifs, cu) {
             <button class="btn btn--warning btn--sm myvid-notif-cta" data-action="myvid:expirewarn:cta" style="margin-top:6px">
               ${t('expireWarnCta') || 'Jetzt 3 Videos supporten →'}
             </button>` : ''}
+            ${backCand ? `
+            <button class="btn btn--primary btn--sm myvid-notif-cta" data-action="myvid:backsupport" data-vid="${esc(backCand.vidId)}" style="margin-top:6px">
+              ${t('backSupportBtn') || 'Support zurück →'}
+            </button>` : ''}
             <div class="myvid-notif-item__meta">${n.ts ? timeAgo(n.ts) : ''}</div>
           </div>
-        </div>
-      `).join('')}
+        </div>`;
+      }).join('')}
     </div>`;
 }
 
@@ -294,6 +351,15 @@ function _registerHandlers() {
       .slice(0, 3);
 
     state.ui._expireWarnVideos = candidates.map(v => v.id);
+    state.ui._pendingHomeTab   = 'feed';
+    goScreen('home');
+  });
+
+  // Ticket 8: Back-Support CTA → Home Feed mit dem Video des Supporters oben
+  on('myvid:backsupport', (el) => {
+    const vidId = el.dataset.vid;
+    if (!vidId) return;
+    state.ui._expireWarnVideos = [vidId];
     state.ui._pendingHomeTab   = 'feed';
     goScreen('home');
   });

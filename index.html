@@ -46,7 +46,7 @@
   <link rel="preload" href="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js" as="script">
   <link rel="preload" href="https://www.gstatic.com/firebasejs/9.23.0/firebase-functions-compat.js" as="script">
   <!-- Modulepreload critical JS — resolve ES-module cascade in parallel -->
-  <link rel="modulepreload" href="js/main.js?v=20261107d">
+  <link rel="modulepreload" href="js/main.js?v=20261107e">
   <link rel="modulepreload" href="js/state.js">
   <link rel="modulepreload" href="js/storage.js">
   <link rel="modulepreload" href="js/utils.js">
@@ -336,6 +336,7 @@
     <button class="nav-item" id="ni-meine" data-action="nav:goto" data-screen="myvideos" aria-label="Meine Videos">
       <span class="nav-item__icon">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+        <span class="notif-pip hidden" id="nav-meine-pip"></span>
       </span>
       <span class="nav-item__label" id="t-nav-meine" data-i18n="navVideos">Meine</span>
     </button>
@@ -381,7 +382,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-functions-compat.js"></script>
 
 <!-- ── App Entry Point ──────────────────────────────────── -->
-<script type="module" src="js/main.js?v=20261107d"></script>
+<script type="module" src="js/main.js?v=20261107e"></script>
 
 <!-- ── Hard fallback: if splash still visible after 4s, force-show app ── -->
 <script>

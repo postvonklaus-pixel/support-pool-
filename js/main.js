@@ -373,6 +373,9 @@ function tick() {
   // Ticket 7: Saturday re-engagement touch (10:00 WIB, in-app only)
   import('./features/weeklyTouch.js').then(m => m.checkWeeklyTouch());
 
+  // Ticket 8: update Meine Videos back-support pip
+  import('./screens/myvideos.js').then(m => m.updateMeinePip?.(state.currentUser));
+
   // Skip while user is actively typing
   const ae = document.activeElement;
   if (ae && (ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA')) return;
