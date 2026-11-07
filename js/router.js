@@ -64,7 +64,7 @@ async function renderScreen(id, { debounce = false } = {}) {
 async function loadScreenMod(id) {
   if (_mods[id]) return _mods[id];
   try {
-    const mod = await import(`./screens/${id}.js?v=20261107v`);
+    const mod = await import(`./screens/${id}.js?v=20261107b`);
     _mods[id] = mod;
     return mod;
   } catch { return null; }

@@ -20,6 +20,71 @@ let _activeBubbleId = null;    // id of bubble whose action bar is open
 
 const REACT_EMOJIS = ['👍','❤️','😂','😮','🔥','👏'];
 
+let _typingTimer = null;
+
+function _onTyping() {
+  const cu = state.currentUser;
+  if (!cu) return;
+  if (_chatTab === 'pool') {
+    writeDB(`chat/pool/typing/${cu}`, Date.now());
+  } else if (_dmPartner) {
+    const roomKey = [cu, _dmPartner].sort().join('__');
+    writeDB(`chat/dm/${roomKey}/typing/${cu}`, Date.now());
+  }
+  clearTimeout(_typingTimer);
+  _typingTimer = setTimeout(_clearTyping, 3000);
+}
+
+function _clearTyping() {
+  clearTimeout(_typingTimer);
+  const cu = state.currentUser;
+  if (!cu) return;
+  if (_chatTab === 'pool') {
+    writeDB(`chat/pool/typing/${cu}`, null);
+  } else if (_dmPartner) {
+    const roomKey = [cu, _dmPartner].sort().join('__');
+    writeDB(`chat/dm/${roomKey}/typing/${cu}`, null);
+  }
+}
+
+function _typingIndicatorHtml(cu) {
+  const now   = Date.now();
+  const STALE = 5000;
+  let typers  = [];
+
+  if (_dmPartner) {
+    const roomKey = [cu, _dmPartner].sort().join('__');
+    const typing  = state.db.chat?.dm?.[roomKey]?.typing || {};
+    typers = Object.entries(typing)
+      .filter(([k, v]) => k !== cu && typeof v === 'number' && now - v < STALE)
+      .map(([k]) => k);
+  } else {
+    const typing = state.db.chat?.pool?.typing || {};
+    typers = Object.entries(typing)
+      .filter(([k, v]) => k !== cu && typeof v === 'number' && now - v < STALE)
+      .map(([k]) => k);
+  }
+
+  if (!typers.length) return `<div class="typing-indicator typing-indicator--empty" id="typing-indicator"></div>`;
+  const names = typers.slice(0, 3).map(k => `@${esc(k)}`).join(', ');
+  const verb  = typers.length === 1 ? 'tippt' : 'tippen';
+  return `<div class="typing-indicator" id="typing-indicator">
+    <span class="typing-dots"><span></span><span></span><span></span></span>
+    <span class="typing-text">${names} ${verb}…</span>
+  </div>`;
+}
+
+function _patchTypingIndicator(cu) {
+  const html     = _typingIndicatorHtml(cu);
+  const existing = document.getElementById('typing-indicator');
+  if (existing) {
+    existing.outerHTML = html;
+  } else {
+    const form = document.getElementById('chat-pool-form') || document.getElementById('chat-dm-form');
+    form?.insertAdjacentHTML('beforebegin', html);
+  }
+}
+
 export function scheduleRender() {
   clearTimeout(_renderTimer);
   _renderTimer = setTimeout(render, 120);
@@ -61,6 +126,7 @@ export function render() {
         : poolMsgs.map(m => _poolBubble(m, cu)).join('');
       if (atBottom) _scrollToBottom();
     }
+    _patchTypingIndicator(cu);
     return;
   }
 
@@ -125,6 +191,7 @@ function _renderPool(cu, msgs) {
         : msgs.map(m => _poolBubble(m, cu)).join('')
       }
     </div>
+    ${_typingIndicatorHtml(cu)}
     <form class="chat-input-bar" id="chat-pool-form" action="javascript:void(0)">
       <textarea
         class="chat-input" id="chat-pool-input"
@@ -298,6 +365,7 @@ function _renderDMThread(el, cu, partner) {
         }
       </div>
 
+      ${_typingIndicatorHtml(cu)}
       <form class="chat-input-bar" id="chat-dm-form" action="javascript:void(0)">
         <textarea
           class="chat-input" id="chat-dm-input"
@@ -407,7 +475,8 @@ function _sendPool(cu) {
     document.getElementById('reply-bar')?.remove();
   }
 
-  // Skip the DB-echo re-render so the keyboard / input bar stay intact
+  // Clear typing indicator and skip the DB-echo re-render
+  _clearTyping();
   _skipNextRender = true;
   writeDB(`chat/pool/messages/${msgId}`, msg);
   const msgs = document.getElementById('pool-messages');
@@ -436,6 +505,7 @@ function _sendDM(cu, partner) {
     document.getElementById('reply-bar')?.remove();
   }
 
+  _clearTyping();
   _skipNextRender = true;
   writeDB(`chat/dm/${roomKey}/messages/${msgId}`, msg);
   const msgs = document.getElementById('pool-messages');
@@ -475,6 +545,7 @@ function _registerHandlers(cu) {
   });
 
   on('chat:tab', (el) => {
+    _clearTyping();
     _chatTab   = el.dataset.tab || 'pool';
     _dmPartner = null;
     _replyTo   = null;
@@ -490,6 +561,7 @@ function _registerHandlers(cu) {
       _sendPool(cu);
     } else if (e.type === 'input') {
       _autoResize(el);
+      _onTyping();
     }
   });
 
@@ -501,6 +573,7 @@ function _registerHandlers(cu) {
   });
 
   on('chat:dm:back', () => {
+    _clearTyping();
     _dmPartner = null;
     _replyTo   = null;
     _activeBubbleId = null;
@@ -515,6 +588,7 @@ function _registerHandlers(cu) {
       _sendDM(cu, _dmPartner);
     } else if (e.type === 'input') {
       _autoResize(el);
+      _onTyping();
     }
   });
 

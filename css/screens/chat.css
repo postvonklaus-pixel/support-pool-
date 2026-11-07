@@ -521,3 +521,44 @@
 }
 .dm-header-name { font-weight: var(--weight-semibold); font-size: var(--text-base); color: var(--text-primary); flex: 1; }
 .dm-header-online { font-size: var(--text-xs); color: var(--accent-success); font-weight: var(--weight-medium); }
+
+/* ── Ticket 5: Typing Indicator ───────────────────────────── */
+.typing-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 16px 5px;
+  min-height: 22px;
+  background: var(--bg-elevated);
+  flex-shrink: 0;
+}
+.typing-indicator--empty {
+  min-height: 4px;
+  padding: 0;
+}
+
+.typing-text {
+  font-size: 11px;
+  color: var(--text-secondary);
+  line-height: 1;
+}
+
+.typing-dots {
+  display: flex;
+  gap: 3px;
+  align-items: center;
+}
+.typing-dots span {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--text-secondary);
+  opacity: 0.5;
+  animation: typing-bounce 1.2s ease-in-out infinite;
+}
+.typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+.typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes typing-bounce {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.35; }
+  30% { transform: translateY(-4px); opacity: 0.9; }
+}
