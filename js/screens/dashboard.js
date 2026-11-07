@@ -226,15 +226,19 @@ export function render() {
 
 function _registerHandlers() {
   on('dash:guthaben', () => {
-    import('./home.js').then(m => { m.setMode?.('balance'); goScreen('home'); });
+    state.ui._pendingHomeTab = 'balance';
+    goScreen('home');
   });
   on('dash:support', () => {
-    import('./home.js').then(m => { m.setMode?.('feed'); goScreen('home'); });
+    state.ui._pendingHomeTab = 'feed';
+    goScreen('home');
   });
   on('dash:leaderboard', () => {
-    import('./home.js').then(m => { m.setMode?.('leaderboard'); goScreen('home'); });
+    state.ui._pendingHomeTab = 'leaderboard';
+    goScreen('home');
   });
   on('dash:urgent', () => {
-    import('./home.js').then(m => { m.setMode?.('feed'); goScreen('home'); });
+    state.ui._pendingHomeTab = 'feed';
+    goScreen('home');
   });
 }

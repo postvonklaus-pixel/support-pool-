@@ -30,6 +30,11 @@ export function setMode(m) {
 }
 
 export function render() {
+  if (state.ui._pendingHomeTab) {
+    _tab = state.ui._pendingHomeTab;
+    state.ui._pendingHomeTab = null;
+  }
+
   const el = document.getElementById('screen-home');
   if (!el) return;
 
