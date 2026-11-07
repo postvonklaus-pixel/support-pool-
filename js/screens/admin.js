@@ -184,6 +184,69 @@ function _collectAnalytics() {
     msgCount, poolMsgs, avgBal, weeklyTotal, langDist, topUsers, topVids, trend, warnings };
 }
 
+// ── Ticket 9: Retention-Kohorten ──────────────────────────
+// W1–W4: % of members who had at least one support-day in the
+// given week-window after joining. Only members who have been
+// in the pool long enough to have that week are counted.
+function _computeRetentionCohorts() {
+  const members  = Object.values(state.db.members || {});
+  const WIB_OFF  = 7 * 3600000;
+  const DAY_MS   = 86400000;
+  const now      = Date.now();
+  const weeks    = [
+    { label: 'W1', start: 0,  end: 7  },
+    { label: 'W2', start: 7,  end: 14 },
+    { label: 'W3', start: 14, end: 21 },
+    { label: 'W4', start: 21, end: 28 },
+  ];
+  function wibDate(ts) { return new Date(ts + WIB_OFF).toISOString().slice(0, 10); }
+  function shiftDay(d, n) { return new Date(new Date(d + 'T00:00:00Z').getTime() + n * DAY_MS).toISOString().slice(0, 10); }
+
+  return weeks.map(w => {
+    const eligible = members.filter(m => {
+      const j = m.joinedAt || m.joined || 0;
+      return j > 0 && (now - j) >= w.end * DAY_MS;
+    });
+    if (!eligible.length) return { label: w.label, pct: null, count: 0, retained: 0 };
+    const retained = eligible.filter(m => {
+      const joinDate = wibDate(m.joinedAt || m.joined);
+      const ws = shiftDay(joinDate, w.start);
+      const we = shiftDay(joinDate, w.end);
+      return (m.supportDays || []).some(d => d >= ws && d < we);
+    }).length;
+    return { label: w.label, pct: Math.round((retained / eligible.length) * 100), count: eligible.length, retained };
+  });
+}
+
+function _renderRetentionTable(cohorts) {
+  if (cohorts.every(c => c.count === 0)) {
+    return `<div class="an-empty">— ${t('analyticsRetentionNA') || 'noch nicht messbar'}</div>`;
+  }
+  return `<table class="an-ret-table">
+    <tbody>
+    ${cohorts.map(c => {
+      if (c.pct === null) return `
+        <tr>
+          <td class="an-ret__week">${c.label}</td>
+          <td colspan="3" class="an-ret__na">${t('analyticsRetentionNA') || 'noch nicht messbar'}</td>
+        </tr>`;
+      const color = c.pct >= 60 ? 'var(--accent-success,#22c55e)'
+                  : c.pct >= 30 ? 'var(--accent-warning,#f59e0b)'
+                  : 'var(--accent-danger,#ef4444)';
+      return `
+        <tr>
+          <td class="an-ret__week">${c.label}</td>
+          <td class="an-ret__bar-cell">
+            <div class="an-ret__bar-wrap"><div class="an-ret__bar" style="width:${c.pct}%;background:${color}"></div></div>
+          </td>
+          <td class="an-ret__pct" style="color:${color}">${c.pct}%</td>
+          <td class="an-ret__detail">${c.retained}/${c.count}</td>
+        </tr>`;
+    }).join('')}
+    </tbody>
+  </table>`;
+}
+
 function _renderAnalytics() {
   const a = _collectAnalytics();
   const trendMax = Math.max(...a.trend, 1);
@@ -294,6 +357,12 @@ function _renderAnalytics() {
       <div class="an-card">
         <div class="an-section-title">${t('analyticsWarnings') || '⚠️ Warnungen'}</div>
         ${warningsHTML}
+      </div>
+
+      <div class="an-card">
+        <div class="an-section-title">${t('analyticsRetention') || '🔁 Retention-Kohorten'}</div>
+        <div class="an-ret-sub">${t('analyticsRetentionSub') || 'Anteil je Woche nach Beitritt mit mind. 1 Support-Tag'}</div>
+        ${_renderRetentionTable(_computeRetentionCohorts())}
       </div>
     </div>
   `;

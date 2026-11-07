@@ -301,6 +301,9 @@ const LANGS = {
     analyticsTrend:'📈 7-Tage Trend',
     analyticsWarnings:'⚠️ Warnungen',
     analyticsNoWarnings:'Keine Warnungen',
+    analyticsRetention:'🔁 Retention-Kohorten',
+    analyticsRetentionSub:'Anteil je Woche nach Beitritt mit mind. 1 Support-Tag',
+    analyticsRetentionNA:'noch nicht messbar',
     // Ticket 6
     notifExpireWarn24h:'⚠️ Dein Video wird in {h}h entfernt. Supporte 3 Videos, um es zu halten.',
     expireWarnCta:'Jetzt 3 Videos supporten →',
@@ -612,6 +615,9 @@ const LANGS = {
     analyticsTrend:'📈 7-Day Trend',
     analyticsWarnings:'⚠️ Warnings',
     analyticsNoWarnings:'No warnings',
+    analyticsRetention:'🔁 Retention Cohorts',
+    analyticsRetentionSub:'Share per week after joining with at least 1 support day',
+    analyticsRetentionNA:'not yet measurable',
     // Ticket 6
     notifExpireWarn24h:'⚠️ Your video will be removed in {h}h. Support 3 videos to keep it.',
     expireWarnCta:'Support 3 videos now →',
@@ -941,6 +947,9 @@ const LANGS = {
     analyticsTrend:'📈 Tren 7 Hari',
     analyticsWarnings:'⚠️ Peringatan',
     analyticsNoWarnings:'Tidak ada peringatan',
+    analyticsRetention:'🔁 Kohort Retensi',
+    analyticsRetentionSub:'Persentase per minggu setelah bergabung dengan min. 1 hari dukungan',
+    analyticsRetentionNA:'belum dapat diukur',
     // Ticket 6
     notifExpireWarn24h:'⚠️ Video kamu akan dihapus dalam {h}j. Dukung 3 video untuk mempertahankannya.',
     expireWarnCta:'Dukung 3 video sekarang →',
@@ -1236,6 +1245,9 @@ const LANGS = {
     analyticsTrend:'📈 Trend 7 Giorni',
     analyticsWarnings:'⚠️ Avvisi',
     analyticsNoWarnings:'Nessun avviso',
+    analyticsRetention:'🔁 Coorti di Retention',
+    analyticsRetentionSub:'Quota per settimana dopo l\'iscrizione con almeno 1 giorno di supporto',
+    analyticsRetentionNA:'non ancora misurabile',
     // Ticket 6
     notifExpireWarn24h:'⚠️ Il tuo video sarà rimosso tra {h}h. Supporta 3 video per tenerlo.',
     expireWarnCta:'Supporta 3 video ora →',
@@ -1531,6 +1543,9 @@ const LANGS = {
     analyticsTrend:'📈 Tendencia 7 Días',
     analyticsWarnings:'⚠️ Advertencias',
     analyticsNoWarnings:'Sin advertencias',
+    analyticsRetention:'🔁 Cohortes de Retención',
+    analyticsRetentionSub:'Porcentaje por semana tras unirse con al menos 1 día de apoyo',
+    analyticsRetentionNA:'aún no medible',
     // Ticket 6
     notifExpireWarn24h:'⚠️ Tu video se eliminará en {h}h. Apoya 3 videos para conservarlo.',
     expireWarnCta:'Apoyar 3 videos ahora →',
@@ -1826,6 +1841,9 @@ const LANGS = {
     analyticsTrend:'📈 7 Günlük Trend',
     analyticsWarnings:'⚠️ Uyarılar',
     analyticsNoWarnings:'Uyarı yok',
+    analyticsRetention:'🔁 Kohort Tutma Oranı',
+    analyticsRetentionSub:'Katılım sonrası her haftada en az 1 destek günü olan üye oranı',
+    analyticsRetentionNA:'henüz ölçülemiyor',
     // Ticket 6
     notifExpireWarn24h:'⚠️ Videon {h} saat içinde kaldırılacak. Tutmak için 3 videoyu destekle.',
     expireWarnCta:'Şimdi 3 video destekle →',
@@ -2121,6 +2139,9 @@ const LANGS = {
     analyticsTrend:'📈 اتجاه 7 أيام',
     analyticsWarnings:'⚠️ تحذيرات',
     analyticsNoWarnings:'لا توجد تحذيرات',
+    analyticsRetention:'🔁 مجموعات الاحتفاظ',
+    analyticsRetentionSub:'نسبة الأعضاء لكل أسبوع بعد الانضمام مع يوم دعم واحد على الأقل',
+    analyticsRetentionNA:'غير قابل للقياس بعد',
     // Ticket 6
     notifExpireWarn24h:'⚠️ سيتم حذف فيديوك خلال {h} ساعة. ادعم 3 مقاطع للاحتفاظ به.',
     expireWarnCta:'ادعم 3 مقاطع الآن ←',
@@ -2416,6 +2437,9 @@ const LANGS = {
     analyticsTrend:'📈 7天趋势',
     analyticsWarnings:'⚠️ 警告',
     analyticsNoWarnings:'无警告',
+    analyticsRetention:'🔁 留存率队列',
+    analyticsRetentionSub:'加入后每周至少有1个支持日的成员比例',
+    analyticsRetentionNA:'尚不可测',
     // Ticket 6
     notifExpireWarn24h:'⚠️ 你的视频将在 {h} 小时后被删除。支持 3 个视频以保留它。',
     expireWarnCta:'立即支持 3 个视频 →',
@@ -2711,6 +2735,9 @@ const LANGS = {
     analyticsTrend:'📈 7日間トレンド',
     analyticsWarnings:'⚠️ 警告',
     analyticsNoWarnings:'警告なし',
+    analyticsRetention:'🔁 リテンション・コホート',
+    analyticsRetentionSub:'参加後の各週で少なくとも1日サポートしたメンバーの割合',
+    analyticsRetentionNA:'まだ測定不可',
     // Ticket 6
     notifExpireWarn24h:'⚠️ あなたの動画は{h}時間後に削除されます。3つの動画をサポートして維持しましょう。',
     expireWarnCta:'今すぐ3つの動画をサポート →',
@@ -3006,6 +3033,9 @@ const LANGS = {
     analyticsTrend:'📈 Trend 7 dni',
     analyticsWarnings:'⚠️ Ostrzeżenia',
     analyticsNoWarnings:'Brak ostrzeżeń',
+    analyticsRetention:'🔁 Kohorty Retencji',
+    analyticsRetentionSub:'Udział na tydzień po dołączeniu z co najmniej 1 dniem wsparcia',
+    analyticsRetentionNA:'jeszcze niemierzalne',
     // Ticket 6
     notifExpireWarn24h:'⚠️ Twój film zostanie usunięty za {h}h. Wesprzyj 3 filmy, aby go zachować.',
     expireWarnCta:'Wesprzyj 3 filmy teraz →',

@@ -926,3 +926,15 @@
   font-size: var(--text-sm);
   padding: var(--sp-2) 0;
 }
+
+/* ── Ticket 9: Retention Table ── */
+.an-ret-sub { font-size: 11px; color: var(--text-tertiary); margin-bottom: 10px; }
+.an-ret-table { width: 100%; border-collapse: collapse; font-size: var(--text-sm); }
+.an-ret-table td { padding: 5px 4px; vertical-align: middle; }
+.an-ret__week { font-weight: 700; width: 28px; color: var(--text-secondary); }
+.an-ret__bar-cell { width: 60%; padding: 5px 8px; }
+.an-ret__bar-wrap { background: color-mix(in srgb, var(--text-primary) 8%, transparent); border-radius: 99px; height: 8px; overflow: hidden; }
+.an-ret__bar { height: 100%; border-radius: 99px; transition: width 0.4s ease; min-width: 2px; }
+.an-ret__pct { font-weight: 700; width: 36px; text-align: right; }
+.an-ret__detail { color: var(--text-tertiary); font-size: 11px; padding-left: 8px; white-space: nowrap; }
+.an-ret__na { color: var(--text-tertiary); font-size: 11px; font-style: italic; }
