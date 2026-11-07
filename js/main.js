@@ -253,6 +253,9 @@ export async function loginAs(username, { silent = false, isNew = false } = {}) 
     if (m.shouldShowOnboarding(username)) m.startOnboarding(username);
   });
 
+  // Ticket 10: initialise FCM push subscriptions
+  import('./features/fcm.js').then(m => m.initFcm());
+
   return true;
 }
 

@@ -12,7 +12,12 @@
     // Remove every SW and wipe every SW cache, then reload once so the
     // browser fetches all JS fresh from the network (no SW to serve stale code).
     var p1 = navigator.serviceWorker.getRegistrations().then(function(regs) {
-      return Promise.all(regs.map(function(r) { return r.unregister(); }));
+      return Promise.all(regs
+        .filter(function(r) {
+          var url = ((r.active||r.installing||r.waiting)||{}).scriptURL||'';
+          return url.indexOf('firebase-messaging-sw') === -1;
+        })
+        .map(function(r) { return r.unregister(); }));
     }).then(function(r) { return r.some(Boolean); });
     var p2 = ('caches' in window) ? caches.keys().then(function(ks) {
       return Promise.all(ks.map(function(k) { return caches.delete(k); }));
@@ -46,7 +51,7 @@
   <link rel="preload" href="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js" as="script">
   <link rel="preload" href="https://www.gstatic.com/firebasejs/9.23.0/firebase-functions-compat.js" as="script">
   <!-- Modulepreload critical JS — resolve ES-module cascade in parallel -->
-  <link rel="modulepreload" href="js/main.js?v=20261107f">
+  <link rel="modulepreload" href="js/main.js?v=20261107g">
   <link rel="modulepreload" href="js/state.js">
   <link rel="modulepreload" href="js/storage.js">
   <link rel="modulepreload" href="js/utils.js">
@@ -380,9 +385,10 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-functions-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging-compat.js"></script>
 
 <!-- ── App Entry Point ──────────────────────────────────── -->
-<script type="module" src="js/main.js?v=20261107f"></script>
+<script type="module" src="js/main.js?v=20261107g"></script>
 
 <!-- ── Hard fallback: if splash still visible after 4s, force-show app ── -->
 <script>

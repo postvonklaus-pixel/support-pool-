@@ -309,6 +309,7 @@ const LANGS = {
     expireWarnCta:'Jetzt 3 Videos supporten →',
     sysExpireGateMsg:'Dein Video wurde entfernt (Balance-Gate). Das ist kein Ban — poste ein neues Video, sobald du 3 Videos supportet hast. So bleibt der Pool fair für alle.',
     notifWeeklyTouch:'🔄 Der Pool hat sich nach dem Weekly Reset neu sortiert! Jetzt neue Videos entdecken und supporten.',
+    pushSupportRcvd:'💬 {from} hat dein Video supportet! 🎉',
     backSupportBtn:'Support zurück →',
     faqItems:[
       {q:'Was ist der NOVA Support Pool?',a:'Eine gegenseitige TikTok-Community. Du kommentierst auf Videos anderer — sie auf deinen. Kein Algorithmus, nur echte Menschen.'},
@@ -623,6 +624,7 @@ const LANGS = {
     expireWarnCta:'Support 3 videos now →',
     sysExpireGateMsg:'Your video was removed (balance gate). This is not a ban — post a new video after supporting 3 videos. This keeps the pool fair for everyone.',
     notifWeeklyTouch:'🔄 The pool has reshuffled after the weekly reset! Discover and support new videos now.',
+    pushSupportRcvd:'💬 {from} supported your video! 🎉',
     backSupportBtn:'Support back →',
     faqItems:[
       {q:'What is the NOVA Support Pool?',a:'A mutual TikTok community. Comment on other videos and get comments on yours. No algorithm, just real people.'},
@@ -955,6 +957,7 @@ const LANGS = {
     expireWarnCta:'Dukung 3 video sekarang →',
     sysExpireGateMsg:'Video kamu dihapus (balance gate). Ini bukan ban — posting video baru setelah mendukung 3 video. Ini menjaga pool tetap adil untuk semua.',
     notifWeeklyTouch:'🔄 Pool telah diurutkan ulang setelah reset mingguan! Temukan dan dukung video baru sekarang.',
+    pushSupportRcvd:'💬 {from} mendukung videomu! 🎉',
     backSupportBtn:'Balas dukungan →',
     faqItems:[
       {q:'Apa itu NOVA Support Pool?',a:'Komunitas TikTok saling mendukung. Komentar di video orang lain, mereka komentar di videomu. Tanpa algoritma, hanya manusia nyata.'},
@@ -1253,6 +1256,7 @@ const LANGS = {
     expireWarnCta:'Supporta 3 video ora →',
     sysExpireGateMsg:'Il tuo video è stato rimosso (limite saldo). Non è un ban — pubblica un nuovo video dopo aver supportato 3 video. Questo mantiene il pool equo per tutti.',
     notifWeeklyTouch:'🔄 Il pool si è riorganizzato dopo il reset settimanale! Scopri e supporta nuovi video ora.',
+    pushSupportRcvd:'💬 {from} ha supportato il tuo video! 🎉',
     backSupportBtn:'Supporta di ritorno →',
     faqItems:[
       {q:'Cosa è il NOVA Support Pool?',a:'Una community TikTok reciproca. Commenta i video degli altri, loro commentano i tuoi. Nessun algoritmo, solo persone reali.'},
@@ -1551,6 +1555,7 @@ const LANGS = {
     expireWarnCta:'Apoyar 3 videos ahora →',
     sysExpireGateMsg:'Tu video fue eliminado (límite de saldo). No es un ban — publica un nuevo video después de apoyar 3 videos. Esto mantiene el pool justo para todos.',
     notifWeeklyTouch:'🔄 ¡El pool se ha reorganizado tras el reinicio semanal! Descubre y apoya nuevos videos ahora.',
+    pushSupportRcvd:'💬 ¡{from} apoyó tu video! 🎉',
     backSupportBtn:'Apoyar de vuelta →',
     faqItems:[
       {q:'¿Qué es el NOVA Support Pool?',a:'Una comunidad TikTok mutua. Comenta los videos de otros y ellos comentan los tuyos. Sin algoritmo, solo personas reales.'},
@@ -1849,6 +1854,7 @@ const LANGS = {
     expireWarnCta:'Şimdi 3 video destekle →',
     sysExpireGateMsg:'Videon kaldırıldı (bakiye kilidi). Bu bir ban değil — 3 video destekledikten sonra yeni bir video paylaş. Bu havuzu herkes için adil tutar.',
     notifWeeklyTouch:'🔄 Haftalık sıfırlamadan sonra havuz yeniden düzenlendi! Şimdi yeni videoları keşfet ve destekle.',
+    pushSupportRcvd:'💬 {from} videonuzu destekledi! 🎉',
     backSupportBtn:'Desteği geri ver →',
     faqItems:[
       {q:'NOVA Support Pool nedir?',a:'Karşılıklı bir TikTok topluluğu. Diğerlerinin videolarını yorumlarsın — onlar da seninkileri. Algoritma yok, sadece gerçek insanlar.'},
@@ -2147,6 +2153,7 @@ const LANGS = {
     expireWarnCta:'ادعم 3 مقاطع الآن ←',
     sysExpireGateMsg:'تم حذف فيديوك (بوابة الرصيد). هذا ليس حظراً — انشر فيديو جديداً بعد دعم 3 مقاطع. هذا يحافظ على عدالة المجموعة.',
     notifWeeklyTouch:'🔄 أُعيد ترتيب المجموعة بعد إعادة الضبط الأسبوعي! اكتشف ودعم مقاطع فيديو جديدة الآن.',
+    pushSupportRcvd:'💬 {from} دعم فيديوك! 🎉',
     backSupportBtn:'ادعم بالمقابل →',
     faqItems:[
       {q:'ما هو NOVA Support Pool؟',a:'مجتمع TikTok تبادلي. علق على فيديوهات الآخرين وهم يعلقون على فيديوهاتك. لا خوارزمية، فقط أشخاص حقيقيون.'},
@@ -2445,6 +2452,7 @@ const LANGS = {
     expireWarnCta:'立即支持 3 个视频 →',
     sysExpireGateMsg:'你的视频已被删除（余额门）。这不是封禁——在支持 3 个视频后发布新视频。这让所有人的池子保持公平。',
     notifWeeklyTouch:'🔄 每周重置后，池子已重新排列！现在发现并支持新视频。',
+    pushSupportRcvd:'💬 {from} 支持了你的视频！🎉',
     backSupportBtn:'回赠支持 →',
     faqItems:[
       {q:'什么是NOVA Support Pool？',a:'一个互助TikTok社区。评论别人的视频，他们评论你的。没有算法，只有真实的人。'},
@@ -2743,6 +2751,7 @@ const LANGS = {
     expireWarnCta:'今すぐ3つの動画をサポート →',
     sysExpireGateMsg:'あなたの動画が削除されました（バランスゲート）。これはBANではありません — 3つの動画をサポートした後、新しい動画を投稿してください。プールをみんなに公平に保ちます。',
     notifWeeklyTouch:'🔄 ウィークリーリセット後にプールが再整理されました！新しい動画を発見してサポートしましょう。',
+    pushSupportRcvd:'💬 {from} があなたの動画をサポートしました！🎉',
     backSupportBtn:'お返しサポート →',
     faqItems:[
       {q:'NOVA Support Poolとは？',a:'相互サポートのTikTokコミュニティ。他の人の動画にコメント — 彼らはあなたの動画に。アルゴリズムなし、本物の人たちだけ。'},
@@ -3041,6 +3050,7 @@ const LANGS = {
     expireWarnCta:'Wesprzyj 3 filmy teraz →',
     sysExpireGateMsg:'Twój film został usunięty (blokada salda). To nie jest ban — opublikuj nowy film po wsparciu 3 filmów. To utrzymuje pool uczciwy dla wszystkich.',
     notifWeeklyTouch:'🔄 Pula została przetasowana po tygodniowym resecie! Odkryj i wesprzyj nowe filmy teraz.',
+    pushSupportRcvd:'💬 {from} wsparł twój film! 🎉',
     backSupportBtn:'Wesprzyj w zamian →',
     faqItems:[
       {q:'Czym jest NOVA Support Pool?',a:'Wzajemna społeczność TikTok. Komentujesz filmy innych — oni komentują twoje. Bez algorytmu, tylko prawdziwi ludzie.'},

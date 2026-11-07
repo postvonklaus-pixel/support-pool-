@@ -20,9 +20,13 @@ function _saturdayDateWIB() {
   return nowWIB.toISOString().slice(0, 10);
 }
 
-// Capsule: in-app only for now. Ticket 10 adds FCM push here.
 export function fireWeeklyResetTouch(cu) {
   addNotif(cu, '🔄', null, 'weeklyTouch', { msgKey: 'notifWeeklyTouch' });
+  // Ticket 10: FCM push
+  import('./fcm.js').then(({ sendPush }) => {
+    const title = (state.db?.settings?.appName || 'NOVA Support Pool') + ' 🔄';
+    sendPush(cu, { title, tag: 'weekly-touch' });
+  });
 }
 
 export function checkWeeklyTouch() {

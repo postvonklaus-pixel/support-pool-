@@ -303,6 +303,10 @@ function _doSupport(vidId) {
     addNotif(owner, '💬', '', 'support', {
       from: cu, msgKey: 'supportMsg', params: { from: senderName },
     });
+    // Ticket 10: FCM push to video owner
+    import('./fcm.js').then(({ sendPush, pushTitleSupportRcvd }) => {
+      sendPush(owner, { title: pushTitleSupportRcvd(owner, senderName), tag: 'support-rcvd' });
+    });
   }
 
   // Ticket 2+3: support activity + milestone in pool chat

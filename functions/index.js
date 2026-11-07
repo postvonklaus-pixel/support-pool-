@@ -2,6 +2,7 @@
  * Support Pool — Cloud Functions
  * - Caption Generator (v2 callable)
  * - Scheduled Video Poster (v2 scheduler, every 5 min)
+ * - sendFcmPush (v2 callable) — Ticket 10: send FCM push to a device token
  */
 
 const { onCall, HttpsError } = require("firebase-functions/v2/https");
@@ -359,3 +360,39 @@ exports.processScheduledVideos = onSchedule(
     }
   }
 );
+
+// ─── FCM Push Sender (Ticket 10) ────────────────────────────────────────────
+//
+// Called by the client whenever it needs to push a notification to another
+// (or the same) device. The client looks up the recipient's fcmToken from
+// RTDB and passes it here; this function sends via admin.messaging().
+//
+// Input:  { token, title, body?, data? }
+// Output: { success: true }
+
+exports.sendFcmPush = onCall({ cors: true }, async (request) => {
+  const { token, title, body, data } = request.data || {};
+  if (!token || !title) {
+    throw new HttpsError('invalid-argument', 'token and title are required');
+  }
+
+  try {
+    await admin.messaging().send({
+      token,
+      notification: { title, body: body || '' },
+      data: data || {},
+      webpush: {
+        notification: {
+          icon:  'https://support-pool.web.app/support-pool-/icons/icon-192.png',
+          badge: 'https://support-pool.web.app/support-pool-/icons/icon-192.png',
+        },
+        fcmOptions: { link: 'https://support-pool.web.app/support-pool-/' },
+      },
+    });
+    return { success: true };
+  } catch (err) {
+    console.error('[sendFcmPush]', err.message);
+    // Don't throw — a stale token (NOT_REGISTERED) is not a client error
+    return { success: false, reason: err.code || err.message };
+  }
+});

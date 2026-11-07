@@ -67,5 +67,9 @@ export function checkExpireWarnings() {
       vidId,
       skipUnread: true,
     });
+    // Ticket 10: FCM push
+    import('./fcm.js').then(({ sendPush }) => {
+      sendPush(cu, { title: `⚠️ Dein Video läuft in ${hLeft}h ab!`, tag: 'expire-warn' });
+    });
   });
 }
