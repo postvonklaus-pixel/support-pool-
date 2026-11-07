@@ -370,6 +370,9 @@ function tick() {
   // Ticket 6: 24h expire warning
   import('./features/expireWarn.js').then(m => m.checkExpireWarnings());
 
+  // Ticket 7: Saturday re-engagement touch (10:00 WIB, in-app only)
+  import('./features/weeklyTouch.js').then(m => m.checkWeeklyTouch());
+
   // Skip while user is actively typing
   const ae = document.activeElement;
   if (ae && (ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA')) return;
