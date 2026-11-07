@@ -145,6 +145,24 @@ function _renderFeedTab(videos, cu) {
       { action: 'post:open', actionLabel: `+ ${t('postBtn')}` })
       + _poolPulseSection();
   }
+
+  // Ticket 6: show pre-selected expire-warn videos at top
+  const warnIds = state.ui._expireWarnVideos;
+  if (warnIds?.length) {
+    state.ui._expireWarnVideos = null;
+    const highlighted = videos.filter(v => warnIds.includes(v.id));
+    const rest        = videos.filter(v => !warnIds.includes(v.id));
+    if (highlighted.length) {
+      return `
+        <div class="expire-warn-top">
+          <div class="expire-warn-top__label">⚡ ${t('expireWarnCta') || 'Jetzt 3 Videos supporten'}</div>
+          ${highlighted.map(v => _videoCard(v, locked)).join('')}
+        </div>
+        ${rest.length ? `<div class="feed-list">${rest.map(v => _videoCard(v, locked)).join('')}</div>` : ''}
+      ` + _poolPulseSection();
+    }
+  }
+
   return `<div class="feed-list">${videos.map(v => _videoCard(v, locked)).join('')}</div>`
     + _poolPulseSection();
 }

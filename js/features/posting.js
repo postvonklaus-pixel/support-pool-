@@ -345,11 +345,21 @@ function _checkWeeklyCleanup() {
   const cutoff24h = now - 24 * 3600000;
   const videos    = state.db.videos || {};
 
+  const BAL_LOCK = 3;
+
   Object.entries(videos).forEach(([vidId, v]) => {
     if (v.status !== 'open' && v.status !== 'scheduled') return;
     const postedAt = v.postedAt || 0;
     if (postedAt >= lastReset) return;   // current week — keep
     if (postedAt >= cutoff24h) return;   // <24h old — grace period
     writeDB(`videos/${vidId}/status`, 'expired');
+
+    // Ticket 6: notify owner if video was expire-warned (balance gate will apply)
+    if (v.warned24h) {
+      const owner = v.ownerKey || v.owner;
+      if (owner) {
+        addNotif(owner, '⚠️', null, 'expireGate', { msgKey: 'sysExpireGateMsg', skipUnread: true });
+      }
+    }
   });
 }

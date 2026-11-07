@@ -835,3 +835,16 @@
   font-weight: 700;
   color: var(--accent-danger);
 }
+
+/* ── Ticket 6: Expire-warn highlighted section in feed ─────── */
+.expire-warn-top {
+  margin-bottom: 8px;
+}
+.expire-warn-top__label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--accent-warning, #F59E0B);
+  padding: 8px 16px 4px;
+}

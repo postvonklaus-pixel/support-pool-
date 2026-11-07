@@ -367,6 +367,9 @@ function tick() {
   // Always check scheduled videos regardless of UI state
   import('./features/posting.js').then(m => m.checkScheduledVideos());
 
+  // Ticket 6: 24h expire warning
+  import('./features/expireWarn.js').then(m => m.checkExpireWarnings());
+
   // Skip while user is actively typing
   const ae = document.activeElement;
   if (ae && (ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA')) return;

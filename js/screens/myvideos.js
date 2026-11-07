@@ -11,6 +11,7 @@ import { writeDB }  from '../firebase.js';
 import { toast }    from '../components/toast.js';
 import { confirm }  from '../components/modal.js';
 import { progressRing } from '../components/progress.js';
+import { goScreen } from '../router.js';
 
 const R1_NEED = 10;
 const R2_NEED = 10;
@@ -38,10 +39,11 @@ export function render() {
     </div>`;
 
   const notifs = _getNotifs(cu);
-  const unread = notifs.filter(n => !n.read).length;
+  const unread = notifs.filter(n => !n.read && !n.skipUnread).length;
 
   el.innerHTML = header + `
     <div class="myvids-scroll">
+      ${_renderExpireBanner(cu, myVids)}
       ${_renderStatusCard(myVids)}
       ${notifs.length ? _renderNotifSection(notifs, cu) : ''}
       ${!myVids.length ? `
@@ -73,6 +75,31 @@ export function render() {
 
   _registerHandlers();
   // Countdown updates handled by global startCountdownTicker() in main.js
+}
+
+// ── Ticket 6: 24h Expire Warning Banner ───────────────────
+function _renderExpireBanner(cu, myVids) {
+  const warned = myVids.find(v =>
+    v.warned24h &&
+    v.status !== 'done' &&
+    v.status !== 'expired' &&
+    v.status !== 'scheduled'
+  );
+  if (!warned) return '';
+
+  const now       = Date.now();
+  const timeLeft  = Math.max(0, (warned.expiresAt || (warned.postedAt || 0) + 86400000 * 8) - now);
+  const hLeft     = Math.max(1, Math.ceil(timeLeft / 3600000));
+  const bannerTxt = (t('notifExpireWarn24h') || '⚠️ Dein Video wird in {h}h entfernt. Supporte 3 Videos, um es zu halten.')
+    .replace('{h}', hLeft);
+
+  return `
+    <div class="expire-warn-banner">
+      <div class="expire-warn-banner__text">${esc(bannerTxt)}</div>
+      <button class="btn btn--warning btn--sm expire-warn-banner__btn" data-action="myvid:expirewarn:cta">
+        ${t('expireWarnCta') || 'Jetzt 3 Videos supporten →'}
+      </button>
+    </div>`;
 }
 
 // ── Status-Card (B2.3) ─────────────────────────────────────
@@ -123,10 +150,14 @@ function _renderNotifSection(notifs, cu) {
         <button class="btn btn--ghost btn--sm" data-action="myvid:notif:clear">${t('notifsDelAll')}</button>
       </div>
       ${notifs.map(n => `
-        <div class="myvid-notif-item${n.read ? '' : ' myvid-notif-item--unread'}" data-notif-id="${esc(n._id)}">
+        <div class="myvid-notif-item${n.read ? '' : (!n.skipUnread ? ' myvid-notif-item--unread' : '')}" data-notif-id="${esc(n._id)}">
           <div class="myvid-notif-item__icon">${n.icon || '🔔'}</div>
           <div class="myvid-notif-item__body">
             <div class="myvid-notif-item__text">${esc(renderNotification(n, userLang))}</div>
+            ${n.subtype === 'expireWarn24h' ? `
+            <button class="btn btn--warning btn--sm myvid-notif-cta" data-action="myvid:expirewarn:cta" style="margin-top:6px">
+              ${t('expireWarnCta') || 'Jetzt 3 Videos supporten →'}
+            </button>` : ''}
             <div class="myvid-notif-item__meta">${n.ts ? timeAgo(n.ts) : ''}</div>
           </div>
         </div>
@@ -240,6 +271,31 @@ function _registerHandlers() {
     });
     toast(t('notifsCleared'), 'success');
     setTimeout(render, 300);
+  });
+
+  // Ticket 6: CTA → Home Feed mit vorausgewählten 3 Videos
+  on('myvid:expirewarn:cta', () => {
+    const cu = state.currentUser;
+    if (!cu) return;
+    const myKey = cu.toLowerCase();
+    const R1_N  = 10;
+
+    const candidates = Object.values(state.db.videos || {})
+      .filter(v => {
+        if (v.status === 'done' || v.status === 'expired' || v.status === 'scheduled') return false;
+        if ((v.ownerKey || v.owner || '').toLowerCase() === myKey) return false;
+        const round = v.round || 1;
+        const r1    = (v.r1Supporters || []).length;
+        const r1n   = v.r1Need || R1_N;
+        if (round === 1 && r1 >= r1n) return false;
+        return true;
+      })
+      .sort((a, b) => (b.postedAt || 0) - (a.postedAt || 0))
+      .slice(0, 3);
+
+    state.ui._expireWarnVideos = candidates.map(v => v.id);
+    state.ui._pendingHomeTab   = 'feed';
+    goScreen('home');
   });
 
   on('myvid:copy', async (el) => {
