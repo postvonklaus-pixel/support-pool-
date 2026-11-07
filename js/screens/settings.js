@@ -396,14 +396,31 @@ function _registerHandlers() {
   });
 
   on('settings:push', () => {
-    if (!('Notification' in window)) {
-      import('../components/toast.js').then(m => m.toast(t('pushNotAvail'), 'warning'));
-      return;
-    }
-    Notification.requestPermission().then(perm => {
-      import('../components/toast.js').then(({ toast }) => {
-        if (perm === 'granted') toast(t('pushEnabled'), 'success');
-        else toast(t('pushDenied'), 'warning');
+    import('../components/toast.js').then(({ toast }) => {
+      if (!('Notification' in window) || !('serviceWorker' in navigator)) {
+        // iOS: Notification API only available as installed PWA (Add to Home Screen)
+        const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
+        if (isIos) {
+          toast(t('pushIosHint') || '📲 Füge die App zum Home-Bildschirm hinzu, um Push zu aktivieren', 'info', 5000);
+        } else {
+          toast(t('pushNotAvail') || 'Push nicht verfügbar', 'warning');
+        }
+        return;
+      }
+      import('../features/fcm.js').then(({ initFcm }) => {
+        initFcm().then(() => {
+          import('../state.js').then(({ state }) => {
+            const cu = state.currentUser;
+            const hasToken = !!state.db?.members?.[cu]?.fcmToken;
+            if (hasToken) {
+              toast(t('pushEnabled') || '🔔 Push-Nachrichten aktiviert!', 'success');
+            } else if (Notification.permission === 'denied') {
+              toast(t('pushDenied') || 'Push in den Browser-Einstellungen erlauben', 'warning', 4000);
+            } else {
+              toast(t('pushNotAvail') || 'Push nicht verfügbar', 'warning');
+            }
+          });
+        });
       });
     });
   });
