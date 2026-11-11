@@ -1,9 +1,36 @@
-const _pending  = new Set();
-const _failed   = new Set();
-const CACHE_MS  = 20 * 60 * 60 * 1000; // 20h
+const _pending = new Set();
+const _failed  = new Set();
+const CACHE_MS = 20 * 60 * 60 * 1000; // 20h
 
-// Free CORS proxy — TikTok oembed blocks direct browser fetches (no CORS headers)
-const PROXY = 'https://api.allorigins.win/raw?url=';
+// Try three oembed sources in order. noembed.com is first because it sends
+// Access-Control-Allow-Origin itself (no proxy needed), so TikTok IP-blocking
+// of generic proxies doesn't apply. The other two are fallbacks.
+async function _oembed(videoUrl) {
+  const enc    = encodeURIComponent(videoUrl);
+  const direct = 'https://www.tiktok.com/oembed?url=' + enc;
+
+  const sources = [
+    // 1. noembed.com — oembed aggregator with native CORS support
+    () => fetch('https://noembed.com/embed?url=' + enc,
+                { signal: AbortSignal.timeout(8000) }),
+    // 2. corsproxy.io — generic CORS proxy, different infrastructure than allorigins
+    () => fetch('https://corsproxy.io/?' + encodeURIComponent(direct),
+                { signal: AbortSignal.timeout(8000) }),
+    // 3. allorigins — last resort
+    () => fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent(direct),
+                { signal: AbortSignal.timeout(10000) }),
+  ];
+
+  for (const attempt of sources) {
+    try {
+      const res = await attempt();
+      if (!res.ok) continue;
+      const d = await res.json();
+      if (d?.thumbnail_url) return d;
+    } catch (_) {}
+  }
+  return null;
+}
 
 export function fetchMissingThumbnail(vid, videoUrl, currentThumb, thumbnailUpdated) {
   if (!vid || !videoUrl) return;
@@ -16,12 +43,7 @@ export function fetchMissingThumbnail(vid, videoUrl, currentThumb, thumbnailUpda
   const delay = _pending.size * 600;
   setTimeout(async () => {
     try {
-      const oembedUrl = 'https://www.tiktok.com/oembed?url=' + encodeURIComponent(videoUrl);
-      const res = await fetch(PROXY + encodeURIComponent(oembedUrl), {
-        signal: AbortSignal.timeout(10000),
-      });
-      if (!res.ok) { _failed.add(vid); return; }
-      const d = await res.json();
+      const d = await _oembed(videoUrl);
       if (!d?.thumbnail_url) { _failed.add(vid); return; }
 
       const now = Date.now();
@@ -49,12 +71,12 @@ export function fetchMissingThumbnail(vid, videoUrl, currentThumb, thumbnailUpda
             const fb = wrap.querySelector('.vc-thumb-fallback');
             if (fb) {
               const el = document.createElement('img');
-              el.className = 'vc-thumb';
-              el.src       = url;
-              el.alt       = '';
-              el.loading   = 'lazy';
+              el.className      = 'vc-thumb';
+              el.src            = url;
+              el.alt            = '';
+              el.loading        = 'lazy';
               el.referrerPolicy = 'no-referrer';
-              el.onerror   = function() {
+              el.onerror        = function() {
                 this.outerHTML = '<div class="vc-thumb-fallback"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg></div>';
               };
               fb.replaceWith(el);
@@ -71,7 +93,7 @@ export function fetchMissingThumbnail(vid, videoUrl, currentThumb, thumbnailUpda
       if (d.author_name) writeDB(`videos/${vid}/videoAuthor`, d.author_name);
 
     } catch (_e) {
-      // Network error or proxy down — don't mark failed, retry next session
+      // Network error — don't mark failed, retry next session
     } finally {
       _pending.delete(vid);
     }
