@@ -1,7 +1,7 @@
 // VERCEL_PROXY_URL: set after deploying vercel-proxy/ to Vercel Hobby (free).
 // Leave empty to disable thumbnail fetching entirely.
 // Deploy instructions: vercel-proxy/README.md
-const VERCEL_PROXY_URL = '';
+const VERCEL_PROXY_URL = 'https://support-pool-vercel-proxy.vercel.app/api/thumbnail';
 
 const _pending = new Set();
 const _failed  = new Set();
