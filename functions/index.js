@@ -3,7 +3,6 @@
  * - generateCaption    (callable)  — TikTok caption generator
  * - processScheduledVideos (schedule, every 5 min) — activates scheduled videos
  * - sendFcmPush        (callable)  — FCM Web Push relay
- * - fetchTikTokThumb   (callable)  — TikTok oEmbed proxy (server-side, no CORS restriction)
  * Region: asia-southeast1
  */
 
@@ -386,33 +385,6 @@ exports.processScheduledVideos = functions.region(REGION).pubsub
       throw err;
     }
   });
-
-// ─── fetchTikTokThumb ─────────────────────────────────────────────────────────
-
-exports.fetchTikTokThumb = functions.region(REGION).https.onCall(async (data, context) => {
-  const { url } = data || {};
-  if (!url || !url.includes("tiktok.com")) {
-    throw new functions.https.HttpsError("invalid-argument", "A tiktok.com URL is required");
-  }
-
-  try {
-    const oembedUrl = "https://www.tiktok.com/oembed?url=" + encodeURIComponent(url);
-    const res = await fetch(oembedUrl, {
-      headers: { "Accept": "application/json", "User-Agent": "Mozilla/5.0" },
-      signal: AbortSignal.timeout(8000),
-    });
-    if (!res.ok) return { thumbnailUrl: null };
-    const d = await res.json();
-    return {
-      thumbnailUrl: d.thumbnail_url || null,
-      title:        d.title        || null,
-      authorName:   d.author_name  || null,
-    };
-  } catch (err) {
-    console.warn("[fetchTikTokThumb]", err.message);
-    return { thumbnailUrl: null };
-  }
-});
 
 // ─── sendFcmPush ──────────────────────────────────────────────────────────────
 
