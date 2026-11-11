@@ -79,20 +79,26 @@ export function render() {
 
 // ── Ticket 6: 24h Expire Warning Banner ───────────────────
 function _renderExpireBanner(cu, myVids) {
-  const warned = myVids.find(v =>
-    v.warned24h &&
-    v.status !== 'done' &&
-    v.status !== 'expired' &&
-    v.status !== 'scheduled'
-  );
-  if (!warned) return '';
-
-  // Don't show if user has met the weekly obligation (3+ supports given this week)
-  // or if lifetime balance is non-negative (more given than received overall)
-  const u           = state.db.members?.[cu] || {};
+  const myKey  = cu.toLowerCase();
+  const u      = state.db.members?.[cu] || state.db.members?.[myKey] || {};
   const weeklyGiven = u.weeklyGiven || 0;
-  const bal         = (u.stats?.given || 0) - (u.stats?.received || 0);
-  if (weeklyGiven >= 3 || bal >= 0) return '';
+  const bal    = (u.stats?.given || 0) - (u.stats?.received || 0);
+  const safe   = weeklyGiven >= 3 || bal >= 0;
+
+  // Find warned video and clear flag from RTDB if obligation is met
+  const warnedEntry = Object.entries(state.db.videos || {}).find(([, v]) =>
+    v.warned24h &&
+    v.status !== 'done' && v.status !== 'expired' && v.status !== 'scheduled' &&
+    (v.ownerKey || v.owner || '').toLowerCase() === myKey
+  );
+  if (!warnedEntry) return '';
+
+  if (safe) {
+    writeDB(`videos/${warnedEntry[0]}/warned24h`, null);
+    return '';
+  }
+
+  const warned = warnedEntry[1];
 
   const now       = Date.now();
   const posted    = warned.postedAt || 0;
