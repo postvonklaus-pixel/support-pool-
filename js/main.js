@@ -253,8 +253,12 @@ export async function loginAs(username, { silent = false, isNew = false } = {}) 
     if (m.shouldShowOnboarding(username)) m.startOnboarding(username);
   });
 
-  // Ticket 10: initialise FCM push subscriptions
-  import('./features/fcm.js').then(m => m.initFcm());
+  // Ticket 10: initialise FCM push subscriptions; re-render settings if open
+  import('./features/fcm.js').then(m => m.initFcm().then(() => {
+    if (document.querySelector('#screen-settings.active')) {
+      import('./router.js').then(r => r.renderActive());
+    }
+  }));
 
   return true;
 }

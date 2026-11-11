@@ -169,21 +169,34 @@ export function render() {
       ${_renderBroadcastSection(cu)}
 
       <!-- ── Benachrichtigungen ──────────────────────────── -->
-      <div class="settings-group">
-        <div class="settings-group__label">${t('setSecNotif') || 'Benachrichtigungen'}</div>
-        <div class="settings-group__card">
-          <div class="settings-row-item">
-            <div class="settings-row-item__icon">🔔</div>
-            <div class="settings-row-item__body">
-              <div class="settings-row-item__label">${t('pushTitle') || 'Push-Nachrichten'}</div>
-              <div class="settings-row-item__sub">${t('pushDesc') || 'Werde benachrichtigt bei neuen Supports'}</div>
+      ${(() => {
+        const pushGranted = typeof Notification !== 'undefined' && Notification.permission === 'granted';
+        const hasFcmToken = !!state.db?.members?.[cu]?.fcmToken;
+        const pushIsActive = pushGranted && hasFcmToken;
+        const isIosBrowser = /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.navigator.standalone;
+        return `
+        <div class="settings-group">
+          <div class="settings-group__label">${t('setSecNotif') || 'Benachrichtigungen'}</div>
+          <div class="settings-group__card">
+            <div class="settings-row-item">
+              <div class="settings-row-item__icon">🔔</div>
+              <div class="settings-row-item__body">
+                <div class="settings-row-item__label">${t('pushTitle') || 'Push-Nachrichten'}</div>
+                <div class="settings-row-item__sub">${
+                  isIosBrowser
+                    ? (t('pushIosHint') || 'App zum Home-Bildschirm hinzufügen')
+                    : pushIsActive
+                      ? (t('pushActiveDesc') || 'Push-Nachrichten sind aktiv')
+                      : (t('pushDesc') || 'Werde benachrichtigt bei neuen Supports')
+                }</div>
+              </div>
+              <button class="btn btn--sm ${pushIsActive ? 'btn--success' : 'btn--ghost'}" data-action="settings:push" ${isIosBrowser ? 'disabled' : ''}>
+                ${pushIsActive ? (t('pushActive') || '✓ Aktiv') : (t('pushActivate') || 'Aktivieren')}
+              </button>
             </div>
-            <button class="btn btn--sm btn--ghost" data-action="settings:push">
-              ${t('pushActivate') || 'Aktivieren'}
-            </button>
           </div>
-        </div>
-      </div>
+        </div>`;
+      })()}
 
       <!-- ── Account ─────────────────────────────────────── -->
       <div class="settings-group">
