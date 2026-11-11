@@ -34,6 +34,8 @@ export function openVideoPreview(vidId) {
   const total     = round >= 2 ? r2n : r1n;
   const link      = v.link || v.url || '#';
 
+  const thumbSrc = v.thumbnail;
+
   const modal = document.createElement('div');
   modal.className = 'video-preview-modal';
   modal.dataset.vid = vidId;
@@ -41,6 +43,17 @@ export function openVideoPreview(vidId) {
     <div class="vpm-overlay" data-action="vpm:close"></div>
     <div class="vpm-content">
       <button class="vpm-close btn" data-action="vpm:close" aria-label="Schließen">✕</button>
+
+      ${thumbSrc ? `
+      <a class="vpm-thumb-link" href="${esc(link)}" target="_blank" rel="noopener noreferrer">
+        <div class="vpm-thumb-wrap">
+          <img class="vpm-thumb" src="${esc(thumbSrc)}" alt="" loading="lazy" referrerpolicy="no-referrer"
+               onerror="this.parentNode.style.display='none'">
+          <div class="vpm-play-overlay" aria-hidden="true">
+            <svg class="vpm-play" width="48" height="48" viewBox="0 0 24 24" fill="white" filter="drop-shadow(0 4px 12px rgba(0,0,0,0.5))"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          </div>
+        </div>
+      </a>` : ''}
 
       <div class="vpm-info">
         <div class="vpm-owner">

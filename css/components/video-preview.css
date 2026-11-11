@@ -70,6 +70,12 @@
 }
 
 /* ── Thumbnail ──────────────────────────────────────────── */
+.vpm-thumb-link {
+  display: block;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
 .vpm-thumb-wrap {
   position: relative;
   width: 100%;
@@ -127,7 +133,13 @@
 
 /* ── Info panel ─────────────────────────────────────────── */
 .vpm-info {
-  padding: 52px 16px 20px;
+  padding: 52px 16px 20px; /* 52px top leaves room for close btn when no thumb */
+}
+
+/* When a thumbnail is present above .vpm-info, reduce top padding */
+.vpm-thumb-link + .vpm-info,
+.vpm-thumb-link ~ .vpm-info {
+  padding-top: 16px;
 }
 
 .vpm-owner {
