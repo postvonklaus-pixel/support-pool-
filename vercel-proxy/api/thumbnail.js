@@ -14,8 +14,22 @@ module.exports = async function handler(req, res) {
   if (!url) return res.status(400).json({ error: 'missing url parameter' });
 
   try {
+    // Resolve shortened URLs (vm.tiktok.com, vt.tiktok.com) to full URLs first,
+    // because TikTok oembed returns no metadata for shortened links.
+    let resolvedUrl = url;
+    if (/vm\.tiktok\.com|vt\.tiktok\.com/.test(url)) {
+      try {
+        const redir = await fetch(url, {
+          method: 'GET', redirect: 'follow',
+          headers: { 'User-Agent': 'Mozilla/5.0 (compatible; ThumbnailBot/1.0)' },
+          signal: AbortSignal.timeout(8000),
+        });
+        resolvedUrl = redir.url || url;
+      } catch (_) {}
+    }
+
     const oembedRes = await fetch(
-      'https://www.tiktok.com/oembed?url=' + encodeURIComponent(url),
+      'https://www.tiktok.com/oembed?url=' + encodeURIComponent(resolvedUrl),
       { headers: { 'User-Agent': 'Mozilla/5.0 (compatible; ThumbnailBot/1.0)' } }
     );
     if (!oembedRes.ok) {
