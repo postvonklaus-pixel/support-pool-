@@ -51,7 +51,7 @@
   <link rel="preload" href="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js" as="script">
   <link rel="preload" href="https://www.gstatic.com/firebasejs/9.23.0/firebase-functions-compat.js" as="script">
   <!-- Modulepreload critical JS — resolve ES-module cascade in parallel -->
-  <link rel="modulepreload" href="js/main.js?v=20261111c">
+  <link rel="modulepreload" href="js/main.js?v=20261111d">
   <link rel="modulepreload" href="js/state.js">
   <link rel="modulepreload" href="js/storage.js">
   <link rel="modulepreload" href="js/utils.js">
@@ -109,7 +109,7 @@
 
   <!-- Header (hidden on login) -->
   <header id="app-header" class="hidden">
-    <div class="header-brand">NOVA</div>
+    <div class="header-brand"><img src="icons/nova-logo.png" alt="NOVA" draggable="false"></div>
     <div class="header-actions">
       <div class="header-status" id="header-online">
         <span class="header-status__dot"></span>
@@ -142,7 +142,7 @@
 
       <!-- Fixed top bar -->
       <header class="login-topbar">
-        <div class="login-top-logo">NOVA</div>
+        <div class="login-top-logo"><img src="icons/nova-logo.png" alt="NOVA" draggable="false"></div>
         <button class="login-lang-btn" id="login-lang-btn" data-action="login:lang-open">
           🌐 DE ▾
         </button>
@@ -388,7 +388,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging-compat.js"></script>
 
 <!-- ── App Entry Point ──────────────────────────────────── -->
-<script type="module" src="js/main.js?v=20261111c"></script>
+<script type="module" src="js/main.js?v=20261111d"></script>
 
 <!-- ── Hard fallback: if splash still visible after 4s, force-show app ── -->
 <script>

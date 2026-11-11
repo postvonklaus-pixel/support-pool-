@@ -75,11 +75,18 @@
 }
 
 .login-top-logo {
-  font-size: 15px;
-  font-weight: 800;
-  letter-spacing: 2.5px;
-  text-transform: uppercase;
-  color: var(--login-accent);
+  background: #000;
+  border-radius: 7px;
+  padding: 3px 10px;
+  display: flex;
+  align-items: center;
+}
+.login-top-logo img {
+  height: 20px;
+  width: auto;
+  display: block;
+  user-select: none;
+  -webkit-user-drag: none;
 }
 
 .login-lang-btn {

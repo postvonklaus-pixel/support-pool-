@@ -41,14 +41,18 @@
   flex-shrink: 0;
 }
 .header-brand {
-  font-family: var(--font-display);
-  font-weight: var(--weight-black);
-  font-size: var(--text-lg);
-  letter-spacing: -0.03em;
-  background: var(--gradient-primary);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  background: #000;
+  border-radius: 7px;
+  padding: 3px 10px;
+  display: flex;
+  align-items: center;
+}
+.header-brand img {
+  height: 22px;
+  width: auto;
+  display: block;
+  user-select: none;
+  -webkit-user-drag: none;
 }
 .header-actions {
   display: flex;
