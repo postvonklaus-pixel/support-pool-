@@ -18,7 +18,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '18'
 
       - name: Detect changed paths
         id: changes
@@ -34,17 +34,21 @@ jobs:
 
       - name: Deploy Functions
         if: steps.changes.outputs.functions != '0'
-        uses: w9jds/firebase-action@master
-        with:
-          args: deploy --only functions:generateCaption,functions:sendFcmPush,functions:processScheduledVideos,functions:fetchTikTokThumb
+        run: |
+          echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > /tmp/sa.json
+          npx firebase-tools@13 deploy \
+            --only functions:generateCaption,functions:sendFcmPush,functions:processScheduledVideos,functions:fetchTikTokThumb \
+            --non-interactive
+          rm -f /tmp/sa.json
         env:
-          GCP_SA_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          GOOGLE_APPLICATION_CREDENTIALS: /tmp/sa.json
 
       - name: Deploy Database Rules
         if: always() && (steps.changes.outputs.rules != '0' || github.event_name == 'workflow_dispatch')
-        uses: w9jds/firebase-action@master
-        with:
-          args: deploy --only database
+        run: |
+          echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > /tmp/sa.json
+          npx firebase-tools@13 deploy --only database --non-interactive
+          rm -f /tmp/sa.json
         env:
-          GCP_SA_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          GOOGLE_APPLICATION_CREDENTIALS: /tmp/sa.json
 
