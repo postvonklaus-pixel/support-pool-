@@ -239,7 +239,7 @@
 #app-loading {
   position: fixed;
   inset: 0;
-  background: var(--bg-base);
+  background: #000;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -249,19 +249,17 @@
   transition: opacity var(--dur-slow) var(--ease-out);
 }
 #app-loading.fade-out { opacity: 0; pointer-events: none; }
-.loader-logo {
-  font-family: var(--font-display);
-  font-size: var(--text-3xl);
-  font-weight: var(--weight-black);
-  background: var(--gradient-primary);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+img.loader-logo {
+  width: min(72vw, 320px);
+  height: auto;
+  display: block;
+  user-select: none;
+  -webkit-user-drag: none;
 }
 .loader-spinner {
   width: 36px; height: 36px;
-  border: 3px solid var(--border-default);
-  border-top-color: var(--accent-primary);
+  border: 3px solid rgba(255,255,255,0.15);
+  border-top-color: rgba(255,255,255,0.85);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
