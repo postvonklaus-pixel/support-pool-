@@ -307,6 +307,7 @@ exports.processScheduledVideos = onSchedule(
       const members     = membersSnap.val() || {};
       const updates     = {};
 
+      // ── Part A: pendingUrl queue (legacy auto-post) ───────────────────────
       for (const [key, member] of Object.entries(members)) {
         if (!member.pendingUrl)  continue;
         if (!member.lastPost)    continue;
@@ -344,6 +345,52 @@ exports.processScheduledVideos = onSchedule(
         const nid = "n" + now + "_" + Math.random().toString(36).substr(2, 4);
         updates["sp6/messages/" + nid] = {
           id: nid, to: key, icon: "📹", type: "notif",
+          subtype: "postConfirm", msgKey: "schedPosted",
+          ts: now, timestamp: now, read: false,
+        };
+      }
+
+      // ── Part B: status:'scheduled' videos whose scheduledFor has elapsed ──
+      // These are created by the client post modal when the user picks a future
+      // time slot. Without this server-side check they only activate when a
+      // logged-in client runs the 15s tick (not reliable for inactive pools).
+      const BAL_LIMIT = -10;
+      const videosSnap = await rtdb.ref("sp6/videos").once("value");
+      const videos     = videosSnap.val() || {};
+
+      for (const [vidId, v] of Object.entries(videos)) {
+        if (v.status !== "scheduled") continue;
+        if (!v.scheduledFor)          continue;
+        if (v.scheduledFor > now)     continue;
+
+        const owner     = v.ownerKey || v.owner;
+        if (!owner)                   continue;
+        // Skip if already queued by Part A above (same vidId key)
+        if (updates["sp6/videos/" + vidId]) continue;
+
+        const ownerData  = members[owner] || {};
+        const ownerStats = ownerData.stats || {};
+        const bal        = (ownerStats.given || 0) - (ownerStats.received || 0);
+        const total      = ownerData.postsTotal || 0;
+
+        if (total >= 2 && bal <= BAL_LIMIT) {
+          updates["sp6/videos/" + vidId] = null;
+          const nid2 = "n" + now + "_" + Math.random().toString(36).substr(2, 4);
+          updates["sp6/messages/" + nid2] = {
+            id: nid2, to: owner, icon: "⚠️", type: "notif",
+            subtype: "", msgKey: "queueBalanceDel",
+            ts: now, timestamp: now, read: false,
+          };
+          continue;
+        }
+
+        updates["sp6/videos/" + vidId + "/status"]   = "open";
+        updates["sp6/videos/" + vidId + "/postedAt"] = now;
+        updates["sp6/members/" + owner + "/lastPost"] = now;
+
+        const nid3 = "n" + now + "_" + Math.random().toString(36).substr(2, 4);
+        updates["sp6/messages/" + nid3] = {
+          id: nid3, to: owner, icon: "📹", type: "notif",
           subtype: "postConfirm", msgKey: "schedPosted",
           ts: now, timestamp: now, read: false,
         };

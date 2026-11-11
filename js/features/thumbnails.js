@@ -21,7 +21,21 @@ export function fetchMissingThumbnail(vid, videoUrl, currentThumb, thumbnailUpda
       if (!res.ok) { _failed.add(vid); return; }
       const d = await res.json();
       if (d?.thumbnail_url) {
-        // Update DOM immediately so thumbnail appears without page reload
+        const now = Date.now();
+
+        // Update local state immediately so re-render shows the thumbnail
+        // without waiting for the RTDB listener echo
+        try {
+          const { state } = await import('../state.js');
+          if (state.db.videos?.[vid]) {
+            state.db.videos[vid].thumbnail        = d.thumbnail_url;
+            state.db.videos[vid].thumbnailUpdated = now;
+            if (d.title)       state.db.videos[vid].videoTitle  = d.title;
+            if (d.author_name) state.db.videos[vid].videoAuthor = d.author_name;
+          }
+        } catch (_) {}
+
+        // Update any existing <img class="vc-thumb"> in the DOM immediately
         try {
           const escaped = CSS.escape(String(vid));
           document.querySelectorAll(`[data-vid="${escaped}"] .vc-thumb`).forEach(img => {
@@ -31,11 +45,16 @@ export function fetchMissingThumbnail(vid, videoUrl, currentThumb, thumbnailUpda
 
         // Write to Firebase so other users benefit on next load
         const { writeDB } = await import('../firebase.js');
-        const now = Date.now();
         writeDB(`videos/${vid}/thumbnail`,        d.thumbnail_url);
         writeDB(`videos/${vid}/thumbnailUpdated`, now);
         if (d.title)       writeDB(`videos/${vid}/videoTitle`,  d.title);
         if (d.author_name) writeDB(`videos/${vid}/videoAuthor`, d.author_name);
+
+        // Re-render active screen so fallback placeholders become real thumbnails
+        try {
+          const { renderActive } = await import('../router.js');
+          renderActive({ debounce: true });
+        } catch (_) {}
       } else {
         _failed.add(vid);
       }

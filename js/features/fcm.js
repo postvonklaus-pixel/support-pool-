@@ -44,7 +44,9 @@ export async function initFcm() {
     const perm = await Notification.requestPermission();
     if (perm !== 'granted') return;
 
-    const reg = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+    // Relative to document.baseURI so it works under any sub-path (e.g. /support-pool-/)
+    const swUrl = new URL('firebase-messaging-sw.js', document.baseURI).href;
+    const reg = await navigator.serviceWorker.register(swUrl);
     const messaging = firebase.messaging();
     const token = await messaging.getToken({ vapidKey, serviceWorkerRegistration: reg });
     if (token) {

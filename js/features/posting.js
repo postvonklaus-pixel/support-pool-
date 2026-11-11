@@ -328,6 +328,13 @@ export function checkScheduledVideos() {
     writeDB(`videos/${vidId}/postedAt`, now);
     if (owner) writeDB(`members/${owner}/lastPost`, now);
 
+    // Update local state immediately so re-render reflects 'open' without
+    // waiting for the RTDB listener echo (prevents double-activation on next tick)
+    if (state.db.videos?.[vidId]) {
+      state.db.videos[vidId].status   = 'open';
+      state.db.videos[vidId].postedAt = now;
+    }
+
     if (owner) addNotif(owner, '📹', '', 'postConfirm', { msgKey: 'schedPosted' });
     if (owner === cu) toast(t('schedPosted') || '🎉 Dein geplantes Video ist jetzt live!', 'success', 4000);
   });
