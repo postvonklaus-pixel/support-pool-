@@ -87,6 +87,11 @@ function _renderExpireBanner(cu, myVids) {
   );
   if (!warned) return '';
 
+  // Don't show if user has since given enough supports (balance no longer negative)
+  const u   = state.db.members?.[cu] || {};
+  const bal = (u.stats?.given || 0) - (u.stats?.received || 0);
+  if (bal >= 0) return '';
+
   const now       = Date.now();
   const timeLeft  = Math.max(0, (warned.expiresAt || (warned.postedAt || 0) + 86400000 * 8) - now);
   const hLeft     = Math.max(1, Math.ceil(timeLeft / 3600000));
