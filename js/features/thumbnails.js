@@ -20,21 +20,14 @@ export async function fetchMissingThumbnail(vid, videoUrl, currentThumb, thumbna
   const delay = (_pending.size - 1) * 300;
   setTimeout(async () => {
     try {
-      console.log('[thumb] fetching', vid, videoUrl);
       const res = await fetch(
         VERCEL_PROXY_URL + '?url=' + encodeURIComponent(videoUrl),
         { signal: AbortSignal.timeout(15000) }
       );
-      console.log('[thumb] proxy status', res.status);
-      if (!res.ok) {
-        const txt = await res.text().catch(() => '');
-        console.warn('[thumb] proxy error', res.status, txt);
-        _failed.add(vid); return;
-      }
+      if (!res.ok) { _failed.add(vid); return; }
 
       const data = await res.json();
-      console.log('[thumb] oembed data', data);
-      if (!data.thumbnail_url) { console.warn('[thumb] no thumbnail_url'); _failed.add(vid); return; }
+      if (!data.thumbnail_url) { _failed.add(vid); return; }
 
       const storageUrl = data.thumbnail_url;
       const authorName = data.author_name || '';
@@ -83,10 +76,8 @@ export async function fetchMissingThumbnail(vid, videoUrl, currentThumb, thumbna
       writeDB('videos/' + vid + '/thumbnailUpdated', now);
       if (videoTitle)  writeDB('videos/' + vid + '/videoTitle',  videoTitle);
       if (authorName)  writeDB('videos/' + vid + '/videoAuthor', authorName);
-      console.log('[thumb] saved to RTDB', vid, storageUrl.slice(0, 60));
 
     } catch (_e) {
-      console.error('[thumb] error', _e?.message || _e);
       // Timeout or network error — retry next session, don't mark as permanently failed
     } finally {
       _pending.delete(vid);
