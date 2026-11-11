@@ -142,7 +142,7 @@
   background: var(--login-card-bg);
   border: 1px solid var(--login-card-border);
   border-radius: 32px;
-  padding: 28px 22px 22px;
+  padding: 10px 22px 16px;
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
   box-shadow: none;
