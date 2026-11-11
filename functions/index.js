@@ -418,6 +418,39 @@ exports.processScheduledVideos = onSchedule(
 // Input:  { token, title, body?, data? }
 // Output: { success: true }
 
+// ─── TikTok Thumbnail Fetcher ─────────────────────────────────────────────────
+//
+// Proxies TikTok oEmbed server-side to avoid browser CORS restrictions.
+// TikTok does not send CORS headers, so direct browser fetches always fail.
+//
+// Input:  { url }   — full TikTok video URL
+// Output: { thumbnailUrl, title, authorName } or { thumbnailUrl: null }
+
+exports.fetchTikTokThumb = onCall({ cors: true }, async (request) => {
+  const { url } = request.data || {};
+  if (!url || !url.includes('tiktok.com')) {
+    throw new HttpsError('invalid-argument', 'A tiktok.com URL is required');
+  }
+
+  try {
+    const oembedUrl = 'https://www.tiktok.com/oembed?url=' + encodeURIComponent(url);
+    const res = await fetch(oembedUrl, {
+      headers: { 'Accept': 'application/json', 'User-Agent': 'Mozilla/5.0' },
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!res.ok) return { thumbnailUrl: null };
+    const d = await res.json();
+    return {
+      thumbnailUrl: d.thumbnail_url || null,
+      title:        d.title        || null,
+      authorName:   d.author_name  || null,
+    };
+  } catch (err) {
+    console.warn('[fetchTikTokThumb]', err.message);
+    return { thumbnailUrl: null };
+  }
+});
+
 exports.sendFcmPush = onCall({ cors: true }, async (request) => {
   const { token, title, body, data } = request.data || {};
   if (!token || !title) {

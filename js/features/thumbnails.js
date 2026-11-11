@@ -10,19 +10,16 @@ export function fetchMissingThumbnail(vid, videoUrl, currentThumb, thumbnailUpda
 
   _pending.add(vid);
 
-  // Stagger requests to avoid rate-limiting TikTok
-  const delay = _pending.size * 400;
+  // Stagger requests to avoid hammering the Cloud Function
+  const delay = _pending.size * 600;
   setTimeout(async () => {
     try {
-      const res = await fetch(
-        'https://www.tiktok.com/oembed?url=' + encodeURIComponent(videoUrl),
-        { headers: { 'Accept': 'application/json' } }
-      );
-      if (!res.ok) { _failed.add(vid); return; }
-      const d = await res.json();
-      if (d?.thumbnail_url) {
+      // TikTok oembed doesn't support CORS — use Cloud Function as proxy
+      const { callFn } = await import('../firebase.js');
+      const d = await callFn('fetchTikTokThumb', { url: videoUrl });
+      if (d?.thumbnailUrl) {
         const now = Date.now();
-        const url = d.thumbnail_url;
+        const url = d.thumbnailUrl;
 
         // 1. Update local state so the next scheduled render picks it up
         try {
@@ -31,7 +28,7 @@ export function fetchMissingThumbnail(vid, videoUrl, currentThumb, thumbnailUpda
             state.db.videos[vid].thumbnail        = url;
             state.db.videos[vid].thumbnailUpdated = now;
             if (d.title)       state.db.videos[vid].videoTitle  = d.title;
-            if (d.author_name) state.db.videos[vid].videoAuthor = d.author_name;
+            if (d.authorName)  state.db.videos[vid].videoAuthor = d.authorName;
           }
         } catch (_) {}
 
@@ -66,12 +63,12 @@ export function fetchMissingThumbnail(vid, videoUrl, currentThumb, thumbnailUpda
         writeDB(`videos/${vid}/thumbnail`,        url);
         writeDB(`videos/${vid}/thumbnailUpdated`, now);
         if (d.title)       writeDB(`videos/${vid}/videoTitle`,  d.title);
-        if (d.author_name) writeDB(`videos/${vid}/videoAuthor`, d.author_name);
+        if (d.authorName)  writeDB(`videos/${vid}/videoAuthor`, d.authorName);
       } else {
-        _failed.add(vid);
+        _failed.add(vid); // null response — don't retry this session
       }
     } catch (_e) {
-      // Network/CORS error — don't permanently mark failed so next load retries
+      // Cloud Function error — don't permanently mark failed so next load retries
     } finally {
       _pending.delete(vid);
     }
