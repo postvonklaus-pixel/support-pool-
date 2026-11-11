@@ -78,12 +78,17 @@
   display: flex;
   align-items: center;
 }
-.login-top-logo img {
-  height: 50px;
-  width: auto;
-  display: block;
+.login-top-logo__text {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  background: linear-gradient(135deg, #ffffff 0%, #d4bbff 50%, #a78bfa 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', sans-serif;
   user-select: none;
-  -webkit-user-drag: none;
 }
 
 .login-lang-btn {
@@ -174,12 +179,14 @@
 }
 
 /* ── Logo ────────────────────────────────────────────── */
+/* PNG is 848×1264 portrait — use cover to crop to center glow area */
 .login-logo {
   display: block;
   margin: 0 auto;
   width: min(72vw, 280px);
-  height: auto;
-  object-fit: contain;
+  height: 160px;
+  object-fit: cover;
+  object-position: center 42%;
   user-select: none;
   -webkit-user-drag: none;
 }
