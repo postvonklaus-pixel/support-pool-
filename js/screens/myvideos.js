@@ -87,10 +87,12 @@ function _renderExpireBanner(cu, myVids) {
   );
   if (!warned) return '';
 
-  // Don't show if user has since given enough supports (balance no longer negative)
-  const u   = state.db.members?.[cu] || {};
-  const bal = (u.stats?.given || 0) - (u.stats?.received || 0);
-  if (bal >= 0) return '';
+  // Don't show if user has met the weekly obligation (3+ supports given this week)
+  // or if lifetime balance is non-negative (more given than received overall)
+  const u           = state.db.members?.[cu] || {};
+  const weeklyGiven = u.weeklyGiven || 0;
+  const bal         = (u.stats?.given || 0) - (u.stats?.received || 0);
+  if (weeklyGiven >= 3 || bal >= 0) return '';
 
   const now       = Date.now();
   const posted    = warned.postedAt || 0;
