@@ -22,39 +22,51 @@ export function fetchMissingThumbnail(vid, videoUrl, currentThumb, thumbnailUpda
       const d = await res.json();
       if (d?.thumbnail_url) {
         const now = Date.now();
+        const url = d.thumbnail_url;
 
-        // Update local state immediately so re-render shows the thumbnail
-        // without waiting for the RTDB listener echo
+        // 1. Update local state so the next scheduled render picks it up
         try {
           const { state } = await import('../state.js');
           if (state.db.videos?.[vid]) {
-            state.db.videos[vid].thumbnail        = d.thumbnail_url;
+            state.db.videos[vid].thumbnail        = url;
             state.db.videos[vid].thumbnailUpdated = now;
             if (d.title)       state.db.videos[vid].videoTitle  = d.title;
             if (d.author_name) state.db.videos[vid].videoAuthor = d.author_name;
           }
         } catch (_) {}
 
-        // Update any existing <img class="vc-thumb"> in the DOM immediately
+        // 2. Update DOM in-place — works for both existing <img> and fallback <div>
+        //    to avoid triggering a full re-render that causes flicker/loops
         try {
           const escaped = CSS.escape(String(vid));
-          document.querySelectorAll(`[data-vid="${escaped}"] .vc-thumb`).forEach(img => {
-            img.src = d.thumbnail_url;
+          document.querySelectorAll(`[data-vid="${escaped}"]`).forEach(wrap => {
+            const img = wrap.querySelector('.vc-thumb');
+            if (img) {
+              img.src = url;
+            } else {
+              const fb = wrap.querySelector('.vc-thumb-fallback');
+              if (fb) {
+                const el = document.createElement('img');
+                el.className = 'vc-thumb';
+                el.src       = url;
+                el.alt       = '';
+                el.loading   = 'lazy';
+                el.referrerPolicy = 'no-referrer';
+                el.onerror   = function() {
+                  this.outerHTML = '<div class="vc-thumb-fallback"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg></div>';
+                };
+                fb.replaceWith(el);
+              }
+            }
           });
         } catch (_) {}
 
-        // Write to Firebase so other users benefit on next load
+        // 3. Persist to Firebase so other users benefit immediately
         const { writeDB } = await import('../firebase.js');
-        writeDB(`videos/${vid}/thumbnail`,        d.thumbnail_url);
+        writeDB(`videos/${vid}/thumbnail`,        url);
         writeDB(`videos/${vid}/thumbnailUpdated`, now);
         if (d.title)       writeDB(`videos/${vid}/videoTitle`,  d.title);
         if (d.author_name) writeDB(`videos/${vid}/videoAuthor`, d.author_name);
-
-        // Re-render active screen so fallback placeholders become real thumbnails
-        try {
-          const { renderActive } = await import('../router.js');
-          renderActive({ debounce: true });
-        } catch (_) {}
       } else {
         _failed.add(vid);
       }
