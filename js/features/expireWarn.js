@@ -6,7 +6,6 @@
 
 import { state }   from '../state.js';
 import { writeDB } from '../firebase.js';
-import { addNotif } from './notifications.js';
 import { getNextFridayWIB } from '../utils.js';
 
 const WARN_MS  = 24 * 60 * 60 * 1000; // 24 hours in ms
@@ -60,15 +59,8 @@ export function checkExpireWarnings() {
     // Set flag on video (prevents re-firing)
     writeDB(`videos/${vidId}/warned24h`, true);
 
-    // Add personal notification (skipUnread=true: excluded from unread badge)
+    // FCM push only — in-app notification disabled (was duplicating due to race condition)
     const hLeft = Math.max(1, Math.ceil(timeLeft / 3600000));
-    addNotif(cu, '⚠️', null, 'expireWarn24h', {
-      msgKey:    'notifExpireWarn24h',
-      params:    { h: hLeft },
-      vidId,
-      skipUnread: true,
-    });
-    // Ticket 10: FCM push
     import('./fcm.js').then(({ sendPush }) => {
       sendPush(cu, { title: `⚠️ Dein Video läuft in ${hLeft}h ab!`, tag: 'expire-warn' });
     });

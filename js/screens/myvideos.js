@@ -110,11 +110,12 @@ function _renderStatusCard(vids) {
     </div>`;
 }
 
-// ── Notifications (support-type only) ─────────────────────
+// ── Notifications ─────────────────────────────────────────
 function _getNotifs(cu) {
   const msgs = state.db.messages || {};
   return Object.entries(msgs)
-    .filter(([, m]) => (m.to === cu || m.recipient === cu) && m.type === 'notif')
+    .filter(([, m]) => (m.to === cu || m.recipient === cu) && m.type === 'notif'
+      && m.subtype !== 'expireWarn24h')
     .sort(([, a], [, b]) => (b.ts || 0) - (a.ts || 0))
     .slice(0, 15)
     .map(([id, m]) => ({ ...m, _id: id }));
@@ -156,51 +157,30 @@ function _getBackSupportCandidates(cu) {
 export function updateMeinePip(cu) {
   const pipEl = document.getElementById('nav-meine-pip');
   if (!pipEl) return;
-  if (!cu || !state.db) { pipEl.classList.add('hidden'); return; }
-  const n = _getBackSupportCandidates(cu).size;
-  if (n > 0) {
-    pipEl.textContent = n;
-    pipEl.classList.remove('hidden');
-  } else {
-    pipEl.textContent = '';
-    pipEl.classList.add('hidden');
-  }
+  // Back-support button removed — pip always hidden
+  pipEl.textContent = '';
+  pipEl.classList.add('hidden');
 }
 
 function _renderNotifSection(notifs, cu) {
-  const unread     = notifs.filter(n => !n.read && !n.skipUnread).length;
-  const candidates = _getBackSupportCandidates(cu);
-  const backCount  = candidates.size;
-  const userLang   = state.db.members?.[cu]?.lang || state.lang;
+  const unread   = notifs.filter(n => !n.read && !n.skipUnread).length;
+  const userLang = state.db.members?.[cu]?.lang || state.lang;
   return `
     <div class="myvid-notif-section">
       <div class="myvid-notif-section__head">
         <span class="myvid-notif-section__title">
-          🔔 ${t('notifs')}${unread > 0 ? ` <span class="notif-pip">${unread}</span>` : ''}${backCount > 0 ? ` <span class="notif-pip notif-pip--back">${backCount} ↩</span>` : ''}
+          🔔 ${t('notifs')}${unread > 0 ? ` <span class="notif-pip">${unread}</span>` : ''}
         </span>
         <button class="btn btn--ghost btn--sm" data-action="myvid:notif:clear">${t('notifsDelAll')}</button>
       </div>
-      ${notifs.map(n => {
-        const fromLow  = (n.from || '').toLowerCase();
-        const backCand = n.subtype === 'support' && fromLow && candidates.has(fromLow)
-          ? candidates.get(fromLow) : null;
-        return `
+      ${notifs.map(n => `
         <div class="myvid-notif-item${n.read ? '' : (!n.skipUnread ? ' myvid-notif-item--unread' : '')}" data-notif-id="${esc(n._id)}">
           <div class="myvid-notif-item__icon">${n.icon || '🔔'}</div>
           <div class="myvid-notif-item__body">
             <div class="myvid-notif-item__text">${esc(renderNotification(n, userLang))}</div>
-            ${n.subtype === 'expireWarn24h' ? `
-            <button class="btn btn--warning btn--sm myvid-notif-cta" data-action="myvid:expirewarn:cta" style="margin-top:6px">
-              ${t('expireWarnCta') || 'Jetzt 3 Videos supporten →'}
-            </button>` : ''}
-            ${backCand ? `
-            <button class="btn btn--primary btn--sm myvid-notif-cta" data-action="myvid:backsupport" data-vid="${esc(backCand.vidId)}" style="margin-top:6px">
-              ${t('backSupportBtn') || 'Support zurück →'}
-            </button>` : ''}
             <div class="myvid-notif-item__meta">${n.ts ? timeAgo(n.ts) : ''}</div>
           </div>
-        </div>`;
-      }).join('')}
+        </div>`).join('')}
     </div>`;
 }
 
