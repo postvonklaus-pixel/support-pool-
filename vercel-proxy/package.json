@@ -2,5 +2,5 @@
   "name": "nova-thumbnail-proxy",
   "version": "1.0.0",
   "description": "CORS proxy for TikTok thumbnails — NOVA Support Pool",
-  "engines": { "node": "18.x" }
+  "engines": { "node": "26.x" }
 }
