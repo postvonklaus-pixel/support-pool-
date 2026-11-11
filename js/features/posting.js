@@ -289,6 +289,8 @@ on('post:submit', () => {
     toast(`${t('postScheduledFor') || '📅 Geplant für'} ${_fmtDate(scheduledFor)} ⏰`, 'success', 4000);
   } else {
     toast(t('postPosted'), 'success');
+    // Fire-and-forget: fetch thumbnail in background (non-blocking, via Vercel proxy)
+    import('./thumbnails.js').then(m => m.fetchMissingThumbnail(id, url, null, 0));
     setTimeout(() => goScreen('myvideos'), 800);
   }
 });
