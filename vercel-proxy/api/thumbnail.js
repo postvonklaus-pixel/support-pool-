@@ -23,13 +23,15 @@ module.exports = async function handler(req, res) {
     }
 
     const data = await oembedRes.json();
-    if (!data.thumbnail_url) {
-      return res.status(404).json({ error: 'no_thumbnail' });
+    // Some TikTok responses use different field names — check all variants
+    const thumbUrl = data.thumbnail_url || data.thumbnail || null;
+    if (!thumbUrl) {
+      return res.status(404).json({ error: 'no_thumbnail', oembed_fields: Object.keys(data) });
     }
 
     res.setHeader('Cache-Control', 'public, max-age=3600');
     return res.status(200).json({
-      thumbnail_url: data.thumbnail_url,
+      thumbnail_url: thumbUrl,
       author_name:   data.author_name || '',
       title:         data.title       || '',
     });
