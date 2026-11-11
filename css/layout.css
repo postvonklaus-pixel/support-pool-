@@ -43,16 +43,22 @@
 .header-brand {
   background: #000;
   border-radius: 7px;
-  padding: 3px 10px;
+  padding: 5px 10px;
   display: flex;
   align-items: center;
 }
-.header-brand img {
-  height: 22px;
-  width: auto;
-  display: block;
+.header-brand__text {
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  background: linear-gradient(135deg, #ffffff 0%, #d4bbff 50%, #a78bfa 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', sans-serif;
   user-select: none;
-  -webkit-user-drag: none;
+  line-height: 1;
 }
 .header-actions {
   display: flex;
