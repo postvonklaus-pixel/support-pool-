@@ -32,9 +32,7 @@
   position: fixed;
   inset: 0;
   z-index: 110;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior-y: contain;
+  overflow: hidden;
 }
 
 @supports (padding-top: env(safe-area-inset-top)) {
