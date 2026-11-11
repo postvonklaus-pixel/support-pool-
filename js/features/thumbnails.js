@@ -5,7 +5,7 @@ const VERCEL_PROXY_URL = 'https://support-pool-vercel-proxy.vercel.app/api/thumb
 
 const _pending = new Set();
 const _failed  = new Set();
-const CACHE_MS = 20 * 60 * 60 * 1000; // 20h
+const CACHE_MS = 20 * 60 * 60 * 1000; // 20h — TikTok CDN URLs expire, re-fetch after
 
 export async function fetchMissingThumbnail(vid, videoUrl, currentThumb, thumbnailUpdated) {
   if (!VERCEL_PROXY_URL) return;
@@ -20,34 +20,21 @@ export async function fetchMissingThumbnail(vid, videoUrl, currentThumb, thumbna
   const delay = (_pending.size - 1) * 300;
   setTimeout(async () => {
     try {
-      // 1. Fetch image bytes via Vercel proxy (oEmbed + download, server-side)
       const res = await fetch(
         VERCEL_PROXY_URL + '?url=' + encodeURIComponent(videoUrl),
         { signal: AbortSignal.timeout(15000) }
       );
       if (!res.ok) { _failed.add(vid); return; }
 
-      const blob       = await res.blob();
-      const authorName = res.headers.get('x-author-name') || '';
-      const videoTitle = res.headers.get('x-video-title')  || '';
+      const data = await res.json();
+      if (!data.thumbnail_url) { _failed.add(vid); return; }
 
-      if (!blob || blob.size < 100) { _failed.add(vid); return; }
+      const storageUrl = data.thumbnail_url;
+      const authorName = data.author_name || '';
+      const videoTitle = data.title       || '';
+      const now        = Date.now();
 
-      // 2. Upload to Firebase Storage (permanent URL, not TikTok CDN)
-      let storageUrl = null;
-      try {
-        const storageRef = firebase.storage().ref('thumbnails/' + vid + '.jpg');
-        await storageRef.put(blob, { contentType: blob.type || 'image/jpeg' });
-        storageUrl = await storageRef.getDownloadURL();
-      } catch (storageErr) {
-        console.warn('[thumbnails] storage upload failed:', storageErr.message);
-        _failed.add(vid);
-        return;
-      }
-
-      const now = Date.now();
-
-      // 3. Update local state
+      // Update local state
       try {
         const { state } = await import('../state.js');
         if (state.db.videos?.[vid]) {
@@ -58,7 +45,7 @@ export async function fetchMissingThumbnail(vid, videoUrl, currentThumb, thumbna
         }
       } catch (_) {}
 
-      // 4. Update DOM in-place (no re-render needed)
+      // Update DOM in-place (no re-render needed)
       try {
         const escaped = CSS.escape(String(vid));
         document.querySelectorAll('[data-vid="' + escaped + '"]').forEach(wrap => {
@@ -83,7 +70,7 @@ export async function fetchMissingThumbnail(vid, videoUrl, currentThumb, thumbna
         });
       } catch (_) {}
 
-      // 5. Persist to Firebase RTDB
+      // Persist to Firebase RTDB
       const { writeDB } = await import('../firebase.js');
       writeDB('videos/' + vid + '/thumbnail',        storageUrl);
       writeDB('videos/' + vid + '/thumbnailUpdated', now);
