@@ -3,7 +3,7 @@
  * - generateCaption    (callable)  — TikTok caption generator
  * - processScheduledVideos (schedule, every 5 min) — activates scheduled videos
  * - sendFcmPush        (callable)  — FCM Web Push relay (Ticket 10)
- * - fetchTikTokThumb   (callable)  — TikTok oEmbed proxy (server-side, no CORS)
+ * - fetchTikTokThumb   (callable)  — TikTok oEmbed proxy (server-side, no CORS restriction)
  * Region: asia-southeast1
  */
 
