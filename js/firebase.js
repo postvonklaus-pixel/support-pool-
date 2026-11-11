@@ -36,7 +36,7 @@ export function initFirebase(onUpdate) {
 
   try {
     _db  = firebase.database(app);
-    _fns = firebase.functions(app);
+    _fns = firebase.app().functions('asia-southeast1'); // region must match Cloud Functions region
   } catch (e) {
     console.error('[firebase] SDK init failed:', e.message);
     return Promise.resolve();

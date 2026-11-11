@@ -34,7 +34,7 @@ jobs:
         if: steps.changes.outputs.functions != '0'
         uses: w9jds/firebase-action@master
         with:
-          args: deploy --only functions:generateCaption
+          args: deploy --only functions:generateCaption,functions:sendFcmPush,functions:processScheduledVideos
         env:
           GCP_SA_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
 
