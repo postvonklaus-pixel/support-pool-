@@ -54,7 +54,21 @@ export async function initFcm() {
       if (cu) writeDB(`members/${cu}/fcmToken`, token);
       _ready = true;
     }
-    messaging.onMessage(() => {}); // foreground: in-app notif already shown
+    // Foreground: app is open — show notification via SW so it looks identical
+    // to background pushes (native OS notification, not an in-app toast).
+    messaging.onMessage((payload) => {
+      const { title, body, icon } = payload.notification || {};
+      const data = payload.data || {};
+      navigator.serviceWorker.ready.then(swReg => {
+        swReg.showNotification(title || 'NOVA Support Pool', {
+          body:  body  || '',
+          icon:  icon  || '/support-pool-/icons/icon-192.png',
+          badge: '/support-pool-/icons/icon-192.png',
+          data,
+          tag:   data.tag || 'nova-push',
+        });
+      }).catch(() => {}); // silently ignore if SW unavailable
+    });
   } catch (e) {
     console.warn('[FCM] init failed:', e.message);
   }
