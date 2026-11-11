@@ -79,7 +79,7 @@
   align-items: center;
 }
 .login-top-logo img {
-  height: 36px;
+  height: 50px;
   width: auto;
   display: block;
   user-select: none;
@@ -170,16 +170,16 @@
   letter-spacing: 2.8px;
   text-transform: uppercase;
   color: var(--login-text-3);
-  margin-bottom: 18px;
+  margin-bottom: 4px;
 }
 
 /* ── Logo ────────────────────────────────────────────── */
 .login-logo {
   display: block;
   margin: 0 auto;
-  height: 72px;
-  width: auto;
-  max-width: min(72vw, 260px);
+  width: min(72vw, 280px);
+  height: auto;
+  object-fit: contain;
   user-select: none;
   -webkit-user-drag: none;
 }
@@ -201,7 +201,7 @@
 /* ── Subtitle ────────────────────────────────────────── */
 .login-subtitle {
   text-align: center;
-  margin-top: 6px;
+  margin-top: 0;
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 5.5px;
