@@ -1,8 +1,9 @@
 /**
- * Support Pool — Cloud Functions
- * - Caption Generator (v2 callable)
- * - Scheduled Video Poster (v2 scheduler, every 5 min)
- * - sendFcmPush (v2 callable) — Ticket 10: send FCM push to a device token
+ * Support Pool — Cloud Functions v2
+ * - generateCaption    (callable)  — TikTok caption generator
+ * - processScheduledVideos (schedule, every 5 min) — activates scheduled videos
+ * - sendFcmPush        (callable)  — FCM Web Push relay (Ticket 10)
+ * Region: asia-southeast1
  */
 
 const { onCall, HttpsError } = require("firebase-functions/v2/https");
