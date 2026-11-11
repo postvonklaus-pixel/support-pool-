@@ -1,23 +1,21 @@
 /**
- * Support Pool — Cloud Functions v2
+ * Support Pool — Cloud Functions (1st gen, Node 18)
  * - generateCaption    (callable)  — TikTok caption generator
  * - processScheduledVideos (schedule, every 5 min) — activates scheduled videos
- * - sendFcmPush        (callable)  — FCM Web Push relay (Ticket 10)
+ * - sendFcmPush        (callable)  — FCM Web Push relay
  * - fetchTikTokThumb   (callable)  — TikTok oEmbed proxy (server-side, no CORS restriction)
  * Region: asia-southeast1
  */
 
-const { onCall, HttpsError } = require("firebase-functions/v2/https");
-const { onSchedule }         = require("firebase-functions/v2/scheduler");
-const { setGlobalOptions }   = require("firebase-functions/v2");
+const functions = require("firebase-functions");
 const admin = require("firebase-admin");
 
 admin.initializeApp();
 const db = admin.firestore();
 
-setGlobalOptions({ region: "asia-southeast1", maxInstances: 10 });
+const REGION = "asia-southeast1";
 
-// ─── Static data from tiktapdown-mcp (MIT) ───────────────────────────────────
+// ─── Static data ──────────────────────────────────────────────────────────────
 
 const NICHES = {
   fitness: {
@@ -200,13 +198,13 @@ const HOOKS = {
   ],
 };
 
-// ─── Tool logic (mirrors tiktapdown-mcp tool implementations) ────────────────
+// ─── Tool logic ───────────────────────────────────────────────────────────────
 
 function getHashtags(niche) {
   const data = NICHES[niche];
   if (!data) {
     const available = Object.keys(NICHES).join(", ");
-    throw new HttpsError("invalid-argument", `Unknown niche '${niche}'. Available: ${available}`);
+    throw new functions.https.HttpsError("invalid-argument", `Unknown niche '${niche}'. Available: ${available}`);
   }
   return {
     niche,
@@ -221,43 +219,30 @@ function getHooks(category) {
   const data = HOOKS[category];
   if (!data) {
     const available = Object.keys(HOOKS).join(", ");
-    throw new HttpsError("invalid-argument", `Unknown hook category '${category}'. Available: ${available}`);
+    throw new functions.https.HttpsError("invalid-argument", `Unknown hook category '${category}'. Available: ${available}`);
   }
   return data.map(h => ({ formula: h.formula, tip: h.tip }));
 }
 
-// ─── Firebase Callable Function ────────────────────────────────────────────────
+// ─── generateCaption ──────────────────────────────────────────────────────────
 
-/**
- * generateCaption — callable from the client via firebase.functions().httpsCallable()
- *
- * Input:  { niche, hookCategory, topic, memberKey }
- * Output: { draftId, hashtags, hashtagString, hooks, caption, tips, createdAt }
- *
- * Saves a draft to Firestore at: caption_drafts/{draftId}
- */
-exports.generateCaption = onCall({ cors: true }, async (request) => {
-  const { niche, hookCategory, topic, memberKey } = request.data || {};
+exports.generateCaption = functions.region(REGION).https.onCall(async (data, context) => {
+  const { niche, hookCategory, topic, memberKey } = data || {};
 
   if (!niche || !hookCategory || !topic) {
-    throw new HttpsError("invalid-argument", "niche, hookCategory, and topic are required.");
+    throw new functions.https.HttpsError("invalid-argument", "niche, hookCategory, and topic are required.");
   }
   if (topic.length > 300) {
-    throw new HttpsError("invalid-argument", "topic must be 300 characters or fewer.");
+    throw new functions.https.HttpsError("invalid-argument", "topic must be 300 characters or fewer.");
   }
 
-  // ── get_tiktok_hashtags ──────────────────────────────────────────────────
-  const hashtagData = getHashtags(niche);
-
-  // ── generate_tiktok_hook ─────────────────────────────────────────────────
+  const hashtagData  = getHashtags(niche);
   const hookTemplates = getHooks(hookCategory);
 
-  // Build a ready-to-copy caption (hook line 1 + top 10 hashtags)
-  const topHook = hookTemplates[0].formula;
+  const topHook   = hookTemplates[0].formula;
   const top10tags = hashtagData.hashtags.slice(0, 10).map(h => `#${h}`).join(" ");
-  const caption = `${topHook}\n\n${topic}\n\n${top10tags}`;
+  const caption   = `${topHook}\n\n${topic}\n\n${top10tags}`;
 
-  // ── Save to Firestore ────────────────────────────────────────────────────
   const draft = {
     memberKey: memberKey || "anonymous",
     niche,
@@ -272,7 +257,7 @@ exports.generateCaption = onCall({ cors: true }, async (request) => {
     createdAt: admin.firestore.FieldValue.serverTimestamp(),
   };
 
-  let draftId = 'local';
+  let draftId = "local";
   try {
     const ref = await db.collection("caption_drafts").add(draft);
     draftId = ref.id;
@@ -290,17 +275,14 @@ exports.generateCaption = onCall({ cors: true }, async (request) => {
   };
 });
 
-// ─── Scheduled Video Poster ─────────────────────────────────────────────────
-//
-// Runs every 5 minutes (Asia/Jakarta = WIB).
-// For each member with a pendingUrl whose 12h cooldown has elapsed,
-// creates the video entry in the Realtime Database and clears pendingUrl.
+// ─── processScheduledVideos ───────────────────────────────────────────────────
 
-const R1_MS = 43200000; // 12h in ms
+const R1_MS = 43200000; // 12h
 
-exports.processScheduledVideos = onSchedule(
-  { schedule: "*/5 * * * *", timeZone: "Asia/Jakarta", region: "asia-southeast1" },
-  async () => {
+exports.processScheduledVideos = functions.region(REGION).pubsub
+  .schedule("*/5 * * * *")
+  .timeZone("Asia/Jakarta")
+  .onRun(async (context) => {
     const rtdb = admin.database();
     const now  = Date.now();
 
@@ -309,15 +291,15 @@ exports.processScheduledVideos = onSchedule(
       const members     = membersSnap.val() || {};
       const updates     = {};
 
-      // ── Part A: pendingUrl queue (legacy auto-post) ───────────────────────
+      // ── Part A: pendingUrl queue ──────────────────────────────────────────
       for (const [key, member] of Object.entries(members)) {
         if (!member.pendingUrl)  continue;
         if (!member.lastPost)    continue;
         if ((now - member.lastPost) < R1_MS) continue;
 
-        const vid      = "v" + now + "_" + key.substring(0, 4);
-        const isFirst  = (member.postsTotal || 0) === 0;
-        let   grpNum   = 1;
+        const vid     = "v" + now + "_" + key.substring(0, 4);
+        const isFirst = (member.postsTotal || 0) === 0;
+        let grpNum    = 1;
 
         if (member.group) {
           const gs = await rtdb.ref("sp6/groups/" + member.group + "/number").once("value");
@@ -353,10 +335,7 @@ exports.processScheduledVideos = onSchedule(
       }
 
       // ── Part B: status:'scheduled' videos whose scheduledFor has elapsed ──
-      // These are created by the client post modal when the user picks a future
-      // time slot. Without this server-side check they only activate when a
-      // logged-in client runs the 15s tick (not reliable for inactive pools).
-      const BAL_LIMIT = -10;
+      const BAL_LIMIT  = -10;
       const videosSnap = await rtdb.ref("sp6/videos").once("value");
       const videos     = videosSnap.val() || {};
 
@@ -365,9 +344,8 @@ exports.processScheduledVideos = onSchedule(
         if (!v.scheduledFor)          continue;
         if (v.scheduledFor > now)     continue;
 
-        const owner     = v.ownerKey || v.owner;
+        const owner = v.ownerKey || v.owner;
         if (!owner)                   continue;
-        // Skip if already queued by Part A above (same vidId key)
         if (updates["sp6/videos/" + vidId]) continue;
 
         const ownerData  = members[owner] || {};
@@ -407,36 +385,20 @@ exports.processScheduledVideos = onSchedule(
       console.error("processScheduledVideos error:", err);
       throw err;
     }
-  }
-);
+  });
 
-// ─── FCM Push Sender (Ticket 10) ────────────────────────────────────────────
-//
-// Called by the client whenever it needs to push a notification to another
-// (or the same) device. The client looks up the recipient's fcmToken from
-// RTDB and passes it here; this function sends via admin.messaging().
-//
-// Input:  { token, title, body?, data? }
-// Output: { success: true }
+// ─── fetchTikTokThumb ─────────────────────────────────────────────────────────
 
-// ─── TikTok Thumbnail Fetcher ─────────────────────────────────────────────────
-//
-// Proxies TikTok oEmbed server-side to avoid browser CORS restrictions.
-// TikTok does not send CORS headers, so direct browser fetches always fail.
-//
-// Input:  { url }   — full TikTok video URL
-// Output: { thumbnailUrl, title, authorName } or { thumbnailUrl: null }
-
-exports.fetchTikTokThumb = onCall({ cors: true }, async (request) => {
-  const { url } = request.data || {};
-  if (!url || !url.includes('tiktok.com')) {
-    throw new HttpsError('invalid-argument', 'A tiktok.com URL is required');
+exports.fetchTikTokThumb = functions.region(REGION).https.onCall(async (data, context) => {
+  const { url } = data || {};
+  if (!url || !url.includes("tiktok.com")) {
+    throw new functions.https.HttpsError("invalid-argument", "A tiktok.com URL is required");
   }
 
   try {
-    const oembedUrl = 'https://www.tiktok.com/oembed?url=' + encodeURIComponent(url);
+    const oembedUrl = "https://www.tiktok.com/oembed?url=" + encodeURIComponent(url);
     const res = await fetch(oembedUrl, {
-      headers: { 'Accept': 'application/json', 'User-Agent': 'Mozilla/5.0' },
+      headers: { "Accept": "application/json", "User-Agent": "Mozilla/5.0" },
       signal: AbortSignal.timeout(8000),
     });
     if (!res.ok) return { thumbnailUrl: null };
@@ -447,34 +409,35 @@ exports.fetchTikTokThumb = onCall({ cors: true }, async (request) => {
       authorName:   d.author_name  || null,
     };
   } catch (err) {
-    console.warn('[fetchTikTokThumb]', err.message);
+    console.warn("[fetchTikTokThumb]", err.message);
     return { thumbnailUrl: null };
   }
 });
 
-exports.sendFcmPush = onCall({ cors: true }, async (request) => {
-  const { token, title, body, data } = request.data || {};
+// ─── sendFcmPush ──────────────────────────────────────────────────────────────
+
+exports.sendFcmPush = functions.region(REGION).https.onCall(async (payload, context) => {
+  const { token, title, body, data } = payload || {};
   if (!token || !title) {
-    throw new HttpsError('invalid-argument', 'token and title are required');
+    throw new functions.https.HttpsError("invalid-argument", "token and title are required");
   }
 
   try {
     await admin.messaging().send({
       token,
-      notification: { title, body: body || '' },
+      notification: { title, body: body || "" },
       data: data || {},
       webpush: {
         notification: {
-          icon:  'https://support-pool.web.app/support-pool-/icons/icon-192.png',
-          badge: 'https://support-pool.web.app/support-pool-/icons/icon-192.png',
+          icon:  "https://support-pool.web.app/support-pool-/icons/icon-192.png",
+          badge: "https://support-pool.web.app/support-pool-/icons/icon-192.png",
         },
-        fcmOptions: { link: 'https://support-pool.web.app/support-pool-/' },
+        fcmOptions: { link: "https://support-pool.web.app/support-pool-/" },
       },
     });
     return { success: true };
   } catch (err) {
-    console.error('[sendFcmPush]', err.message);
-    // Don't throw — a stale token (NOT_REGISTERED) is not a client error
+    console.error("[sendFcmPush]", err.message);
     return { success: false, reason: err.code || err.message };
   }
 });
