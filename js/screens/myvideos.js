@@ -77,44 +77,11 @@ export function render() {
   // Countdown updates handled by global startCountdownTicker() in main.js
 }
 
-// ── Ticket 6: 24h Expire Warning Banner ───────────────────
-function _renderExpireBanner(cu, myVids) {
-  const myKey  = cu.toLowerCase();
-  const u      = state.db.members?.[cu] || state.db.members?.[myKey] || {};
-  const weeklyGiven = u.weeklyGiven || 0;
-  const bal    = (u.stats?.given || 0) - (u.stats?.received || 0);
-  const safe   = weeklyGiven >= 3 || bal >= 0;
-
-  // Find warned video and clear flag from RTDB if obligation is met
-  const warnedEntry = Object.entries(state.db.videos || {}).find(([, v]) =>
-    v.warned24h &&
-    v.status !== 'done' && v.status !== 'expired' && v.status !== 'scheduled' &&
-    (v.ownerKey || v.owner || '').toLowerCase() === myKey
-  );
-  if (!warnedEntry) return '';
-
-  if (safe) {
-    writeDB(`videos/${warnedEntry[0]}/warned24h`, null);
-    return '';
-  }
-
-  const warned = warnedEntry[1];
-
-  const now       = Date.now();
-  const posted    = warned.postedAt || 0;
-  const expiresAt = warned.expiresAt || Math.max(getNextFridayWIB(), posted + 86400000);
-  const timeLeft  = Math.max(0, expiresAt - now);
-  const hLeft     = Math.max(1, Math.ceil(timeLeft / 3600000));
-  const bannerTxt = (t('notifExpireWarn24h') || '⚠️ Dein Video wird in {h}h entfernt. Supporte 3 Videos, um es zu halten.')
-    .replace('{h}', hLeft);
-
-  return `
-    <div class="expire-warn-banner">
-      <div class="expire-warn-banner__text">${esc(bannerTxt)}</div>
-      <button class="btn btn--warning btn--sm expire-warn-banner__btn" data-action="myvid:expirewarn:cta">
-        ${t('expireWarnCta') || 'Jetzt 3 Videos supporten →'}
-      </button>
-    </div>`;
+// ── Ticket 6: 24h Expire Warning Banner — disabled ────────
+// Banner removed: warning logic had persistent bugs (inverted condition,
+// never cleared). FCM push notification still fires correctly.
+function _renderExpireBanner(_cu, _myVids) {
+  return '';
 }
 
 // ── Status-Card (B2.3) ─────────────────────────────────────
