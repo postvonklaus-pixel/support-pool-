@@ -202,15 +202,10 @@ function _videoCard(v, locked = false) {
   const thumbSrc = v.thumbnail;
   const vidTitle = v.videoTitle;
 
-  // Lazily fetch thumbnail from TikTok oEmbed if missing or stale (browser-side, no IP blocking).
-  // Also retry proxy/placeholder URLs — wsrv.nl and tikwm.com CDN are blocked in browsers.
-  const thumbIsProxy = thumbSrc && (
-    thumbSrc.includes('wsrv.nl') ||
-    thumbSrc.includes('tikwm.com')
-  );
+  // Lazily fetch thumbnail via Vercel proxy if missing or stale (re-fetch after 20h, CDN URLs expire).
+  const thumbIsStale = thumbSrc && thumbSrc.includes('wsrv.nl'); // legacy bad CDN
   const thumbNeedsRefresh = !thumbSrc
-    || thumbSrc.startsWith('data:')
-    || thumbIsProxy
+    || thumbIsStale
     || !v.thumbnailUpdated
     || v.thumbnailUpdated < Date.now() - 20 * 3600000;
   if (thumbNeedsRefresh) {
