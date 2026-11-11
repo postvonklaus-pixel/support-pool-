@@ -4,7 +4,7 @@
 
 import { state }    from '../state.js';
 import { t }        from '../i18n.js';
-import { esc, timeAgo } from '../utils.js';
+import { esc, timeAgo, getNextFridayWIB } from '../utils.js';
 import { renderNotification } from '../features/notifications.js';
 import { on }       from '../events.js';
 import { writeDB }  from '../firebase.js';
@@ -93,7 +93,9 @@ function _renderExpireBanner(cu, myVids) {
   if (bal >= 0) return '';
 
   const now       = Date.now();
-  const timeLeft  = Math.max(0, (warned.expiresAt || (warned.postedAt || 0) + 86400000 * 8) - now);
+  const posted    = warned.postedAt || 0;
+  const expiresAt = warned.expiresAt || Math.max(getNextFridayWIB(), posted + 86400000);
+  const timeLeft  = Math.max(0, expiresAt - now);
   const hLeft     = Math.max(1, Math.ceil(timeLeft / 3600000));
   const bannerTxt = (t('notifExpireWarn24h') || '⚠️ Dein Video wird in {h}h entfernt. Supporte 3 Videos, um es zu halten.')
     .replace('{h}', hLeft);

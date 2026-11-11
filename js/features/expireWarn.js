@@ -29,7 +29,8 @@ function _wouldBeLocked(cu) {
   if (!u) return false;
   const given = u.stats?.given    || 0;
   const recv  = u.stats?.received || 0;
-  return (given - recv) >= BAL_LOCK;
+  // Locked when received MORE than given (in debt) — same logic as posting.js bal < 0
+  return (recv - given) >= BAL_LOCK;
 }
 
 export function checkExpireWarnings() {
