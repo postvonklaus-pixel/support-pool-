@@ -1,0 +1,174 @@
+/* ═══════════════════════════════════════════════════════
+   NOVA AI Bubble + Admin Modal
+   ═══════════════════════════════════════════════════════ */
+
+/* ── Nova bubble ─────────────────────────────────────── */
+.nova-bubble-row {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 6px 12px;
+  margin: 4px 0;
+}
+
+.nova-badge {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #a855f7;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 2px;
+}
+
+.nova-bubble {
+  position: relative;
+  background: linear-gradient(135deg, #1e1b4b 0%, #2d1b69 100%);
+  border: 1.5px solid rgba(168, 85, 247, 0.5);
+  border-radius: 4px 16px 16px 16px;
+  padding: 10px 14px;
+  max-width: 82%;
+  color: #e9d5ff;
+  font-size: var(--text-sm, 14px);
+  line-height: 1.5;
+  box-shadow: 0 0 12px rgba(168, 85, 247, 0.18);
+}
+
+.nova-bubble::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(135deg, rgba(168,85,247,0.08), transparent);
+  pointer-events: none;
+}
+
+.nova-bubble-time {
+  font-size: 10px;
+  color: var(--text-secondary, #9ca3af);
+  padding: 0 2px;
+}
+
+/* Light mode adjustments */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) .nova-bubble {
+    background: linear-gradient(135deg, #f3e8ff 0%, #ede9fe 100%);
+    border-color: rgba(139, 92, 246, 0.4);
+    color: #3b0764;
+    box-shadow: 0 0 12px rgba(139, 92, 246, 0.12);
+  }
+  :root:not([data-theme="dark"]) .nova-badge { color: #7c3aed; }
+}
+:root[data-theme="light"] .nova-bubble {
+  background: linear-gradient(135deg, #f3e8ff 0%, #ede9fe 100%);
+  border-color: rgba(139, 92, 246, 0.4);
+  color: #3b0764;
+}
+:root[data-theme="light"] .nova-badge { color: #7c3aed; }
+
+/* ── Admin 🪄 button ─────────────────────────────────── */
+.nova-wand-btn {
+  width: 36px; height: 36px;
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  border: 1.5px solid rgba(168, 85, 247, 0.4);
+  border-radius: var(--radius-full, 9999px);
+  background: none;
+  font-size: 17px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  line-height: 1;
+}
+.nova-wand-btn:hover {
+  background: rgba(168, 85, 247, 0.12);
+  border-color: rgba(168, 85, 247, 0.7);
+}
+.nova-wand-btn:active { transform: scale(0.93); }
+
+/* ── Nova admin modal ────────────────────────────────── */
+.nova-modal { display: flex; flex-direction: column; gap: 14px; }
+
+.nova-modal__label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 4px;
+}
+
+.nova-modal__field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.nova-modal textarea,
+.nova-modal select {
+  width: 100%;
+  padding: 9px 12px;
+  border-radius: var(--radius-md, 10px);
+  border: 1.5px solid var(--border-subtle, rgba(255,255,255,0.1));
+  background: var(--bg-glass, rgba(255,255,255,0.06));
+  color: var(--text-primary);
+  font-size: 14px;
+  font-family: inherit;
+  resize: none;
+  box-sizing: border-box;
+}
+.nova-modal textarea:focus,
+.nova-modal select:focus {
+  outline: none;
+  border-color: rgba(168, 85, 247, 0.6);
+}
+
+.nova-modal__preview {
+  min-height: 60px;
+  padding: 10px 12px;
+  border-radius: var(--radius-md, 10px);
+  background: linear-gradient(135deg, rgba(30,27,75,0.5), rgba(45,27,105,0.5));
+  border: 1px dashed rgba(168, 85, 247, 0.4);
+  color: #e9d5ff;
+  font-size: 14px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+.nova-modal__preview--empty {
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+.nova-modal__actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.nova-modal__btn {
+  flex: 1;
+  padding: 10px 16px;
+  border-radius: var(--radius-md, 10px);
+  border: none;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.nova-modal__btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.nova-modal__btn--generate {
+  background: linear-gradient(135deg, #7c3aed, #a855f7);
+  color: #fff;
+}
+.nova-modal__btn--post {
+  background: linear-gradient(135deg, #d97706, #f59e0b);
+  color: #fff;
+}
+.nova-modal__btn--discard {
+  background: var(--bg-glass, rgba(255,255,255,0.08));
+  color: var(--text-secondary);
+  border: 1px solid var(--border-subtle);
+  flex: 0 0 auto;
+}
