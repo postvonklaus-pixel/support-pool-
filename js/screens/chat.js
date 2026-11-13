@@ -5,7 +5,7 @@
 
 import { state }    from '../state.js';
 import { t }        from '../i18n.js';
-import { esc, timeAgo, avatarGradient } from '../utils.js';
+import { esc, timeAgo, avatarGradient, fbDec } from '../utils.js';
 import { on }       from '../events.js';
 import { writeDB }  from '../firebase.js';
 import { emptyState } from '../components/empty-state.js';
@@ -221,7 +221,7 @@ function _poolBubble(m, cu, { roomKey = '' } = {}) {
 
   const isMe     = m.from === cu;
   const u        = state.db.members?.[m.from] || {};
-  const name     = u.name || m.from || '?';
+  const name     = u.name || fbDec(m.from) || '?';
   const grad     = avatarGradient(m.from || '');
   const initials = (m.from || '?').slice(0, 2).toUpperCase();
   const textHtml = esc(m.text || '').replace(/\n/g, '<br>');

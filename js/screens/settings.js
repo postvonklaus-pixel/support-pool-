@@ -4,7 +4,7 @@
 
 import { state }       from '../state.js';
 import { t }           from '../i18n.js';
-import { esc, avatarGradient } from '../utils.js';
+import { esc, avatarGradient, fbDec } from '../utils.js';
 import { on }          from '../events.js';
 import { writeDB }     from '../firebase.js';
 import { setTheme, getTheme } from '../features/theme.js';
@@ -102,8 +102,8 @@ export function render() {
       <div class="settings-user-card card--glass">
         <div class="settings-user-card__avatar" style="background:${gradient}">${initial}</div>
         <div class="settings-user-card__info">
-          <div class="settings-user-card__name">${esc(u.name || cu || '–')}</div>
-          <div class="settings-user-card__handle">@${esc(cu || '–')}</div>
+          <div class="settings-user-card__name">${esc(u.name || fbDec(cu) || '–')}</div>
+          <div class="settings-user-card__handle">@${esc(fbDec(cu) || '–')}</div>
           ${tl ? `<div class="settings-user-card__trust" style="color:${tl.color}">${tl.icon} ${tl.label}</div>` : ''}
         </div>
         <div class="settings-user-card__stats">
@@ -206,7 +206,7 @@ export function render() {
             <div class="settings-row-item__icon">👤</div>
             <div class="settings-row-item__body">
               <div class="settings-row-item__label">${t('settingsLoggedAs')}</div>
-              <div class="settings-row-item__sub">@${esc(cu || '–')}</div>
+              <div class="settings-row-item__sub">@${esc(fbDec(cu) || '–')}</div>
             </div>
           </div>
           <div class="settings-group__divider"></div>
