@@ -10,6 +10,8 @@ import { on }       from '../events.js';
 import { writeDB }  from '../firebase.js';
 import { emptyState } from '../components/empty-state.js';
 import { getOnlineCount } from '../features/presence.js';
+import { openModal, closeModal } from '../components/modal.js';
+import { toast } from '../components/toast.js';
 
 let _chatTab        = 'pool';  // 'pool' | 'dm'
 let _dmPartner      = null;    // username of open DM thread
@@ -200,6 +202,7 @@ function _renderPool(cu, msgs) {
         data-action="chat:pool:input"
         autocomplete="off"
       ></textarea>
+      ${state.db.members?.[cu]?.role === 'admin' ? `<button type="button" class="nova-wand-btn" data-action="chat:nova:open" aria-label="Nova KI" title="Nova KI fragen">🪄</button>` : ''}
       <button type="submit" class="chat-send-btn" aria-label="${t('chatSend') || 'Senden'}">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
       </button>
@@ -208,6 +211,17 @@ function _renderPool(cu, msgs) {
 }
 
 function _poolBubble(m, cu, { roomKey = '' } = {}) {
+  // Nova AI bot messages — special purple bubble
+  if (m.from === 'nova-bot' || m.type === 'nova') {
+    return `
+      <div class="nova-bubble-row">
+        <div class="nova-badge">👑 NOVA</div>
+        <div class="nova-bubble">${esc(m.text || '').replace(/\n/g, '<br>')}</div>
+        <div class="nova-bubble-time">${m.ts ? timeAgo(m.ts, state.lang) : ''}</div>
+      </div>
+    `;
+  }
+
   // System messages (Tickets 2+3) — no avatar, no reply, no reactions
   if (m.type === 'system') {
     return `
@@ -487,6 +501,10 @@ function _sendPool(cu) {
   }
   _scrollToBottom();
   input.focus();
+
+  // Nova auto-pilot: check trigger words
+  const senderLang = state.db.members?.[cu]?.lang || state.lang || 'de';
+  import('../features/nova.js').then(m => m.checkAutoTrigger(text, 'pool', senderLang));
 }
 
 function _sendDM(cu, partner) {
@@ -654,4 +672,120 @@ function _registerHandlers(cu) {
     writeDB(path, null);
     _rerenderMessages();
   });
+
+  // ── Nova KI Modal ──────────────────────────────────────
+  on('chat:nova:open', () => {
+    openModal({
+      id:    'nova-modal',
+      title: '👑 Nova KI',
+      body:  _buildNovaModal(),
+    });
+    setTimeout(() => document.getElementById('nova-context')?.focus(), 100);
+  });
+
+  on('chat:nova:generate', async () => {
+    const ctxEl   = document.getElementById('nova-context');
+    const instrEl = document.getElementById('nova-instruct');
+    const langEl  = document.getElementById('nova-lang');
+    const preEl   = document.getElementById('nova-preview');
+    const genBtn  = document.getElementById('nova-gen-btn');
+    if (!ctxEl || !preEl) return;
+
+    const ctx   = ctxEl.value.trim();
+    if (!ctx) { toast('Bitte einen Kontext eingeben', 'warning'); return; }
+
+    const adminKey = state.db?.settings?.nova?.adminKey;
+    if (!adminKey) {
+      toast(t('novaKeyMissing') || 'Nova-Key fehlt. Bitte Worker-URL + Key in Firebase eintragen.', 'error', 5000);
+      return;
+    }
+
+    if (genBtn) { genBtn.disabled = true; genBtn.textContent = t('novaGenerating') || 'Generiere…'; }
+    if (preEl) { preEl.textContent = ''; preEl.classList.add('nova-modal__preview--empty'); }
+
+    const { callNova } = await import('../features/nova.js');
+    const reply = await callNova(ctx, instrEl?.value?.trim() || '', langEl?.value || '', adminKey);
+
+    if (genBtn) { genBtn.disabled = false; genBtn.textContent = t('novaGenerate') || '✨ Nova generieren'; }
+
+    if (!reply) {
+      toast(t('novaErrorToast') || 'Nova-Fehler — Worker nicht erreichbar', 'error');
+      return;
+    }
+
+    if (preEl) {
+      preEl.textContent = reply;
+      preEl.classList.remove('nova-modal__preview--empty');
+      preEl.dataset.reply = reply;
+    }
+    const postBtn = document.getElementById('nova-post-btn');
+    if (postBtn) postBtn.disabled = false;
+  });
+
+  on('chat:nova:post', async () => {
+    const preEl = document.getElementById('nova-preview');
+    const reply = preEl?.dataset?.reply || preEl?.textContent?.trim();
+    if (!reply) return;
+
+    const { postAsNova } = await import('../features/nova.js');
+    await postAsNova(reply, 'pool');
+    closeModal('nova-modal');
+    toast(t('novaPostedToast') || 'Nova hat geantwortet 👑', 'success');
+  });
+
+  on('chat:nova:discard', () => closeModal('nova-modal'));
+}
+
+function _buildNovaModal() {
+  const LANGS = [
+    { v: '', l: '🌍 Auto (Sprache der Frage)' },
+    { v: 'Deutsch', l: 'Deutsch' },
+    { v: 'English', l: 'English' },
+    { v: 'Bahasa Indonesia', l: 'Bahasa Indonesia' },
+    { v: 'Italiano', l: 'Italiano' },
+    { v: 'Español', l: 'Español' },
+    { v: 'Türkçe', l: 'Türkçe' },
+    { v: 'العربية', l: 'العربية' },
+    { v: '中文', l: '中文' },
+    { v: '日本語', l: '日本語' },
+    { v: 'Polski', l: 'Polski' },
+  ];
+  return `
+    <div class="nova-modal">
+      <div class="nova-modal__field">
+        <div class="nova-modal__label">${t('novaContextLabel') || 'Kontext / Frage'}</div>
+        <textarea id="nova-context" rows="3" maxlength="600"
+          placeholder="z.B. Warum verliere ich Views?"></textarea>
+      </div>
+      <div class="nova-modal__field">
+        <div class="nova-modal__label">${t('novaInstructLabel') || 'Zusätzliche Anweisung (optional)'}</div>
+        <textarea id="nova-instruct" rows="2" maxlength="300"
+          placeholder="z.B. Antworte motivierend, max. 2 Sätze"></textarea>
+      </div>
+      <div class="nova-modal__field">
+        <div class="nova-modal__label">${t('novaLangLabel') || 'Antwortsprache'}</div>
+        <select id="nova-lang">
+          ${LANGS.map(l => `<option value="${esc(l.v)}">${esc(l.l)}</option>`).join('')}
+        </select>
+      </div>
+      <div class="nova-modal__preview nova-modal__preview--empty" id="nova-preview"
+           data-reply="">
+        ${t('novaPreviewEmpty') || 'Nova-Antwort erscheint hier…'}
+      </div>
+      <div class="nova-modal__actions">
+        <button class="nova-modal__btn nova-modal__btn--generate" id="nova-gen-btn"
+          data-action="chat:nova:generate">
+          ${t('novaGenerate') || '✨ Nova generieren'}
+        </button>
+        <button class="nova-modal__btn nova-modal__btn--post" id="nova-post-btn"
+          data-action="chat:nova:post" disabled>
+          ${t('novaPost') || '👑 Als Nova posten'}
+        </button>
+        <button class="nova-modal__btn nova-modal__btn--discard"
+          data-action="chat:nova:discard">
+          ${t('novaDiscard') || 'Verwerfen'}
+        </button>
+      </div>
+    </div>
+  `;
 }
