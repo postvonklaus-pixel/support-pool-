@@ -213,7 +213,7 @@ function _poolBubble(m, cu, { roomKey = '' } = {}) {
     return `
       <div class="sys-msg" role="status">
         <span class="sys-msg__line"></span>
-        <span class="sys-msg__text">${esc(m.text || '')}</span>
+        <span class="sys-msg__text">${esc(fbDec(m.text || ''))}</span>
         <span class="sys-msg__line"></span>
       </div>
     `;

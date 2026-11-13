@@ -73,11 +73,12 @@ export function postNewMemberActivity(username) {
 
 // ── Helpers ───────────────────────────────────────────────
 function _supportText(supporters, owner) {
-  if (supporters.length === 1)
-    return `🎉 @${supporters[0]} hat @${owner} supportet`;
-  if (supporters.length === 2)
-    return `🎉 @${supporters[0]} und @${supporters[1]} haben @${owner} supportet`;
-  return `🎉 @${supporters[0]}, @${supporters[1]} und ${supporters.length - 2} weitere haben @${owner} supportet`;
+  const names = supporters.map(s => _displayName(s));
+  if (names.length === 1)
+    return `🎉 @${names[0]} hat @${owner} supportet`;
+  if (names.length === 2)
+    return `🎉 @${names[0]} und @${names[1]} haben @${owner} supportet`;
+  return `🎉 @${names[0]}, @${names[1]} und ${names.length - 2} weitere haben @${owner} supportet`;
 }
 
 function _displayName(key) {
