@@ -25,8 +25,9 @@
   color: var(--text-primary);
   line-height: 1;
 }
-.pool-status-item__val--sm  { font-size: var(--text-sm); font-weight: var(--weight-semibold); }
+.pool-status-item__val--sm    { font-size: var(--text-sm); font-weight: var(--weight-semibold); }
 .pool-status-item__val--flame { font-size: var(--text-base); }
+.pool-status-item__val--bal   { font-size: var(--text-xl); font-weight: var(--weight-black); font-family: var(--font-display); line-height: 1; transition: color .3s; }
 .pool-status-item__label {
   font-size: 10px;
   font-weight: var(--weight-medium);

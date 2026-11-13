@@ -53,7 +53,7 @@ export function render() {
   const todaySupports = _todaySupports(cu);
 
   el.innerHTML = `
-    ${_poolStatusBar(openVideos.length, todaySupports, u)}
+    ${_poolStatusBar(openVideos.length, todaySupports, u, bal)}
     <div class="weekly-reset-chip" id="home-weekly-chip">${_weeklyCountdownText()}</div>
 
     <div class="home-tabs" role="tablist">
@@ -91,7 +91,7 @@ export function render() {
 }
 
 // ── Pool Status Bar ────────────────────────────────────────
-function _poolStatusBar(openCount, todaySupports, u) {
+function _poolStatusBar(openCount, todaySupports, u, bal) {
   const streak   = _currentStreak(u);
   const health   = _poolHealth(openCount);
   const activity = openCount > 8 ? 'busy' : openCount > 2 ? 'active' : 'quiet';
@@ -134,6 +134,11 @@ function _poolStatusBar(openCount, todaySupports, u) {
         <div class="pool-status-item__val pool-status-item__val--flame">🔥${streak}</div>
         <div class="pool-status-item__label">${t('statStreak')}</div>
       </div>` : ''}
+      <div class="pool-status-divider"></div>
+      <div class="pool-status-item" id="home-bal-item">
+        <div class="pool-status-item__val pool-status-item__val--bal" style="color:${bal >= 0 ? 'var(--success, #22c55e)' : 'var(--danger, #ef4444)'}">${bal >= 0 ? '+' : ''}${bal}</div>
+        <div class="pool-status-item__label">${t('balance') || 'Guthaben'}</div>
+      </div>
     </div>
   `;
 }
