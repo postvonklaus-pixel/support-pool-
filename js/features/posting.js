@@ -72,6 +72,11 @@ export function openPostModal() {
   const cu = state.currentUser;
   if (!cu) return;
   const u     = state.db.members?.[cu] || {};
+  const given = u.stats?.given || 0;
+  if (given === 0) {
+    toast(t('newMemberGate') || '🎯 Support 1 video first, then you can post your own.', 'info', 5000);
+    return;
+  }
   const queue = _myQueueVideos(cu);
   if (queue.length > 0) {
     _openQueueManager(cu, u, queue);
