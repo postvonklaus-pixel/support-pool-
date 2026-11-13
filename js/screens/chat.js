@@ -334,7 +334,7 @@ function _renderDMList(cu, threads) {
 // ── DM Thread ──────────────────────────────────────────────
 function _renderDMThread(el, cu, partner) {
   const u       = state.db.members?.[partner] || {};
-  const name    = u.name || partner;
+  const name    = u.name || fbDec(partner);
   const grad    = avatarGradient(partner);
   const roomKey = [cu, partner].sort().join('__');
   const msgs    = _dmMessages(cu, partner);

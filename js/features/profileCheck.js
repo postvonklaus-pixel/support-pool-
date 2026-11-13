@@ -4,7 +4,7 @@
 
 import { state }    from '../state.js';
 import { t }        from '../i18n.js';
-import { esc }      from '../utils.js';
+import { esc, fbDec } from '../utils.js';
 import { openModal, closeModal } from '../components/modal.js';
 import { toast }    from '../components/toast.js';
 import { on }       from '../events.js';
@@ -290,7 +290,7 @@ export async function drawStoryCanvas() {
   ctx.fillStyle = '#ffffff';
   ctx.textBaseline = 'middle';
   ctx.shadowColor = 'rgba(255,255,255,0.85)'; ctx.shadowBlur = 22;
-  const uname = '@' + (u.name || cu || '');
+  const uname = '@' + (u.name || fbDec(cu) || '');
   ctx.fillText(uname, cx, nameY);
   ctx.shadowBlur = 0;
 

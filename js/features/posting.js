@@ -332,14 +332,14 @@ export function checkScheduledVideos() {
     }
 
     writeDB(`videos/${vidId}/status`,  'open');
-    writeDB(`videos/${vidId}/postedAt`, now);
+    writeDB(`videos/${vidId}/postedAt`, v.scheduledFor || now);
     if (owner) writeDB(`members/${owner}/lastPost`, now);
 
     // Update local state immediately so re-render reflects 'open' without
     // waiting for the RTDB listener echo (prevents double-activation on next tick)
     if (state.db.videos?.[vidId]) {
       state.db.videos[vidId].status   = 'open';
-      state.db.videos[vidId].postedAt = now;
+      state.db.videos[vidId].postedAt = v.scheduledFor || now;
     }
 
     if (owner) addNotif(owner, '📹', '', 'postConfirm', { msgKey: 'schedPosted' });

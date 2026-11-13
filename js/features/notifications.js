@@ -6,7 +6,7 @@ import { state }   from '../state.js';
 import { writeDB } from '../firebase.js';
 import { toast }   from '../components/toast.js';
 import { openModal, closeModal } from '../components/modal.js';
-import { esc }     from '../utils.js';
+import { esc, fbDec } from '../utils.js';
 import { on }      from '../events.js';
 import { getAllLangs } from '../i18n.js';
 
@@ -48,7 +48,7 @@ export function delNotif(id) {
 export function openReply(toKey) {
   if (!toKey) return;
   const u    = state.db.members?.[toKey];
-  const name = u?.name || toKey;
+  const name = u?.name || fbDec(toKey);
 
   openModal({
     id: 'reply-modal',
