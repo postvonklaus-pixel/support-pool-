@@ -25,8 +25,8 @@ messaging.onBackgroundMessage((payload) => {
   const data = payload.data || {};
   self.registration.showNotification(title || 'NOVA Support Pool', {
     body:  body || '',
-    icon:  icon || '/support-pool-/icons/icon-192.png',
-    badge: '/support-pool-/icons/icon-192.png',
+    icon:  icon || '/icons/icon-192.png',
+    badge: '/icons/icon-192.png',
     data,
     tag:   data.tag || 'nova-push',
   });
@@ -34,10 +34,10 @@ messaging.onBackgroundMessage((payload) => {
 
 self.addEventListener('notificationclick', (e) => {
   e.notification.close();
-  const url = e.notification.data?.url || '/support-pool-/';
+  const url = e.notification.data?.url || '/';
   e.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then((cs) => {
-      const existing = cs.find(c => c.url.includes('/support-pool-/'));
+      const existing = cs.find(c => c.url.includes('autosocial.cc'));
       if (existing) return existing.focus();
       return clients.openWindow(url);
     })

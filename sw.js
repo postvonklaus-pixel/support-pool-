@@ -7,20 +7,20 @@
 const CACHE = 'nova-v76';
 
 const STATIC_CSS = [
-  '/support-pool-/css/tokens.css',
-  '/support-pool-/css/base.css',
-  '/support-pool-/css/components.css',
-  '/support-pool-/css/layout.css',
-  '/support-pool-/css/screens/login.css',
-  '/support-pool-/css/screens/dashboard.css',
-  '/support-pool-/css/screens/home.css',
-  '/support-pool-/css/screens/profile.css',
-  '/support-pool-/css/screens/admin.css',
-  '/support-pool-/css/screens/settings.css',
-  '/support-pool-/css/screens/myvideos.css',
-  '/support-pool-/css/screens/caption.css',
-  '/support-pool-/css/screens/chat.css',
-  '/support-pool-/css/components/video-preview.css',
+  '/css/tokens.css',
+  '/css/base.css',
+  '/css/components.css',
+  '/css/layout.css',
+  '/css/screens/login.css',
+  '/css/screens/dashboard.css',
+  '/css/screens/home.css',
+  '/css/screens/profile.css',
+  '/css/screens/admin.css',
+  '/css/screens/settings.css',
+  '/css/screens/myvideos.css',
+  '/css/screens/caption.css',
+  '/css/screens/chat.css',
+  '/css/components/video-preview.css',
 ];
 
 self.addEventListener('install', e => {
@@ -88,7 +88,7 @@ self.addEventListener('push', e => {
   e.waitUntil(
     self.registration.showNotification(data.title || 'NOVA Support Pool', {
       body: data.body || '',
-      icon: '/support-pool-/icons/icon-192.png',
+      icon: '/icons/icon-192.png',
       tag: data.tag || 'nova',
       data,
     })
@@ -97,5 +97,5 @@ self.addEventListener('push', e => {
 
 self.addEventListener('notificationclick', e => {
   e.notification.close();
-  e.waitUntil(clients.openWindow('/support-pool-/'));
+  e.waitUntil(clients.openWindow('/'));
 });

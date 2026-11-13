@@ -211,7 +211,7 @@ export async function drawStoryCanvas() {
     img.crossOrigin = 'anonymous';
     img.onload = () => { ctx.drawImage(img, 0, 0, W, H); resolve(); };
     img.onerror = () => { ctx.fillStyle = '#010008'; ctx.fillRect(0, 0, W, H); resolve(); };
-    img.src = '/support-pool-/assets/story-bg.jpg';
+    img.src = '/assets/story-bg.jpg';
   });
 
   ctx.textAlign = 'center';

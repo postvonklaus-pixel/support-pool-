@@ -62,8 +62,8 @@ export async function initFcm() {
       navigator.serviceWorker.ready.then(swReg => {
         swReg.showNotification(title || 'NOVA Support Pool', {
           body:  body  || '',
-          icon:  icon  || '/support-pool-/icons/icon-192.png',
-          badge: '/support-pool-/icons/icon-192.png',
+          icon:  icon  || '/icons/icon-192.png',
+          badge: '/icons/icon-192.png',
           data,
           tag:   data.tag || 'nova-push',
         });
@@ -75,7 +75,7 @@ export async function initFcm() {
 }
 
 // Send push to any pool member. Silent no-op if they have no FCM token.
-export async function sendPush(recipientKey, { title, body = '', tag = 'nova-push', url = '/support-pool-/' } = {}) {
+export async function sendPush(recipientKey, { title, body = '', tag = 'nova-push', url = '/' } = {}) {
   if (!_enabled()) return;
   if (!recipientKey || !title) return;
   const token = state.db.members?.[recipientKey]?.fcmToken;
