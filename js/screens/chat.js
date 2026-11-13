@@ -318,7 +318,7 @@ function _renderDMList(cu, threads) {
             ${online ? '<span class="dm-row__online"></span>' : ''}
           </div>
           <div class="dm-row__body">
-            <div class="dm-row__name">${esc(m.name || key)}</div>
+            <div class="dm-row__name">${esc(m.name || fbDec(key))}</div>
             <div class="dm-row__preview">${esc(lastMsg.slice(0, 48) || t('chatDMPreview'))}</div>
           </div>
           <div class="dm-row__aside">

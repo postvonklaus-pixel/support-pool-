@@ -4,7 +4,7 @@
 
 import { state }   from '../state.js';
 import { t }       from '../i18n.js';
-import { esc, avatarGradient, timeAgo } from '../utils.js';
+import { esc, avatarGradient, timeAgo, fbDec } from '../utils.js';
 import { on }      from '../events.js';
 import { writeDB } from '../firebase.js';
 import { toast }   from '../components/toast.js';
@@ -591,7 +591,7 @@ function _adminMemberRow(key, m) {
     </div>
     <div class="admin-member-row__body">
       <div class="admin-member-row__name">
-        ${esc(m.name || key)}${m.role==='admin'?' 👑':''}
+        ${esc(m.name || fbDec(key))}${m.role==='admin'?' 👑':''}
         ${inactive ? `<span class="badge badge--warning" style="margin-left:4px;font-size:10px">${t('memberInactive') || 'inaktiv'}</span>` : ''}
         ${banned   ? `<span class="badge badge--danger"  style="margin-left:4px;font-size:10px">🚫 gesperrt</span>` : ''}
       </div>

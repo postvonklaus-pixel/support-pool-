@@ -406,7 +406,8 @@ function _renderLeaderboardTab(cu) {
   const _streak = (m) => {
     const days = m.supportDays || m.activeDays || [];
     let n = 0; const d = new Date();
-    while (days.includes(d.toISOString().slice(0, 10))) { n++; d.setDate(d.getDate() - 1); }
+    if (!days.includes(_wibDateKey(d))) d.setDate(d.getDate() - 1);
+    while (days.includes(_wibDateKey(d))) { n++; d.setDate(d.getDate() - 1); }
     return n;
   };
 
@@ -436,9 +437,9 @@ function _renderLeaderboardTab(cu) {
           const badge = isVerified(state.db.members?.[m.key]) ? VERIFIED_BADGE : '';
           const s = _streak(m);
           return `<div class="lb-podium__place lb-podium__place--${orig + 1}">
-            <div class="lb-podium__avatar" style="background:${grad}">${(m.name || m.key || '?').slice(0,2).toUpperCase()}</div>
+            <div class="lb-podium__avatar" style="background:${grad}">${(m.name || fbDec(m.key) || '?').slice(0,2).toUpperCase()}</div>
             <div class="lb-podium__medal">${medals[orig]}</div>
-            <div class="lb-podium__name">${esc((m.name || m.key || '').split(' ')[0])}${badge}</div>
+            <div class="lb-podium__name">${esc((m.name || fbDec(m.key) || '').split(' ')[0])}${badge}</div>
             ${s > 0 ? `<div class="lb-streak">🔥 ${s}</div>` : ''}
             <div class="lb-podium__score">${_score(m)}</div>
             <div class="lb-podium__bar" style="height:${podiumH[orig]}"></div>
@@ -455,8 +456,8 @@ function _renderLeaderboardTab(cu) {
           const s = _streak(m);
           return `<div class="lb-row${isMe ? ' lb-row--me' : ''}">
             <div class="lb-row__rank">${i + 4}</div>
-            <div class="lb-row__avatar" style="background:${grad}">${(m.name || m.key || '?').slice(0,2).toUpperCase()}</div>
-            <div class="lb-row__name">${esc(m.name || m.key || '?')}${badge}${isMe ? ` <span class="lb-row__you">${t('lbYou')}</span>` : ''}${s > 0 ? ` <span class="lb-streak">🔥 ${s}</span>` : ''}</div>
+            <div class="lb-row__avatar" style="background:${grad}">${(m.name || fbDec(m.key) || '?').slice(0,2).toUpperCase()}</div>
+            <div class="lb-row__name">${esc(m.name || fbDec(m.key) || '?')}${badge}${isMe ? ` <span class="lb-row__you">${t('lbYou')}</span>` : ''}${s > 0 ? ` <span class="lb-streak">🔥 ${s}</span>` : ''}</div>
             <div class="lb-row__score">${_score(m)}</div>
           </div>`;
         }).join('')}
@@ -504,13 +505,18 @@ function _todaySupports(cu) {
   return Math.max(cnt, 1);
 }
 
+function _wibDateKey(d) {
+  return new Date(d.getTime() + 7 * 3600000).toISOString().slice(0, 10);
+}
+
 function _currentStreak(u) {
   const days = u.supportDays || u.activeDays || [];
   let streak = 0;
   const d = new Date();
+  // supportDays are stored in WIB; allow today's grace if not yet supported today
+  if (!days.includes(_wibDateKey(d))) d.setDate(d.getDate() - 1);
   while (true) {
-    const key = d.toISOString().slice(0, 10);
-    if (!days.includes(key)) break;
+    if (!days.includes(_wibDateKey(d))) break;
     streak++;
     d.setDate(d.getDate() - 1);
   }

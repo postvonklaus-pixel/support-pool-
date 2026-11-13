@@ -87,7 +87,7 @@ async function run() {
         console.log(`  DELETE  ${vidId} (owner: ${owner}, balance: ${bal})`);
       } else {
         updates[`videos/${vidId}/status`]   = 'open';
-        updates[`videos/${vidId}/postedAt`] = now;
+        updates[`videos/${vidId}/postedAt`] = v.scheduledFor || now;
         if (owner) updates[`members/${owner}/lastPost`] = now;
         released++;
         console.log(`  RELEASE ${vidId} → open (owner: ${owner})`);
