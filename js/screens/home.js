@@ -4,7 +4,7 @@
 
 import { state }      from '../state.js';
 import { t }          from '../i18n.js';
-import { esc, avatarGradient, timeAgo, fbDec } from '../utils.js';
+import { esc, avatarGradient, timeAgo, fbDec, copyToClipboard } from '../utils.js';
 import { on }         from '../events.js';
 import { startTimer } from '../components/timer.js';
 import { goalPill, balanceMeter, circularTimer, startCircularTimer } from '../components/progress.js';
@@ -13,6 +13,7 @@ import { emptyState } from '../components/empty-state.js';
 import { isVerified, VERIFIED_BADGE } from '../features/verification.js';
 import { isSupportLocked } from '../features/supportLock.js';
 import { getNextFridayWIB } from '../utils.js';
+import { toast } from '../components/toast.js';
 
 const R1_NEED = 10;
 const R2_NEED = 10;
@@ -242,7 +243,15 @@ function _videoCard(v, locked = false) {
             <span class="vc-owner-name">${trust}${verBadge} @${esc(owner)}</span>
           </div>
           ${vidTitle
-            ? `<div class="vc-title">${esc(vidTitle)}</div>`
+            ? `<div class="vc-caption" data-expanded="false">
+                <div class="vc-caption__text">${esc(vidTitle)}</div>
+                <div class="vc-caption__footer">
+                  <button class="vc-caption__more" data-action="caption:toggle">...mehr</button>
+                  <button class="vc-caption__copy" data-action="caption:copy" data-caption="${esc(vidTitle)}" title="${t('copy') || 'Kopieren'}">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                  </button>
+                </div>
+              </div>`
             : `<div class="vc-url-row">
                 <span class="feed-card__url-icon">${isTikTok ? _ttIcon() : _linkIcon()}</span>
                 <span class="vc-url-text">${esc(urlShort)}${urlShort.length >= 38 ? '…' : ''}</span>
@@ -543,6 +552,20 @@ function _registerHandlers() {
   on('home:tab', (el) => {
     _tab = el.dataset.tab || 'feed';
     render();
+  });
+
+  on('caption:toggle', (el) => {
+    const wrap = el.closest('.vc-caption');
+    if (!wrap) return;
+    const expanded = wrap.dataset.expanded === 'true';
+    wrap.dataset.expanded = expanded ? 'false' : 'true';
+    el.textContent = expanded ? '...mehr' : (t('less') || 'weniger');
+  });
+
+  on('caption:copy', (el) => {
+    const text = el.dataset.caption || '';
+    if (!text) return;
+    copyToClipboard(text).then(() => toast(t('copied') || 'Kopiert! ✓', 'success', 1500));
   });
 }
 
