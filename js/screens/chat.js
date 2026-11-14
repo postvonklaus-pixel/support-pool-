@@ -704,20 +704,22 @@ function _registerHandlers(cu) {
     if (preEl) { preEl.textContent = ''; preEl.classList.add('nova-modal__preview--empty'); }
 
     const { callNova } = await import('../features/nova.js');
-    const reply = await callNova(ctx, instrEl?.value?.trim() || '', langEl?.value || '', adminKey);
+    const result = await callNova(ctx, instrEl?.value?.trim() || '', langEl?.value || '', adminKey);
 
     if (genBtn) { genBtn.disabled = false; genBtn.textContent = t('novaGenerate') || '✨ Nova generieren'; }
 
-    if (!reply) {
-      toast(t('novaErrorToast') || 'Nova-Fehler — Worker nicht erreichbar', 'error');
+    if (!result?.reply) {
+      toast('Nova-Fehler: ' + (result?.error || 'unbekannt'), 'error', 8000);
       return;
     }
 
     if (preEl) {
-      preEl.textContent = reply;
+      preEl.textContent = result.reply;
       preEl.classList.remove('nova-modal__preview--empty');
-      preEl.dataset.reply = reply;
+      preEl.dataset.reply = result.reply;
+      preEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
+    toast('✨ Nova bereit!', 'success', 3000);
     const postBtn = document.getElementById('nova-post-btn');
     if (postBtn) postBtn.disabled = false;
   });

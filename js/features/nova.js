@@ -19,18 +19,23 @@ function _workerUrl() {
 
 export async function callNova(message, instruction, targetLang, key) {
   const url = _workerUrl();
-  if (!url) return null;
+  if (!url) return { error: 'no-url' };
   try {
     const resp = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-nova-key': key },
       body: JSON.stringify({ message, instruction, targetLang }),
     });
-    if (!resp.ok) return null;
+    if (!resp.ok) {
+      let detail = '';
+      try { const d = await resp.json(); detail = d?.error || d?.detail?.error?.message || ''; } catch {}
+      return { error: `HTTP ${resp.status}${detail ? ': ' + detail : ''}` };
+    }
     const data = await resp.json();
-    return data.reply || null;
-  } catch {
-    return null;
+    if (!data.reply) return { error: 'empty-reply' };
+    return { reply: data.reply };
+  } catch (e) {
+    return { error: 'fetch-failed: ' + (e?.message || '?') };
   }
 }
 
@@ -65,7 +70,7 @@ export async function checkAutoTrigger(message, chatId, lang) {
   if (!state.db.settings.nova.lastAutoReply) state.db.settings.nova.lastAutoReply = {};
   state.db.settings.nova.lastAutoReply[chatId] = Date.now();
 
-  const reply = await callNova(message, '', lang || 'de', autoKey);
-  if (!reply) return;
-  await postAsNova(reply, chatId);
+  const result = await callNova(message, '', lang || 'de', autoKey);
+  if (!result?.reply) return;
+  await postAsNova(result.reply, chatId);
 }
