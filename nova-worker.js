@@ -83,6 +83,12 @@ export default {
         }),
       });
       const data = await geminiResp.json();
+      if (!geminiResp.ok) {
+        return new Response(JSON.stringify({ error: 'Gemini error', status: geminiResp.status, detail: data }), {
+          status: 502,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders(origin) },
+        });
+      }
       reply = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || '';
     } catch (e) {
       return new Response(JSON.stringify({ error: 'Gemini call failed', detail: e.message }), {
