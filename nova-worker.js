@@ -70,35 +70,54 @@ export default {
     const instrHint = instruction.trim() ? `\nZusätzliche Anweisung: ${instruction.trim()}` : '';
     const userPrompt = `${message.trim()}${langHint}${instrHint}`;
 
-    // Call Gemini
+    // Call Gemini (with retry on empty response)
     let reply = '';
-    try {
-      const geminiResp = await fetch(`${GEMINI_URL}?key=${env.GEMINI_API_KEY}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          systemInstruction: { parts: [{ text: NOVA_SYSTEM }] },
-          contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
-          generationConfig: { maxOutputTokens: 256, temperature: 0.7 },
-        }),
-      });
-      const data = await geminiResp.json();
-      if (!geminiResp.ok) {
-        return new Response(JSON.stringify({ error: 'Gemini error', status: geminiResp.status, detail: data }), {
+    for (let attempt = 0; attempt < 2; attempt++) {
+      if (attempt > 0) await new Promise(r => setTimeout(r, 1500));
+      try {
+        const geminiResp = await fetch(`${GEMINI_URL}?key=${env.GEMINI_API_KEY}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            systemInstruction: { parts: [{ text: NOVA_SYSTEM }] },
+            contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
+            generationConfig: {
+              maxOutputTokens: 256,
+              temperature: 0.7,
+              thinkingConfig: { thinkingBudget: 0 },
+            },
+          }),
+        });
+        const data = await geminiResp.json();
+        if (!geminiResp.ok) {
+          return new Response(JSON.stringify({ error: 'Gemini error', status: geminiResp.status, detail: data }), {
+            status: 502,
+            headers: { 'Content-Type': 'application/json', ...corsHeaders(origin) },
+          });
+        }
+        // Find first non-thought text part
+        const parts = data?.candidates?.[0]?.content?.parts || [];
+        reply = parts.find(p => p.text && !p.thought)?.text?.trim() || '';
+        if (reply) break;
+        // Log why it's empty on last attempt
+        if (attempt === 1) {
+          const finishReason = data?.candidates?.[0]?.finishReason || 'unknown';
+          const blockReason  = data?.promptFeedback?.blockReason || 'none';
+          return new Response(JSON.stringify({ error: 'Empty Gemini response', finishReason, blockReason }), {
+            status: 502,
+            headers: { 'Content-Type': 'application/json', ...corsHeaders(origin) },
+          });
+        }
+      } catch (e) {
+        return new Response(JSON.stringify({ error: 'Gemini call failed', detail: e.message }), {
           status: 502,
           headers: { 'Content-Type': 'application/json', ...corsHeaders(origin) },
         });
       }
-      reply = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || '';
-    } catch (e) {
-      return new Response(JSON.stringify({ error: 'Gemini call failed', detail: e.message }), {
-        status: 502,
-        headers: { 'Content-Type': 'application/json', ...corsHeaders(origin) },
-      });
     }
 
     if (!reply) {
-      return new Response(JSON.stringify({ error: 'Empty Gemini response' }), {
+      return new Response(JSON.stringify({ error: 'Empty Gemini response after retry' }), {
         status: 502,
         headers: { 'Content-Type': 'application/json', ...corsHeaders(origin) },
       });
