@@ -20,6 +20,7 @@ function _workerUrl() {
 export async function callNova(message, instruction, targetLang, key) {
   const url = _workerUrl();
   if (!url) return { error: 'no-url' };
+  await new Promise(r => setTimeout(r, 100));
   try {
     const resp = await fetch(url, {
       method: 'POST',
