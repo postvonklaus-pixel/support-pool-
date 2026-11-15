@@ -26,7 +26,7 @@ export async function callNova(message, instruction, targetLang, key) {
     if (attempt > 0) await new Promise(r => setTimeout(r, 2000));
     try {
       const signal = typeof AbortSignal?.timeout === 'function'
-        ? AbortSignal.timeout(15000) : undefined;
+        ? AbortSignal.timeout(25000) : undefined;
       const resp = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-nova-key': key },
