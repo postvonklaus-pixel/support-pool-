@@ -21,23 +21,40 @@ export async function callNova(message, instruction, targetLang, key) {
   const url = _workerUrl();
   if (!url) return { error: 'no-url' };
   await new Promise(r => setTimeout(r, 100));
-  try {
-    const resp = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-nova-key': key },
-      body: JSON.stringify({ message, instruction, targetLang }),
-    });
-    if (!resp.ok) {
-      let detail = '';
-      try { const d = await resp.json(); detail = d?.error || d?.detail?.error?.message || ''; } catch {}
-      return { error: `HTTP ${resp.status}${detail ? ': ' + detail : ''}` };
+
+  for (let attempt = 0; attempt < 2; attempt++) {
+    if (attempt > 0) await new Promise(r => setTimeout(r, 2000));
+    try {
+      const signal = typeof AbortSignal?.timeout === 'function'
+        ? AbortSignal.timeout(15000) : undefined;
+      const resp = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-nova-key': key },
+        body: JSON.stringify({ message, instruction, targetLang }),
+        signal,
+      });
+      if (!resp.ok) {
+        let detail = '';
+        try {
+          const d = await resp.json();
+          detail = d?.detail?.error?.message
+            || (d?.detail ? `${d?.error || 'error'}: ${d.detail}` : d?.error)
+            || '';
+        } catch {}
+        return { error: `HTTP ${resp.status}${detail ? ': ' + detail : ''}` };
+      }
+      const data = await resp.json();
+      if (!data.reply) return { error: 'empty-reply' };
+      return { reply: data.reply };
+    } catch (e) {
+      const isTimeout = e?.name === 'TimeoutError' || e?.name === 'AbortError';
+      const isLoadFailed = (e?.message || '').includes('Load failed');
+      if (attempt === 0 && (isTimeout || isLoadFailed)) continue;
+      if (isTimeout) return { error: 'Timeout – bitte nochmal versuchen' };
+      return { error: 'fetch-failed: ' + (e?.message || '?') };
     }
-    const data = await resp.json();
-    if (!data.reply) return { error: 'empty-reply' };
-    return { reply: data.reply };
-  } catch (e) {
-    return { error: 'fetch-failed: ' + (e?.message || '?') };
   }
+  return { error: 'Timeout – bitte nochmal versuchen' };
 }
 
 export async function postAsNova(text, chatId = 'pool') {
