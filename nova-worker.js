@@ -5,8 +5,9 @@
               GEMINI_API_KEY=<dein key>
    ═══════════════════════════════════════════════════════ */
 
-const GEMINI_PRIMARY  = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent';
-const GEMINI_FALLBACK = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent';
+const GEMINI_PRIMARY   = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent';
+const GEMINI_FALLBACK1 = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent';
+const GEMINI_FALLBACK2 = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-8b:generateContent';
 
 const NOVA_SYSTEM = `Du bist Nova, die freundliche KI-Moderatorin des NOVA Support Pools auf TikTok.
 Dein Stil: motivierend, direkt, kurz (max. 3 Sätze), kein Jargon.
@@ -83,12 +84,12 @@ export default {
       generationConfig: { maxOutputTokens: 256, temperature: 0.7 },
     };
 
-    // 4 attempts: 3× primary model, then fallback; delays fit within 20s budget
+    // 4 attempts across 3 models (separate server pools); delays fit within 20s budget
     const ATTEMPTS = [
-      { url: GEMINI_PRIMARY,  delay: 0    },
-      { url: GEMINI_PRIMARY,  delay: 2000 },
-      { url: GEMINI_PRIMARY,  delay: 3000 },
-      { url: GEMINI_FALLBACK, delay: 2000 },
+      { url: GEMINI_PRIMARY,   delay: 0    },
+      { url: GEMINI_PRIMARY,   delay: 1500 },
+      { url: GEMINI_FALLBACK1, delay: 1000 },
+      { url: GEMINI_FALLBACK2, delay: 1000 },
     ];
     const BUDGET_MS = 19000;
     const startTime = Date.now();
