@@ -70,7 +70,6 @@ export default {
             generationConfig: {
               maxOutputTokens: 256,
               temperature: 0.7,
-              thinking_level: 'low',
             },
           }),
         });
