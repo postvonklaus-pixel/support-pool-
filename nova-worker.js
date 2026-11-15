@@ -5,7 +5,7 @@
               GEMINI_API_KEY=<dein key>
    ═══════════════════════════════════════════════════════ */
 
-const GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
+const GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
 
 const NOVA_SYSTEM = `Du bist Nova, die freundliche KI-Moderatorin des NOVA Support Pools auf TikTok.
 Dein Stil: motivierend, direkt, kurz (max. 3 Sätze), kein Jargon.
@@ -75,7 +75,8 @@ export default {
         });
         const data = await geminiResp.json();
         if (!geminiResp.ok) {
-          return new Response(JSON.stringify({ error: 'Gemini error', status: geminiResp.status, detail: data }), {
+          const geminiMsg = data?.error?.message || JSON.stringify(data);
+          return new Response(JSON.stringify({ error: `Gemini ${geminiResp.status}: ${geminiMsg}` }), {
             status: 502, headers: { 'Content-Type': 'application/json', ...corsHeaders() },
           });
         }
