@@ -5,9 +5,14 @@
               GEMINI_API_KEY=<dein key>
    ═══════════════════════════════════════════════════════ */
 
-const GEMINI_PRIMARY   = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent';
-const GEMINI_FALLBACK1 = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent';
-const GEMINI_FALLBACK2 = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-8b:generateContent';
+const GEMINI_BASE = 'https://generativelanguage.googleapis.com/v1beta/models/';
+// Model-hopping: each has its own server pool; 503/429 → next model immediately
+const MODELS = [
+  'gemini-3.5-flash-lite',  // primary: stable, low load
+  'gemini-3.8-flash',       // fallback 1
+  'gemini-2.5-flash-lite',  // fallback 2: older pool
+  'gemini-1.5-flash-8b',    // fallback 3: smallest, least overloaded
+];
 
 const NOVA_SYSTEM = `Du bist Nova, die freundliche KI-Moderatorin des NOVA Support Pools auf TikTok.
 Dein Stil: motivierend, direkt, kurz (max. 3 Sätze), kein Jargon.
@@ -84,27 +89,21 @@ export default {
       generationConfig: { maxOutputTokens: 256, temperature: 0.7 },
     };
 
-    // 4 attempts across 3 models (separate server pools); delays fit within 20s budget
-    const ATTEMPTS = [
-      { url: GEMINI_PRIMARY,   delay: 0    },
-      { url: GEMINI_PRIMARY,   delay: 1500 },
-      { url: GEMINI_FALLBACK1, delay: 1000 },
-      { url: GEMINI_FALLBACK2, delay: 1000 },
-    ];
-    const BUDGET_MS = 19000;
+    const BUDGET_MS = 18000;
     const startTime = Date.now();
 
     let reply = '';
     let lastErrType = '';
 
-    for (const { url, delay } of ATTEMPTS) {
+    for (const model of MODELS) {
       const elapsed = Date.now() - startTime;
-      // Skip if adding delay + minimum call time would exceed budget
-      if (elapsed + delay + 4000 > BUDGET_MS) break;
-      if (delay > 0) await new Promise(r => setTimeout(r, delay));
+      if (elapsed + 3000 > BUDGET_MS) {
+        console.log(`[nova] skip ${model}: budget exhausted (${elapsed}ms)`);
+        break;
+      }
 
       const callBudget = Math.min(8000, BUDGET_MS - (Date.now() - startTime) - 500);
-      if (callBudget < 2000) break;
+      const url = `${GEMINI_BASE}${model}:generateContent`;
 
       try {
         const geminiResp = await fetch(`${url}?key=${env.GEMINI_API_KEY}`, {
@@ -113,9 +112,16 @@ export default {
           body: JSON.stringify(payload),
           signal: AbortSignal.timeout(callBudget),
         });
-        const data = await geminiResp.json();
 
-        if (geminiResp.status === 503) { lastErrType = '503'; continue; }
+        console.log(`[nova] ${model} → ${geminiResp.status} (${Date.now() - startTime}ms)`);
+
+        // Overload or rate-limit or model not found → try next immediately
+        if (geminiResp.status === 503 || geminiResp.status === 429 || geminiResp.status === 404) {
+          lastErrType = String(geminiResp.status);
+          continue;
+        }
+
+        const data = await geminiResp.json();
 
         if (!geminiResp.ok) {
           const geminiMsg = data?.error?.message || JSON.stringify(data);
@@ -135,8 +141,9 @@ export default {
         const finishReason = data?.candidates?.[0]?.finishReason || 'unknown';
         lastErrType = `empty:${finishReason}`;
       } catch (e) {
+        console.log(`[nova] ${model} → ${e.name} (${Date.now() - startTime}ms)`);
         if (e?.name === 'TimeoutError' || e?.name === 'AbortError') {
-          lastErrType = 'timeout'; continue;
+          lastErrType = 'timeout'; continue; // try next model on timeout too
         }
         return new Response(JSON.stringify({ error: 'Gemini call failed', detail: e.message }), {
           status: 502, headers: { 'Content-Type': 'application/json', ...corsHeaders() },
