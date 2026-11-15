@@ -32,22 +32,40 @@ export default {
       return new Response('Method not allowed', { status: 405 });
     }
 
-    const key = request.headers.get('x-nova-key') || '';
+    // Accept form-encoded (no CORS preflight) or JSON (fallback)
+    let key, message, instruction, targetLang;
+    const ct = request.headers.get('content-type') || '';
+    if (ct.includes('application/x-www-form-urlencoded') || ct.includes('multipart/form-data')) {
+      try {
+        const form = await request.formData();
+        key         = form.get('key')         || request.headers.get('x-nova-key') || '';
+        message     = form.get('message')     || '';
+        instruction = form.get('instruction') || '';
+        targetLang  = form.get('targetLang')  || '';
+      } catch {
+        return new Response(JSON.stringify({ error: 'Invalid form data' }), {
+          status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        });
+      }
+    } else {
+      let body;
+      try { body = await request.json(); } catch {
+        return new Response(JSON.stringify({ error: 'Invalid JSON' }), {
+          status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        });
+      }
+      key         = request.headers.get('x-nova-key') || body?.key || '';
+      message     = body?.message     || '';
+      instruction = body?.instruction || '';
+      targetLang  = body?.targetLang  || '';
+    }
+
     if (key !== env.NOVA_ADMIN_KEY && key !== env.NOVA_AUTO_KEY) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), {
         status: 401,
         headers: { 'Content-Type': 'application/json', ...corsHeaders() },
       });
     }
-
-    let body;
-    try { body = await request.json(); } catch {
-      return new Response(JSON.stringify({ error: 'Invalid JSON' }), {
-        status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() },
-      });
-    }
-
-    const { message = '', instruction = '', targetLang = '' } = body;
     if (!message.trim()) {
       return new Response(JSON.stringify({ error: 'Empty message' }), {
         status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() },
@@ -77,7 +95,11 @@ export default {
         const data = await geminiResp.json();
         if (!geminiResp.ok) {
           const geminiMsg = data?.error?.message || JSON.stringify(data);
-          return new Response(JSON.stringify({ error: `Gemini ${geminiResp.status}: ${geminiMsg}` }), {
+          const isRegionBlock = /location|region|not supported|user location/i.test(geminiMsg);
+          const errorOut = isRegionBlock
+            ? 'Nova: Region blockiert – bitte Support informieren'
+            : `Gemini ${geminiResp.status}: ${geminiMsg}`;
+          return new Response(JSON.stringify({ error: errorOut }), {
             status: 502, headers: { 'Content-Type': 'application/json', ...corsHeaders() },
           });
         }

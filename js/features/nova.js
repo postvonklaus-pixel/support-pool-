@@ -27,10 +27,12 @@ export async function callNova(message, instruction, targetLang, key) {
     try {
       const signal = typeof AbortSignal?.timeout === 'function'
         ? AbortSignal.timeout(25000) : undefined;
+      // Form-encoded avoids CORS preflight on iOS Safari (no custom headers, simple content-type)
+      const body = new URLSearchParams({ key, message, instruction: instruction || '', targetLang: targetLang || '' });
       const resp = await fetch(url, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-nova-key': key },
-        body: JSON.stringify({ message, instruction, targetLang }),
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: body.toString(),
         signal,
       });
       if (!resp.ok) {
