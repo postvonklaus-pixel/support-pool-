@@ -1,10 +1,8 @@
 /* ═══════════════════════════════════════════════════════
    Nova AI Worker — Cloudflare Workers
-   Deploy at: https://dash.cloudflare.com → Workers → Create
-   Set secrets in Worker Settings → Variables → Secrets:
-     NOVA_ADMIN_KEY  = nova2024
-     NOVA_AUTO_KEY   = 7758f239-31c4-4886-88ab-00056d2bb88b
-     GEMINI_API_KEY  = <your key from aistudio.google.com>
+   Variablen: NOVA_ADMIN_KEY=nova2024
+              NOVA_AUTO_KEY=7758f239-31c4-4886-88ab-00056d2bb88b
+              GEMINI_API_KEY=<dein key>
    ═══════════════════════════════════════════════════════ */
 
 const GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
@@ -29,7 +27,6 @@ export default {
     if (request.method === 'OPTIONS') {
       return new Response(null, { status: 204, headers: corsHeaders() });
     }
-
     if (request.method !== 'POST') {
       return new Response('Method not allowed', { status: 405 });
     }
@@ -45,16 +42,14 @@ export default {
     let body;
     try { body = await request.json(); } catch {
       return new Response(JSON.stringify({ error: 'Invalid JSON' }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() },
       });
     }
 
     const { message = '', instruction = '', targetLang = '' } = body;
     if (!message.trim()) {
       return new Response(JSON.stringify({ error: 'Empty message' }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders() },
       });
     }
 
@@ -82,8 +77,7 @@ export default {
         const data = await geminiResp.json();
         if (!geminiResp.ok) {
           return new Response(JSON.stringify({ error: 'Gemini error', status: geminiResp.status, detail: data }), {
-            status: 502,
-            headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+            status: 502, headers: { 'Content-Type': 'application/json', ...corsHeaders() },
           });
         }
         const parts = data?.candidates?.[0]?.content?.parts || [];
@@ -93,22 +87,19 @@ export default {
           const finishReason = data?.candidates?.[0]?.finishReason || 'unknown';
           const blockReason  = data?.promptFeedback?.blockReason || 'none';
           return new Response(JSON.stringify({ error: 'Empty Gemini response', finishReason, blockReason }), {
-            status: 502,
-            headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+            status: 502, headers: { 'Content-Type': 'application/json', ...corsHeaders() },
           });
         }
       } catch (e) {
         return new Response(JSON.stringify({ error: 'Gemini call failed', detail: e.message }), {
-          status: 502,
-          headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+          status: 502, headers: { 'Content-Type': 'application/json', ...corsHeaders() },
         });
       }
     }
 
     if (!reply) {
       return new Response(JSON.stringify({ error: 'Empty Gemini response after retry' }), {
-        status: 502,
-        headers: { 'Content-Type': 'application/json', ...corsHeaders() },
+        status: 502, headers: { 'Content-Type': 'application/json', ...corsHeaders() },
       });
     }
 
