@@ -5,7 +5,7 @@
               GEMINI_API_KEY=<dein key>
    ═══════════════════════════════════════════════════════ */
 
-const GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
+const GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent';
 
 const NOVA_SYSTEM = `Du bist Nova, die freundliche KI-Moderatorin des NOVA Support Pools auf TikTok.
 Dein Stil: motivierend, direkt, kurz (max. 3 Sätze), kein Jargon.
@@ -70,6 +70,7 @@ export default {
             generationConfig: {
               maxOutputTokens: 256,
               temperature: 0.7,
+              thinking_level: 'low',
             },
           }),
         });
