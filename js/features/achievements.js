@@ -7,6 +7,7 @@ import { t }       from '../i18n.js';
 import { writeDB } from '../firebase.js';
 import { toast }   from '../components/toast.js';
 import { confetti } from '../components/confetti.js';
+import { isVerified } from './verification.js';
 
 const ACH_DEFS = [
   { id: 'first_support',  icon: '🎉', key: 'achFirst',    cond: u => (u.stats?.given || 0) >= 1 },
@@ -23,6 +24,7 @@ const ACH_DEFS = [
   { id: 'balance_10',     icon: '💰', key: 'achBal10',    cond: u => { const g = u.stats?.given||0; const r = u.stats?.received||0; return (g-r)>=10; }},
   { id: 'early_bird',     icon: '🌅', key: 'achEarlyBird',cond: () => new Date().getHours() < 8 },
   { id: 'night_owl',      icon: '🦉', key: 'achNightOwl', cond: () => new Date().getHours() >= 23 },
+  { id: 'verified',       icon: '✅', key: null,           title: 'Verifiziert',  cond: u => isVerified(u) },
 ];
 
 function _achievTitle(def) {

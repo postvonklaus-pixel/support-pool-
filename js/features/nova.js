@@ -10,7 +10,7 @@
 import { state }  from '../state.js';
 import { writeDB } from '../firebase.js';
 
-const TRIGGER_WORDS = ['hilfe', 'algorithmus', 'views', 'support', 'squad', 'shadowban', 'engagement', 'help', 'ayuda', 'yardım', 'مساعدة', '帮助', 'hjälp', 'pomoc'];
+const TRIGGER_WORDS = ['hilfe', 'algorithmus', 'views', 'support', 'squad', 'shadowban', 'engagement', 'help', 'ayuda', 'yardım', 'مساعدة', '帮助', 'hjälp', 'pomoc', 'aiuto', 'bantuan', 'ヘルプ'];
 const RATE_MS = 10 * 60 * 1000; // 10 min per chat room
 
 function _workerUrl() {

@@ -389,7 +389,7 @@ function tick() {
   // Skip if a modal/dialog is open
   if (document.querySelector('.modal.active, [role="dialog"]:not([hidden])')) return;
   // Skip if a FAQ item is expanded
-  if (document.querySelector('.faq-item.open')) return;
+  if (document.querySelector('.faq-item--open')) return;
   // Skip on settings screen to prevent scroll-jump
   const activeScreen = document.querySelector('.screen.active');
   if (activeScreen?.id === 'screen-settings') return;

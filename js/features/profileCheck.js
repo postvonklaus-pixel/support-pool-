@@ -158,8 +158,9 @@ function _buildStoryHTML(cu, u, given, activeLast7, memberDays) {
   setTimeout(() => drawStoryCanvas(), 80);
   return `
     <p style="color:var(--text-secondary);font-size:13px;margin-bottom:16px">${esc(hint)}</p>
-    <canvas id="pc-story-canvas" width="1080" height="1920"
-      style="width:100%;border-radius:16px;border:1px solid var(--border-subtle);display:block;margin-bottom:16px"></canvas>
+    <div style="max-height:50vh;overflow:hidden;border-radius:16px;border:1px solid var(--border-subtle);margin-bottom:16px">
+      <canvas id="pc-story-canvas" width="1080" height="1920" style="width:100%;display:block"></canvas>
+    </div>
     <button class="btn btn--gold btn--full" data-action="story:save">
       📥 ${t('storySave') || 'Bild speichern'}
     </button>

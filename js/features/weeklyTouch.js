@@ -39,5 +39,6 @@ export function checkWeeklyTouch() {
   if (!u) return;
   if (u.lastWeeklyTouch === satDate) return; // already fired this Saturday
   writeDB(`members/${cu}/lastWeeklyTouch`, satDate);
+  if (state.db.members?.[cu]) state.db.members[cu].lastWeeklyTouch = satDate;
   fireWeeklyResetTouch(cu);
 }

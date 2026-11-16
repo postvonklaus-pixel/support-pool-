@@ -396,7 +396,20 @@ function _registerHandlers() {
     const open = item.classList.toggle('faq-item--open');
     if (ans)  ans.classList.toggle('hidden', !open);
     if (chev) chev.style.transform = open ? 'rotate(180deg)' : '';
-    if (open) _openFaqIds.add(id); else _openFaqIds.delete(id);
+    if (open) {
+      _openFaqIds.add(id);
+      document.querySelectorAll('.faq-item--open').forEach(other => {
+        if (other === item) return;
+        other.classList.remove('faq-item--open');
+        const oAns  = other.querySelector('.faq-item__a');
+        const oChev = other.querySelector('.faq-item__chevron');
+        if (oAns)  oAns.classList.add('hidden');
+        if (oChev) oChev.style.transform = '';
+        _openFaqIds.delete(other.id);
+      });
+    } else {
+      _openFaqIds.delete(id);
+    }
   });
 
   on('settings:bc:copy', (el) => {
