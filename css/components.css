@@ -286,11 +286,14 @@
   max-width: var(--max-w);
   margin: 0 var(--sp-4) var(--sp-4);
   max-height: 90vh;
+  max-height: 90svh; /* iOS Safari: excludes browser chrome from height calculation */
   background: var(--bg-elevated);
   border: 1px solid var(--border-default);
   border-radius: var(--radius-2xl) var(--radius-2xl) var(--radius-xl) var(--radius-xl);
   padding: var(--sp-6);
-  overflow-y: auto;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
   transform: translateY(40px);
   transition: transform var(--dur-slow) var(--ease-spring);
 }
@@ -301,6 +304,13 @@
   align-items: center;
   justify-content: space-between;
   margin-bottom: var(--sp-5);
+  flex-shrink: 0;
+}
+.modal__body {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+  -webkit-overflow-scrolling: touch;
 }
 .modal__title {
   font-size: var(--text-xl);
