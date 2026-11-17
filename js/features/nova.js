@@ -98,7 +98,7 @@ export async function checkAutoTrigger(message, chatId, lang) {
 
   novaIsTyping = true;
   window.dispatchEvent(new Event('nova:typing'));
-  const result = await callNova(message, '', lang || 'de', autoKey);
+  const result = await callNova(message, '', '', autoKey);
   novaIsTyping = false;
   window.dispatchEvent(new Event('nova:typing'));
   if (!result?.reply) return;
