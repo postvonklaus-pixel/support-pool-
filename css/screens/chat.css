@@ -772,3 +772,55 @@
   animation: reaction-bounce 0.45s var(--ease-spring, cubic-bezier(0.34, 1.56, 0.64, 1)) forwards;
 }
 
+/* ── Pinned banner: clickable body ───────────────────────── */
+.pinned-banner__body--link {
+  cursor: pointer;
+  flex: 1;
+  min-width: 0;
+  transition: opacity 0.15s;
+}
+.pinned-banner__body--link:hover { opacity: 0.8; }
+
+/* ── Pool messages wrapper (positions scroll button) ─────── */
+.pool-messages-wrap {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.pool-messages-wrap .pool-messages {
+  flex: 1;
+  min-height: 0;
+}
+
+/* ── Scroll-to-bottom button ─────────────────────────────── */
+@keyframes scroll-btn-in {
+  from { opacity: 0; transform: translateY(8px) scale(0.9); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.scroll-bottom-btn {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1.5px solid var(--border-subtle, rgba(255,255,255,0.12));
+  background: var(--bg-elevated, rgba(30,30,40,0.92));
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: transform 0.15s, opacity 0.15s;
+  animation: scroll-btn-in 0.2s ease-out;
+  z-index: 10;
+}
+.scroll-bottom-btn:hover { transform: scale(1.1); }
+.scroll-bottom-btn:active { transform: scale(0.93); }
+.scroll-bottom-btn[hidden] { display: none; }
+
