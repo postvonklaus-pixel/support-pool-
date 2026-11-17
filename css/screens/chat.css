@@ -435,7 +435,7 @@
 }
 .bubble--them .bubble-quote {
   border-left-color: var(--accent-primary);
-  background: rgba(255,255,255,0.04);
+  background: color-mix(in srgb, var(--accent-primary) 9%, transparent);
 }
 .bubble-quote__from {
   display: block;

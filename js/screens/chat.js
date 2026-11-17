@@ -56,7 +56,7 @@ function _clearTyping() {
 
 function _typingIndicatorHtml(cu) {
   // Nova typing takes priority
-  if (_novaTypingForUI && !_dmPartner) {
+  if (_novaTypingForUI) {
     return `<div class="typing-indicator typing-indicator--nova" id="typing-indicator">
       <span class="typing-dots"><span></span><span></span><span></span></span>
       <span class="typing-text">👑 NOVA tippt…</span>
