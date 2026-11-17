@@ -10,6 +10,8 @@
 import { state }  from '../state.js';
 import { writeDB } from '../firebase.js';
 
+export let novaIsTyping = false;
+
 const TRIGGER_WORDS = ['hilfe', 'algorithmus', 'views', 'support', 'squad', 'shadowban', 'engagement', 'help', 'ayuda', 'yardım', 'مساعدة', '帮助', 'hjälp', 'pomoc', 'aiuto', 'bantuan', 'ヘルプ'];
 const RATE_MS = 10 * 60 * 1000; // 10 min per chat room
 
@@ -59,10 +61,11 @@ export async function callNova(message, instruction, targetLang, key) {
   return { error: 'Timeout – bitte nochmal versuchen' };
 }
 
-export async function postAsNova(text, chatId = 'pool') {
+export async function postAsNova(text, chatId = 'pool', replyTo = null) {
   if (!text) return;
   const msgId = `nova_${Date.now()}`;
   const msg = { from: 'nova-bot', text, ts: Date.now(), type: 'nova' };
+  if (replyTo) msg.replyTo = { from: replyTo.from, text: (replyTo.text || '').slice(0, 80) };
   if (chatId === 'pool') {
     writeDB(`chat/pool/messages/${msgId}`, msg);
   }
@@ -90,7 +93,11 @@ export async function checkAutoTrigger(message, chatId, lang) {
   if (!state.db.settings.nova.lastAutoReply) state.db.settings.nova.lastAutoReply = {};
   state.db.settings.nova.lastAutoReply[chatId] = Date.now();
 
+  novaIsTyping = true;
+  window.dispatchEvent(new Event('nova:typing'));
   const result = await callNova(message, '', lang || 'de', autoKey);
+  novaIsTyping = false;
+  window.dispatchEvent(new Event('nova:typing'));
   if (!result?.reply) return;
   await postAsNova(result.reply, chatId);
 }

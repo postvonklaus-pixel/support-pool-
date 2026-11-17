@@ -19,6 +19,11 @@ let _skipNextRender = false;   // set after in-place send to skip DB-echo re-ren
 let _renderTimer    = null;    // debounce handle for DB-triggered re-renders
 let _replyTo        = null;    // { from, text } | null — pending reply context
 let _activeBubbleId = null;    // id of bubble whose action bar is open
+let _searchQuery    = '';      // current search filter
+let _searchIsOpen   = false;   // search bar visible
+let _novaTypingForUI = false;  // nova typing indicator state
+let _novaListenersAdded = false;
+let _kbHandlingAdded = false;
 
 const REACT_EMOJIS = ['👍','❤️','😂','😮','🔥','👏'];
 
@@ -50,6 +55,14 @@ function _clearTyping() {
 }
 
 function _typingIndicatorHtml(cu) {
+  // Nova typing takes priority
+  if (_novaTypingForUI && !_dmPartner) {
+    return `<div class="typing-indicator typing-indicator--nova" id="typing-indicator">
+      <span class="typing-dots"><span></span><span></span><span></span></span>
+      <span class="typing-text">👑 NOVA tippt…</span>
+    </div>`;
+  }
+
   const now   = Date.now();
   const STALE = 5000;
   let typers  = [];
@@ -68,12 +81,37 @@ function _typingIndicatorHtml(cu) {
   }
 
   if (!typers.length) return `<div class="typing-indicator typing-indicator--empty" id="typing-indicator"></div>`;
-  const names = typers.slice(0, 3).map(k => `@${esc(k)}`).join(', ');
+  const names = typers.slice(0, 3).map(k => `@${esc(fbDec(k))}`).join(', ');
   const verb  = typers.length === 1 ? 'tippt' : 'tippen';
   return `<div class="typing-indicator" id="typing-indicator">
     <span class="typing-dots"><span></span><span></span><span></span></span>
     <span class="typing-text">${names} ${verb}…</span>
   </div>`;
+}
+
+function _ensureNovaListeners() {
+  if (_novaListenersAdded) return;
+  _novaListenersAdded = true;
+  window.addEventListener('nova:typing', () => {
+    const cu = state.currentUser;
+    if (!cu) return;
+    import('../features/nova.js').then(m => {
+      _novaTypingForUI = m.novaIsTyping;
+      _patchTypingIndicator(cu);
+    });
+  });
+}
+
+function _setupKeyboardHandling() {
+  if (_kbHandlingAdded || !window.visualViewport) return;
+  _kbHandlingAdded = true;
+  const handler = () => {
+    const active = document.activeElement;
+    if (active?.id === 'chat-pool-input' || active?.id === 'chat-dm-input') {
+      requestAnimationFrame(_scrollToBottom);
+    }
+  };
+  window.visualViewport.addEventListener('resize', handler);
 }
 
 function _patchTypingIndicator(cu) {
@@ -138,6 +176,8 @@ export function render() {
   }
 
   _activeBubbleId = null;
+  _ensureNovaListeners();
+  _setupKeyboardHandling();
 
   const poolMsgs  = _poolMessages();
   const dmThreads = _dmThreads(cu);
@@ -182,14 +222,48 @@ function _renderPool(cu, msgs) {
   const onlineTxt   = onlineCount === 0
     ? '— niemand online'
     : `🟢 ${onlineCount} online`;
+  const isAdmin   = state.db.members?.[cu]?.role === 'admin';
+  const pinned    = state.db.chat?.pool?.pinned;
+
+  const pinnedHtml = pinned ? `
+    <div class="pinned-banner" id="pinned-banner">
+      <span class="pinned-banner__icon">📌</span>
+      <div class="pinned-banner__body">
+        <span class="pinned-banner__label">Angepinnte Nachricht</span>
+        <span class="pinned-banner__text">${esc((pinned.text || '').slice(0, 90))}</span>
+      </div>
+      ${isAdmin ? `<button class="pinned-banner__close" data-action="chat:pin:dismiss" aria-label="Entpinnen">✕</button>` : ''}
+    </div>
+  ` : '';
+
+  const searchBarHtml = _searchIsOpen ? `
+    <div class="chat-search-bar">
+      <svg class="chat-search-bar__icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="search" class="chat-search-input" id="chat-search-input"
+        placeholder="Nachrichten durchsuchen…"
+        value="${esc(_searchQuery)}"
+        data-action="chat:search:input"
+        autocomplete="off">
+      <button class="chat-search-bar__clear" data-action="chat:search:clear" aria-label="Suche schließen">✕</button>
+    </div>
+  ` : '';
+
+  const emptyMsg = _searchQuery
+    ? emptyState('🔍', 'Kein Treffer', `Keine Nachrichten mit „${esc(_searchQuery)}"`, { size: 'sm' })
+    : emptyState('💬', t('chatPoolEmpty'), t('chatPoolEmptySub'), { size: 'sm' });
 
   return `
     <div class="pool-chat-header">
       <span class="pool-online-badge" id="pool-online-count">${onlineTxt}</span>
+      <button class="pool-search-btn${_searchIsOpen ? ' pool-search-btn--active' : ''}" data-action="chat:search:toggle" aria-label="Suchen" title="Nachrichten durchsuchen">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      </button>
     </div>
+    ${searchBarHtml}
+    ${pinnedHtml}
     <div class="pool-messages" id="pool-messages">
       ${msgs.length === 0
-        ? emptyState('💬', t('chatPoolEmpty'), t('chatPoolEmptySub'), { size: 'sm' })
+        ? emptyMsg
         : msgs.map(m => _poolBubble(m, cu)).join('')
       }
     </div>
@@ -202,7 +276,7 @@ function _renderPool(cu, msgs) {
         data-action="chat:pool:input"
         autocomplete="off"
       ></textarea>
-      ${state.db.members?.[cu]?.role === 'admin' ? `<button type="button" class="nova-wand-btn" data-action="chat:nova:open" aria-label="Nova KI" title="Nova KI fragen">🪄</button>` : ''}
+      ${isAdmin ? `<button type="button" class="nova-wand-btn" data-action="chat:nova:open" aria-label="Nova KI" title="Nova KI fragen">🪄</button>` : ''}
       <button type="submit" class="chat-send-btn" aria-label="${t('chatSend') || 'Senden'}">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
       </button>
@@ -213,11 +287,27 @@ function _renderPool(cu, msgs) {
 function _poolBubble(m, cu, { roomKey = '' } = {}) {
   // Nova AI bot messages — special purple bubble
   if (m.from === 'nova-bot' || m.type === 'nova') {
+    const novaShowActions = m.id && _activeBubbleId === m.id;
+    const novaQuoteHtml = m.replyTo ? `
+      <div class="bubble-quote bubble-quote--nova">
+        <span class="bubble-quote__from">@${esc(fbDec(m.replyTo.from || ''))}</span>
+        <span class="bubble-quote__text">${esc((m.replyTo.text || '').slice(0, 60))}</span>
+      </div>
+    ` : '';
+    const novaActionsHtml = novaShowActions ? `
+      <div class="nova-bubble-actions">
+        <button class="bubble-action-reply" data-action="chat:reply" data-msg-from="NOVA" data-msg-text="${esc(m.text || '')}">↩ Antworten</button>
+      </div>
+    ` : '';
     return `
-      <div class="nova-bubble-row">
-        <div class="nova-badge">👑 NOVA</div>
-        <div class="nova-bubble">${esc(m.text || '').replace(/\n/g, '<br>')}</div>
-        <div class="nova-bubble-time">${m.ts ? timeAgo(m.ts, state.lang) : ''}</div>
+      <div class="nova-bubble-row" data-action="chat:bubble:tap" data-msg-id="${m.id || ''}">
+        <div class="nova-bubble-inner">
+          <div class="nova-badge">👑 NOVA</div>
+          ${novaQuoteHtml}
+          <div class="nova-bubble">${esc(m.text || '').replace(/\n/g, '<br>')}</div>
+          <div class="nova-bubble-time">${m.ts ? timeAgo(m.ts, state.lang) : ''}</div>
+        </div>
+        ${novaActionsHtml}
       </div>
     `;
   }
@@ -235,15 +325,16 @@ function _poolBubble(m, cu, { roomKey = '' } = {}) {
 
   const isMe     = m.from === cu;
   const u        = state.db.members?.[m.from] || {};
-  const name     = u.name || fbDec(m.from) || '?';
+  const fromDec  = fbDec(m.from || '');
+  const name     = u.name || fromDec || '?';
   const grad     = avatarGradient(m.from || '');
-  const initials = (m.from || '?').slice(0, 2).toUpperCase();
+  const initials = fromDec.slice(0, 2).toUpperCase() || '?';
   const textHtml = esc(m.text || '').replace(/\n/g, '<br>');
 
   // Reply quote block
   const quoteHtml = m.replyTo ? `
     <div class="bubble-quote">
-      <span class="bubble-quote__from">@${esc(m.replyTo.from || '')}</span>
+      <span class="bubble-quote__from">@${esc(fbDec(m.replyTo.from || ''))}</span>
       <span class="bubble-quote__text">${esc((m.replyTo.text || '').slice(0, 60))}</span>
     </div>
   ` : '';
@@ -251,20 +342,21 @@ function _poolBubble(m, cu, { roomKey = '' } = {}) {
   // Reactions row
   const reactHtml = _reactionsHtml(m, cu, roomKey);
 
-  // Action bar (emoji picker + reply + admin delete)
+  // Action bar (emoji picker + reply + pin + admin delete)
   const showActions = m.id && _activeBubbleId === m.id;
   const isAdmin = state.db.members?.[cu]?.role === 'admin';
   const actionsHtml = showActions ? `
     <div class="bubble-actions${isMe ? ' bubble-actions--me' : ''}">
       ${REACT_EMOJIS.map(e => `<button class="bubble-action-emoji" data-action="chat:react" data-msg-id="${m.id}" data-emoji="${e}" data-room-key="${roomKey}">${e}</button>`).join('')}
-      <button class="bubble-action-reply" data-action="chat:reply" data-msg-from="${esc(m.from || '')}" data-msg-text="${esc(m.text || '')}">↩</button>
+      <button class="bubble-action-reply" data-action="chat:reply" data-msg-from="${esc(fromDec)}" data-msg-text="${esc(m.text || '')}">↩</button>
+      ${isAdmin && !roomKey ? `<button class="bubble-action-pin" data-action="chat:pin" data-msg-id="${m.id}" data-msg-text="${esc((m.text || '').slice(0, 90))}" data-msg-from="${esc(fromDec)}" title="Anpinnen">📌</button>` : ''}
       ${isAdmin ? `<button class="bubble-action-delete" data-action="chat:msg:delete" data-msg-id="${m.id}" data-room-key="${roomKey}" title="Löschen">🗑</button>` : ''}
     </div>
   ` : '';
 
   return `
     <div class="bubble-row ${isMe ? 'bubble-row--me' : ''}">
-      ${!isMe ? `<div class="bubble-avatar" style="background:${grad}" title="@${esc(m.from || '')}">${initials}</div>` : ''}
+      ${!isMe ? `<div class="bubble-avatar" style="background:${grad}" title="@${esc(fromDec)}">${initials}</div>` : ''}
       <div class="bubble-col">
         ${!isMe ? `<div class="bubble-meta"><span class="bubble-username">@${esc(name)}</span><span class="bubble-time-inline">${m.ts ? timeAgo(m.ts, state.lang) : ''}</span></div>` : ''}
         <div class="bubble ${isMe ? 'bubble--me' : 'bubble--them'}"
@@ -404,11 +496,19 @@ function _renderDMThread(el, cu, partner) {
 // ── Data helpers ───────────────────────────────────────────
 function _poolMessages() {
   const raw = state.db.chat?.pool?.messages || {};
-  return Object.entries(raw)
+  let msgs = Object.entries(raw)
     .map(([id, m]) => ({ id, ...m }))
     .filter(m => m.text && (m.from || m.type === 'system'))
     .sort((a, b) => (a.ts || 0) - (b.ts || 0))
     .slice(-60);
+  if (_searchQuery) {
+    const q = _searchQuery.toLowerCase();
+    msgs = msgs.filter(m =>
+      (m.text || '').toLowerCase().includes(q) ||
+      fbDec(m.from || '').toLowerCase().includes(q)
+    );
+  }
+  return msgs;
 }
 
 function _dmMessages(cu, partner) {
@@ -631,13 +731,38 @@ function _registerHandlers(cu) {
       ? `chat/dm/${roomKey}/messages/${msgId}/reactions/${emoji}/${cu}`
       : `chat/pool/messages/${msgId}/reactions/${emoji}/${cu}`;
 
-    // Check current reaction state
     const already = roomKey
       ? !!state.db.chat?.dm?.[roomKey]?.messages?.[msgId]?.reactions?.[emoji]?.[cu]
       : !!state.db.chat?.pool?.messages?.[msgId]?.reactions?.[emoji]?.[cu];
 
+    // Optimistic update: mutate state.db immediately so re-render shows the change
+    const msgStore = roomKey
+      ? state.db.chat?.dm?.[roomKey]?.messages
+      : state.db.chat?.pool?.messages;
+    if (msgStore?.[msgId]) {
+      if (!msgStore[msgId].reactions) msgStore[msgId].reactions = {};
+      if (!msgStore[msgId].reactions[emoji]) msgStore[msgId].reactions[emoji] = {};
+      if (already) {
+        delete msgStore[msgId].reactions[emoji][cu];
+      } else {
+        msgStore[msgId].reactions[emoji][cu] = true;
+      }
+    }
+
     writeDB(path, already ? null : true);
     _rerenderMessages();
+
+    // Bounce animation on newly added reaction chip
+    if (!already) {
+      requestAnimationFrame(() => {
+        document.querySelectorAll(
+          `[data-action="chat:react"][data-msg-id="${msgId}"][data-emoji="${emoji}"]`
+        ).forEach(chip => {
+          chip.classList.add('reaction-chip--bounce');
+          setTimeout(() => chip.classList.remove('reaction-chip--bounce'), 500);
+        });
+      });
+    }
   });
 
   // ── Ticket 4: Reply ──────────────────────────────────────
@@ -729,13 +854,72 @@ function _registerHandlers(cu) {
     const reply = preEl?.dataset?.reply || preEl?.textContent?.trim();
     if (!reply) return;
 
-    const { postAsNova } = await import('../features/nova.js');
-    await postAsNova(reply, 'pool');
+    // Show nova typing for 1.5s before post appears
+    _novaTypingForUI = true;
+    _patchTypingIndicator(cu);
+
+    const pendingReply = _replyTo ? { ..._replyTo } : null;
+    if (_replyTo) {
+      _replyTo = null;
+      document.getElementById('reply-bar')?.remove();
+    }
+
     closeModal('nova-modal');
+
+    await new Promise(r => setTimeout(r, 1400));
+
+    const { postAsNova } = await import('../features/nova.js');
+    await postAsNova(reply, 'pool', pendingReply);
+
+    _novaTypingForUI = false;
+    _patchTypingIndicator(cu);
     toast(t('novaPostedToast') || 'Nova hat geantwortet 👑', 'success');
   });
 
   on('chat:nova:discard', () => closeModal('nova-modal'));
+
+  // ── Pin/Unpin message ────────────────────────────────────
+  on('chat:pin', (el) => {
+    const msgId   = el.dataset.msgId;
+    const msgText = el.dataset.msgText;
+    const msgFrom = el.dataset.msgFrom;
+    if (!msgId) return;
+    _activeBubbleId = null;
+    writeDB('chat/pool/pinned', { msgId, text: msgText, from: msgFrom, pinnedAt: Date.now() });
+    render();
+  });
+
+  on('chat:pin:dismiss', () => {
+    writeDB('chat/pool/pinned', null);
+    render();
+  });
+
+  // ── Chat Search ──────────────────────────────────────────
+  on('chat:search:toggle', () => {
+    _searchIsOpen = !_searchIsOpen;
+    if (!_searchIsOpen) _searchQuery = '';
+    render();
+    if (_searchIsOpen) {
+      requestAnimationFrame(() => document.getElementById('chat-search-input')?.focus());
+    }
+  });
+
+  on('chat:search:clear', () => {
+    _searchQuery  = '';
+    _searchIsOpen = false;
+    render();
+  });
+
+  on('chat:search:input', (el, e) => {
+    if (e.type !== 'input') return;
+    _searchQuery = el.value;
+    const msgsBox = document.getElementById('pool-messages');
+    if (!msgsBox) return;
+    const msgs = _poolMessages();
+    msgsBox.innerHTML = msgs.length === 0
+      ? emptyState('🔍', 'Kein Treffer', `Keine Nachrichten mit „${esc(_searchQuery)}"`, { size: 'sm' })
+      : msgs.map(m => _poolBubble(m, cu)).join('');
+  });
 }
 
 function _buildNovaModal() {
