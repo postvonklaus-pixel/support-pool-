@@ -606,11 +606,29 @@
   background: color-mix(in srgb, var(--accent-primary) 20%, transparent);
 }
 
-/* Nova quote in nova bubble */
+/* Nova quote in nova bubble — dark mode default (white values on dark gradient) */
 .bubble-quote--nova {
   border-left-color: rgba(255,255,255,0.35);
-  background: rgba(0,0,0,0.15);
+  background: rgba(0,0,0,0.20);
 }
+.bubble-quote--nova .bubble-quote__from { color: rgba(255,255,255,0.92); }
+.bubble-quote--nova .bubble-quote__text { color: rgba(255,255,255,0.68); }
+
+/* Light mode: dark purple values for visibility on #f3e8ff bubble */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) .bubble-quote--nova {
+    border-left-color: rgba(109,40,217,0.55);
+    background: rgba(109,40,217,0.11);
+  }
+  :root:not([data-theme="dark"]) .bubble-quote--nova .bubble-quote__from { color: #4c1d95; }
+  :root:not([data-theme="dark"]) .bubble-quote--nova .bubble-quote__text { color: rgba(76,29,149,0.72); }
+}
+:root[data-theme="light"] .bubble-quote--nova {
+  border-left-color: rgba(109,40,217,0.55);
+  background: rgba(109,40,217,0.11);
+}
+:root[data-theme="light"] .bubble-quote--nova .bubble-quote__from { color: #4c1d95; }
+:root[data-theme="light"] .bubble-quote--nova .bubble-quote__text { color: rgba(76,29,149,0.72); }
 
 /* ── Pin button in action bar ─────────────────────────────── */
 .bubble-action-pin {
