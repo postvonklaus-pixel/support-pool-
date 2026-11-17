@@ -176,6 +176,7 @@ export function render() {
   }
 
   _activeBubbleId = null;
+  _scrollBtnListenerAdded = false;
   _ensureNovaListeners();
   _setupKeyboardHandling();
 
@@ -213,6 +214,7 @@ export function render() {
     if (_replyTo) _showReplyBar();
     // Scroll to bottom only if we were already there
     if (atBottom) _scrollToBottom();
+    _setupScrollButton();
   }
 }
 
@@ -228,7 +230,8 @@ function _renderPool(cu, msgs) {
   const pinnedHtml = pinned ? `
     <div class="pinned-banner" id="pinned-banner">
       <span class="pinned-banner__icon">📌</span>
-      <div class="pinned-banner__body">
+      <div class="pinned-banner__body${pinned.msgId ? ' pinned-banner__body--link' : ''}"
+        ${pinned.msgId ? `data-action="chat:jump" data-msg-id="${esc(pinned.msgId)}"` : ''}>
         <span class="pinned-banner__label">Angepinnte Nachricht</span>
         <span class="pinned-banner__text">${esc((pinned.text || '').slice(0, 90))}</span>
       </div>
@@ -261,11 +264,16 @@ function _renderPool(cu, msgs) {
     </div>
     ${searchBarHtml}
     ${pinnedHtml}
-    <div class="pool-messages" id="pool-messages">
-      ${msgs.length === 0
-        ? emptyMsg
-        : msgs.map(m => _poolBubble(m, cu)).join('')
-      }
+    <div class="pool-messages-wrap" id="pool-messages-wrap">
+      <div class="pool-messages" id="pool-messages">
+        ${msgs.length === 0
+          ? emptyMsg
+          : msgs.map(m => _poolBubble(m, cu)).join('')
+        }
+      </div>
+      <button class="scroll-bottom-btn" id="scroll-bottom-btn" data-action="chat:scroll:bottom" hidden aria-label="Zum Ende scrollen">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
     </div>
     ${_typingIndicatorHtml(cu)}
     <form class="chat-input-bar" id="chat-pool-form" action="javascript:void(0)">
@@ -285,6 +293,8 @@ function _renderPool(cu, msgs) {
 }
 
 function _poolBubble(m, cu, { roomKey = '' } = {}) {
+  const isAdmin = state.db.members?.[cu]?.role === 'admin';
+
   // Nova AI bot messages — special purple bubble
   if (m.from === 'nova-bot' || m.type === 'nova') {
     const novaShowActions = m.id && _activeBubbleId === m.id;
@@ -299,6 +309,7 @@ function _poolBubble(m, cu, { roomKey = '' } = {}) {
     const novaActionsHtml = novaShowActions ? `
       <div class="nova-bubble-actions">
         <button class="bubble-action-reply" data-action="chat:reply" data-msg-id="${m.id || ''}" data-msg-from="NOVA" data-msg-text="${esc(m.text || '')}">↩ Antworten</button>
+        ${isAdmin && !roomKey ? `<button class="bubble-action-pin nova-pin-btn" data-action="chat:pin" data-msg-id="${m.id}" data-msg-text="${esc((m.text || '').slice(0, 90))}" data-msg-from="NOVA" title="Anpinnen">📌</button>` : ''}
       </div>
     ` : '';
     return `
@@ -348,7 +359,6 @@ function _poolBubble(m, cu, { roomKey = '' } = {}) {
 
   // Action bar (emoji picker + reply + pin + admin delete)
   const showActions = m.id && _activeBubbleId === m.id;
-  const isAdmin = state.db.members?.[cu]?.role === 'admin';
   const actionsHtml = showActions ? `
     <div class="bubble-actions${isMe ? ' bubble-actions--me' : ''}">
       ${REACT_EMOJIS.map(e => `<button class="bubble-action-emoji" data-action="chat:react" data-msg-id="${m.id}" data-emoji="${e}" data-room-key="${roomKey}">${e}</button>`).join('')}
@@ -655,6 +665,25 @@ function _scrollToBottom() {
   }));
 }
 
+let _scrollBtnListenerAdded = false;
+
+function _setupScrollButton() {
+  const box = document.getElementById('pool-messages');
+  const btn = document.getElementById('scroll-bottom-btn');
+  if (!box || !btn) return;
+  if (_scrollBtnListenerAdded) return;
+  _scrollBtnListenerAdded = true;
+  box.addEventListener('scroll', () => {
+    const fromBottom = box.scrollHeight - box.scrollTop - box.clientHeight;
+    if (btn) btn.hidden = fromBottom < 200;
+  }, { passive: true });
+}
+
+function _showScrollButton() {
+  const btn = document.getElementById('scroll-bottom-btn');
+  if (btn) btn.hidden = false;
+}
+
 // ── Handlers ───────────────────────────────────────────────
 function _registerHandlers(cu) {
   // iOS Safari only keeps keyboard open on form submit — not on button tap.
@@ -788,11 +817,10 @@ function _registerHandlers(cu) {
     document.getElementById('reply-bar')?.remove();
   });
 
-  // ── Jump to original message on quote click ───────────────
+  // ── Jump to original message on quote / banner click ────────
   on('chat:jump', (el) => {
     const msgId = el.dataset.msgId;
     if (!msgId) return;
-    // Find original bubble (regular or nova)
     const target = document.querySelector(
       `.bubble[data-msg-id="${CSS.escape(msgId)}"], .nova-bubble-row[data-msg-id="${CSS.escape(msgId)}"]`
     );
@@ -800,6 +828,12 @@ function _registerHandlers(cu) {
     target.scrollIntoView({ behavior: 'smooth', block: 'center' });
     target.classList.add('bubble--highlight');
     setTimeout(() => target.classList.remove('bubble--highlight'), 1600);
+    // Show scroll-to-bottom so user can return to current conversation
+    _showScrollButton();
+  });
+
+  on('chat:scroll:bottom', () => {
+    _scrollToBottom();
   });
 
   // ── Admin: delete message ────────────────────────────────
