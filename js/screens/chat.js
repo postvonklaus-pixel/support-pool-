@@ -288,15 +288,17 @@ function _poolBubble(m, cu, { roomKey = '' } = {}) {
   // Nova AI bot messages — special purple bubble
   if (m.from === 'nova-bot' || m.type === 'nova') {
     const novaShowActions = m.id && _activeBubbleId === m.id;
-    const novaQuoteHtml = m.replyTo ? `
-      <div class="bubble-quote bubble-quote--nova">
+    const novaQuoteHtml = m.replyTo ? (() => {
+      const qId  = m.replyTo.msgId || '';
+      const qAct = qId ? `data-action="chat:jump" data-msg-id="${qId}"` : '';
+      return `<div class="bubble-quote bubble-quote--nova${qId ? ' bubble-quote--link' : ''}" ${qAct}>
         <span class="bubble-quote__from">@${esc(fbDec(m.replyTo.from || ''))}</span>
         <span class="bubble-quote__text">${esc((m.replyTo.text || '').slice(0, 60))}</span>
-      </div>
-    ` : '';
+      </div>`;
+    })() : '';
     const novaActionsHtml = novaShowActions ? `
       <div class="nova-bubble-actions">
-        <button class="bubble-action-reply" data-action="chat:reply" data-msg-from="NOVA" data-msg-text="${esc(m.text || '')}">↩ Antworten</button>
+        <button class="bubble-action-reply" data-action="chat:reply" data-msg-id="${m.id || ''}" data-msg-from="NOVA" data-msg-text="${esc(m.text || '')}">↩ Antworten</button>
       </div>
     ` : '';
     return `
@@ -331,13 +333,15 @@ function _poolBubble(m, cu, { roomKey = '' } = {}) {
   const initials = fromDec.slice(0, 2).toUpperCase() || '?';
   const textHtml = esc(m.text || '').replace(/\n/g, '<br>');
 
-  // Reply quote block
-  const quoteHtml = m.replyTo ? `
-    <div class="bubble-quote">
+  // Reply quote block — clickable if original message ID is known
+  const quoteHtml = m.replyTo ? (() => {
+    const qId  = m.replyTo.msgId || '';
+    const qAct = qId ? `data-action="chat:jump" data-msg-id="${qId}"` : '';
+    return `<div class="bubble-quote${qId ? ' bubble-quote--link' : ''}" ${qAct}>
       <span class="bubble-quote__from">@${esc(fbDec(m.replyTo.from || ''))}</span>
       <span class="bubble-quote__text">${esc((m.replyTo.text || '').slice(0, 60))}</span>
-    </div>
-  ` : '';
+    </div>`;
+  })() : '';
 
   // Reactions row
   const reactHtml = _reactionsHtml(m, cu, roomKey);
@@ -348,7 +352,7 @@ function _poolBubble(m, cu, { roomKey = '' } = {}) {
   const actionsHtml = showActions ? `
     <div class="bubble-actions${isMe ? ' bubble-actions--me' : ''}">
       ${REACT_EMOJIS.map(e => `<button class="bubble-action-emoji" data-action="chat:react" data-msg-id="${m.id}" data-emoji="${e}" data-room-key="${roomKey}">${e}</button>`).join('')}
-      <button class="bubble-action-reply" data-action="chat:reply" data-msg-from="${esc(fromDec)}" data-msg-text="${esc(m.text || '')}">↩</button>
+      <button class="bubble-action-reply" data-action="chat:reply" data-msg-id="${m.id || ''}" data-msg-from="${esc(fromDec)}" data-msg-text="${esc(m.text || '')}">↩</button>
       ${isAdmin && !roomKey ? `<button class="bubble-action-pin" data-action="chat:pin" data-msg-id="${m.id}" data-msg-text="${esc((m.text || '').slice(0, 90))}" data-msg-from="${esc(fromDec)}" title="Anpinnen">📌</button>` : ''}
       ${isAdmin ? `<button class="bubble-action-delete" data-action="chat:msg:delete" data-msg-id="${m.id}" data-room-key="${roomKey}" title="Löschen">🗑</button>` : ''}
     </div>
@@ -585,6 +589,7 @@ function _sendPool(cu) {
 
   if (_replyTo) {
     msg.replyTo = { from: _replyTo.from, text: _replyTo.text.slice(0, 80) };
+    if (_replyTo.msgId) msg.replyTo.msgId = _replyTo.msgId;
     _replyTo = null;
     document.getElementById('reply-bar')?.remove();
   }
@@ -619,6 +624,7 @@ function _sendDM(cu, partner) {
 
   if (_replyTo) {
     msg.replyTo = { from: _replyTo.from, text: _replyTo.text.slice(0, 80) };
+    if (_replyTo.msgId) msg.replyTo.msgId = _replyTo.msgId;
     _replyTo = null;
     document.getElementById('reply-bar')?.remove();
   }
@@ -767,7 +773,7 @@ function _registerHandlers(cu) {
 
   // ── Ticket 4: Reply ──────────────────────────────────────
   on('chat:reply', (el) => {
-    _replyTo = { from: el.dataset.msgFrom || '', text: el.dataset.msgText || '' };
+    _replyTo = { from: el.dataset.msgFrom || '', text: el.dataset.msgText || '', msgId: el.dataset.msgId || '' };
     _activeBubbleId = null;
     _rerenderMessages();
     _showReplyBar();
@@ -780,6 +786,20 @@ function _registerHandlers(cu) {
   on('chat:reply:cancel', () => {
     _replyTo = null;
     document.getElementById('reply-bar')?.remove();
+  });
+
+  // ── Jump to original message on quote click ───────────────
+  on('chat:jump', (el) => {
+    const msgId = el.dataset.msgId;
+    if (!msgId) return;
+    // Find original bubble (regular or nova)
+    const target = document.querySelector(
+      `.bubble[data-msg-id="${CSS.escape(msgId)}"], .nova-bubble-row[data-msg-id="${CSS.escape(msgId)}"]`
+    );
+    if (!target) return;
+    target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    target.classList.add('bubble--highlight');
+    setTimeout(() => target.classList.remove('bubble--highlight'), 1600);
   });
 
   // ── Admin: delete message ────────────────────────────────

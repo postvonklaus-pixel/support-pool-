@@ -65,7 +65,10 @@ export async function postAsNova(text, chatId = 'pool', replyTo = null) {
   if (!text) return;
   const msgId = `nova_${Date.now()}`;
   const msg = { from: 'nova-bot', text, ts: Date.now(), type: 'nova' };
-  if (replyTo) msg.replyTo = { from: replyTo.from, text: (replyTo.text || '').slice(0, 80) };
+  if (replyTo) {
+    msg.replyTo = { from: replyTo.from, text: (replyTo.text || '').slice(0, 80) };
+    if (replyTo.msgId) msg.replyTo.msgId = replyTo.msgId;
+  }
   if (chatId === 'pool') {
     writeDB(`chat/pool/messages/${msgId}`, msg);
   }
