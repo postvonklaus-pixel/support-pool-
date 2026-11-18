@@ -43,6 +43,45 @@ let _videoOpened = false;
 let _videoLink   = '';
 let _currentVidId = '';
 
+// ── Auto-resume: persist pending support across page discard ──
+const _PENDING_KEY = 'pendingSupportVideoId';
+const _PENDING_TS  = 'pendingSupportTimestamp';
+const _PENDING_MAX = 30 * 60 * 1000; // 30 min
+
+function _savePending(vidId) {
+  try {
+    sessionStorage.setItem(_PENDING_KEY, vidId);
+    sessionStorage.setItem(_PENDING_TS,  String(Date.now()));
+  } catch {}
+}
+
+export function clearPendingSupport() {
+  try {
+    sessionStorage.removeItem(_PENDING_KEY);
+    sessionStorage.removeItem(_PENDING_TS);
+  } catch {}
+}
+
+function _resumeIfPending() {
+  if (document.querySelector('[data-modal="support-modal"]')) return;
+  try {
+    const vidId = sessionStorage.getItem(_PENDING_KEY);
+    const ts    = parseInt(sessionStorage.getItem(_PENDING_TS) || '0', 10);
+    if (!vidId || Date.now() - ts > _PENDING_MAX) { clearPendingSupport(); return; }
+    handleSupportStep2(vidId);
+  } catch {}
+}
+
+let _resumeListenersAdded = false;
+function _ensureResumeListeners() {
+  if (_resumeListenersAdded) return;
+  _resumeListenersAdded = true;
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') _resumeIfPending();
+  });
+  window.addEventListener('focus', _resumeIfPending);
+}
+
 export function handleSupport(vidId) {
   if (!vidId) return;
   const v = _findVideo(vidId);
@@ -84,6 +123,9 @@ export function handleSupportStep2(vidId) {
   _videoOpened  = true;
   _videoLink    = v.link || v.url || '';
   _currentVidId = vidId;
+
+  _savePending(vidId);
+  _ensureResumeListeners();
 
   const link  = v.link || v.url || '#';
   const lang  = state.lang;
@@ -315,6 +357,7 @@ function _doSupport(vidId) {
     m.postMilestoneActivity(owner, newSups.length);
   });
 
+  clearPendingSupport();
   closeModal('support-modal');
   confetti();
   toast(t('sfSuccess'), 'success');
