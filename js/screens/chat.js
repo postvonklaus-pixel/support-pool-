@@ -148,8 +148,9 @@ export function render() {
   const cu = state.currentUser;
   if (!cu) return;
 
-  const msgsBox  = document.getElementById('pool-messages');
-  const atBottom = !msgsBox || msgsBox.scrollTop + msgsBox.clientHeight >= msgsBox.scrollHeight - 40;
+  const msgsBox       = document.getElementById('pool-messages');
+  const atBottom      = !msgsBox || msgsBox.scrollTop + msgsBox.clientHeight >= msgsBox.scrollHeight - 40;
+  const savedScrollTop = msgsBox ? msgsBox.scrollTop : 0;
   const prevInput = document.getElementById('chat-pool-input')?.value ||
                     document.getElementById('chat-dm-input')?.value || '';
 
@@ -165,6 +166,7 @@ export function render() {
         ? '<div class="pool-messages-empty"></div>'
         : poolMsgs.map(m => _poolBubble(m, cu)).join('');
       if (atBottom) _scrollToBottom();
+      else if (savedScrollTop) msgsBox.scrollTop = savedScrollTop;
     }
     _patchTypingIndicator(cu);
     return;
@@ -212,8 +214,13 @@ export function render() {
     if (inp && prevInput) inp.value = prevInput;
     // Re-inject reply bar if still pending
     if (_replyTo) _showReplyBar();
-    // Scroll to bottom only if we were already there
-    if (atBottom) _scrollToBottom();
+    // Restore scroll position: bottom if we were there, otherwise exact position
+    if (atBottom) {
+      _scrollToBottom();
+    } else {
+      const mb = document.getElementById('pool-messages');
+      if (mb && savedScrollTop) mb.scrollTop = savedScrollTop;
+    }
     _setupScrollButton();
   }
 }
