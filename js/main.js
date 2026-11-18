@@ -385,17 +385,21 @@ function tick() {
   // Ticket 8: update Meine Videos back-support pip
   import('./screens/myvideos.js').then(m => m.updateMeinePip?.(state.currentUser));
 
-  // Skip while user is actively typing
+  const activeScreen = document.querySelector('.screen.active');
+
+  // Chat screen bypasses all guards — chat.js handles focused-input and scroll
+  // position internally, so it's always safe to re-render it on new data.
+  if (activeScreen?.id === 'screen-chat') {
+    import('./router.js').then(m => m.renderActive({ debounce: true }));
+    return;
+  }
+
+  // For all other screens: apply guards that prevent disruptive re-renders
   const ae = document.activeElement;
   if (ae && (ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA')) return;
-  // Skip if a modal/dialog is open
   if (document.querySelector('.modal.active, [role="dialog"]:not([hidden])')) return;
-  // Skip if a FAQ item is expanded
   if (document.querySelector('.faq-item--open')) return;
-  // Skip on settings screen to prevent scroll-jump
-  const activeScreen = document.querySelector('.screen.active');
   if (activeScreen?.id === 'screen-settings') return;
-  // Skip for 5s after user last scrolled
   if (Date.now() - (window._lastScrollTime || 0) < 5000) return;
   import('./router.js').then(m => m.renderActive({ debounce: true }));
 }
