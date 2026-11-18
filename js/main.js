@@ -198,6 +198,8 @@ export async function loginAs(username, { silent = false, isNew = false } = {}) 
   // Track presence: write lastSeen + online flag, start heartbeat
   writeDB(`members/${username}/lastSeen`, Date.now());
   writeDB(`members/${username}/online`, true);
+  // Backfill joinedAt for accounts created before this field existed
+  if (!u.joinedAt && !u.joined) writeDB(`members/${username}/joinedAt`, Date.now());
   if (window._lastSeenInterval) clearInterval(window._lastSeenInterval);
   window._lastSeenInterval = setInterval(() => {
     if (state.currentUser) writeDB(`members/${state.currentUser}/lastSeen`, Date.now());
