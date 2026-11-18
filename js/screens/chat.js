@@ -21,7 +21,9 @@ let _replyTo        = null;    // { from, text } | null — pending reply contex
 let _activeBubbleId = null;    // id of bubble whose action bar is open
 let _searchQuery    = '';      // current search filter
 let _searchIsOpen   = false;   // search bar visible
-let _novaTypingForUI = false;  // nova typing indicator state
+let _novaTypingForUI    = false;  // nova typing indicator state
+let _novaPrefillContext = '';     // pre-filled context when admin replies via Zauberstab
+let _novaPendingReply   = null;   // reply-to set by Zauberstab flow
 let _novaListenersAdded = false;
 let _kbHandlingAdded = false;
 
@@ -159,7 +161,6 @@ export function render() {
   // destroys the focused <form> which causes iOS to close the keyboard.
   const inputFocused = document.activeElement?.id === 'chat-pool-input';
   if (inputFocused && _chatTab === 'pool' && !_dmPartner && el.classList.contains('active')) {
-    _activeBubbleId = null; // close any open action bar on external update
     const poolMsgs = _poolMessages();
     if (msgsBox) {
       msgsBox.innerHTML = poolMsgs.length === 0
@@ -177,7 +178,6 @@ export function render() {
     return;
   }
 
-  _activeBubbleId = null;
   _scrollBtnListenerAdded = false;
   _ensureNovaListeners();
   _setupKeyboardHandling();
@@ -364,12 +364,14 @@ function _poolBubble(m, cu, { roomKey = '' } = {}) {
   // Reactions row
   const reactHtml = _reactionsHtml(m, cu, roomKey);
 
-  // Action bar (emoji picker + reply + pin + admin delete)
+  // Action bar (emoji picker + reply + pin + nova + admin delete) — rendered ABOVE the bubble
+  // so it's never clipped by the input bar when tapping the bottom-most message.
   const showActions = m.id && _activeBubbleId === m.id;
   const actionsHtml = showActions ? `
     <div class="bubble-actions${isMe ? ' bubble-actions--me' : ''}">
       ${REACT_EMOJIS.map(e => `<button class="bubble-action-emoji" data-action="chat:react" data-msg-id="${m.id}" data-emoji="${e}" data-room-key="${roomKey}">${e}</button>`).join('')}
       <button class="bubble-action-reply" data-action="chat:reply" data-msg-id="${m.id || ''}" data-msg-from="${esc(fromDec)}" data-msg-text="${esc(m.text || '')}">↩</button>
+      ${isAdmin && !roomKey ? `<button class="bubble-action-nova" data-action="chat:nova:reply" data-msg-id="${m.id}" data-msg-text="${esc((m.text || '').slice(0, 300))}" data-msg-from="${esc(fromDec)}" title="Nova antworten lassen">✨</button>` : ''}
       ${isAdmin && !roomKey ? `<button class="bubble-action-pin" data-action="chat:pin" data-msg-id="${m.id}" data-msg-text="${esc((m.text || '').slice(0, 90))}" data-msg-from="${esc(fromDec)}" title="Anpinnen">📌</button>` : ''}
       ${isAdmin ? `<button class="bubble-action-delete" data-action="chat:msg:delete" data-msg-id="${m.id}" data-room-key="${roomKey}" title="Löschen">🗑</button>` : ''}
     </div>
@@ -380,12 +382,12 @@ function _poolBubble(m, cu, { roomKey = '' } = {}) {
       ${!isMe ? `<div class="bubble-avatar" style="background:${grad}" title="@${esc(fromDec)}">${initials}</div>` : ''}
       <div class="bubble-col">
         ${!isMe ? `<div class="bubble-meta"><span class="bubble-username">@${esc(name)}</span><span class="bubble-time-inline">${m.ts ? timeAgo(m.ts, state.lang) : ''}</span></div>` : ''}
+        ${actionsHtml}
         <div class="bubble ${isMe ? 'bubble--me' : 'bubble--them'}"
           data-action="chat:bubble:tap" data-msg-id="${m.id || ''}">
           ${quoteHtml}${textHtml}
         </div>
         ${reactHtml}
-        ${actionsHtml}
         ${isMe ? `<div class="bubble-time">${m.ts ? timeAgo(m.ts, state.lang) : ''}</div>` : ''}
       </div>
     </div>
@@ -861,12 +863,36 @@ function _registerHandlers(cu) {
 
   // ── Nova KI Modal ──────────────────────────────────────
   on('chat:nova:open', () => {
+    _novaPrefillContext = '';
+    _novaPendingReply   = null;
     openModal({
       id:    'nova-modal',
       title: '👑 Nova KI',
       body:  _buildNovaModal(),
     });
     setTimeout(() => document.getElementById('nova-context')?.focus(), 100);
+  });
+
+  // ── Admin: Nova direkt auf Nachricht antworten lassen ──
+  on('chat:nova:reply', (el) => {
+    _novaPrefillContext = el.dataset.msgText || '';
+    _novaPendingReply   = {
+      from: el.dataset.msgFrom || '',
+      text: (el.dataset.msgText || '').slice(0, 80),
+      msgId: el.dataset.msgId || '',
+    };
+    _activeBubbleId = null;
+    _rerenderMessages();
+    openModal({
+      id:    'nova-modal',
+      title: '👑 Nova KI',
+      body:  _buildNovaModal(),
+    });
+    setTimeout(() => {
+      const ctx = document.getElementById('nova-context');
+      if (ctx) { ctx.value = _novaPrefillContext; _autoResize(ctx); }
+      ctx?.focus();
+    }, 100);
   });
 
   on('chat:nova:generate', async () => {
@@ -919,11 +945,13 @@ function _registerHandlers(cu) {
     _novaTypingForUI = true;
     _patchTypingIndicator(cu);
 
-    const pendingReply = _replyTo ? { ..._replyTo } : null;
+    const pendingReply = _replyTo ? { ..._replyTo } : (_novaPendingReply ? { ..._novaPendingReply } : null);
     if (_replyTo) {
       _replyTo = null;
       document.getElementById('reply-bar')?.remove();
     }
+    _novaPendingReply   = null;
+    _novaPrefillContext = '';
 
     closeModal('nova-modal');
 
@@ -937,7 +965,11 @@ function _registerHandlers(cu) {
     toast(t('novaPostedToast') || 'Nova hat geantwortet 👑', 'success');
   });
 
-  on('chat:nova:discard', () => closeModal('nova-modal'));
+  on('chat:nova:discard', () => {
+    _novaPrefillContext = '';
+    _novaPendingReply   = null;
+    closeModal('nova-modal');
+  });
 
   // ── Pin/Unpin message ────────────────────────────────────
   on('chat:pin', (el) => {
