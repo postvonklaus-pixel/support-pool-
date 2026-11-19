@@ -153,6 +153,23 @@ function onDBUpdate(snapshot) {
 
   // Broadcast check
   checkBroadcast();
+
+  // Nav chat bell
+  _updateChatNavPip();
+}
+
+function _updateChatNavPip() {
+  const pip = document.getElementById('nav-chat-pip');
+  if (!pip) return;
+  const activeScreen = document.querySelector('.screen.active');
+  if (activeScreen?.id === 'screen-chat') {
+    pip.textContent = ''; pip.classList.add('hidden'); pip.classList.remove('notif-pip--bell'); return;
+  }
+  const msgs = state.db.chat?.pool?.messages || {};
+  const lastSeen = state.ui.chatLastSeenTs || 0;
+  const hasNew = Object.values(msgs).some(m => m.type !== 'system' && (m.ts || 0) > lastSeen);
+  if (hasNew) { pip.textContent = '🔔'; pip.classList.remove('hidden'); pip.classList.add('notif-pip--bell'); }
+  else { pip.textContent = ''; pip.classList.add('hidden'); pip.classList.remove('notif-pip--bell'); }
 }
 
 // ── Login ─────────────────────────────────────────────────

@@ -69,7 +69,7 @@ export function render() {
     return n;
   })();
 
-  const openCnt = Object.values(state.db.videos || {}).filter(v => {
+  const _allOpen = Object.values(state.db.videos || {}).filter(v => {
     if (v.status === 'done' || v.status === 'expired') return false;
     if ((v.ownerKey || v.owner || '').toLowerCase() === myKey) return false;
     const r1 = (v.r1Supporters || []).map(k => k.toLowerCase());
@@ -79,7 +79,11 @@ export function render() {
     if (rnd === 1 && r1.length >= (v.r1Need || R1_NEED)) return false;
     if (rnd === 2 && r2.length >= R2_NEED) return false;
     return true;
-  }).length;
+  });
+  const _liveOpen      = _allOpen.filter(v => !(v.status === 'scheduled' && (v.scheduledFor || 0) > Date.now()));
+  const _scheduledOpen = _allOpen.filter(v => v.status === 'scheduled' && (v.scheduledFor || 0) > Date.now());
+  const openCnt      = _liveOpen.length;
+  const scheduledCnt = _scheduledOpen.length;
 
   const unreadNotifs = Object.values(state.db.messages || {}).filter(m =>
     m.to === cu && (m.type === 'notif' || m.type === 'dm' || m.reply) && !m.read
@@ -125,9 +129,9 @@ export function render() {
           data-action="dash:support" role="button" tabindex="0" ${delay(0)}>
           <div class="dash-tile__ic dash-tile__ic--cyan">${IC.videos}</div>
           ${openCnt > 0 ? `<div class="dash-badge dash-badge--cyan">${openCnt}</div>` : ''}
-          <div class="dash-tile__value">${openCnt}</div>
+          <div class="dash-tile__value">${openCnt}${scheduledCnt > 0 ? `<span class="dash-tile__sched-badge">+${scheduledCnt}⏰</span>` : ''}</div>
           <div class="dash-tile__label">${t('open') || 'OFFENE VIDEOS'}</div>
-          <div class="dash-tile__sub">${openCnt > 0 ? `${openCnt} ${t('dbSupOpen') || 'offen'}` : t('noOpen') || 'Keine offen'}</div>
+          <div class="dash-tile__sub">${openCnt > 0 ? `${openCnt} ${t('dbSupOpen') || 'offen'}` : t('noOpen') || 'Keine offen'}${scheduledCnt > 0 ? `<span class="dash-tile__sched"> · ${scheduledCnt} ⏰</span>` : ''}</div>
         </div>
 
         <div class="dash-tile dash-tile--post dash-tile--hero" data-action="post:open" role="button" tabindex="0" ${delay(1)}>

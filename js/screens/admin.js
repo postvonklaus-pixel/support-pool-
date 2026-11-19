@@ -501,7 +501,7 @@ function _renderMembers() {
     });
 
   const filtered = _memberSearch
-    ? all.filter(([k, m]) => (m.name || k).toLowerCase().includes(_memberSearch.toLowerCase()))
+    ? all.filter(([k, m]) => fbDec(m.name || k).toLowerCase().includes(_memberSearch.toLowerCase()))
     : all;
 
   const groups  = state.db.groups || {};
@@ -577,7 +577,7 @@ function _memberListHTML(filtered, grouped, ungrouped, groups) {
 function _adminMemberRow(key, m) {
   const bal      = (m.stats?.given || 0) - (m.stats?.received || 0);
   const grad     = avatarGradient(key);
-  const initials = key.slice(0, 2).toUpperCase();
+  const initials = fbDec(key).replace(/^@/, '').slice(0, 2).toUpperCase();
   const balCls   = bal > 0 ? 'pos' : bal < 0 ? 'neg' : '';
   const online   = (m.lastSeen || 0) > Date.now() - 10 * 60 * 1000;
   const inactive = m.status === 'inactive';
@@ -591,7 +591,7 @@ function _adminMemberRow(key, m) {
     </div>
     <div class="admin-member-row__body">
       <div class="admin-member-row__name">
-        ${esc(m.name || fbDec(key))}${m.role==='admin'?' 👑':''}
+        ${esc(m.name || fbDec(key).replace(/^@/, ''))}${m.role==='admin'?' 👑':''}
         ${inactive ? `<span class="badge badge--warning" style="margin-left:4px;font-size:10px">${t('memberInactive') || 'inaktiv'}</span>` : ''}
         ${banned   ? `<span class="badge badge--danger"  style="margin-left:4px;font-size:10px">🚫 gesperrt</span>` : ''}
       </div>

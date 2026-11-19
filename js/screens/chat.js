@@ -213,7 +213,7 @@ export function render() {
         <button class="chat-tab ${_chatTab==='dm'?'chat-tab--active':''}"
           data-action="chat:tab" data-tab="dm">
           ${t('chatTabDirect')}
-          ${unreadDM > 0 ? `<span class="chat-tab__pip">${unreadDM}</span>` : ''}
+          ${unreadDM > 0 ? `<span class="chat-tab__pip">${unreadDM}</span><span class="dm-bell">🔔</span>` : ''}
         </button>
       </div>
 
@@ -239,7 +239,18 @@ export function render() {
       if (mb && savedScrollTop) mb.scrollTop = savedScrollTop;
     }
     _setupScrollButton();
+    if (el.classList.contains('active')) markPoolChatSeen();
   }
+}
+
+export function markPoolChatSeen() {
+  const msgs = state.db.chat?.pool?.messages || {};
+  const maxTs = Object.values(msgs)
+    .filter(m => m.type !== 'system')
+    .reduce((mx, m) => Math.max(mx, m.ts || 0), 0);
+  if (maxTs) state.ui.chatLastSeenTs = maxTs;
+  const pip = document.getElementById('nav-chat-pip');
+  if (pip) { pip.textContent = ''; pip.classList.add('hidden'); pip.classList.remove('notif-pip--bell'); }
 }
 
 // ── Pool Chat ──────────────────────────────────────────────
