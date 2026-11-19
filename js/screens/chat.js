@@ -156,11 +156,15 @@ export function render() {
   const prevInput = document.getElementById('chat-pool-input')?.value ||
                     document.getElementById('chat-dm-input')?.value || '';
 
-  // If the chat input is focused during a DB-triggered re-render, only patch
+  // If any chat input is focused during a DB-triggered re-render, only patch
   // the message list instead of replacing the entire DOM. Replacing innerHTML
-  // destroys the focused <form> which causes iOS to close the keyboard.
-  const inputFocused = document.activeElement?.id === 'chat-pool-input';
-  if (inputFocused && _chatTab === 'pool' && !_dmPartner && el.classList.contains('active')) {
+  // destroys the focused <form> which causes iOS to close the keyboard and
+  // clears whatever the user has typed so far.
+  const activeId    = document.activeElement?.id;
+  const poolFocused = activeId === 'chat-pool-input';
+  const dmFocused   = activeId === 'chat-dm-input';
+
+  if (poolFocused && _chatTab === 'pool' && !_dmPartner && el.classList.contains('active')) {
     const poolMsgs = _poolMessages();
     if (msgsBox) {
       msgsBox.innerHTML = poolMsgs.length === 0
@@ -174,6 +178,19 @@ export function render() {
   }
 
   if (_dmPartner) {
+    // DM input focused → patch messages only, don't replace entire DOM
+    if (dmFocused && el.classList.contains('active')) {
+      if (msgsBox) {
+        const roomKey = [cu, _dmPartner].sort().join('__');
+        const dMsgs   = _dmMessages(cu, _dmPartner);
+        msgsBox.innerHTML = dMsgs.length === 0
+          ? emptyState('✉️', `@${esc(_dmPartner)}`, t('chatDMEmpty'), { size: 'sm' })
+          : dMsgs.map(m => _poolBubble(m, cu, { roomKey })).join('');
+        if (atBottom) _scrollToBottom();
+        else if (savedScrollTop) msgsBox.scrollTop = savedScrollTop;
+      }
+      return;
+    }
     _renderDMThread(el, cu, _dmPartner);
     return;
   }
