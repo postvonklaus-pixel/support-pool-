@@ -591,7 +591,7 @@ function _adminMemberRow(key, m) {
     </div>
     <div class="admin-member-row__body">
       <div class="admin-member-row__name">
-        ${esc(m.name || fbDec(key).replace(/^@/, ''))}${m.role==='admin'?' 👑':''}
+        ${esc(fbDec(m.name || key).replace(/^@/, ''))}${m.role==='admin'?' 👑':''}
         ${inactive ? `<span class="badge badge--warning" style="margin-left:4px;font-size:10px">${t('memberInactive') || 'inaktiv'}</span>` : ''}
         ${banned   ? `<span class="badge badge--danger"  style="margin-left:4px;font-size:10px">🚫 gesperrt</span>` : ''}
       </div>
@@ -808,20 +808,48 @@ function _renderGroups() {
 }
 
 // ── Send weekly message to all active members ──────────────
-function _sendWeeklyMessage(text) {
-  const members = Object.keys(state.db.members || {}).filter(k => {
-    const m = state.db.members[k];
-    return m.status === 'active' && m.role !== 'admin';
+async function _sendWeeklyMessage(text) {
+  const entries = Object.entries(state.db.members || {}).filter(([, m]) =>
+    m.status === 'active' && m.role !== 'admin'
+  );
+
+  // Group members by their language preference
+  const byLang = {};
+  entries.forEach(([k, m]) => {
+    const lang = m.lang || 'de';
+    if (!byLang[lang]) byLang[lang] = [];
+    byLang[lang].push(k);
   });
-  import('../features/notifications.js').then(({ addNotif }) => {
-    members.forEach(k => addNotif(k, '📨', '', 'weeklyMsg', {
+
+  const { addNotif }  = await import('../features/notifications.js');
+  const { callNova }  = await import('../features/nova.js');
+  const adminKey      = state.db?.settings?.nova?.adminKey || '';
+  const LANG_NAMES    = { de: 'German', en: 'English', id: 'Indonesian', tr: 'Turkish', ar: 'Arabic', fr: 'French', es: 'Spanish', it: 'Italian', pt: 'Portuguese', nl: 'Dutch', ru: 'Russian', zh: 'Chinese', ja: 'Japanese', ko: 'Korean', vi: 'Vietnamese' };
+
+  let totalSent = 0;
+
+  for (const [lang, keys] of Object.entries(byLang)) {
+    let translated = text;
+    if (lang !== 'de' && adminKey) {
+      const langName = LANG_NAMES[lang] || lang;
+      const result = await callNova(
+        text,
+        `Translate the following text to ${langName}. Output ONLY the translated text, no explanation, no quotes.`,
+        '',
+        adminKey
+      );
+      if (result?.reply) translated = result.reply;
+    }
+    keys.forEach(k => addNotif(k, '📨', '', 'weeklyMsg', {
       msgKey: 'weeklyTpl',
-      params: { text },
-      message: text,
+      params: { text: translated },
+      message: translated,
     }));
-  });
+    totalSent += keys.length;
+  }
+
   writeDB('settings/weeklyMsgLastSent', Date.now());
-  toast(`📨 ${t('weeklyMsgSend') || 'An alle senden'} (${members.length})`, 'success', 3000);
+  toast(`📨 ${t('weeklyMsgSend') || 'An alle senden'} (${totalSent})`, 'success', 3000);
 }
 
 // ── Handlers ───────────────────────────────────────────────
@@ -857,7 +885,7 @@ function _registerHandlers() {
           return (b.stats?.given || 0) - (a.stats?.given || 0);
         });
       const filtered = _memberSearch
-        ? all.filter(([k, m]) => (m.name || k).toLowerCase().includes(_memberSearch.toLowerCase()))
+        ? all.filter(([k, m]) => fbDec(m.name || k).toLowerCase().includes(_memberSearch.toLowerCase()))
         : all;
       const groups  = state.db.groups || {};
       const grouped = {};
