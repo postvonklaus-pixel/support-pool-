@@ -153,6 +153,23 @@ function onDBUpdate(snapshot) {
 
   // Broadcast check
   checkBroadcast();
+
+  // Nav chat bell
+  _updateChatNavPip();
+}
+
+function _updateChatNavPip() {
+  const pip = document.getElementById('nav-chat-pip');
+  if (!pip) return;
+  const activeScreen = document.querySelector('.screen.active');
+  if (activeScreen?.id === 'screen-chat') {
+    pip.textContent = ''; pip.classList.add('hidden'); pip.classList.remove('notif-pip--bell'); return;
+  }
+  const msgs = state.db.chat?.pool?.messages || {};
+  const lastSeen = state.ui.chatLastSeenTs || 0;
+  const hasNew = Object.values(msgs).some(m => m.type !== 'system' && (m.ts || 0) > lastSeen);
+  if (hasNew) { pip.textContent = '🔔'; pip.classList.remove('hidden'); pip.classList.add('notif-pip--bell'); }
+  else { pip.textContent = ''; pip.classList.add('hidden'); pip.classList.remove('notif-pip--bell'); }
 }
 
 // ── Login ─────────────────────────────────────────────────
@@ -198,6 +215,8 @@ export async function loginAs(username, { silent = false, isNew = false } = {}) 
   // Track presence: write lastSeen + online flag, start heartbeat
   writeDB(`members/${username}/lastSeen`, Date.now());
   writeDB(`members/${username}/online`, true);
+  // Backfill joinedAt for accounts created before this field existed
+  if (!u.joinedAt && !u.joined) writeDB(`members/${username}/joinedAt`, Date.now());
   if (window._lastSeenInterval) clearInterval(window._lastSeenInterval);
   window._lastSeenInterval = setInterval(() => {
     if (state.currentUser) writeDB(`members/${state.currentUser}/lastSeen`, Date.now());
@@ -383,17 +402,21 @@ function tick() {
   // Ticket 8: update Meine Videos back-support pip
   import('./screens/myvideos.js').then(m => m.updateMeinePip?.(state.currentUser));
 
-  // Skip while user is actively typing
+  const activeScreen = document.querySelector('.screen.active');
+
+  // Chat screen bypasses all guards — chat.js handles focused-input and scroll
+  // position internally, so it's always safe to re-render it on new data.
+  if (activeScreen?.id === 'screen-chat') {
+    import('./router.js').then(m => m.renderActive({ debounce: true }));
+    return;
+  }
+
+  // For all other screens: apply guards that prevent disruptive re-renders
   const ae = document.activeElement;
   if (ae && (ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA')) return;
-  // Skip if a modal/dialog is open
   if (document.querySelector('.modal.active, [role="dialog"]:not([hidden])')) return;
-  // Skip if a FAQ item is expanded
   if (document.querySelector('.faq-item--open')) return;
-  // Skip on settings screen to prevent scroll-jump
-  const activeScreen = document.querySelector('.screen.active');
   if (activeScreen?.id === 'screen-settings') return;
-  // Skip for 5s after user last scrolled
   if (Date.now() - (window._lastScrollTime || 0) < 5000) return;
   import('./router.js').then(m => m.renderActive({ debounce: true }));
 }

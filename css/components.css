@@ -318,13 +318,34 @@
   font-family: var(--font-display);
 }
 .modal__close {
-  width: 32px; height: 32px;
+  width: 44px; height: 44px;
   display: flex; align-items: center; justify-content: center;
   border-radius: var(--radius-md);
   color: var(--text-tertiary);
   transition: color var(--dur-fast), background var(--dur-fast);
 }
 .modal__close:hover { background: var(--bg-glass-hover); color: var(--text-primary); }
+
+/* ── Animated bell pip (Fix 4: Nav Chat Bell) ──────────────── */
+.notif-pip--bell {
+  font-size: 13px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  animation: bell-ring 1s ease-in-out infinite;
+  background: transparent !important;
+  color: var(--accent-warning, #f59e0b);
+  min-width: unset;
+  padding: 0;
+  height: auto;
+}
+@keyframes bell-ring {
+  0%, 60%, 100% { transform: rotate(0deg); }
+  10%, 30%      { transform: rotate(-18deg); }
+  20%, 40%      { transform: rotate(18deg); }
+  50%           { transform: rotate(-10deg); }
+}
 
 /* ── TOAST ────────────────────────────────────────────── */
 #toast-container {

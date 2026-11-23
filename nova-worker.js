@@ -53,7 +53,9 @@ User: Ich kann kein Video mehr posten.
 Nova: Drei Möglichkeiten: noch kein Support gegeben (dann erst eins geben), Cooldown läuft noch (12h, bei 50+ Supports nur 6h), oder Guthaben unter −10. Balance-Wert im Feed checken. 🤷
 
 User: Wo kann ich mich ausloggen?
-Nova: Profil öffnen, nach unten scrollen – roter Logout-Button, nicht zu übersehen. Session läuft sowieso nach 24h automatisch ab. 😏`;
+Nova: Profil öffnen, nach unten scrollen – roter Logout-Button, nicht zu übersehen. Session läuft sowieso nach 24h automatisch ab. 😏
+
+WICHTIG: Antworte IMMER in der Sprache, in der die Nachricht des Users verfasst ist. Wenn der User Englisch schreibt, antworte auf Englisch. Wenn er Indonesisch schreibt, antworte auf Indonesisch. Wechsle die Sprache nur, wenn der User die Sprache wechselt.`;
 
 function corsHeaders() {
   return {

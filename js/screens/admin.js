@@ -277,8 +277,9 @@ function _renderAnalytics() {
   }).join('') : `<div class="an-empty">—</div>`;
 
   const topVidsHTML = a.topVids.length ? a.topVids.map(v => {
-    const owner = v.ownerKey || v.owner || '?';
-    const grad = avatarGradient(owner);
+    const ownerRaw = v.ownerKey || v.owner || '?';
+    const owner    = fbDec(ownerRaw).replace(/^@/, '');
+    const grad = avatarGradient(ownerRaw);
     const pct = Math.min(100, Math.round(v.suppCount / (v.r1Need || 10) * 100));
     return `<div class="an-row">
       <div class="an-av" style="background:${grad}">${owner.slice(0,2).toUpperCase()}</div>
@@ -501,7 +502,7 @@ function _renderMembers() {
     });
 
   const filtered = _memberSearch
-    ? all.filter(([k, m]) => (m.name || k).toLowerCase().includes(_memberSearch.toLowerCase()))
+    ? all.filter(([k, m]) => fbDec(m.name || k).toLowerCase().includes(_memberSearch.toLowerCase()))
     : all;
 
   const groups  = state.db.groups || {};
@@ -577,7 +578,7 @@ function _memberListHTML(filtered, grouped, ungrouped, groups) {
 function _adminMemberRow(key, m) {
   const bal      = (m.stats?.given || 0) - (m.stats?.received || 0);
   const grad     = avatarGradient(key);
-  const initials = key.slice(0, 2).toUpperCase();
+  const initials = fbDec(key).replace(/^@/, '').slice(0, 2).toUpperCase();
   const balCls   = bal > 0 ? 'pos' : bal < 0 ? 'neg' : '';
   const online   = (m.lastSeen || 0) > Date.now() - 10 * 60 * 1000;
   const inactive = m.status === 'inactive';
@@ -591,7 +592,7 @@ function _adminMemberRow(key, m) {
     </div>
     <div class="admin-member-row__body">
       <div class="admin-member-row__name">
-        ${esc(m.name || fbDec(key))}${m.role==='admin'?' 👑':''}
+        ${esc(fbDec(m.name || key).replace(/^@/, ''))}${m.role==='admin'?' 👑':''}
         ${inactive ? `<span class="badge badge--warning" style="margin-left:4px;font-size:10px">${t('memberInactive') || 'inaktiv'}</span>` : ''}
         ${banned   ? `<span class="badge badge--danger"  style="margin-left:4px;font-size:10px">🚫 gesperrt</span>` : ''}
       </div>
@@ -653,14 +654,15 @@ function _renderVideos() {
 
   return `<div class="admin-video-list">
     ${videos.map(([id, v]) => {
-      const owner   = v.ownerKey || v.owner || '?';
+      const ownerRaw = v.ownerKey || v.owner || '?';
+      const owner    = fbDec(ownerRaw).replace(/^@/, '');
       const link    = v.link || v.url || '';
       const r1      = (v.r1Supporters || []).length;
       const r1n     = v.r1Need || R1_NEED;
       const pct     = Math.min(100, Math.round((r1/r1n)*100));
       const status  = v.status || 'open';
       const round   = v.round || 1;
-      const grad    = avatarGradient(owner);
+      const grad    = avatarGradient(ownerRaw);
 
       return `<div class="admin-vid-row">
         <div class="admin-vid-row__av" style="background:${grad}">${owner.slice(0,2).toUpperCase()}</div>
@@ -808,20 +810,48 @@ function _renderGroups() {
 }
 
 // ── Send weekly message to all active members ──────────────
-function _sendWeeklyMessage(text) {
-  const members = Object.keys(state.db.members || {}).filter(k => {
-    const m = state.db.members[k];
-    return m.status === 'active' && m.role !== 'admin';
+async function _sendWeeklyMessage(text) {
+  const entries = Object.entries(state.db.members || {}).filter(([, m]) =>
+    m.status === 'active' && m.role !== 'admin'
+  );
+
+  // Group members by their language preference
+  const byLang = {};
+  entries.forEach(([k, m]) => {
+    const lang = m.lang || 'de';
+    if (!byLang[lang]) byLang[lang] = [];
+    byLang[lang].push(k);
   });
-  import('../features/notifications.js').then(({ addNotif }) => {
-    members.forEach(k => addNotif(k, '📨', '', 'weeklyMsg', {
+
+  const { addNotif }  = await import('../features/notifications.js');
+  const { callNova }  = await import('../features/nova.js');
+  const adminKey      = state.db?.settings?.nova?.adminKey || '';
+  const LANG_NAMES    = { de: 'German', en: 'English', id: 'Indonesian', tr: 'Turkish', ar: 'Arabic', fr: 'French', es: 'Spanish', it: 'Italian', pt: 'Portuguese', nl: 'Dutch', ru: 'Russian', zh: 'Chinese', ja: 'Japanese', ko: 'Korean', vi: 'Vietnamese' };
+
+  let totalSent = 0;
+
+  for (const [lang, keys] of Object.entries(byLang)) {
+    let translated = text;
+    if (lang !== 'de' && adminKey) {
+      const langName = LANG_NAMES[lang] || lang;
+      const result = await callNova(
+        text,
+        `Translate the following text to ${langName}. Output ONLY the translated text, no explanation, no quotes.`,
+        '',
+        adminKey
+      );
+      if (result?.reply) translated = result.reply;
+    }
+    keys.forEach(k => addNotif(k, '📨', '', 'weeklyMsg', {
       msgKey: 'weeklyTpl',
-      params: { text },
-      message: text,
+      params: { text: translated },
+      message: translated,
     }));
-  });
+    totalSent += keys.length;
+  }
+
   writeDB('settings/weeklyMsgLastSent', Date.now());
-  toast(`📨 ${t('weeklyMsgSend') || 'An alle senden'} (${members.length})`, 'success', 3000);
+  toast(`📨 ${t('weeklyMsgSend') || 'An alle senden'} (${totalSent})`, 'success', 3000);
 }
 
 // ── Handlers ───────────────────────────────────────────────
@@ -857,7 +887,7 @@ function _registerHandlers() {
           return (b.stats?.given || 0) - (a.stats?.given || 0);
         });
       const filtered = _memberSearch
-        ? all.filter(([k, m]) => (m.name || k).toLowerCase().includes(_memberSearch.toLowerCase()))
+        ? all.filter(([k, m]) => fbDec(m.name || k).toLowerCase().includes(_memberSearch.toLowerCase()))
         : all;
       const groups  = state.db.groups || {};
       const grouped = {};

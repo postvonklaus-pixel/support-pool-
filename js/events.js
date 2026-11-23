@@ -62,6 +62,9 @@ function handleKeydown(e) {
       import('./features/videoPreview.js').then(m => m.closeVideoPreview());
       return;
     }
+    if (document.querySelector('[data-modal="support-modal"]')) {
+      import('./features/support.js').then(m => m.clearPendingSupport());
+    }
     import('./components/modal.js').then(m => m.closeTopModal());
   }
   if (e.key === 'Enter') {
@@ -103,6 +106,9 @@ on('nav:profile', () => goScreen('profile'));
 // ── Modal handlers (loaded lazily) ───────────────────────
 on('modal:close', (el) => {
   const id = el.dataset.modal || el.closest('.modal-backdrop')?.dataset.modal;
+  if (id === 'support-modal') {
+    import('./features/support.js').then(m => m.clearPendingSupport());
+  }
   import('./components/modal.js').then(m => m.closeModal(id));
 });
 

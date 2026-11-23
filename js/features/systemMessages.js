@@ -9,8 +9,8 @@ import { state }   from '../state.js';
 import { writeDB } from '../firebase.js';
 import { fbDec }   from '../utils.js';
 
-// Batch window: all supports for the same video in one minute → one message
-const BATCH_MS  = 60 * 1000;
+// Batch window: all supports for the same video in 5 minutes → one message
+const BATCH_MS  = 5 * 60 * 1000;
 // Milestone thresholds (fires once per threshold, idempotent)
 const MILESTONES = [5, 10, 25, 50, 100];
 

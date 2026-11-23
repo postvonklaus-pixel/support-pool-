@@ -21,7 +21,9 @@ let _replyTo        = null;    // { from, text } | null — pending reply contex
 let _activeBubbleId = null;    // id of bubble whose action bar is open
 let _searchQuery    = '';      // current search filter
 let _searchIsOpen   = false;   // search bar visible
-let _novaTypingForUI = false;  // nova typing indicator state
+let _novaTypingForUI    = false;  // nova typing indicator state
+let _novaPrefillContext = '';     // pre-filled context when admin replies via Zauberstab
+let _novaPendingReply   = null;   // reply-to set by Zauberstab flow
 let _novaListenersAdded = false;
 let _kbHandlingAdded = false;
 
@@ -148,29 +150,47 @@ export function render() {
   const cu = state.currentUser;
   if (!cu) return;
 
-  const msgsBox  = document.getElementById('pool-messages');
-  const atBottom = !msgsBox || msgsBox.scrollTop + msgsBox.clientHeight >= msgsBox.scrollHeight - 40;
+  const msgsBox       = document.getElementById('pool-messages');
+  const atBottom      = !msgsBox || msgsBox.scrollTop + msgsBox.clientHeight >= msgsBox.scrollHeight - 40;
+  const savedScrollTop = msgsBox ? msgsBox.scrollTop : 0;
   const prevInput = document.getElementById('chat-pool-input')?.value ||
                     document.getElementById('chat-dm-input')?.value || '';
 
-  // If the chat input is focused during a DB-triggered re-render, only patch
+  // If any chat input is focused during a DB-triggered re-render, only patch
   // the message list instead of replacing the entire DOM. Replacing innerHTML
-  // destroys the focused <form> which causes iOS to close the keyboard.
-  const inputFocused = document.activeElement?.id === 'chat-pool-input';
-  if (inputFocused && _chatTab === 'pool' && !_dmPartner && el.classList.contains('active')) {
-    _activeBubbleId = null; // close any open action bar on external update
+  // destroys the focused <form> which causes iOS to close the keyboard and
+  // clears whatever the user has typed so far.
+  const activeId    = document.activeElement?.id;
+  const poolFocused = activeId === 'chat-pool-input';
+  const dmFocused   = activeId === 'chat-dm-input';
+
+  if (poolFocused && _chatTab === 'pool' && !_dmPartner && el.classList.contains('active')) {
     const poolMsgs = _poolMessages();
     if (msgsBox) {
       msgsBox.innerHTML = poolMsgs.length === 0
         ? '<div class="pool-messages-empty"></div>'
         : poolMsgs.map(m => _poolBubble(m, cu)).join('');
       if (atBottom) _scrollToBottom();
+      else if (savedScrollTop) msgsBox.scrollTop = savedScrollTop;
     }
     _patchTypingIndicator(cu);
     return;
   }
 
   if (_dmPartner) {
+    // DM input focused → patch messages only, don't replace entire DOM
+    if (dmFocused && el.classList.contains('active')) {
+      if (msgsBox) {
+        const roomKey = [cu, _dmPartner].sort().join('__');
+        const dMsgs   = _dmMessages(cu, _dmPartner);
+        msgsBox.innerHTML = dMsgs.length === 0
+          ? emptyState('✉️', `@${esc(_dmPartner)}`, t('chatDMEmpty'), { size: 'sm' })
+          : dMsgs.map(m => _poolBubble(m, cu, { roomKey })).join('');
+        if (atBottom) _scrollToBottom();
+        else if (savedScrollTop) msgsBox.scrollTop = savedScrollTop;
+      }
+      return;
+    }
     _renderDMThread(el, cu, _dmPartner);
     return;
   }
@@ -194,7 +214,7 @@ export function render() {
         <button class="chat-tab ${_chatTab==='dm'?'chat-tab--active':''}"
           data-action="chat:tab" data-tab="dm">
           ${t('chatTabDirect')}
-          ${unreadDM > 0 ? `<span class="chat-tab__pip">${unreadDM}</span>` : ''}
+          ${unreadDM > 0 ? `<span class="chat-tab__pip">${unreadDM}</span><span class="dm-bell">🔔</span>` : ''}
         </button>
       </div>
 
@@ -212,10 +232,26 @@ export function render() {
     if (inp && prevInput) inp.value = prevInput;
     // Re-inject reply bar if still pending
     if (_replyTo) _showReplyBar();
-    // Scroll to bottom only if we were already there
-    if (atBottom) _scrollToBottom();
+    // Restore scroll position: bottom if we were there, otherwise exact position
+    if (atBottom) {
+      _scrollToBottom();
+    } else {
+      const mb = document.getElementById('pool-messages');
+      if (mb && savedScrollTop) mb.scrollTop = savedScrollTop;
+    }
     _setupScrollButton();
+    if (el.classList.contains('active')) markPoolChatSeen();
   }
+}
+
+export function markPoolChatSeen() {
+  const msgs = state.db.chat?.pool?.messages || {};
+  const maxTs = Object.values(msgs)
+    .filter(m => m.type !== 'system')
+    .reduce((mx, m) => Math.max(mx, m.ts || 0), 0);
+  if (maxTs) state.ui.chatLastSeenTs = maxTs;
+  const pip = document.getElementById('nav-chat-pip');
+  if (pip) { pip.textContent = ''; pip.classList.add('hidden'); pip.classList.remove('notif-pip--bell'); }
 }
 
 // ── Pool Chat ──────────────────────────────────────────────
@@ -357,12 +393,14 @@ function _poolBubble(m, cu, { roomKey = '' } = {}) {
   // Reactions row
   const reactHtml = _reactionsHtml(m, cu, roomKey);
 
-  // Action bar (emoji picker + reply + pin + admin delete)
+  // Action bar (emoji picker + reply + pin + nova + admin delete) — rendered ABOVE the bubble
+  // so it's never clipped by the input bar when tapping the bottom-most message.
   const showActions = m.id && _activeBubbleId === m.id;
   const actionsHtml = showActions ? `
     <div class="bubble-actions${isMe ? ' bubble-actions--me' : ''}">
       ${REACT_EMOJIS.map(e => `<button class="bubble-action-emoji" data-action="chat:react" data-msg-id="${m.id}" data-emoji="${e}" data-room-key="${roomKey}">${e}</button>`).join('')}
       <button class="bubble-action-reply" data-action="chat:reply" data-msg-id="${m.id || ''}" data-msg-from="${esc(fromDec)}" data-msg-text="${esc(m.text || '')}">↩</button>
+      ${isAdmin && !roomKey ? `<button class="bubble-action-nova" data-action="chat:nova:reply" data-msg-id="${m.id}" data-msg-text="${esc((m.text || '').slice(0, 300))}" data-msg-from="${esc(fromDec)}" title="Nova antworten lassen">✨</button>` : ''}
       ${isAdmin && !roomKey ? `<button class="bubble-action-pin" data-action="chat:pin" data-msg-id="${m.id}" data-msg-text="${esc((m.text || '').slice(0, 90))}" data-msg-from="${esc(fromDec)}" title="Anpinnen">📌</button>` : ''}
       ${isAdmin ? `<button class="bubble-action-delete" data-action="chat:msg:delete" data-msg-id="${m.id}" data-room-key="${roomKey}" title="Löschen">🗑</button>` : ''}
     </div>
@@ -373,12 +411,12 @@ function _poolBubble(m, cu, { roomKey = '' } = {}) {
       ${!isMe ? `<div class="bubble-avatar" style="background:${grad}" title="@${esc(fromDec)}">${initials}</div>` : ''}
       <div class="bubble-col">
         ${!isMe ? `<div class="bubble-meta"><span class="bubble-username">@${esc(name)}</span><span class="bubble-time-inline">${m.ts ? timeAgo(m.ts, state.lang) : ''}</span></div>` : ''}
+        ${actionsHtml}
         <div class="bubble ${isMe ? 'bubble--me' : 'bubble--them'}"
           data-action="chat:bubble:tap" data-msg-id="${m.id || ''}">
           ${quoteHtml}${textHtml}
         </div>
         ${reactHtml}
-        ${actionsHtml}
         ${isMe ? `<div class="bubble-time">${m.ts ? timeAgo(m.ts, state.lang) : ''}</div>` : ''}
       </div>
     </div>
@@ -854,12 +892,36 @@ function _registerHandlers(cu) {
 
   // ── Nova KI Modal ──────────────────────────────────────
   on('chat:nova:open', () => {
+    _novaPrefillContext = '';
+    _novaPendingReply   = null;
     openModal({
       id:    'nova-modal',
       title: '👑 Nova KI',
       body:  _buildNovaModal(),
     });
     setTimeout(() => document.getElementById('nova-context')?.focus(), 100);
+  });
+
+  // ── Admin: Nova direkt auf Nachricht antworten lassen ──
+  on('chat:nova:reply', (el) => {
+    _novaPrefillContext = el.dataset.msgText || '';
+    _novaPendingReply   = {
+      from: el.dataset.msgFrom || '',
+      text: (el.dataset.msgText || '').slice(0, 80),
+      msgId: el.dataset.msgId || '',
+    };
+    _activeBubbleId = null;
+    _rerenderMessages();
+    openModal({
+      id:    'nova-modal',
+      title: '👑 Nova KI',
+      body:  _buildNovaModal(),
+    });
+    setTimeout(() => {
+      const ctx = document.getElementById('nova-context');
+      if (ctx) { ctx.value = _novaPrefillContext; _autoResize(ctx); }
+      ctx?.focus();
+    }, 100);
   });
 
   on('chat:nova:generate', async () => {
@@ -912,11 +974,13 @@ function _registerHandlers(cu) {
     _novaTypingForUI = true;
     _patchTypingIndicator(cu);
 
-    const pendingReply = _replyTo ? { ..._replyTo } : null;
+    const pendingReply = _replyTo ? { ..._replyTo } : (_novaPendingReply ? { ..._novaPendingReply } : null);
     if (_replyTo) {
       _replyTo = null;
       document.getElementById('reply-bar')?.remove();
     }
+    _novaPendingReply   = null;
+    _novaPrefillContext = '';
 
     closeModal('nova-modal');
 
@@ -930,7 +994,11 @@ function _registerHandlers(cu) {
     toast(t('novaPostedToast') || 'Nova hat geantwortet 👑', 'success');
   });
 
-  on('chat:nova:discard', () => closeModal('nova-modal'));
+  on('chat:nova:discard', () => {
+    _novaPrefillContext = '';
+    _novaPendingReply   = null;
+    closeModal('nova-modal');
+  });
 
   // ── Pin/Unpin message ────────────────────────────────────
   on('chat:pin', (el) => {

@@ -68,30 +68,48 @@
   letter-spacing: 0.2px;
 }
 
-/* ── System messages (Tickets 2+3) ───────────────────────── */
+/* ── System messages pill style (Fix 2) ─────────────────────── */
 .sys-msg {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 2px 0;
+  justify-content: center;
+  gap: 0;
+  padding: 4px 0;
   align-self: stretch;
   pointer-events: none;
   user-select: none;
 }
 
-.sys-msg__line {
-  flex: 1;
-  height: 1px;
-  background: var(--border-subtle);
-  opacity: 0.6;
-}
+.sys-msg__line { display: none; }
 
 .sys-msg__text {
+  display: inline-block;
   font-size: 11px;
   font-weight: 600;
   color: var(--text-tertiary);
-  white-space: nowrap;
-  padding: 0 4px;
+  white-space: normal;
+  word-break: break-word;
+  text-align: center;
+  padding: 3px 10px;
+  max-width: 90%;
+  line-height: 1.4;
+  background: var(--bg-glass);
+  border: 1px solid var(--border-subtle);
+  border-radius: 99px;
+}
+
+/* ── DM tab animated bell (Fix 3) ──────────────────────────── */
+.dm-bell {
+  display: inline-block;
+  font-size: 14px;
+  animation: dm-bell-ring 1s ease-in-out infinite;
+  margin-left: 4px;
+}
+@keyframes dm-bell-ring {
+  0%, 60%, 100% { transform: rotate(0deg); }
+  10%, 30%      { transform: rotate(-18deg); }
+  20%, 40%      { transform: rotate(18deg); }
+  50%           { transform: rotate(-10deg); }
 }
 
 /* ── Chat area ────────────────────────────────────────────── */
@@ -193,6 +211,8 @@
   overflow-wrap: anywhere;
   white-space: pre-wrap;
   max-width: min(280px, 72vw);
+  user-select: text;
+  -webkit-user-select: text;
 }
 .bubble--them {
   background: var(--bg-elevated);
@@ -329,7 +349,7 @@
   align-items: center;
   gap: 1px;
   padding: 5px 8px;
-  margin-top: 6px;
+  margin-bottom: 6px;
   background: color-mix(in srgb, var(--bg-elevated) 85%, transparent);
   backdrop-filter: blur(20px) saturate(1.6);
   -webkit-backdrop-filter: blur(20px) saturate(1.6);
@@ -630,7 +650,23 @@
 :root[data-theme="light"] .bubble-quote--nova .bubble-quote__from { color: #4c1d95; }
 :root[data-theme="light"] .bubble-quote--nova .bubble-quote__text { color: rgba(76,29,149,0.72); }
 
-/* ── Pin button in action bar ─────────────────────────────── */
+/* ── Nova / Pin buttons in action bar ────────────────────── */
+.bubble-action-nova {
+  font-size: 15px;
+  background: none;
+  border: none;
+  border-left: 1px solid var(--border-subtle);
+  cursor: pointer;
+  padding: 4px 8px;
+  margin-left: 2px;
+  border-radius: 0;
+  transition: background 0.1s;
+  display: flex;
+  align-items: center;
+  opacity: 0.75;
+}
+.bubble-action-nova:hover { background: color-mix(in srgb, var(--accent-primary, #7c3aed) 15%, transparent); opacity: 1; }
+
 .bubble-action-pin {
   font-size: 15px;
   background: none;

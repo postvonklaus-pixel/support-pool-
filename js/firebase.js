@@ -42,6 +42,12 @@ export function initFirebase(onUpdate) {
     return Promise.resolve();
   }
 
+  // iOS Safari kills the WebSocket when the tab goes to the background.
+  // goOnline() forces the SDK to re-establish the connection on return.
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && _db) _db.goOnline();
+  });
+
   const authReady = _signInAnonymously(app);
   return new Promise(resolve => {
     authReady.then(() => _autoConnect(resolve));

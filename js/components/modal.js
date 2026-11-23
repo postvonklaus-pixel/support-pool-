@@ -41,7 +41,11 @@ export function openModal({ id, title, body = '', actions = [] }) {
 
   // Close on backdrop click
   backdrop.addEventListener('click', e => {
-    if (e.target === backdrop) closeModal(id);
+    if (e.target !== backdrop) return;
+    if (id === 'support-modal') {
+      import('../features/support.js').then(m => m.clearPendingSupport());
+    }
+    closeModal(id);
   });
 
   container.appendChild(backdrop);
