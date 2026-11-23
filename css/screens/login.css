@@ -959,11 +959,11 @@
   transform: translateY(0);
 }
 
-/* Logo: vollständig sichtbar im PIN-Mode — cover mit höherem Crop-Punkt */
+/* Logo: vollständig sichtbar im PIN-Mode — gleiche Werte wie Name-Step */
 .login-card.pin-active .login-logo {
-  height: 80px;
+  height: 90px;
   object-fit: cover;
-  object-position: center 30%;
+  object-position: center 50%;
 }
 
 /* Header elements collapse with animation */
