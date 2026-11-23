@@ -498,8 +498,8 @@ function _registerHandlers() {
   });
   on('settings:privacy', () => _openPrivacyModal());
   on('settings:homescreen', () => _openHomescreenModal());
-  on('pin:key', (el) => _handlePinKey(el));
-  on('pin:del', () => _handlePinDel());
+  on('settings:pin:key', (el) => _handlePinKey(el));
+  on('settings:pin:del', () => _handlePinDel());
 }
 
 // ── PIN Flow ──────────────────────────────────────────────
@@ -525,9 +525,9 @@ function _pinBody(sub) {
       </div>
       <div class="pin-modal__err" id="pin-err"></div>
       <div class="pin-modal__grid">
-        ${keys.map(n => `<button class="btn pin-key" data-action="pin:key" data-key="${n}">${n}</button>`).join('')}
-        <button class="btn pin-key pin-key--ghost" data-action="pin:del">⌫</button>
-        <button class="btn pin-key" data-action="pin:key" data-key="0">0</button>
+        ${keys.map(n => `<button class="btn pin-key" data-action="settings:pin:key" data-key="${n}">${n}</button>`).join('')}
+        <button class="btn pin-key pin-key--ghost" data-action="settings:pin:del">⌫</button>
+        <button class="btn pin-key" data-action="settings:pin:key" data-key="0">0</button>
         <div></div>
       </div>
     </div>
