@@ -556,6 +556,9 @@ function _handleForgot() {
   setTimeout(() => {
     if (window._nova?.loginAs) window._nova.loginAs(keyAtReset);
     else import('../main.js').then(m => m.loginAs(keyAtReset));
+    setTimeout(() => {
+      import('../screens/settings.js').then(m => m.openPinSetup());
+    }, 600);
   }, 300);
 }
 

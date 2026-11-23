@@ -682,3 +682,7 @@ function _openHomescreenModal() {
     body: block('🍎', 'iPhone / iPad (Safari)', hs.ios) + block('🤖', 'Android (Chrome)', hs.and),
   });
 }
+
+export function openPinSetup() {
+  _openPinModal('set');
+}
