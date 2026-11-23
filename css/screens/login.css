@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════
-   NOVA Support Pool — Login Screen · Obsidian Minimal
+   NOVA Support Pool — Login Screen · Dark Glassmorphism
    ═══════════════════════════════════════════════════════ */
 
 :root {
@@ -23,11 +23,9 @@
   overflow-x: hidden;
   color: var(--login-text-1);
   font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', sans-serif;
-  /* display:none / display:flex handled by layout.css .screen + .active */
   flex-direction: column;
 }
 
-/* When active: cover full viewport including bottom nav */
 #screen-login.active {
   position: fixed;
   inset: 0;
@@ -39,7 +37,7 @@
   .screen--login { padding-top: 0; }
 }
 
-/* ── Background & Orbs ───────────────────────────────── */
+/* ── Background & Glow Orb ───────────────────────────── */
 .login-bg {
   position: fixed;
   inset: 0;
@@ -47,13 +45,32 @@
   z-index: 0;
   background: #000;
 }
-.login-bg::after { display: none; }
+
+/* Radial glow behind logo — depth and atmosphere */
+.login-bg::after {
+  content: '';
+  position: absolute;
+  top: -10%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 70vw;
+  height: 70vw;
+  max-width: 420px;
+  max-height: 420px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center,
+    rgba(124,58,237,0.22) 0%,
+    rgba(103,232,249,0.08) 45%,
+    transparent 72%
+  );
+  filter: blur(28px);
+  pointer-events: none;
+}
 
 .login-orb-1,
 .login-orb-2 {
   display: none;
 }
-
 
 /* ── Top bar ─────────────────────────────────────────── */
 .login-topbar {
@@ -85,7 +102,7 @@
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', sans-serif;
+  font-family: inherit;
   user-select: none;
 }
 
@@ -114,21 +131,19 @@
   width: 100%;
   margin: 0 auto;
   padding:
-    calc(88px + env(safe-area-inset-top, 0px))
-    16px
-    calc(12px + env(safe-area-inset-bottom, 0px))
-    28px;
+    calc(80px + env(safe-area-inset-top, 0px))
+    20px
+    calc(16px + env(safe-area-inset-bottom, 0px))
+    20px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
+  gap: 20px;
   flex: 1;
   box-sizing: border-box;
 }
 
 /* ── Card ────────────────────────────────────────────── */
-/* (border + shadow + blur are baked into bg image) */
-
 .login-card > * {
   position: relative;
   z-index: 2;
@@ -140,7 +155,7 @@
   background: var(--login-card-bg);
   border: 1px solid var(--login-card-border);
   border-radius: 32px;
-  padding: 10px 22px 16px;
+  padding: 10px 22px 20px;
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
   box-shadow: none;
@@ -148,7 +163,7 @@
   box-sizing: border-box;
 }
 
-/* ── Text readability inside glass frame ─────────────── */
+/* ── Text readability ────────────────────────────────── */
 .login-eyebrow,
 .login-subtitle,
 .login-micro,
@@ -177,7 +192,6 @@
 }
 
 /* ── Logo ────────────────────────────────────────────── */
-/* PNG is 848×1264 portrait — use cover to crop to center glow area */
 .login-logo {
   display: block;
   margin: 0 auto;
@@ -257,27 +271,34 @@
   flex-direction: column;
   align-items: center;
   gap: 3px;
-  padding: 12px 6px 10px;
-  background: rgba(40,20,90,0.45);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(180,160,255,0.30);
-  border-radius: 18px;
+  padding: 14px 6px 12px;
+  background: rgba(255,255,255,0.04);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 20px;
   text-align: center;
-  transition: border-color 0.25s;
+  transition: border-color 0.25s, transform 0.15s;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.06),
+    0 4px 24px rgba(0,0,0,0.3);
 }
 
 .login-stat-tile--mid {
   background: rgba(124,58,237,0.09);
-  border-color: rgba(124,58,237,0.22);
+  border-color: rgba(124,58,237,0.25);
   position: relative;
+  box-shadow:
+    inset 0 1px 0 rgba(167,139,250,0.12),
+    0 4px 24px rgba(0,0,0,0.3),
+    0 0 20px rgba(124,58,237,0.12);
 }
 
 .login-stat-tile--mid::before {
   content: '';
   position: absolute;
   inset: -1px;
-  border-radius: 19px;
+  border-radius: 21px;
   background: linear-gradient(135deg, rgba(124,58,237,0.28) 0%, rgba(103,232,249,0.15) 100%);
   pointer-events: none;
   z-index: 0;
@@ -290,7 +311,6 @@
   flex-shrink: 0;
   margin-bottom: 1px;
 }
-
 .login-stat-tile--mid .login-stat-icon {
   stroke: rgba(167,139,250,0.9);
 }
@@ -325,7 +345,6 @@
   color: rgba(167,139,250,0.6);
 }
 
-/* live pulse dot kept for potential re-use */
 .login-live-dot {
   width: 6px; height: 6px;
   border-radius: 50%;
@@ -439,9 +458,7 @@
   -webkit-transform: translateZ(0);
 }
 .login-input::placeholder { color: rgba(255,255,255,0.34); }
-.login-input:focus {
-  background: transparent;
-}
+.login-input:focus { background: transparent; }
 
 /* ── Autocomplete ────────────────────────────────────── */
 .login-autocomplete {
@@ -475,7 +492,7 @@
   font-size: 12px; font-weight: 700; color: #fff; flex-shrink: 0;
 }
 
-/* ── Login button (white / black text) ───────────────── */
+/* ── Login button ────────────────────────────────────── */
 .login-btn {
   display: flex;
   align-items: center;
@@ -559,29 +576,63 @@
 }
 .login-footer__link:hover { color: rgba(255,255,255,0.55); }
 
-/* ── PIN step ────────────────────────────────────────── */
+/* ════════════════════════════════════════════════════════
+   PIN STEP — Dark Glassmorphism Overhaul
+   ════════════════════════════════════════════════════════ */
+
 .login-pin__greet {
-  text-align: center; font-size: 20px; font-weight: 700; color: #fff;
+  text-align: center;
+  font-size: 20px;
+  font-weight: 700;
+  color: #fff;
   margin: 8px 0 4px;
 }
 .login-pin__label {
-  text-align: center; font-size: 14px; color: rgba(255,255,255,0.58);
-  margin-bottom: 8px;
+  text-align: center;
+  font-size: 14px;
+  color: rgba(255,255,255,0.55);
+  margin-bottom: 4px;
 }
+
+/* ── PIN Dots ────────────────────────────────────────── */
 .pin-dots {
-  display: flex; justify-content: center; gap: 16px; padding: 16px 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 18px;
+  padding: 20px 0 16px;
 }
+
 .pin-dot {
-  width: 16px; height: 16px; border-radius: 50%;
-  border: 2px solid rgba(255,255,255,0.28);
-  background: transparent;
-  transition: all 0.2s ease;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.20);
+  background: rgba(255,255,255,0.04);
+  transition: all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
 }
+
 .pin-dot.filled {
   background: var(--login-accent);
   border-color: var(--login-accent);
-  box-shadow: 0 0 12px rgba(167,139,250,0.6);
+  box-shadow:
+    0 0 12px rgba(167,139,250,0.75),
+    0 0 24px rgba(167,139,250,0.35);
+  transform: scale(1.1);
 }
+
+/* All-filled pulse — added by pinpad.js */
+.pin-dots--complete .pin-dot.filled {
+  animation: pinDotPulse 0.42s ease-in-out;
+}
+@keyframes pinDotPulse {
+  0%   { transform: scale(1.1); }
+  40%  { transform: scale(1.35); box-shadow: 0 0 20px rgba(167,139,250,1), 0 0 40px rgba(167,139,250,0.5); }
+  100% { transform: scale(1.1); }
+}
+
+/* Shake on wrong PIN */
 @keyframes pinShake {
   0%,100% { transform: translateX(0); }
   20%      { transform: translateX(-8px); }
@@ -590,35 +641,121 @@
   80%      { transform: translateX(5px); }
 }
 .pin-dots.shake { animation: pinShake 0.4s ease; }
+
+/* ── PIN Pad Grid ────────────────────────────────────── */
 .pin-pad {
-  display: grid; grid-template-columns: repeat(3, 1fr);
-  gap: 8px; margin-top: 8px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-top: 4px;
+  width: 100%;
 }
+
+/* Spacer in grid position 10 (bottom-left) */
+.pin-key-spacer {
+  height: 68px;
+  background: transparent;
+  border: none;
+  pointer-events: none;
+}
+
+/* ── PIN Key buttons ─────────────────────────────────── */
 .pin-key {
-  height: 52px;
-  background: rgba(255,255,255,0.07);
-  border: 1px solid rgba(255,255,255,0.10);
-  border-radius: 16px;
-  font-size: 22px; font-weight: 600; color: #fff;
+  height: 68px;
+  background: rgba(255,255,255,0.055);
+  border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 20px;
+  font-size: 24px;
+  font-weight: 500;
+  color: #fff;
   cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   user-select: none;
+  font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'SF Pro Display', sans-serif;
+  letter-spacing: -0.5px;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.08),
+    0 2px 8px rgba(0,0,0,0.25);
+  transition: background 0.12s ease, transform 0.1s ease, box-shadow 0.12s ease;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  -webkit-tap-highlight-color: transparent;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Subtle shimmer line at top */
+.pin-key::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 10%; right: 10%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.18), transparent);
+  pointer-events: none;
+}
+
+.pin-key:hover {
+  background: rgba(255,255,255,0.09);
+  border-color: rgba(255,255,255,0.14);
+}
+
+.pin-key:active {
+  transform: scale(0.93);
+  background: rgba(124,58,237,0.30);
+  border-color: rgba(167,139,250,0.50);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.08),
+    0 0 16px rgba(124,58,237,0.50),
+    0 0 32px rgba(124,58,237,0.20);
+}
+
+/* Delete key */
+.pin-key--del {
+  font-size: 20px;
+  color: rgba(255,255,255,0.60);
+}
+.pin-key--del:active {
+  color: rgba(255,255,255,0.90);
+  background: rgba(255,255,255,0.08);
+  border-color: rgba(255,255,255,0.15);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 2px 8px rgba(0,0,0,0.25);
+}
+
+/* ── Forgot PIN link (below numpad) ──────────────────── */
+.pin-forgot-btn {
+  display: block;
+  width: 100%;
+  margin-top: 16px;
+  padding: 10px;
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.38);
+  font-size: 13px;
+  font-weight: 500;
   font-family: inherit;
-  transition: all 0.15s;
+  letter-spacing: 0.2px;
+  text-align: center;
+  cursor: pointer;
+  transition: color 0.2s;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: rgba(255,255,255,0.15);
 }
-.pin-key:hover  { background: rgba(255,255,255,0.12); }
-.pin-key:active { transform: scale(0.92); background: rgba(167,139,250,0.25); }
-.pin-key--del   { font-size: 18px; color: rgba(255,255,255,0.55); }
-.pin-key--sm {
-  font-size: 11px;
-  color: var(--login-accent);
-  padding: 0 4px;
-  border-color: rgba(124,58,237,0.3);
-  background: rgba(124,58,237,0.08);
+.pin-forgot-btn:hover {
+  color: rgba(255,255,255,0.75);
+  text-decoration-color: rgba(255,255,255,0.4);
 }
+
+/* ── Forgot PIN card ─────────────────────────────────── */
 .pin-forgot-card {
-  display: flex; flex-direction: column; align-items: center;
-  text-align: center; gap: 12px; padding: 8px 0 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+  padding: 8px 0 4px;
 }
 .pin-forgot-card__icon  { font-size: 40px; line-height: 1; }
 .pin-forgot-card__title { font-size: 20px; font-weight: 700; color: #fff; }
@@ -640,7 +777,8 @@
   background: transparent;
 }
 .login-card .btn--ghost:hover {
-  color: #fff; background: rgba(255,255,255,0.08);
+  color: #fff;
+  background: rgba(255,255,255,0.08);
   border-color: rgba(255,255,255,0.25);
 }
 
@@ -751,12 +889,11 @@
 .login-lang-item__flag { font-size: 22px; flex-shrink: 0; line-height: 1; }
 .login-lang-item__check { margin-left: auto; color: var(--login-accent); font-weight: 700; }
 
-/* Logo is now shown — the nova-logo.png has black bg which blends with the dark login background */
-
 /* ── Responsive: iPhone SE ───────────────────────────── */
 @media (max-width: 375px) {
   .login-card { padding: 24px 18px 18px; }
   .login-h1   { font-size: 20px; }
+  .pin-key    { height: 60px; font-size: 22px; }
 }
 
 /* ── Counter pop on live update ──────────────────────── */
@@ -768,3 +905,6 @@
   45%  { transform: scale(1.22); text-shadow: 0 0 22px #a855f7, 0 0 40px #a855f7; }
   100% { transform: scale(1); text-shadow: none; }
 }
+
+/* Old pin-key--sm is now unused — hidden for safety */
+.pin-key--sm { display: none; }

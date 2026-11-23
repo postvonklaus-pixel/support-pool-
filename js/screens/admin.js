@@ -277,8 +277,9 @@ function _renderAnalytics() {
   }).join('') : `<div class="an-empty">—</div>`;
 
   const topVidsHTML = a.topVids.length ? a.topVids.map(v => {
-    const owner = v.ownerKey || v.owner || '?';
-    const grad = avatarGradient(owner);
+    const ownerRaw = v.ownerKey || v.owner || '?';
+    const owner    = fbDec(ownerRaw).replace(/^@/, '');
+    const grad = avatarGradient(ownerRaw);
     const pct = Math.min(100, Math.round(v.suppCount / (v.r1Need || 10) * 100));
     return `<div class="an-row">
       <div class="an-av" style="background:${grad}">${owner.slice(0,2).toUpperCase()}</div>
@@ -653,14 +654,15 @@ function _renderVideos() {
 
   return `<div class="admin-video-list">
     ${videos.map(([id, v]) => {
-      const owner   = v.ownerKey || v.owner || '?';
+      const ownerRaw = v.ownerKey || v.owner || '?';
+      const owner    = fbDec(ownerRaw).replace(/^@/, '');
       const link    = v.link || v.url || '';
       const r1      = (v.r1Supporters || []).length;
       const r1n     = v.r1Need || R1_NEED;
       const pct     = Math.min(100, Math.round((r1/r1n)*100));
       const status  = v.status || 'open';
       const round   = v.round || 1;
-      const grad    = avatarGradient(owner);
+      const grad    = avatarGradient(ownerRaw);
 
       return `<div class="admin-vid-row">
         <div class="admin-vid-row__av" style="background:${grad}">${owner.slice(0,2).toUpperCase()}</div>

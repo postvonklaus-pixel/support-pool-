@@ -42,7 +42,17 @@ export function handlePinKey(el, maxLen = MAX_LEN) {
   if (dots) renderDots(dots, _value, maxLen);
 
   if (_onChange) _onChange(_value);
-  if (_value.length >= maxLen && _onSubmit) _onSubmit(_value);
+  if (_value.length >= maxLen && _onSubmit) {
+    if (dots) {
+      dots.classList.add('pin-dots--complete');
+      setTimeout(() => {
+        dots.classList.remove('pin-dots--complete');
+        _onSubmit(_value);
+      }, 420);
+    } else {
+      _onSubmit(_value);
+    }
+  }
 }
 
 /** Called by events.js when data-action="pin:del" fires */
