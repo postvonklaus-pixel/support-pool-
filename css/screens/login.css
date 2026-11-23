@@ -585,13 +585,13 @@
   font-size: 20px;
   font-weight: 700;
   color: #fff;
-  margin: 8px 0 4px;
+  margin: 4px 0 2px;
 }
 .login-pin__label {
   text-align: center;
   font-size: 14px;
   color: rgba(255,255,255,0.55);
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 
 /* ── PIN Dots (login screen only) ───────────────────── */
@@ -599,13 +599,13 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 18px;
-  padding: 20px 0 16px;
+  gap: 16px;
+  padding: 12px 0 10px;
 }
 
 #screen-login .pin-dot {
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
   border: 2px solid rgba(255,255,255,0.35);
   background: rgba(255,255,255,0.08);
@@ -646,14 +646,14 @@
 #screen-login .pin-pad {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-  margin-top: 4px;
+  gap: 8px;
+  margin-top: 2px;
   width: 100%;
 }
 
 /* Spacer in grid position 10 (bottom-left) */
 #screen-login .pin-key-spacer {
-  height: 68px;
+  height: 58px;
   background: transparent;
   border: none;
   pointer-events: none;
@@ -663,7 +663,7 @@
 #screen-login .pin-key {
   -webkit-appearance: none;
   appearance: none;
-  height: 68px;
+  height: 58px;
   background: rgba(255,255,255,0.055);
   border: 1px solid rgba(255,255,255,0.09);
   border-radius: 20px;
@@ -729,8 +729,8 @@
 .pin-forgot-btn {
   display: block;
   width: 100%;
-  margin-top: 16px;
-  padding: 10px;
+  margin-top: 8px;
+  padding: 8px;
   background: none;
   border: none;
   color: rgba(255,255,255,0.38);
@@ -895,7 +895,7 @@
 @media (max-width: 375px) {
   .login-card { padding: 24px 18px 18px; }
   .login-h1   { font-size: 20px; }
-  #screen-login .pin-key    { height: 60px; font-size: 22px; }
+  #screen-login .pin-key    { height: 52px; font-size: 20px; }
 }
 
 /* ── Counter pop on live update ──────────────────────── */
