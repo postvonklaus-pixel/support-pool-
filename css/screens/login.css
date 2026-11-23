@@ -959,12 +959,11 @@
   transform: translateY(0);
 }
 
-/* Logo: vollständig sichtbar im PIN-Mode (kein Crop mehr) */
+/* Logo: vollständig sichtbar im PIN-Mode — cover mit höherem Crop-Punkt */
 .login-card.pin-active .login-logo {
-  height: 90px;
-  object-fit: contain;
-  object-position: center center;
-  mix-blend-mode: screen;
+  height: 80px;
+  object-fit: cover;
+  object-position: center 30%;
 }
 
 /* Header elements collapse with animation */
@@ -1017,4 +1016,13 @@
 /* Pin mode: compact top padding */
 .login-card.pin-active {
   padding-top: 8px;
+}
+
+/* Pin mode: kompakteres Numpad damit "Forgot PIN?" immer sichtbar bleibt */
+.login-main--pin #screen-login .pin-key,
+.login-main--pin #screen-login .pin-key-spacer {
+  height: 52px;
+}
+.login-main--pin #screen-login .pin-pad {
+  gap: 6px;
 }
