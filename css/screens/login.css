@@ -910,3 +910,20 @@
 
 /* Old pin-key--sm is now unused — hidden for safety */
 #screen-login .pin-key--sm { display: none; }
+
+/* ── PIN mode: hide shared header so "PIN vergessen?" fits on screen ── */
+/* Uses :has() (Safari 16+ / Chrome 105+) — when PIN step is active,   */
+/* the logo/title/stats are always visible unless we hide them here.    */
+.login-card:has(#login-pin-step:not(.hidden)) .login-logo,
+.login-card:has(#login-pin-step:not(.hidden)) .login-logo-fallback,
+.login-card:has(#login-pin-step:not(.hidden)) .login-eyebrow,
+.login-card:has(#login-pin-step:not(.hidden)) #login-h1,
+.login-card:has(#login-pin-step:not(.hidden)) #login-h2,
+.login-card:has(#login-pin-step:not(.hidden)) .login-subtitle,
+.login-card:has(#login-pin-step:not(.hidden)) .login-divider,
+.login-card:has(#login-pin-step:not(.hidden)) .login-stats-row {
+  display: none !important;
+}
+.login-card:has(#login-pin-step:not(.hidden)) {
+  padding-top: 10px;
+}

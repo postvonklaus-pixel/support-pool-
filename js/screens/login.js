@@ -540,12 +540,13 @@ function _checkPin(entered, stored) {
 function _handleForgot() {
   const pinStep = ge('login-pin-step');
   if (!pinStep) return;
+  const displayName = fbDec(_username).replace(/^@+/, '');
   pinStep.innerHTML = `
     <div class="pin-forgot-card">
       <div class="pin-forgot-card__icon">🔑</div>
       <div class="pin-forgot-card__title">${t('pinResetTitle')}</div>
       <div class="pin-forgot-card__sub">
-        <strong>@${_username}</strong><br>${t('pinResetSub')}
+        <strong>@${displayName}</strong><br>${t('pinResetSub')}
       </div>
       <button class="btn btn--danger btn--full" id="pin-reset-confirm">
         ${t('pinResetConfirmBtn')}
@@ -555,11 +556,13 @@ function _handleForgot() {
       </button>
     </div>
   `;
+  const keyAtReset = _username;
   ge('pin-reset-confirm')?.addEventListener('click', () => {
-    import('../firebase.js').then(({ writeDB }) => {
-      writeDB(`members/${_username}/memberPin`, null);
-      import('../main.js').then(m => m.loginAs(_username));
-    });
+    writeDB(`members/${keyAtReset}/memberPin`, null);
+    setTimeout(() => {
+      if (window._nova?.loginAs) window._nova.loginAs(keyAtReset);
+      else import('../main.js').then(m => m.loginAs(keyAtReset));
+    }, 300);
   });
   ge('pin-reset-cancel')?.addEventListener('click', () => {
     const u = state.db.members?.[_username] || {};

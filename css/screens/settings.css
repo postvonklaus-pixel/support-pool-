@@ -361,16 +361,16 @@
   font-size: 1.25rem;
   font-weight: 700;
   border-radius: var(--radius-lg, 12px);
-  border: 1.5px solid rgba(0,0,0,0.12);
-  background: var(--bg-elevated, #f0f0f3);
+  border: 1.5px solid rgba(0,0,0,0.14);
+  background: var(--bg-overlay, #eef0f5);
   color: var(--text-primary);
   cursor: pointer;
   transition: background 0.12s, transform 0.1s;
   -webkit-tap-highlight-color: transparent;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.10);
 }
 
-.pin-key:active { transform: scale(0.92); background: var(--bg-glass); }
+.pin-key:active { transform: scale(0.92); background: var(--accent-primary-soft, rgba(124,58,237,0.10)); }
 
 .pin-key--ghost {
   background: transparent;
