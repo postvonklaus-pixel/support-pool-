@@ -1027,15 +1027,30 @@
   gap: 6px;
 }
 
-/* Forgot PIN: immer am unteren Bildschirmrand — unabhängig von Viewport-Höhe */
-.login-main--pin .pin-forgot-btn {
-  position: fixed;
-  bottom: calc(env(safe-area-inset-bottom, 12px) + 10px);
-  left: 0;
-  right: 0;
-  z-index: 200;
-  margin-top: 0;
-  background: rgba(5,3,10,0.6);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+/* Forgot PIN: im Numpad-Grid (Spacer-Position) — kein Overflow-Problem */
+#screen-login .pin-key--forgot {
+  background: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  color: rgba(255,255,255,0.38);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.2px;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  text-decoration-color: rgba(255,255,255,0.15);
+  white-space: normal;
+  line-height: 1.2;
+  padding: 4px 2px;
+  word-break: break-word;
+}
+#screen-login .pin-key--forgot:hover,
+#screen-login .pin-key--forgot:active {
+  color: rgba(255,255,255,0.75);
+  background: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+  transform: none;
 }
