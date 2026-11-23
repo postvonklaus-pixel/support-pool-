@@ -441,12 +441,21 @@ function _handleNameSubmit() {
 }
 
 function _showPinStep(username, u) {
-  ge('login-name-step')?.classList.add('hidden');
+  const card    = document.querySelector('#screen-login .login-card');
   const pinStep = ge('login-pin-step');
-  if (pinStep) pinStep.classList.remove('hidden');
+  const nameStep = ge('login-name-step');
 
   const greet = ge('pin-greet');
   if (greet) greet.textContent = `Hey ${username} 👋`;
+
+  // Show pin step (opacity:0 from CSS) and hide name step
+  if (pinStep)   pinStep.classList.remove('hidden');
+  if (nameStep)  nameStep.classList.add('hidden');
+
+  // Double-rAF: ensures browser renders opacity:0 before triggering transition
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    card?.classList.add('pin-active');
+  }));
 
   initPinPad({ maxLen: 4, onSubmit: (pin) => _checkPin(pin, u.memberPin) });
 }
@@ -589,6 +598,10 @@ function _countUp(el, target, duration) {
 function _reset() {
   _step = 'name';
   _username = '';
+
+  const card = document.querySelector('#screen-login .login-card');
+  card?.classList.remove('pin-active');
+
   ge('login-name-step')?.classList.remove('hidden');
   ge('login-pin-step')?.classList.add('hidden');
   ge('login-register-step')?.classList.add('hidden');
