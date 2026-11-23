@@ -24,7 +24,15 @@ let _pinBuf   = '';
 let _pinStep  = 'new';   // 'new' | 'confirm'
 let _pinFirst = '';
 let _pinFlow  = 'set';   // 'set' | 'change' | 'disable'
+let _pinTimer = null;
 const PIN_LEN = 4;
+
+// Scope queries to the currently visible PIN modal — avoids stale #pin-dots
+// from a closing modal that hasn't finished its CSS transition yet.
+function _getPinModal() {
+  return document.querySelector('.modal-backdrop.open[data-modal="settings-pin"]')
+      || document.querySelector('.modal-backdrop[data-modal="settings-pin"]');
+}
 
 // ── Privacy content ────────────────────────────────────────
 const PRIVACY = {
@@ -505,6 +513,8 @@ function _registerHandlers() {
 // ── PIN Flow ──────────────────────────────────────────────
 
 function _openPinModal(flow) {
+  clearTimeout(_pinTimer);
+  _pinTimer = null;
   _pinBuf = ''; _pinStep = 'new'; _pinFirst = ''; _pinFlow = flow;
   const labels = {
     set:     { title: t('pinSetupTitle'),   sub: t('pinNewSub') },
@@ -535,7 +545,8 @@ function _pinBody(sub) {
 }
 
 function _updatePinDots() {
-  const c = document.getElementById('pin-dots');
+  const modal = _getPinModal();
+  const c = modal ? modal.querySelector('.pin-modal__dots') : document.getElementById('pin-dots');
   if (!c) return;
   c.innerHTML = Array.from({length: PIN_LEN}, (_, i) =>
     `<span class="pin-dot${i < _pinBuf.length ? ' pin-dot--filled' : ''}"></span>`
@@ -543,7 +554,8 @@ function _updatePinDots() {
 }
 
 function _setPinErr(msg) {
-  const e = document.getElementById('pin-err');
+  const modal = _getPinModal();
+  const e = modal ? modal.querySelector('.pin-modal__err') : document.getElementById('pin-err');
   if (e) e.textContent = msg;
 }
 
@@ -553,7 +565,10 @@ function _handlePinKey(el) {
   _pinBuf += key;
   _updatePinDots();
   _setPinErr('');
-  if (_pinBuf.length === PIN_LEN) setTimeout(_confirmPin, 150);
+  if (_pinBuf.length === PIN_LEN) {
+    clearTimeout(_pinTimer);
+    _pinTimer = setTimeout(_confirmPin, 150);
+  }
 }
 
 function _handlePinDel() {
@@ -581,7 +596,8 @@ function _confirmPin() {
   if (_pinStep === 'new') {
     _pinFirst = _pinBuf; _pinBuf = ''; _pinStep = 'confirm';
     _updatePinDots();
-    const sub = document.getElementById('pin-modal-sub');
+    const modal = _getPinModal();
+    const sub = modal ? modal.querySelector('.pin-modal__sub') : document.getElementById('pin-modal-sub');
     if (sub) sub.textContent = t('pinConfirmSub');
     _setPinErr('');
   } else {
@@ -594,7 +610,8 @@ function _confirmPin() {
       _setPinErr(t('pinMismatch'));
       _pinBuf = ''; _pinFirst = ''; _pinStep = 'new';
       _updatePinDots();
-      const sub = document.getElementById('pin-modal-sub');
+      const modal = _getPinModal();
+      const sub = modal ? modal.querySelector('.pin-modal__sub') : document.getElementById('pin-modal-sub');
       if (sub) sub.textContent = t('pinNewSub');
     }
   }
