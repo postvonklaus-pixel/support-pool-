@@ -441,8 +441,9 @@ function _handleNameSubmit() {
 }
 
 function _showPinStep(username, u) {
-  const card    = document.querySelector('#screen-login .login-card');
-  const pinStep = ge('login-pin-step');
+  const card     = document.querySelector('#screen-login .login-card');
+  const mainEl   = document.querySelector('#screen-login .login-main');
+  const pinStep  = ge('login-pin-step');
   const nameStep = ge('login-name-step');
 
   const greet = ge('pin-greet');
@@ -451,6 +452,9 @@ function _showPinStep(username, u) {
   // Show pin step (opacity:0 from CSS) and hide name step
   if (pinStep)   pinStep.classList.remove('hidden');
   if (nameStep)  nameStep.classList.add('hidden');
+
+  // Constrain container to 100dvh (no overflow, logo stays below header)
+  mainEl?.classList.add('login-main--pin');
 
   // Double-rAF: ensures browser renders opacity:0 before triggering transition
   requestAnimationFrame(() => requestAnimationFrame(() => {
@@ -599,8 +603,10 @@ function _reset() {
   _step = 'name';
   _username = '';
 
-  const card = document.querySelector('#screen-login .login-card');
+  const card   = document.querySelector('#screen-login .login-card');
+  const mainEl = document.querySelector('#screen-login .login-main');
   card?.classList.remove('pin-active');
+  mainEl?.classList.remove('login-main--pin');
 
   ge('login-name-step')?.classList.remove('hidden');
   ge('login-pin-step')?.classList.add('hidden');

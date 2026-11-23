@@ -138,9 +138,16 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: flex-start;
   gap: 14px;
   flex: 1;
   box-sizing: border-box;
+}
+
+/* PIN-Mode: Höhe auf 100dvh begrenzen, kein Scrollen */
+.login-main--pin {
+  height: 100dvh;
+  overflow: hidden;
 }
 
 /* ── Card ────────────────────────────────────────────── */
@@ -204,6 +211,7 @@
   object-position: center 55%;
   user-select: none;
   -webkit-user-drag: none;
+  flex-shrink: 0;
   transition: height 0.35s ease-in-out;
 }
 
@@ -951,9 +959,11 @@
   transform: translateY(0);
 }
 
-/* Logo shrinks in pin mode */
+/* Logo: vollständig sichtbar im PIN-Mode (kein Crop mehr) */
 .login-card.pin-active .login-logo {
-  height: 70px;
+  height: 90px;
+  object-fit: contain;
+  object-position: center center;
   mix-blend-mode: screen;
 }
 
