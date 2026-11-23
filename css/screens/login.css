@@ -1018,11 +1018,24 @@
   padding-top: 8px;
 }
 
-/* Pin mode: kompakteres Numpad damit "Forgot PIN?" immer sichtbar bleibt */
+/* Pin mode: kompakteres Numpad */
 .login-main--pin #screen-login .pin-key,
 .login-main--pin #screen-login .pin-key-spacer {
   height: 52px;
 }
 .login-main--pin #screen-login .pin-pad {
   gap: 6px;
+}
+
+/* Forgot PIN: immer am unteren Bildschirmrand — unabhängig von Viewport-Höhe */
+.login-main--pin .pin-forgot-btn {
+  position: fixed;
+  bottom: calc(env(safe-area-inset-bottom, 12px) + 10px);
+  left: 0;
+  right: 0;
+  z-index: 200;
+  margin-top: 0;
+  background: rgba(5,3,10,0.6);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
