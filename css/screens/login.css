@@ -594,8 +594,8 @@
   margin-bottom: 4px;
 }
 
-/* ── PIN Dots ────────────────────────────────────────── */
-.pin-dots {
+/* ── PIN Dots (login screen only) ───────────────────── */
+#screen-login .pin-dots {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -603,17 +603,17 @@
   padding: 20px 0 16px;
 }
 
-.pin-dot {
+#screen-login .pin-dot {
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  border: 2px solid rgba(255,255,255,0.30);
-  background: rgba(255,255,255,0.06);
+  border: 2px solid rgba(255,255,255,0.35);
+  background: rgba(255,255,255,0.08);
   transition: all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
   position: relative;
 }
 
-.pin-dot.filled {
+#screen-login .pin-dot.filled {
   background: var(--login-accent);
   border-color: var(--login-accent);
   box-shadow:
@@ -622,8 +622,8 @@
   transform: scale(1.1);
 }
 
-/* All-filled pulse — added by pinpad.js */
-.pin-dots--complete .pin-dot.filled {
+/* All-filled pulse */
+#screen-login .pin-dots--complete .pin-dot.filled {
   animation: pinDotPulse 0.42s ease-in-out;
 }
 @keyframes pinDotPulse {
@@ -640,10 +640,10 @@
   60%      { transform: translateX(-5px); }
   80%      { transform: translateX(5px); }
 }
-.pin-dots.shake { animation: pinShake 0.4s ease; }
+#screen-login .pin-dots.shake { animation: pinShake 0.4s ease; }
 
-/* ── PIN Pad Grid ────────────────────────────────────── */
-.pin-pad {
+/* ── PIN Pad Grid (login screen only) ───────────────── */
+#screen-login .pin-pad {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 10px;
@@ -652,15 +652,15 @@
 }
 
 /* Spacer in grid position 10 (bottom-left) */
-.pin-key-spacer {
+#screen-login .pin-key-spacer {
   height: 68px;
   background: transparent;
   border: none;
   pointer-events: none;
 }
 
-/* ── PIN Key buttons ─────────────────────────────────── */
-.pin-key {
+/* ── PIN Key buttons (login screen only — dark glass) ── */
+#screen-login .pin-key {
   -webkit-appearance: none;
   appearance: none;
   height: 68px;
@@ -689,7 +689,7 @@
 }
 
 /* Subtle shimmer line at top */
-.pin-key::before {
+#screen-login .pin-key::before {
   content: '';
   position: absolute;
   top: 0; left: 10%; right: 10%;
@@ -698,12 +698,12 @@
   pointer-events: none;
 }
 
-.pin-key:hover {
+#screen-login .pin-key:hover {
   background: rgba(255,255,255,0.09);
   border-color: rgba(255,255,255,0.14);
 }
 
-.pin-key:active {
+#screen-login .pin-key:active {
   transform: scale(0.93);
   background: rgba(124,58,237,0.30);
   border-color: rgba(167,139,250,0.50);
@@ -714,11 +714,11 @@
 }
 
 /* Delete key */
-.pin-key--del {
+#screen-login .pin-key--del {
   font-size: 20px;
   color: rgba(255,255,255,0.60);
 }
-.pin-key--del:active {
+#screen-login .pin-key--del:active {
   color: rgba(255,255,255,0.90);
   background: rgba(255,255,255,0.08);
   border-color: rgba(255,255,255,0.15);
@@ -895,7 +895,7 @@
 @media (max-width: 375px) {
   .login-card { padding: 24px 18px 18px; }
   .login-h1   { font-size: 20px; }
-  .pin-key    { height: 60px; font-size: 22px; }
+  #screen-login .pin-key    { height: 60px; font-size: 22px; }
 }
 
 /* ── Counter pop on live update ──────────────────────── */
@@ -909,4 +909,4 @@
 }
 
 /* Old pin-key--sm is now unused — hidden for safety */
-.pin-key--sm { display: none; }
+#screen-login .pin-key--sm { display: none; }
