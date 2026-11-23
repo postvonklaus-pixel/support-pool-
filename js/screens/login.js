@@ -551,36 +551,12 @@ function _checkPin(entered, stored) {
   }
 }
 function _handleForgot() {
-  const pinStep = ge('login-pin-step');
-  if (!pinStep) return;
-  const displayName = fbDec(_username).replace(/^@+/, '');
-  pinStep.innerHTML = `
-    <div class="pin-forgot-card">
-      <div class="pin-forgot-card__icon">🔑</div>
-      <div class="pin-forgot-card__title">${t('pinResetTitle')}</div>
-      <div class="pin-forgot-card__sub">
-        <strong>@${displayName}</strong><br>${t('pinResetSub')}
-      </div>
-      <button class="btn btn--danger btn--full" id="pin-reset-confirm">
-        ${t('pinResetConfirmBtn')}
-      </button>
-      <button class="btn btn--ghost btn--full" id="pin-reset-cancel" style="margin-top:8px">
-        ${t('cancel')}
-      </button>
-    </div>
-  `;
   const keyAtReset = _username;
-  ge('pin-reset-confirm')?.addEventListener('click', () => {
-    writeDB(`members/${keyAtReset}/memberPin`, null);
-    setTimeout(() => {
-      if (window._nova?.loginAs) window._nova.loginAs(keyAtReset);
-      else import('../main.js').then(m => m.loginAs(keyAtReset));
-    }, 300);
-  });
-  ge('pin-reset-cancel')?.addEventListener('click', () => {
-    const u = state.db.members?.[_username] || {};
-    _showPinStep(_username, u);
-  });
+  writeDB(`members/${keyAtReset}/memberPin`, null);
+  setTimeout(() => {
+    if (window._nova?.loginAs) window._nova.loginAs(keyAtReset);
+    else import('../main.js').then(m => m.loginAs(keyAtReset));
+  }, 300);
 }
 
 // ── Count-up animation ────────────────────────────────
