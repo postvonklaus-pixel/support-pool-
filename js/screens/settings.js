@@ -684,5 +684,6 @@ function _openHomescreenModal() {
 }
 
 export function openPinSetup() {
+  _registerHandlers();
   _openPinModal('set');
 }
