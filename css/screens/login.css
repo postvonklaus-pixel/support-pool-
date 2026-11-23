@@ -197,8 +197,8 @@
   margin: 0 auto;
   width: min(72vw, 280px);
   height: 110px;
-  object-fit: contain;
-  object-position: center center;
+  object-fit: cover;
+  object-position: center 55%;
   user-select: none;
   -webkit-user-drag: none;
 }
