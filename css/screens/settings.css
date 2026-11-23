@@ -327,17 +327,23 @@
 }
 
 .pin-dot {
-  width: 16px;
-  height: 16px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
-  border: 2px solid rgba(100,100,100,0.45);
+  border: 2.5px solid rgba(0,0,0,0.28);
   background: transparent;
-  transition: background 0.15s, border-color 0.15s;
+  transition: background 0.15s, border-color 0.15s, transform 0.15s;
 }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .pin-dot { border-color: rgba(255,255,255,0.35); }
+}
+:root[data-theme="dark"] .pin-dot { border-color: rgba(255,255,255,0.35); }
 
-.pin-dot--filled {
-  background: var(--accent-primary);
-  border-color: var(--accent-primary);
+.pin-dot--filled,
+.pin-dot.filled {
+  background: var(--accent-primary, #7c3aed);
+  border-color: var(--accent-primary, #7c3aed);
+  transform: scale(1.12);
 }
 
 .pin-modal__err {
@@ -361,13 +367,13 @@
   font-size: 1.25rem;
   font-weight: 700;
   border-radius: var(--radius-lg, 12px);
-  border: 1.5px solid rgba(0,0,0,0.14);
+  border: 1.5px solid var(--border-default, rgba(15,16,32,0.10));
   background: var(--bg-overlay, #eef0f5);
   color: var(--text-primary);
   cursor: pointer;
   transition: background 0.12s, transform 0.1s;
   -webkit-tap-highlight-color: transparent;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.10);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
 }
 
 .pin-key:active { transform: scale(0.92); background: var(--accent-primary-soft, rgba(124,58,237,0.10)); }
