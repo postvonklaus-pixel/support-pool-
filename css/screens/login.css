@@ -391,6 +391,7 @@
 /* ── Input area ──────────────────────────────────────── */
 .login-input-wrap {
   position: relative;
+  z-index: 10;
   margin-top: 22px;
   border-radius: 999px;
   background: linear-gradient(180deg,

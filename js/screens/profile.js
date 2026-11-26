@@ -7,7 +7,7 @@ import { t }          from '../i18n.js';
 import { esc, avatarGradient, getNextFridayWIB, todayWIB, fbDec } from '../utils.js';
 import { on }         from '../events.js';
 import { progressRing, streakFlames } from '../components/progress.js';
-import { renderAchievements } from '../features/achievements.js';
+import { renderAchievements, ACHIEVEMENTS } from '../features/achievements.js';
 import { isVerified, VERIFIED_BADGE } from '../features/verification.js';
 
 function _ranks() {
@@ -176,7 +176,7 @@ export function render() {
       <div class="profile-section">
         <div class="profile-section__head">
           <span class="profile-section__title">${t('achievTitle')}</span>
-          <span class="profile-section__sub">${t('achievUnlocked').replace('{n}', (u.achievements || []).length)}</span>
+          <span class="profile-section__sub">${t('achievUnlocked').replace('{n}', (u.achievements || []).length).replace('{total}', ACHIEVEMENTS.length)}</span>
         </div>
         ${renderAchievements(cu)}
       </div>
