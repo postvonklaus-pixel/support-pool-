@@ -186,6 +186,10 @@ export function render() {
         <button class="btn btn--gold btn--full" data-action="profile:check">
           ✨ ${t('profCheckBtn') || 'Profil-Check'}
         </button>
+        ${u.role === 'team-admin' ? `
+        <button class="btn btn--primary btn--full" data-action="profile:my-team">
+          👥 ${t('profileMyTeam') || 'Mein Team'}
+        </button>` : ''}
         <div class="profile-actions-row">
           <button class="btn btn--ghost btn--full" data-action="nav:goto" data-screen="settings" style="flex:1">
             ⚙️ ${t('settings') || 'Einstellungen'}
@@ -228,6 +232,113 @@ function _registerHandlers() {
   on('settings:logout', () => {
     if (window._nova?.logout) window._nova.logout();
     else import('../main.js').then(m => m.logout());
+  });
+
+  on('profile:my-team', () => {
+    _openTeamAdminModal();
+  });
+
+  on('profile:team:pool-chat', () => {
+    import('../components/modal.js').then(({ closeModal }) => closeModal('team-admin-modal'));
+    import('../router.js').then(({ goScreen }) => goScreen('chat'));
+  });
+
+  on('profile:team:dm', (el) => {
+    const partner = el.dataset.partner;
+    if (!partner) return;
+    import('../components/modal.js').then(({ closeModal }) => closeModal('team-admin-modal'));
+    import('../router.js').then(({ goScreen }) => goScreen('chat')).then(() => {
+      setTimeout(() => {
+        const btn = document.createElement('button');
+        btn.dataset.action = 'chat:dm:open';
+        btn.dataset.partner = partner;
+        btn.style.display = 'none';
+        document.body.appendChild(btn);
+        btn.click();
+        btn.remove();
+      }, 300);
+    });
+  });
+}
+
+function _openTeamAdminModal() {
+  import('../components/modal.js').then(({ openModal }) => {
+    const cu = state.currentUser;
+    if (!cu) return;
+
+    // Find my team
+    const myGroup = Object.entries(state.db.groups || {}).find(([, g]) =>
+      g.teamAdminKey === cu || (g.members || []).includes(cu)
+    );
+    if (!myGroup) {
+      import('../components/toast.js').then(({ toast }) =>
+        toast('Kein Team gefunden', 'warning')
+      );
+      return;
+    }
+
+    const [gid, g] = myGroup;
+    const memberKeys = Array.isArray(g.members) ? g.members : Object.values(g.members || {});
+    const members = memberKeys
+      .map(k => ({ key: k, m: state.db.members?.[k] }))
+      .filter(x => x.m);
+
+    const activeMembers = members.filter(x => x.m.status === 'active' || !x.m.status);
+    const openVids = Object.values(state.db.videos || {}).filter(v =>
+      v.status === 'open' && memberKeys.includes(v.ownerKey || v.owner)
+    ).length;
+    const teamBalance = members.reduce((s, { m }) =>
+      s + ((m.stats?.given || 0) - (m.stats?.received || 0)), 0
+    );
+
+    import('../utils.js').then(({ esc, avatarGradient, fbDec }) => {
+      openModal({
+        id: 'team-admin-modal',
+        title: `${esc(g.name)} · ${t('teamAdminModalTitle') || 'Admin-Ansicht'}`,
+        body: `
+          <div style="display:flex;gap:12px;margin-bottom:16px">
+            <div class="profile-stat-card" style="flex:1;text-align:center;padding:10px 6px">
+              <div style="font-size:22px;font-weight:700;color:var(--accent)">${activeMembers.length}</div>
+              <div style="font-size:11px;color:var(--fg-3)">Mitglieder</div>
+            </div>
+            <div class="profile-stat-card" style="flex:1;text-align:center;padding:10px 6px">
+              <div style="font-size:22px;font-weight:700;color:var(--accent)">${openVids}</div>
+              <div style="font-size:11px;color:var(--fg-3)">Offene Videos</div>
+            </div>
+            <div class="profile-stat-card" style="flex:1;text-align:center;padding:10px 6px">
+              <div style="font-size:22px;font-weight:700;color:${teamBalance>=0?'#22c55e':'#ef4444'}">${teamBalance>=0?'+':''}${teamBalance}</div>
+              <div style="font-size:11px;color:var(--fg-3)">Team-Balance</div>
+            </div>
+          </div>
+          <div style="font-size:13px;font-weight:600;color:var(--fg-2);margin-bottom:8px">Mitglieder</div>
+          <div style="max-height:240px;overflow-y:auto;display:flex;flex-direction:column;gap:6px">
+            ${members.map(({ key, m }) => {
+              const grad = avatarGradient(key);
+              const name = esc(m.name || fbDec(key));
+              const bal  = (m.stats?.given || 0) - (m.stats?.received || 0);
+              const balCls = bal > 0 ? '#22c55e' : bal < 0 ? '#ef4444' : 'var(--fg-3)';
+              return `<div style="display:flex;align-items:center;gap:10px;padding:6px 2px">
+                <div style="width:32px;height:32px;border-radius:50%;background:${grad};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0">${key.slice(0,2).toUpperCase()}</div>
+                <div style="flex:1;min-width:0">
+                  <div style="font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${name}</div>
+                  <div style="font-size:11px;color:var(--fg-3)">G:${m.stats?.given||0} · R:${m.stats?.received||0}</div>
+                </div>
+                <span style="font-size:12px;font-weight:600;color:${balCls};flex-shrink:0">${bal>0?'+':''}${bal}</span>
+                <button class="btn btn--ghost btn--icon btn--sm" data-action="profile:team:dm" data-partner="${esc(key)}" title="DM senden">💬</button>
+              </div>`;
+            }).join('')}
+          </div>
+          <div style="display:flex;gap:8px;margin-top:16px">
+            <button class="btn btn--primary btn--full" data-action="profile:team:pool-chat">
+              💬 Pool-Chat öffnen
+            </button>
+            <button class="btn btn--ghost" data-action="modal:close" data-modal="team-admin-modal">
+              Schließen
+            </button>
+          </div>`,
+        actions: []
+      });
+    });
   });
 }
 

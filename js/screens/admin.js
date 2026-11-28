@@ -613,8 +613,13 @@ function _adminMemberRow(key, m) {
         </button>
       ` : `
         <button class="btn btn--ghost btn--icon btn--sm"
-          data-action="admin:member:assign-group" data-key="${esc(key)}" title="Gruppe zuweisen" aria-label="Gruppe">
+          data-action="admin:member:assign-group" data-key="${esc(key)}" title="Team zuweisen" aria-label="Team">
           📁
+        </button>
+        <button class="btn btn--ghost btn--icon btn--sm"
+          data-action="admin:member:set-team-admin" data-key="${esc(key)}"
+          title="${t('adminTeamSetAdmin') || 'Team-Admin'}" aria-label="Team-Admin">
+          👑
         </button>
         <button class="btn btn--ghost btn--icon btn--sm"
           data-action="admin:member:balance" data-key="${esc(key)}" title="Balance anpassen" aria-label="Balance">
@@ -785,28 +790,41 @@ function _renderGroups() {
   const groups = Object.values(state.db.groups || {})
     .sort((a, b) => (a.number||0) - (b.number||0));
 
-  if (!groups.length) return `<div class="admin-empty">${t('adminNoGroups')}</div>`;
+  const noGroupsHtml = `<div class="admin-empty">${t('adminNoGroups')}</div>`;
 
-  return `<div class="admin-groups-list">
+  return `
+    <div class="admin-groups-toolbar">
+      <button class="btn btn--primary btn--sm" data-action="admin:team:create">
+        ➕ ${t('adminTeamCreate') || 'Neues Team'}
+      </button>
+    </div>
+    ${!groups.length ? noGroupsHtml : `<div class="admin-groups-list">
     ${groups.map(g => {
+      const gid     = g.id || '';
       const keys    = Array.isArray(g.members) ? g.members : Object.values(g.members || {});
       const active  = keys.filter(k => state.db.members?.[k]?.status === 'active').length;
       const inactive = keys.length - active;
       const badge   = inactive > 0
         ? `${active} aktiv · <span style="opacity:.6">${inactive} inaktiv</span>`
         : `${active} ${t('adminTabMembers')}`;
+      const adminKey = g.teamAdminKey || '';
+      const adminName = adminKey ? (state.db.members?.[adminKey]?.name || adminKey) : '';
       return `<div class="admin-group-card">
         <div class="admin-group-card__head">
           <div class="admin-group-card__name">${esc(g.name)}</div>
           <span class="badge badge--primary">${badge}</span>
+          <button class="btn btn--ghost btn--icon btn--sm" style="margin-left:auto"
+            data-action="admin:team:rename" data-gid="${esc(gid)}" data-gname="${esc(g.name)}"
+            title="${t('adminTeamRename') || 'Umbenennen'}" aria-label="Umbenennen">✏️</button>
         </div>
         <div class="admin-group-card__meta">
           ${g.id ? `<span class="admin-group-card__id">ID: ${esc(g.id)}</span>` : ''}
           ${g.number != null ? `<span>Nr. ${g.number}</span>` : ''}
+          ${adminKey ? `<span class="admin-group-card__admin">👑 ${esc(adminName)}</span>` : ''}
         </div>
       </div>`;
     }).join('')}
-  </div>`;
+  </div>`}`;
 }
 
 // ── Send weekly message to all active members ──────────────
@@ -981,6 +999,170 @@ function _registerHandlers() {
 
     closeModal(modalId);
     toast(`@${key} ${newGid ? 'zugewiesen' : 'aus Gruppe entfernt'}`, 'success');
+    setTimeout(render, 400);
+  });
+
+  on('admin:member:set-team-admin', async (el) => {
+    const key = el.dataset.key;
+    if (!key) return;
+    const m = state.db.members?.[key];
+    if (!m) return;
+
+    // Find which team this member belongs to
+    const memberGroup = Object.entries(state.db.groups || {}).find(([, g]) =>
+      (g.members || []).includes(key)
+    );
+
+    const isAlreadyAdmin = m.role === 'team-admin';
+
+    const modalId = 'set-team-admin-modal';
+    const groups = Object.values(state.db.groups || {}).sort((a, b) => (a.number||0) - (b.number||0));
+
+    openModal({
+      id: modalId,
+      title: `👑 ${t('adminTeamSetAdmin') || 'Team-Admin'}: @${key}`,
+      body: `
+        <div style="margin-bottom:12px;font-size:14px;color:var(--fg-2)">
+          ${isAlreadyAdmin
+            ? `<span style="color:var(--accent)">👑 Aktuell Team-Admin ${memberGroup ? `von ${esc(memberGroup[1].name)}` : ''}</span>`
+            : `Kein Team-Admin-Status`}
+        </div>
+        ${!memberGroup ? `<div style="color:var(--fg-3);font-size:13px;margin-bottom:12px">⚠️ Mitglied ist keinem Team zugewiesen.</div>` : ''}
+        <div style="display:flex;flex-direction:column;gap:8px">
+          ${!isAlreadyAdmin && memberGroup ? `<button class="btn btn--primary btn--full"
+            data-action="admin:member:confirm-team-admin" data-key="${esc(key)}" data-gid="${esc(memberGroup[0])}" data-modal="${modalId}">
+            👑 Als Team-Admin festlegen
+          </button>` : ''}
+          ${isAlreadyAdmin ? `<button class="btn btn--ghost btn--full" style="color:var(--fg-3)"
+            data-action="admin:member:remove-team-admin" data-key="${esc(key)}" data-modal="${modalId}">
+            Team-Admin entfernen
+          </button>` : ''}
+        </div>`,
+      actions: []
+    });
+  });
+
+  on('admin:member:confirm-team-admin', async (el) => {
+    const key     = el.dataset.key;
+    const gid     = el.dataset.gid;
+    const modalId = el.dataset.modal;
+    if (!key || !gid) return;
+
+    // Remove team-admin role from any previous admin of this group
+    const prevAdminKey = state.db.groups?.[gid]?.teamAdminKey;
+    if (prevAdminKey && prevAdminKey !== key) {
+      writeDB(`members/${prevAdminKey}/role`, null);
+    }
+
+    writeDB(`members/${key}/role`, 'team-admin');
+    writeDB(`groups/${gid}/teamAdminKey`, key);
+
+    closeModal(modalId);
+    const gname = state.db.groups?.[gid]?.name || gid;
+    toast(`👑 @${key} ist jetzt Team-Admin von ${gname}`, 'success', 4000);
+    setTimeout(render, 400);
+  });
+
+  on('admin:member:remove-team-admin', async (el) => {
+    const key     = el.dataset.key;
+    const modalId = el.dataset.modal;
+    if (!key) return;
+
+    // Remove teamAdminKey from whatever group has this member
+    Object.entries(state.db.groups || {}).forEach(([gid, g]) => {
+      if (g.teamAdminKey === key) writeDB(`groups/${gid}/teamAdminKey`, null);
+    });
+    writeDB(`members/${key}/role`, null);
+
+    closeModal(modalId);
+    toast(`@${key} Team-Admin-Status entfernt`, 'success');
+    setTimeout(render, 400);
+  });
+
+  on('admin:team:create', async () => {
+    const modalId = 'create-team-modal';
+    openModal({
+      id: modalId,
+      title: `➕ ${t('adminTeamCreate') || 'Neues Team'}`,
+      body: `<div style="display:flex;flex-direction:column;gap:12px">
+        <label style="font-size:13px;color:var(--fg-2)">Team-Name</label>
+        <input id="new-team-name-input" class="input" type="text" placeholder="z.B. OHANNA"
+          maxlength="40" style="font-size:16px" />
+        <div style="display:flex;gap:8px;margin-top:4px">
+          <button class="btn btn--primary btn--full" data-action="admin:team:confirm-create" data-modal="${modalId}">
+            Erstellen
+          </button>
+          <button class="btn btn--ghost" data-action="modal:close" data-modal="${modalId}">
+            Abbrechen
+          </button>
+        </div>
+      </div>`,
+      actions: []
+    });
+    setTimeout(() => document.getElementById('new-team-name-input')?.focus(), 100);
+  });
+
+  on('admin:team:confirm-create', async (el) => {
+    const modalId = el.dataset.modal;
+    const name = (document.getElementById('new-team-name-input')?.value || '').trim();
+    if (!name) { toast('Name eingeben', 'warning'); return; }
+
+    const existingGroups = Object.values(state.db.groups || {});
+    const maxNum = existingGroups.reduce((m, g) => Math.max(m, g.number || 0), 0);
+    const newNum = maxNum + 1;
+    const newId  = name.toLowerCase().replace(/[^a-z0-9]/g, '') + newNum;
+
+    writeDB(`groups/${newId}`, {
+      id: newId,
+      name,
+      number: newNum,
+      members: [],
+    });
+
+    closeModal(modalId);
+    toast(`✅ Team "${name}" erstellt`, 'success', 3000);
+    setTimeout(render, 400);
+  });
+
+  on('admin:team:rename', async (el) => {
+    const gid   = el.dataset.gid;
+    const gname = el.dataset.gname;
+    if (!gid) return;
+
+    const modalId = 'rename-team-modal';
+    openModal({
+      id: modalId,
+      title: `✏️ ${t('adminTeamRename') || 'Umbenennen'}: ${esc(gname)}`,
+      body: `<div style="display:flex;flex-direction:column;gap:12px">
+        <label style="font-size:13px;color:var(--fg-2)">Neuer Team-Name</label>
+        <input id="rename-team-input" class="input" type="text" value="${esc(gname)}"
+          maxlength="40" style="font-size:16px" />
+        <div style="display:flex;gap:8px;margin-top:4px">
+          <button class="btn btn--primary btn--full" data-action="admin:team:confirm-rename" data-gid="${esc(gid)}" data-modal="${modalId}">
+            Speichern
+          </button>
+          <button class="btn btn--ghost" data-action="modal:close" data-modal="${modalId}">
+            Abbrechen
+          </button>
+        </div>
+      </div>`,
+      actions: []
+    });
+    setTimeout(() => {
+      const inp = document.getElementById('rename-team-input');
+      if (inp) { inp.focus(); inp.select(); }
+    }, 100);
+  });
+
+  on('admin:team:confirm-rename', async (el) => {
+    const gid     = el.dataset.gid;
+    const modalId = el.dataset.modal;
+    const name    = (document.getElementById('rename-team-input')?.value || '').trim();
+    if (!gid || !name) { toast('Name eingeben', 'warning'); return; }
+
+    writeDB(`groups/${gid}/name`, name);
+    closeModal(modalId);
+    toast(`✅ Team umbenannt zu "${name}"`, 'success', 3000);
     setTimeout(render, 400);
   });
 

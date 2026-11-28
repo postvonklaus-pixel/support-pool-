@@ -94,19 +94,20 @@ export function handleSupport(vidId) {
   _videoLink    = v.link || v.url || '';
   _currentVidId = vidId;
 
-  const link  = v.link || v.url || '#';
-  const lang  = state.lang;
-  const pool  = _getCommentPool(lang);
-  const owner = fbDec(v.ownerKey || v.owner || '?');
-  const r1n   = v.r1Need || state.db.settings?.r1Need || 10;
-  const r1    = (v.r1Supporters || []).length;
+  const link     = v.link || v.url || '#';
+  const lang     = state.lang;
+  const pool     = _getCommentPool(lang);
+  const ownerKey = v.ownerKey || v.owner || '';
+  const owner    = fbDec(ownerKey || '?');
+  const r1n      = v.r1Need || state.db.settings?.r1Need || 10;
+  const r1       = (v.r1Supporters || []).length;
   const slotsLeft = r1n - r1;
-  const urgent = slotsLeft <= 3 && slotsLeft > 0;
+  const urgent   = slotsLeft <= 3 && slotsLeft > 0;
 
   openModal({
     id:    'support-modal',
     title: '',
-    body:  _buildModal(vidId, link, pool, owner, slotsLeft, urgent),
+    body:  _buildModal(vidId, link, pool, owner, ownerKey, slotsLeft, urgent),
   });
 }
 
@@ -127,19 +128,20 @@ export function handleSupportStep2(vidId) {
   _savePending(vidId);
   _ensureResumeListeners();
 
-  const link  = v.link || v.url || '#';
-  const lang  = state.lang;
-  const pool  = _getCommentPool(lang);
-  const owner = fbDec(v.ownerKey || v.owner || '?');
-  const r1n   = v.r1Need || state.db.settings?.r1Need || 10;
-  const r1    = (v.r1Supporters || []).length;
+  const link     = v.link || v.url || '#';
+  const lang     = state.lang;
+  const pool     = _getCommentPool(lang);
+  const ownerKey = v.ownerKey || v.owner || '';
+  const owner    = fbDec(ownerKey || '?');
+  const r1n      = v.r1Need || state.db.settings?.r1Need || 10;
+  const r1       = (v.r1Supporters || []).length;
   const slotsLeft = r1n - r1;
-  const urgent = slotsLeft <= 3 && slotsLeft > 0;
+  const urgent   = slotsLeft <= 3 && slotsLeft > 0;
 
   openModal({
     id:    'support-modal',
     title: '',
-    body:  _buildModal(vidId, link, pool, owner, slotsLeft, urgent, 2),
+    body:  _buildModal(vidId, link, pool, owner, ownerKey, slotsLeft, urgent, 2),
   });
 }
 
@@ -164,13 +166,18 @@ function _checkDailyLimit() {
   return true;
 }
 
-function _buildModal(vidId, link, pool, owner, slotsLeft, urgent, startStep = 1) {
+function _buildModal(vidId, link, pool, owner, ownerKey, slotsLeft, urgent, startStep = 1) {
   const step1Active = startStep === 1 ? ' sf-step--active' : ' sf-step--done';
   const step2Active = startStep === 2 ? ' sf-step--active' : '';
+  const teamLabel = (() => {
+    if (Object.keys(state.db.groups || {}).length <= 1) return '';
+    const grp = Object.values(state.db.groups || {}).find(g => (g.members || []).includes(ownerKey));
+    return grp ? ` <span style="font-size:11px;opacity:.7">· ${esc(grp.name)}</span>` : '';
+  })();
   return `
     <div class="sf-modal" id="sf-modal">
       <div class="sf-header">
-        <div class="sf-header__owner">@${esc(owner)}</div>
+        <div class="sf-header__owner">@${esc(owner)}${teamLabel}</div>
         ${urgent ? `<span class="sf-urgent-badge">⚡ ${slotsLeft} Slot${slotsLeft === 1 ? '' : 's'}!</span>` : ''}
       </div>
 

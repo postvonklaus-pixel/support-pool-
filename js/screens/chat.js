@@ -410,7 +410,15 @@ function _poolBubble(m, cu, { roomKey = '' } = {}) {
     <div class="bubble-row ${isMe ? 'bubble-row--me' : ''}">
       ${!isMe ? `<div class="bubble-avatar" style="background:${grad}" title="@${esc(fromDec)}">${initials}</div>` : ''}
       <div class="bubble-col">
-        ${!isMe ? `<div class="bubble-meta"><span class="bubble-username">@${esc(name)}</span><span class="bubble-time-inline">${m.ts ? timeAgo(m.ts, state.lang) : ''}</span></div>` : ''}
+        ${!isMe ? `<div class="bubble-meta"><span class="bubble-username">@${esc(name)}</span>${(() => {
+          const senderRole = state.db.members?.[m.from]?.role;
+          if (senderRole === 'team-admin') {
+            const grp = Object.values(state.db.groups||{}).find(g => g.teamAdminKey === m.from || (g.members||[]).includes(m.from));
+            const badge = grp ? `${t('teamAdminBadge')||'Admin'} ${esc(grp.name)}` : (t('teamAdminBadge')||'Admin');
+            return `<span class="bubble-team-badge">${badge}</span>`;
+          }
+          return '';
+        })()}<span class="bubble-time-inline">${m.ts ? timeAgo(m.ts, state.lang) : ''}</span></div>` : ''}
         ${actionsHtml}
         <div class="bubble ${isMe ? 'bubble--me' : 'bubble--them'}"
           data-action="chat:bubble:tap" data-msg-id="${m.id || ''}">
@@ -476,7 +484,10 @@ function _renderDMList(cu, threads) {
             ${online ? '<span class="dm-row__online"></span>' : ''}
           </div>
           <div class="dm-row__body">
-            <div class="dm-row__name">${esc(m.name || fbDec(key))}</div>
+            <div class="dm-row__name">${esc(m.name || fbDec(key))}${Object.keys(state.db.groups||{}).length > 1 ? (() => {
+              const grp = Object.values(state.db.groups||{}).find(g => (g.members||[]).includes(key));
+              return grp ? ` <span style="font-size:10px;color:var(--fg-3);font-weight:400">· ${esc(grp.name)}</span>` : '';
+            })() : ''}</div>
             <div class="dm-row__preview">${esc(lastMsg.slice(0, 48) || t('chatDMPreview'))}</div>
           </div>
           <div class="dm-row__aside">

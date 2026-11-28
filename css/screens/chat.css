@@ -193,6 +193,22 @@
   font-size: 10px;
   color: var(--text-tertiary);
 }
+.bubble-team-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .3px;
+  text-transform: uppercase;
+  color: #fff;
+  background: linear-gradient(135deg, #7c3aed, #a855f7);
+  border-radius: 4px;
+  padding: 1px 5px;
+  margin: 0 4px;
+  vertical-align: middle;
+  line-height: 1.6;
+  flex-shrink: 0;
+}
 
 .bubble-sender {
   font-size: 10px;
