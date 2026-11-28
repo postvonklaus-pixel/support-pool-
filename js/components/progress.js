@@ -2,7 +2,7 @@
    NOVA Support Pool — Progress Visualization Components
    ═══════════════════════════════════════════════════════ */
 
-import { t } from '../i18n.js';
+import { t } from '../i18n.js?v=20261128b';
 
 const TAU = 2 * Math.PI;
 let _ringIdx = 0;

@@ -3,7 +3,7 @@
    ═══════════════════════════════════════════════════════ */
 
 import { state }      from '../state.js';
-import { t }          from '../i18n.js';
+import { t }          from '../i18n.js?v=20261128b';
 import { esc, avatarGradient, getNextFridayWIB, todayWIB, fbDec } from '../utils.js';
 import { on }         from '../events.js';
 import { progressRing, streakFlames } from '../components/progress.js';

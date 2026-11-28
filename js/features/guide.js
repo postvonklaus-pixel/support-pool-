@@ -3,7 +3,7 @@
    ═══════════════════════════════════════════════════════ */
 
 import { openModal } from '../components/modal.js';
-import { t }         from '../i18n.js';
+import { t }         from '../i18n.js?v=20261128b';
 import { esc }       from '../utils.js';
 
 export function openGuide() {

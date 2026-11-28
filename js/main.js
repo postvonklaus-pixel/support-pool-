@@ -7,7 +7,7 @@ import { storage, loadSession, getLang, clearSession, saveSession } from './stor
 import { initTheme } from './features/theme.js';
 import { ge, toast, getLastFridayWIB, fbDec } from './utils.js';
 import { initFirebase, saveDB, writeDB, getPendingPaths } from './firebase.js';
-import { initI18n, setLang } from './i18n.js';
+import { initI18n, setLang } from './i18n.js?v=20261128b';
 import { initEvents } from './events.js';
 import { initRouter, goScreen } from './router.js';
 import { initOffline } from './features/offline.js';

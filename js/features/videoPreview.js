@@ -3,7 +3,7 @@
    ═══════════════════════════════════════════════════════ */
 
 import { state }      from '../state.js';
-import { t }          from '../i18n.js';
+import { t }          from '../i18n.js?v=20261128b';
 import { esc, avatarGradient, fbDec } from '../utils.js';
 import { trustBadge } from './trust.js';
 import { isVerified, VERIFIED_BADGE } from './verification.js';

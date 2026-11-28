@@ -3,7 +3,7 @@
    ═══════════════════════════════════════════════════════ */
 
 import { state }    from '../state.js';
-import { t }        from '../i18n.js';
+import { t }        from '../i18n.js?v=20261128b';
 import { esc, timeAgo, getNextFridayWIB } from '../utils.js';
 import { renderNotification } from '../features/notifications.js';
 import { on }       from '../events.js';

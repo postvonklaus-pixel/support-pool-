@@ -3,7 +3,7 @@
    ═══════════════════════════════════════════════════════ */
 
 import { state }    from '../state.js';
-import { t }        from '../i18n.js';
+import { t }        from '../i18n.js?v=20261128b';
 import { esc, fbDec } from '../utils.js';
 import { openModal, closeModal } from '../components/modal.js';
 import { toast }    from '../components/toast.js';

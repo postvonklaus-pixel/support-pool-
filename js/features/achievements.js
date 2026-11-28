@@ -3,7 +3,7 @@
    ═══════════════════════════════════════════════════════ */
 
 import { state }   from '../state.js';
-import { t }       from '../i18n.js';
+import { t }       from '../i18n.js?v=20261128b';
 import { writeDB } from '../firebase.js';
 import { toast }   from '../components/toast.js';
 import { confetti } from '../components/confetti.js';

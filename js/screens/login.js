@@ -3,7 +3,7 @@
    ═══════════════════════════════════════════════════════ */
 
 import { state, subscribe }   from '../state.js';
-import { t, setLang }         from '../i18n.js';
+import { t, setLang }         from '../i18n.js?v=20261128b';
 import { on }                 from '../events.js';
 import { ge, haptic, fbEnc, fbDec, copyToClipboard } from '../utils.js';
 import { toast }              from '../components/toast.js';

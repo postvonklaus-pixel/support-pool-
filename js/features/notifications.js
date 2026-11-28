@@ -8,7 +8,7 @@ import { toast }   from '../components/toast.js';
 import { openModal, closeModal } from '../components/modal.js';
 import { esc, fbDec } from '../utils.js';
 import { on }      from '../events.js';
-import { getAllLangs } from '../i18n.js';
+import { getAllLangs } from '../i18n.js?v=20261128b';
 
 export function addNotif(to, icon, _text, subtype, data) {
   const id = `n${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;

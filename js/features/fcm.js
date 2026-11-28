@@ -12,7 +12,7 @@
 
 import { state }  from '../state.js';
 import { writeDB, callFn } from '../firebase.js';
-import { getAllLangs } from '../i18n.js';
+import { getAllLangs } from '../i18n.js?v=20261128b';
 
 let _ready = false;
 
