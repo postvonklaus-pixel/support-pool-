@@ -27,7 +27,8 @@ function _fillPlaceholders(text, owner) {
   const cu     = state.currentUser || '';
   const u      = state.db.members?.[cu] || {};
   const member = u.name || fbDec(cu);
-  const gruppe = u.group || '';
+  const grpObj = Object.values(state.db.groups || {}).find(g => (g.members || []).includes(cu));
+  const gruppe = grpObj ? grpObj.name : '';
   const locale = _LOCALE_MAP[state.lang] || 'de-DE';
   const now    = new Date();
   return text

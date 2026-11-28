@@ -1363,7 +1363,7 @@ function _registerHandlers() {
     const custom   = state.db.settings?.tplLibrary || {};
     const current  = custom[idx] ?? defaults[idx] ?? '';
     const PHKEYS   = ['{gruppe}','{name}','{member}','{date}','{time}'];
-    const PHEX     = { '{gruppe}':'1', '{name}':'maxpower', '{member}':'boostsquad',
+    const PHEX     = { '{gruppe}':'Team 1', '{name}':'maxpower', '{member}':'boostsquad',
                        '{date}': new Date().toLocaleDateString('de'), '{time}': new Date().toLocaleTimeString('de',{hour:'2-digit',minute:'2-digit'}) };
 
     function makePreview(text) {
@@ -1410,7 +1410,7 @@ function _registerHandlers() {
     const pv = document.getElementById('tpl-preview');
     if (pv) {
       const PHKEYS = ['{gruppe}','{name}','{member}','{date}','{time}'];
-      const PHEX = { '{gruppe}':'1', '{name}':'maxpower', '{member}':'boostsquad',
+      const PHEX = { '{gruppe}':'Team 1', '{name}':'maxpower', '{member}':'boostsquad',
         '{date}': new Date().toLocaleDateString('de'), '{time}': new Date().toLocaleTimeString('de',{hour:'2-digit',minute:'2-digit'}) };
       let p = ta.value.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
       PHKEYS.forEach(k => { p = p.replace(new RegExp(k.replace(/[{}]/g,'\\$&'),'g'), `<span class="tpl-ph">${PHEX[k]}</span>`); });
